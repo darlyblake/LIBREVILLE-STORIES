@@ -19,9 +19,11 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Hauteurs OSM utilisées lorsqu'elles sont disponibles ; estimation visuelle clairement utilisée en leur absence.
 - [x] Première texture procédurale de tuiles sur les toitures.
 - [x] Détails de façades regroupés en meshes : fenêtres et portes d'entrée stylisées, avec variation déterministe légère.
-- [ ] Valider le nouveau générateur de façades dans Godot CI et inspecter le rendu en jeu.
+- [x] Validation Godot 4.3 du générateur de fenêtres/portes sur `main` (rendu Compatibility réussi).
+- [ ] Valider les balcons ajoutés dans Godot CI et inspecter leur rendu en jeu.
 - [ ] Ajouter plusieurs profils de toiture (tôle, dalle béton, tuiles, toiture inclinée) sans présenter les choix visuels comme des données terrain.
-- [ ] Ajouter balcons, auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
+- [x] Première passe de balcons stylisés sur certains immeubles à plusieurs niveaux, regroupés dans le mesh des façades.
+- [ ] Ajouter auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
 - [ ] Mieux gérer les cours intérieures et trous dans les empreintes polygonales.
 - [ ] Affiner les typologies architecturales locales à partir de photos/références vérifiables ; ne pas uniformiser toutes les constructions.
 
@@ -42,7 +44,8 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 ## 5. Performance et validation
 - [x] Regroupement des routes et bâtiments en meshes pour réduire les draw calls.
 - [x] Validation automatique Godot 4.3 sous rendu Compatibility déjà passée sur la version précédente.
-- [ ] Repasser la validation Godot 4.3 après les nouveaux détails de façades.
+- [x] Validation Godot 4.3 après fenêtres et portes (rendu Compatibility réussi).
+- [ ] Repasser la validation Godot 4.3 après les balcons.
 - [ ] Mettre en place le chargement/déchargement spatial par secteurs.
 - [ ] Mesurer FPS, mémoire et temps de chargement sur la machine cible (GT 730 2 Go) ; aucun chiffre ne doit être annoncé avant ce test.
 - [ ] Vérifier les collisions et la circulation du joueur sur les routes et autour des bâtiments.
