@@ -26,12 +26,13 @@ Ces noms définissent le périmètre de travail. La zone technique actuelle est 
 - [x] Contrôles de déplacement et caméra de troisième personne
 - [x] Première extraction OpenStreetMap contrôlée : 4 503 voies et 49 359 empreintes de bâtiments
 - [x] Générateur Godot des routes et bâtiments 3D ajouté
-- [x] Fichiers GeoJSON vérifiés et intégrés dans le dépôt : 4 503 voies et 49 359 bâtiments
+- [x] Fichiers GeoJSON vérifiés et intégrés dans le dépôt : 4 503 voies, 49 359 bâtiments, 2 595 POI et 256 éléments environnementaux
+- [x] Couche dédiée aux noms OSM de localités/quartiers (`localities.geojson`) ajoutée au moteur ; extraction fraîche en cours après fusion
 - [x] Attribution OpenStreetMap affichée dans la scène
 - [x] Validation Godot 4.3 sous OpenGL Compatibility (Mesa/llvmpipe) : scène chargée et 4 503 routes + 49 359 bâtiments générés
-- [ ] Nouvelle extraction actualisée : les serveurs Overpass ont temporairement refusé certaines tuiles
+- [ ] Vérifier l'extraction fraîche et le nombre réel de noms de localités ; les contours de quartiers restent à 0 dans le dernier rapport validé
 - [ ] Test d'ouverture et de performance dans Godot sur le PC cible
-- [ ] Relief, littoral, végétation, mobilier urbain et bâtiments détaillés
+- [ ] Relief (Copernicus GLO-30 candidat, DSM et non terrain nu), surface océan/mer, mobilier urbain et façades détaillées
 - [ ] Chargement par secteurs et optimisation avancée
 
 ## Lancer le projet
@@ -41,7 +42,7 @@ Ces noms définissent le périmètre de travail. La zone technique actuelle est 
 3. Ouvrir le dossier du projet dans Godot.
 4. Lancer la scène principale avec F6/F5.
 
-Les données cartographiques doivent être présentes dans `data/osm/roads.geojson` et `data/osm/buildings.geojson`. Si elles ne sont pas encore dans le dépôt, télécharger l'artefact « libreville-osm-extraction » depuis l'onglet Actions du dépôt et placer les deux fichiers dans `data/osm/`.
+Les données cartographiques doivent être présentes dans `data/osm/roads.geojson`, `data/osm/buildings.geojson`, `data/osm/pois.geojson`, `data/osm/environment.geojson` et `data/osm/localities.geojson`. Si elles ne sont pas encore dans le dépôt, télécharger l'artefact « libreville-osm-extraction » depuis l'onglet Actions du dépôt et placer les deux fichiers dans `data/osm/`.
 
 ## Attribution et licence des données
 
