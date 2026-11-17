@@ -51,65 +51,70 @@
       "row": 2,
       "column": 3,
       "elements": 7579,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 2,
       "column": 4,
       "elements": 3689,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 3,
       "column": 1,
       "elements": 10,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 3,
       "column": 2,
       "elements": 2407,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 3,
       "column": 3,
       "elements": 6585,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 3,
       "column": 4,
       "elements": 11474,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 4,
       "column": 1,
       "elements": 737,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 4,
       "column": 2,
       "elements": 3790,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 4,
       "column": 3,
       "elements": 2359,
-      "from_cache": false
+      "from_cache": true
     },
     {
       "row": 4,
       "column": 4,
       "elements": 12365,
-      "from_cache": false
+      "from_cache": true
     }
   ],
-  "extracted_at_utc": "2026-11-17T14:58:51.271888+00:00",
+  "extracted_at_utc": "2026-11-17T15:16:54.578294+00:00",
   "files": {
+    "pois.geojson": {
+      "features": 0,
+      "categories": {},
+      "size_bytes": 67
+    },
     "roads.geojson": {
       "features": 4503,
       "categories": {
