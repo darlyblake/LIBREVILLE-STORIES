@@ -610,7 +610,7 @@ func _load_buildings() -> void:
 			if indices.is_empty():
 				continue
 			surface.set_color(_building_color(building_kind, osm_id, props))
-			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id), building_kind, osm_id)
+			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props)
 			added = true
 		if added:
 			_building_count += 1
@@ -850,9 +850,16 @@ func _building_color(kind: String, osm_id: int, props: Dictionary = {}) -> Color
 		selected = Color(0.72, 0.72, 0.67) if abs(osm_id) % 2 == 0 else Color(0.78, 0.75, 0.67)
 	return selected
 
-func _roof_style(kind: String, osm_id: int) -> int:
-	# 0 = tuiles (habitat), 1 = tôle nervurée (hangars/industrie),
-	# 2 = dalle béton (bureaux et commerces). Styles visuels, non relevés terrain.
+func _roof_style(kind: String, osm_id: int, props: Dictionary = {}) -> int:
+	# Les tags de matériau OSM priment sur la règle visuelle de secours.
+	var material_tag := str(props.get("roof:material", "")).to_lower()
+	if material_tag in ["metal", "tin", "corrugated_metal", "sheet", "steel"]:
+		return 1
+	if material_tag in ["concrete", "concrete_plates", "asphalt"]:
+		return 2
+	if material_tag in ["tile", "tiles", "roof_tiles", "terracotta"]:
+		return 0
+	# 0 = tuiles, 1 = tôle nervurée, 2 = dalle béton. Sans tag, estimation.
 	match kind:
 		"industrial", "warehouse", "carport", "shed":
 			return 1
@@ -862,10 +869,13 @@ func _roof_style(kind: String, osm_id: int) -> int:
 			return 0 if abs(osm_id) % 5 != 0 else 2
 
 
-func _roof_color(kind: String, osm_id: int) -> Color:
+func _roof_color(kind: String, osm_id: int, props: Dictionary = {}) -> Color:
+	var tagged := str(props.get("roof:colour", props.get("roof:color", ""))).strip_edges()
+	if not tagged.is_empty():
+		return Color.from_string(tagged, Color(0.62, 0.34, 0.25))
 	# La teinte varie légèrement, le motif vient de la bande de texture choisie.
 	var variation := float(abs(osm_id) % 7) * 0.018
-	match _roof_style(kind, osm_id):
+	match _roof_style(kind, osm_id, props):
 		1:
 			return Color(0.91 + variation * 0.3, 0.94 + variation * 0.2, 0.94 + variation * 0.2)
 		2:
@@ -933,7 +943,7 @@ func _add_uv_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: V
 
 func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		points: PackedVector2Array, indices: PackedInt32Array, height: float,
-		roof_tint: Color, building_kind: String, osm_id: int) -> void:
+		roof_tint: Color, building_kind: String, osm_id: int, props: Dictionary = {}) -> void:
 	var longest_edge_index := 0
 	var longest_edge_length := 0.0
 	var signed_area := 0.0
@@ -965,7 +975,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_door(details, door_a, door_b, door_normal)
 	roofs.set_color(roof_tint)
-	var roof_style := _roof_style(building_kind, osm_id)
+	var roof_style := _roof_style(building_kind, osm_id, props)
 	var pitched_roof := false
 	if points.size() == 4 and building_kind in ["house", "residential", "detached", "semidetached_house", "bungalow"]:
 		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style)
