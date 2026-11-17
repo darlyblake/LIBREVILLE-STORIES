@@ -740,6 +740,8 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 				center + tangent * half_width - Vector3.UP * half_height + offset,
 				center + tangent * half_width + Vector3.UP * half_height + offset,
 				center - tangent * half_width + Vector3.UP * half_height + offset)
+			if floors >= 2 and building_kind in ["apartments", "residential", "house", "commercial", "office"] and (window_index + abs(osm_id)) % 3 == 0 and floor_index > 0:
+				_add_facade_balcony(surface, center, tangent, normal, half_width, center_y - half_height - 0.08)
 			# Appui discret sous la fenêtre, légèrement avancé sur la façade.
 			surface.set_color(Color(0.72, 0.70, 0.64))
 			var sill_center := center - Vector3.UP * (half_height + 0.07)
@@ -750,6 +752,42 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 				sill_center + tangent * (half_width + 0.04) + Vector3.UP * 0.08 + sill_offset,
 				sill_center - tangent * (half_width + 0.04) + Vector3.UP * 0.08 + sill_offset)
 
+
+func _add_facade_balcony(surface: SurfaceTool, center: Vector3, tangent: Vector3,
+		normal: Vector3, half_width: float, floor_y: float) -> void:
+	# Balcon stylisé à faible profondeur : dalle, garde-corps et deux montants.
+	# Il s'agit d'un détail visuel procédural, pas d'une donnée OSM.
+	var depth := 0.72
+	var width := half_width + 0.22
+	var front := center + normal * depth
+	var back_left := center - tangent * width + normal * 0.05
+	var back_right := center + tangent * width + normal * 0.05
+	var front_left := front - tangent * width
+	var front_right := front + tangent * width
+	surface.set_color(Color(0.66, 0.64, 0.59))
+	_add_quad(surface,
+		back_left + Vector3.UP * floor_y,
+		back_right + Vector3.UP * floor_y,
+		front_right + Vector3.UP * floor_y,
+		front_left + Vector3.UP * floor_y)
+	var rail_bottom := floor_y + 0.08
+	var rail_top := floor_y + 0.92
+	surface.set_color(Color(0.28, 0.31, 0.31))
+	_add_quad(surface,
+		front_left + Vector3.UP * rail_bottom,
+		front_right + Vector3.UP * rail_bottom,
+		front_right + Vector3.UP * rail_top,
+		front_left + Vector3.UP * rail_top)
+	_add_quad(surface,
+		back_left + Vector3.UP * rail_bottom,
+		back_left + Vector3.UP * rail_top,
+		front_left + Vector3.UP * rail_top,
+		front_left + Vector3.UP * rail_bottom)
+	_add_quad(surface,
+		back_right + Vector3.UP * rail_bottom,
+		front_right + Vector3.UP * rail_bottom,
+		front_right + Vector3.UP * rail_top,
+		back_right + Vector3.UP * rail_top)
 
 func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3) -> void:
 	var edge := b - a
