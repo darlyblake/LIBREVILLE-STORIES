@@ -321,36 +321,77 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 			added += 1
 
 
+func _make_foliage_cluster(clumps: Array[Dictionary]) -> ArrayMesh:
+	# Une couronne tropicale est composée de plusieurs masses de feuilles,
+	# pas d'une sphère unique. Les petits volumes se chevauchent pour casser
+	# la silhouette artificielle tout en restant dans un seul mesh instancié.
+	var combined := ArrayMesh.new()
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var sphere := SphereMesh.new()
+	sphere.radial_segments = 9
+	sphere.rings = 6
+	for clump in clumps:
+		var scale: Vector3 = clump.get("scale", Vector3.ONE)
+		var offset: Vector3 = clump.get("offset", Vector3.ZERO)
+		var mesh_transform := Transform3D(Basis().scaled(scale), offset)
+		surface.append_from(sphere, 0, mesh_transform)
+	surface.generate_normals()
+	var generated := surface.commit()
+	if generated != null:
+		for surface_index in range(generated.get_surface_count()):
+			combined.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, generated.surface_get_arrays(surface_index))
+	return combined
+
+
 func _commit_tree_instances(positions: Array[Vector3]) -> void:
 	if positions.is_empty():
 		return
+
 	var trunk_mesh := CylinderMesh.new()
-	trunk_mesh.top_radius = 0.09
-	trunk_mesh.bottom_radius = 0.17
-	trunk_mesh.height = 1.45
-	# Trois silhouettes légères : couronne ronde, étalée et verticale.
-	var canopy_meshes: Array[SphereMesh] = []
-	var round_canopy := SphereMesh.new()
-	round_canopy.radius = 0.9
-	round_canopy.height = 2.0
-	canopy_meshes.append(round_canopy)
-	var broad_canopy := SphereMesh.new()
-	broad_canopy.radius = 1.0
-	broad_canopy.height = 1.35
-	canopy_meshes.append(broad_canopy)
-	var upright_canopy := SphereMesh.new()
-	upright_canopy.radius = 0.72
-	upright_canopy.height = 2.35
-	canopy_meshes.append(upright_canopy)
+	trunk_mesh.top_radius = 0.075
+	trunk_mesh.bottom_radius = 0.19
+	trunk_mesh.height = 1.9
+	trunk_mesh.radial_segments = 7
+
+	# Trois silhouettes tropicales en volumes de feuillage irréguliers :
+	# arbre large, arbre arrondi dense et arbre haut plus étroit.
+	var canopy_meshes: Array[ArrayMesh] = [
+		_make_foliage_cluster([
+			{"offset": Vector3(0, 0, 0), "scale": Vector3(0.78, 0.66, 0.76)},
+			{"offset": Vector3(-0.52, -0.10, 0.08), "scale": Vector3(0.58, 0.53, 0.60)},
+			{"offset": Vector3(0.50, -0.06, -0.12), "scale": Vector3(0.62, 0.56, 0.58)},
+			{"offset": Vector3(-0.18, 0.34, -0.30), "scale": Vector3(0.55, 0.52, 0.58)},
+			{"offset": Vector3(0.22, 0.30, 0.34), "scale": Vector3(0.58, 0.50, 0.54)},
+			{"offset": Vector3(0.05, -0.28, 0.40), "scale": Vector3(0.52, 0.43, 0.50)}
+		]),
+		_make_foliage_cluster([
+			{"offset": Vector3(0, 0.08, 0), "scale": Vector3(0.70, 0.72, 0.68)},
+			{"offset": Vector3(-0.40, -0.16, -0.22), "scale": Vector3(0.55, 0.52, 0.54)},
+			{"offset": Vector3(0.42, -0.12, 0.18), "scale": Vector3(0.54, 0.58, 0.56)},
+			{"offset": Vector3(-0.12, 0.42, 0.26), "scale": Vector3(0.50, 0.48, 0.50)},
+			{"offset": Vector3(0.18, 0.34, -0.34), "scale": Vector3(0.48, 0.50, 0.48)}
+		]),
+		_make_foliage_cluster([
+			{"offset": Vector3(0, 0.10, 0), "scale": Vector3(0.52, 0.92, 0.52)},
+			{"offset": Vector3(-0.30, -0.22, 0.12), "scale": Vector3(0.43, 0.62, 0.43)},
+			{"offset": Vector3(0.32, -0.18, -0.10), "scale": Vector3(0.42, 0.60, 0.44)},
+			{"offset": Vector3(0.04, 0.48, 0.26), "scale": Vector3(0.42, 0.54, 0.42)}
+		])
+	]
+
 	var trunk_material := _make_material(Color.WHITE)
 	trunk_material.vertex_color_use_as_albedo = true
 	var canopy_material := _make_material(Color.WHITE)
 	canopy_material.vertex_color_use_as_albedo = true
+	canopy_material.roughness = 0.96
+
 	var trunks := MultiMesh.new()
 	trunks.transform_format = MultiMesh.TRANSFORM_3D
 	trunks.use_colors = true
 	trunks.mesh = trunk_mesh
 	trunks.instance_count = positions.size()
+
 	var canopy_multimeshes: Array[MultiMesh] = []
 	var canopy_counts: Array[int] = [0, 0, 0]
 	for mesh in canopy_meshes:
@@ -360,42 +401,48 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 		canopy_batch.mesh = mesh
 		canopy_batch.instance_count = positions.size()
 		canopy_multimeshes.append(canopy_batch)
+
 	var foliage_palette: Array[Color] = [
-		Color(0.12, 0.30, 0.16),
-		Color(0.17, 0.38, 0.20),
-		Color(0.22, 0.42, 0.22),
-		Color(0.26, 0.36, 0.17),
-		Color(0.14, 0.34, 0.25),
-		Color(0.30, 0.43, 0.22)
+		Color(0.075, 0.23, 0.105),
+		Color(0.11, 0.31, 0.14),
+		Color(0.16, 0.37, 0.17),
+		Color(0.22, 0.39, 0.16),
+		Color(0.10, 0.32, 0.23),
+		Color(0.27, 0.40, 0.19),
+		Color(0.18, 0.29, 0.12)
 	]
+
 	for i in range(positions.size()):
 		var position := positions[i]
 		var rng := RandomNumberGenerator.new()
 		rng.seed = int(absf(position.x * 13.0 + position.z * 29.0)) + i * 7919
-		var height_scale := rng.randf_range(0.78, 1.32)
-		var width_scale := rng.randf_range(0.78, 1.28)
+		var height_scale := rng.randf_range(0.82, 1.34)
+		var width_scale := rng.randf_range(0.82, 1.24)
 		var yaw := rng.randf_range(0.0, TAU)
 		var trunk_scale := Vector3(rng.randf_range(0.88, 1.12), height_scale, rng.randf_range(0.88, 1.12))
 		var trunk_basis := Basis(Vector3.UP, yaw).scaled(trunk_scale)
-		trunks.set_instance_transform(i, Transform3D(trunk_basis, position + Vector3.UP * (0.72 * height_scale)))
-		trunks.set_instance_color(i, Color(0.72, 0.57, 0.40).lerp(Color(0.30, 0.22, 0.14), rng.randf()))
+		trunks.set_instance_transform(i, Transform3D(trunk_basis, position + Vector3.UP * (0.95 * height_scale)))
+		trunks.set_instance_color(i, Color(0.43, 0.30, 0.18).lerp(Color(0.20, 0.15, 0.10), rng.randf()))
+
 		var canopy_type := rng.randi_range(0, canopy_meshes.size() - 1)
 		var canopy_index := canopy_counts[canopy_type]
 		var canopy_basis := Basis(Vector3.UP, yaw).scaled(Vector3(width_scale, height_scale, width_scale))
-		var canopy_height := 2.2 * height_scale
+		var canopy_height := 2.65 * height_scale
 		if canopy_type == 1:
-			canopy_height = 1.85 * height_scale
+			canopy_height = 2.55 * height_scale
 		elif canopy_type == 2:
-			canopy_height = 2.45 * height_scale
+			canopy_height = 2.95 * height_scale
 		canopy_multimeshes[canopy_type].set_instance_transform(canopy_index, Transform3D(canopy_basis, position + Vector3.UP * canopy_height))
 		canopy_multimeshes[canopy_type].set_instance_color(canopy_index, foliage_palette[rng.randi_range(0, foliage_palette.size() - 1)])
 		canopy_counts[canopy_type] += 1
+
 	var trunk_instance := MultiMeshInstance3D.new()
 	trunk_instance.name = "OSM_Tree_Trunks"
 	trunk_instance.multimesh = trunks
 	trunk_instance.material_override = trunk_material
 	trunk_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(trunk_instance)
+
 	for canopy_type in range(canopy_multimeshes.size()):
 		var canopy_batch := canopy_multimeshes[canopy_type]
 		canopy_batch.visible_instance_count = canopy_counts[canopy_type]
@@ -407,7 +454,7 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 		canopy_instance.material_override = canopy_material
 		canopy_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(canopy_instance)
-	print("LIBREVILLE STORIES | arbres 3D et silhouettes variées instanciés : %d" % positions.size())
+	print("LIBREVILLE STORIES | arbres tropicaux à couronnes groupées instanciés : %d" % positions.size())
 
 func _environment_color(kind: String) -> Color:
 	match kind:
