@@ -1,19 +1,27 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3 uid="uid://dkj3t2xucsnhw"]
 
 [ext_resource type="Script" path="res://game/scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://game/scripts/world_map.gd" id="2_map"]
 [ext_resource type="Script" path="res://game/scripts/minimap.gd" id="3_minimap"]
+
+[sub_resource type="Environment" id="Environment_world"]
+background_mode = 1
+background_color = Color(0.48, 0.66, 0.78, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.72, 0.76, 0.82, 1)
+ambient_light_energy = 0.78
+fog_enabled = true
+fog_light_color = Color(0.62, 0.72, 0.77, 1)
+fog_sun_scatter = 0.12
+fog_density = 0.00012
+fog_aerial_perspective = 0.22
+fog_sky_affect = 0.18
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
 size = Vector2(12000, 12000)
 
 [sub_resource type="StandardMaterial3D" id="Material_ground"]
 albedo_color = Color(0.24, 0.31, 0.25, 1)
-roughness = 1.0
-
-[sub_resource type="StandardMaterial3D" id="Material_player"]
-albedo_color = Color(0.12, 0.42, 0.78, 1)
-roughness = 0.8
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(12000, 0.2, 12000)
@@ -26,18 +34,9 @@ height = 1.8
 radius = 0.38
 height = 1.8
 
-[sub_resource type="Environment" id="Environment_world"]
-background_mode = 1
-background_color = Color(0.48, 0.66, 0.78, 1)
-ambient_light_source = 3
-ambient_light_color = Color(0.72, 0.76, 0.82, 1)
-ambient_light_energy = 0.78
-fog_enabled = true
-fog_light_color = Color(0.62, 0.72, 0.77, 1)
-fog_density = 0.00012
-fog_sun_scatter = 0.12
-fog_aerial_perspective = 0.22
-fog_sky_affect = 0.18
+[sub_resource type="StandardMaterial3D" id="Material_player"]
+albedo_color = Color(0.12, 0.42, 0.78, 1)
+roughness = 0.8
 
 [node name="Main" type="Node3D"]
 
@@ -48,9 +47,9 @@ script = ExtResource("2_map")
 environment = SubResource("Environment_world")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-rotation = Vector3(-0.82, -0.55, 0)
-light_energy = 1.05
+transform = Transform3D(0.852525, 0.382161, -0.356588, 0, 0.682221, 0.731146, 0.522687, -0.62332, 0.58161, 0, 0, 0)
 light_color = Color(1, 0.94, 0.82, 1)
+light_energy = 1.05
 shadow_enabled = true
 shadow_bias = 0.06
 
@@ -61,33 +60,35 @@ mesh = SubResource("PlaneMesh_ground")
 surface_material_override/0 = SubResource("Material_ground")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
-position = Vector3(0, -0.1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 shape = SubResource("BoxShape3D_ground")
 
 [node name="Player" type="CharacterBody3D" parent="."]
-position = Vector3(0, 1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 script = ExtResource("1_player")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
-position = Vector3(0, 0.9, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_player")
 
 [node name="Visual" type="MeshInstance3D" parent="Player"]
-position = Vector3(0, 0.9, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 mesh = SubResource("CapsuleMesh_player")
 surface_material_override/0 = SubResource("Material_player")
 
 [node name="CameraPivot" type="Node3D" parent="Player"]
-position = Vector3(0, 1.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.983844, 0.17903, 0, -0.17903, 0.983844, 0, 0, 0)
 spring_length = 5.0
-rotation = Vector3(-0.18, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
 current = true
 
 [node name="Minimap" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("3_minimap")
 
 [node name="MapCredits" type="CanvasLayer" parent="."]
@@ -100,5 +101,5 @@ offset_left = 16.0
 offset_top = -34.0
 offset_right = 480.0
 offset_bottom = -12.0
-text = "© OpenStreetMap contributors  |  LIBREVILLE STORIES"
 theme_override_font_sizes/font_size = 12
+text = "© OpenStreetMap contributors  |  LIBREVILLE STORIES"
