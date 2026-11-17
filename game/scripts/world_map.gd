@@ -25,7 +25,8 @@ var _road_material: StandardMaterial3D
 var _building_material: StandardMaterial3D
 
 func _ready() -> void:
-	_road_material = _make_material(Color(0.16, 0.17, 0.18))
+	_road_material = _make_material(Color.WHITE)
+	_road_material.vertex_color_use_as_albedo = true
 	_environment_material = _make_material(Color.WHITE)
 	_environment_material.vertex_color_use_as_albedo = true
 	_load_environment()
@@ -220,7 +221,9 @@ func _load_roads() -> void:
 				var midpoint: Array = label_coords[int(label_coords.size() / 2)]
 				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 3.0, Color(0.92, 0.95, 1.0), 280.0)
 				_road_labels += 1
-		var width := _road_width(str(props.get("highway", "residential")))
+		var road_kind := str(props.get("highway", "residential"))
+		var width := _road_width(road_kind)
+		surface.set_color(_road_color(road_kind))
 		var added := false
 		for coords in lines:
 			if coords.size() < 2:
@@ -421,6 +424,26 @@ func _geo_to_world(coordinate: Array) -> Vector3:
 	var x := (lon - CENTER_LON) * METERS_PER_DEG_LAT * cos(deg_to_rad(CENTER_LAT))
 	var z := -(lat - CENTER_LAT) * METERS_PER_DEG_LAT
 	return Vector3(x, 0.0, z)
+
+func _road_color(kind: String) -> Color:
+	# Hiérarchie visuelle lisible : axes structurants plus clairs, rues locales sobres.
+	match kind:
+		"motorway", "trunk":
+			return Color(0.88, 0.62, 0.34)
+		"primary":
+			return Color(0.82, 0.69, 0.48)
+		"secondary":
+			return Color(0.70, 0.68, 0.60)
+		"tertiary":
+			return Color(0.56, 0.58, 0.57)
+		"residential", "unclassified":
+			return Color(0.39, 0.42, 0.43)
+		"service":
+			return Color(0.32, 0.35, 0.36)
+		"footway", "path", "steps", "cycleway":
+			return Color(0.48, 0.43, 0.34)
+		_:
+			return Color(0.43, 0.45, 0.45)
 
 func _road_width(kind: String) -> float:
 	match kind:
