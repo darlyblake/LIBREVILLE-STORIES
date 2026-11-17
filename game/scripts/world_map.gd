@@ -20,6 +20,8 @@ var _building_material: StandardMaterial3D
 func _ready() -> void:
 	_road_material = _make_material(Color(0.16, 0.17, 0.18))
 	_building_material = _make_material(Color(0.76, 0.68, 0.56))
+	# Les couleurs attribuées aux bâtiments par type/OSM ID doivent être visibles.
+	_building_material.vertex_color_use_as_albedo = true
 	if show_roads:
 		_load_roads()
 	if show_buildings:
