@@ -54,6 +54,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Première superposition des POI importants sur la mini-carte (santé, écoles, services publics, commerces, tourisme ; validation Godot 4.3 réussie sur `main`).
 - [ ] Ajouter la navigation avec itinéraires et découverte interactive des POI.
 - [x] Première prise en charge logicielle des manettes : stick gauche, croix directionnelle, bouton A pour sauter et stick droit pour la caméra ; test avec une manette physique encore requis.
+- [x] Détection à chaud des connexions/déconnexions de manette et journalisation du nom/ID du périphérique ; test avec une manette physique encore requis.
 
 ## 5. Performance et validation
 - [x] Regroupement des routes et bâtiments en meshes pour réduire les draw calls.
