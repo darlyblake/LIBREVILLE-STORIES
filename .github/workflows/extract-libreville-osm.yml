@@ -62,7 +62,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git rebase origin/main
-          git add data/osm/roads.geojson data/osm/buildings.geojson data/osm/extraction-report.json
+          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/extraction-report.json
           if git diff --cached --quiet; then
             echo "Les données cartographiques sont déjà à jour."
           else
