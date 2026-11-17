@@ -10,16 +10,11 @@ var _rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	_rng.seed = 20261117
 	name = "BaieDesRois"
-	_build_bay_water()
-	_build_promenade()
-	_build_lawns()
-	_build_pavilions()
-	_build_amphitheater()
-	_build_palm_rows()
-	_build_sand_zones()
-	_build_coastal_edge()
-	_build_street_furniture()
-	print("LIBREVILLE STORIES | Baie des Rois v2 : baie + eau + textures")
+	# Les anciens générateurs de blocs, kiosques et nappes d'eau sont volontairement
+	# désactivés : leur implantation approximative donnait un aspect maquette/LEGO
+	# et plaçait l'eau sur des secteurs terrestres. La zone attend un plan géoréférencé
+	# et des modèles 3D texturés avant toute réactivation.
+	print("LIBREVILLE STORIES | Baie des Rois : blockout provisoire désactivé, reconstruction réaliste en attente")
 
 
 # ---------------------------------------------------------------------------
