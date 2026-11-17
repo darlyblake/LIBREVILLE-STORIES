@@ -723,6 +723,16 @@ def main():
     
     
     except Exception as extraction_error:
+        # Si une partie des secteurs est déjà disponible, préserver le cache partiel
+        # et laisser le prochain lancement reprendre uniquement les secteurs manquants.
+        # Un PBF national téléchargé dans la même exécution ne doit pas remplacer
+        # silencieusement ce travail partiel, surtout si le réseau est indisponible.
+        if 0 < len(tile_report) < len(tiles):
+            raise RuntimeError(
+                f"Extraction interrompue après {len(tile_report)}/{len(tiles)} secteurs. "
+                "Les secteurs réussis sont conservés dans le cache ; relancer le workflow "
+                "reprendra au premier secteur manquant. Aucun GeoJSON partiel ne sera publié."
+            ) from extraction_error
         print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
         used_geofabrik_fallback = True
         elements_from_pbf, nodes_from_pbf, relations_from_pbf = extract_from_geofabrik_pbf(

@@ -25,6 +25,7 @@ var _road_labels := 0
 var _road_material: StandardMaterial3D
 var _building_material: StandardMaterial3D
 var _roof_material: StandardMaterial3D
+var _facade_detail_material: StandardMaterial3D
 var _locality_points: Array[Dictionary] = []
 var _location_hud: Label
 var _location_refresh := 0.0
@@ -43,6 +44,8 @@ func _ready() -> void:
 	_roof_material = _make_material(Color.WHITE)
 	_roof_material.vertex_color_use_as_albedo = true
 	_roof_material.albedo_texture = _make_roof_tile_texture()
+	_facade_detail_material = _make_material(Color.WHITE)
+	_facade_detail_material.vertex_color_use_as_albedo = true
 	if show_roads:
 		_load_roads()
 	if show_buildings:
@@ -358,6 +361,7 @@ func _load_buildings() -> void:
 	var limit := mini(features.size(), BUILDING_LIMIT)
 	var surface := _new_surface(_building_material)
 	var roof_surface := _new_surface(_roof_material)
+	var detail_surface := _new_surface(_facade_detail_material)
 	var batch_count := 0
 	var batch_index := 0
 	for index in range(limit):
@@ -391,7 +395,7 @@ func _load_buildings() -> void:
 			if indices.is_empty():
 				continue
 			surface.set_color(_building_color(building_kind, osm_id))
-			_add_building(surface, roof_surface, points, indices, height, _roof_color(building_kind, osm_id))
+			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id), building_kind, osm_id)
 			added = true
 		if added:
 			_building_count += 1
@@ -402,12 +406,16 @@ func _load_buildings() -> void:
 			batch_count = 0
 			_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
 			batch_index += 1
+			_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
+			batch_index += 1
 			batch_count = 0
 			surface = _new_surface(_building_material)
 			roof_surface = _new_surface(_roof_material)
+			detail_surface = _new_surface(_facade_detail_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
 		_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
+		_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
 
 
 
@@ -659,12 +667,23 @@ func _add_uv_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: V
 	surface.add_vertex(d)
 
 
-func _add_building(walls: SurfaceTool, roofs: SurfaceTool, points: PackedVector2Array,
-		indices: PackedInt32Array, height: float, roof_tint: Color) -> void:
+func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
+		points: PackedVector2Array, indices: PackedInt32Array, height: float,
+		roof_tint: Color, building_kind: String, osm_id: int) -> void:
+	var longest_edge_index := 0
+	var longest_edge_length := 0.0
+	var signed_area := 0.0
+	for area_index in range(points.size()):
+		var area_a := points[area_index]
+		var area_b := points[(area_index + 1) % points.size()]
+		signed_area += area_a.x * area_b.y - area_b.x * area_a.y
 	for i in range(points.size()):
 		var a := points[i]
 		var b := points[(i + 1) % points.size()]
 		var edge_length := a.distance_to(b)
+		if edge_length > longest_edge_length:
+			longest_edge_length = edge_length
+			longest_edge_index = i
 		var uv_length := edge_length / 3.0
 		var uv_height := height / 3.0
 		_add_uv_quad(walls,
@@ -672,6 +691,15 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, points: PackedVector2
 			Vector3(b.x, height, b.y), Vector3(a.x, height, a.y),
 			Vector2(0.0, 0.0), Vector2(uv_length, 0.0),
 			Vector2(uv_length, uv_height), Vector2(0.0, uv_height))
+		var edge_direction := Vector3((b.x - a.x) / maxf(edge_length, 0.001), 0.0, (b.y - a.y) / maxf(edge_length, 0.001))
+		var outward_normal := Vector3(edge_direction.z, 0.0, -edge_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
+		_add_facade_windows(details, a, b, height, building_kind, osm_id, outward_normal)
+	if longest_edge_length >= 2.8 and building_kind not in ["garage", "shed", "roof", "carport"]:
+		var door_a := points[longest_edge_index]
+		var door_b := points[(longest_edge_index + 1) % points.size()]
+		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
+		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
+		_add_facade_door(details, door_a, door_b, door_normal)
 	roofs.set_color(roof_tint)
 	for i in range(0, indices.size(), 3):
 		var p0 := points[indices[i]]
@@ -679,6 +707,66 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, points: PackedVector2
 		var p2 := points[indices[i + 2]]
 		_add_uv_triangle(roofs, Vector3(p0.x, height + 0.035, p0.y),
 			Vector3(p1.x, height + 0.035, p1.y), Vector3(p2.x, height + 0.035, p2.y))
+
+
+func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
+		height: float, building_kind: String, osm_id: int, normal: Vector3) -> void:
+	if building_kind in ["garage", "shed", "roof", "carport", "warehouse", "industrial"]:
+		return
+	var edge := b - a
+	var edge_length := edge.length()
+	if edge_length < 4.2 or height < 2.8:
+		return
+	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
+	var floors := clampi(int(ceil(height / 3.1)), 1, 8)
+	var window_count := clampi(int(floor(edge_length / 5.2)), 1, 5)
+	var spacing := edge_length / float(window_count)
+	var window_width := clampf(spacing * 0.34, 0.65, 1.25)
+	var window_height := 0.95 if floors == 1 else 1.15
+	var glass := Color(0.16, 0.25, 0.31) if abs(osm_id) % 3 == 0 else Color(0.22, 0.31, 0.36)
+	for floor_index in range(floors):
+		var center_y := 1.15 + float(floor_index) * 3.05
+		if center_y + window_height * 0.5 > height - 0.25:
+			continue
+		for window_index in range(window_count):
+			var center_distance := (float(window_index) + 0.5) * spacing
+			var center := Vector3(a.x, 0.0, a.y) + tangent * center_distance + Vector3.UP * center_y
+			var half_width := window_width * 0.5
+			var half_height := window_height * 0.5
+			surface.set_color(glass)
+			var offset := normal * 0.035
+			_add_quad(surface,
+				center - tangent * half_width - Vector3.UP * half_height + offset,
+				center + tangent * half_width - Vector3.UP * half_height + offset,
+				center + tangent * half_width + Vector3.UP * half_height + offset,
+				center - tangent * half_width + Vector3.UP * half_height + offset)
+			# Appui discret sous la fenêtre, légèrement avancé sur la façade.
+			surface.set_color(Color(0.72, 0.70, 0.64))
+			var sill_center := center - Vector3.UP * (half_height + 0.07)
+			var sill_offset := normal * 0.045
+			_add_quad(surface,
+				sill_center - tangent * (half_width + 0.04) + sill_offset,
+				sill_center + tangent * (half_width + 0.04) + sill_offset,
+				sill_center + tangent * (half_width + 0.04) + Vector3.UP * 0.08 + sill_offset,
+				sill_center - tangent * (half_width + 0.04) + Vector3.UP * 0.08 + sill_offset)
+
+
+func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3) -> void:
+	var edge := b - a
+	var edge_length := edge.length()
+	if edge_length < 2.8:
+		return
+	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
+	var center := Vector3(a.x, 1.05, a.y) + tangent * (edge_length * 0.5)
+	var half_width := 0.46
+	var half_height := 1.05
+	surface.set_color(Color(0.27, 0.20, 0.15))
+	var offset := normal * 0.05
+	_add_quad(surface,
+		center - tangent * half_width - Vector3.UP * half_height + offset,
+		center + tangent * half_width - Vector3.UP * half_height + offset,
+		center + tangent * half_width + Vector3.UP * half_height + offset,
+		center - tangent * half_width + Vector3.UP * half_height + offset)
 
 
 func _add_uv_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
