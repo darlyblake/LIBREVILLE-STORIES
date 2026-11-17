@@ -19,6 +19,7 @@ var _building_count := 0
 var _poi_count := 0
 var _environment_count := 0
 var _neighbourhood_count := 0
+var _locality_count := 0
 var _environment_material: StandardMaterial3D
 var _road_labels := 0
 var _road_material: StandardMaterial3D
@@ -31,6 +32,7 @@ func _ready() -> void:
 	_environment_material.vertex_color_use_as_albedo = true
 	_load_environment()
 	_load_neighbourhoods()
+	_load_localities()
 	_building_material = _make_material(Color(0.76, 0.68, 0.56))
 	# Les couleurs attribuées aux bâtiments par type/OSM ID doivent être visibles.
 	_building_material.vertex_color_use_as_albedo = true
@@ -334,6 +336,51 @@ func _load_buildings() -> void:
 		_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
 
 
+
+func _load_localities() -> void:
+	var data := _read_geojson("res://data/osm/localities.geojson")
+	if data.is_empty():
+		push_warning("localities.geojson absent : les noms de quartiers/localités ne seront pas affichés.")
+		return
+	var features: Array = data.get("features", []).duplicate()
+	features.sort_custom(Callable(self, "_compare_locality_features"))
+	for feature in features:
+		var geometry: Dictionary = feature.get("geometry", {})
+		if str(geometry.get("type", "")) != "Point":
+			continue
+		var props: Dictionary = feature.get("properties", {})
+		var label_text := str(props.get("name", "")).strip_edges()
+		var coordinates: Array = geometry.get("coordinates", [])
+		if label_text.is_empty() or coordinates.size() < 2:
+			continue
+		_add_map_label(label_text, _geo_to_world(coordinates) + Vector3.UP * 5.5, Color(1.0, 0.84, 0.48), 900.0)
+		_locality_count += 1
+	print("LIBREVILLE STORIES | noms de quartiers/localités OSM : %d" % _locality_count)
+
+
+func _compare_locality_features(a: Dictionary, b: Dictionary) -> bool:
+	var props_a: Dictionary = a.get("properties", {})
+	var props_b: Dictionary = b.get("properties", {})
+	var priority_a := _locality_priority(str(props_a.get("place", "")))
+	var priority_b := _locality_priority(str(props_b.get("place", "")))
+	if priority_a == priority_b:
+		return str(props_a.get("name", "")) < str(props_b.get("name", ""))
+	return priority_a < priority_b
+
+
+func _locality_priority(kind: String) -> int:
+	match kind:
+		"city", "town":
+			return 0
+		"suburb", "district":
+			return 1
+		"neighbourhood", "quarter":
+			return 2
+		"village", "hamlet", "locality":
+			return 3
+		_:
+			return 4
+
 func _load_pois() -> void:
 	var data := _read_geojson("res://data/osm/pois.geojson")
 	if data.is_empty():
@@ -349,6 +396,8 @@ func _load_pois() -> void:
 			continue
 		var props: Dictionary = feature.get("properties", {})
 		var place_name := str(props.get("name", "")).strip_edges()
+		if str(props.get("place", "")) in ["city", "town", "suburb", "neighbourhood", "quarter", "district", "village", "hamlet", "locality"]:
+			continue # Les localités sont affichées depuis localities.geojson.
 		if place_name.is_empty():
 			continue
 		var coordinates: Array = geometry.get("coordinates", [])
