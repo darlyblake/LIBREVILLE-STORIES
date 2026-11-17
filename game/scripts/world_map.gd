@@ -688,7 +688,7 @@ func _load_localities() -> void:
 			continue
 		var world_position := _geo_to_world(coordinates)
 		_locality_points.append({"name": label_text, "position": Vector2(world_position.x, world_position.z)})
-		_add_map_label(label_text, world_position + Vector3.UP * 2.8, Color(1.0, 0.84, 0.48), 900.0)
+		_add_map_label(label_text, world_position + Vector3.UP * 1.35, Color(1.0, 0.84, 0.48), 600.0)
 		_locality_count += 1
 	print("LIBREVILLE STORIES | noms de quartiers/localités OSM : %d" % _locality_count)
 
@@ -778,10 +778,10 @@ func _add_map_label(label_text: String, world_position: Vector3, label_color: Co
 	label.text = label_text
 	label.position = world_position
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.font_size = 24
-	label.pixel_size = 0.008
+	label.font_size = 18
+	label.pixel_size = 0.007
 	label.modulate = label_color
-	label.outline_size = 5
+	label.outline_size = 4
 	label.outline_modulate = Color(0.08, 0.10, 0.12, 0.95)
 	label.visibility_range_end = max_distance
 	label.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
