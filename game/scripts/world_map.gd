@@ -480,7 +480,7 @@ func _load_roads() -> void:
 					break
 			if not label_coords.is_empty():
 				var midpoint: Array = label_coords[int(label_coords.size() / 2)]
-				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 1.25, Color(0.92, 0.95, 1.0), 280.0)
+				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 0.55, Color(0.92, 0.95, 1.0), 280.0)
 				_road_labels += 1
 		var road_kind := str(props.get("highway", "residential"))
 		var width := _road_width(road_kind, props)
@@ -747,7 +747,7 @@ func _load_localities() -> void:
 			continue
 		var world_position := _geo_to_world(coordinates)
 		_locality_points.append({"name": label_text, "position": Vector2(world_position.x, world_position.z)})
-		_add_map_label(label_text, world_position + Vector3.UP * 1.35, Color(1.0, 0.84, 0.48), 600.0)
+		_add_map_label(label_text, world_position + Vector3.UP * 0.65, Color(1.0, 0.84, 0.48), 600.0)
 		_locality_count += 1
 	print("LIBREVILLE STORIES | noms de quartiers/localités OSM : %d" % _locality_count)
 
@@ -800,7 +800,7 @@ func _load_pois() -> void:
 		var kind := str(props.get("place", ""))
 		if kind.is_empty():
 			kind = str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("building", "place"))))))
-		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 1.15, _poi_color(kind), 500.0)
+		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 0.55, _poi_color(kind), 500.0)
 		_poi_count += 1
 
 
