@@ -33,7 +33,7 @@ func _register_gamepad_inputs() -> void:
 	print("LIBREVILLE STORIES | manettes détectées : %d" % Input.get_connected_joypads().size())
 
 
-func _add_joy_axis(action: StringName, axis: JoyAxis, direction: float) -> void:
+func _add_joy_axis(action: StringName, axis: int, direction: float) -> void:
 	var event := InputEventJoypadMotion.new()
 	event.axis = axis
 	event.axis_value = direction
@@ -43,7 +43,7 @@ func _add_joy_axis(action: StringName, axis: JoyAxis, direction: float) -> void:
 		InputMap.action_add_event(action, event)
 
 
-func _add_joy_button(action: StringName, button: JoyButton) -> void:
+func _add_joy_button(action: StringName, button: int) -> void:
 	var event := InputEventJoypadButton.new()
 	event.button_index = button
 	if not InputMap.has_action(action):
