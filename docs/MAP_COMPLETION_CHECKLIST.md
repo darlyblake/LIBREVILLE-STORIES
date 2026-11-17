@@ -124,9 +124,9 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 ### Modélisation et eau
 - [x] Identifier le défaut majeur de la première eau : les surfaces étaient sous le plan de sol mondial (y négatif) et donc masquées.
 - [x] Remplacer les blocs d'eau opaques/sous le sol par des surfaces de mer dédiées, légèrement au-dessus du plan de sol, avec shader animé léger (variations de houle et reflets stylisés).
-- [ ] Vérifier en jeu que l'eau couvre bien le côté mer sans recouvrir la promenade, les kiosques ni les terrains.
-- [ ] Corriger la limite terre/mer avec une géométrie côtière continue et une digue/enrochement précisément alignés.
-- [ ] Empêcher le joueur de marcher sur le fond mondial sous l'eau ; définir collisions et limites de nage/chute.
+- [x] Ajouter les nappes d'eau dédiées au-dessus du plan mondial, séparées de la promenade (première couverture rectangulaire à contrôler visuellement).
+- [ ] Corriger la limite terre/mer avec une géométrie côtière continue et une digue/enrochement précisément alignés ; les nappes actuelles ne suivent pas encore un relevé géoréférencé.
+- [x] Ajouter des collisions physiques aux segments d'enrochement pour bloquer l'accès direct à la mer depuis la promenade ; vérifier en jeu les raccords entre segments et les possibilités de saut.
 - [ ] Remplacer les kiosques génériques par les modèles correspondant aux références (bois, ouvertures, auvents, enseignes, mobilier).
 - [ ] Remodéliser le pavillon de concert à coque courbe et sa place, au lieu du volume rectangulaire provisoire.
 - [ ] Modéliser la passerelle piétonne en bois/métal avec tablier, poutres, garde-corps et appuis ; vérifier ses deux raccordements.
@@ -134,7 +134,7 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - [ ] Ajouter les bâtiments et chantiers de la zone avec leurs états et hauteurs vérifiés.
 
 ### Validation de la zone
-- [ ] Ouvrir la version main dans Godot 4.3 et vérifier les erreurs de parsing/shader.
+- [ ] Ouvrir la version main dans Godot 4.3 et vérifier les erreurs de parsing/shader, notamment après l'ajout des collisions côtières.
 - [ ] Inspecter l'eau et la promenade depuis plusieurs points de vue, à pied et depuis les hauteurs.
 - [ ] Contrôler les collisions, les raccords de la passerelle et l'accès aux zones commerciales.
 - [ ] Mesurer FPS et mémoire sur le PC cible ; aucun chiffre de performance n'est validé pour l'instant.
@@ -148,3 +148,10 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - YouTube, « Promenade sur la Baie des Rois - Libreville (Gabon) », 21 décembre 2024 : vue aérienne du site.
 - YouTube, « Libreville : La Baie des Rois en plein chantier », 27 septembre 2025 : visite filmée du chantier.
 - Les photos et vidéos servent de références de modélisation ; elles ne sont pas automatiquement autorisées comme textures du jeu. Les matériaux du jeu doivent être recréés ou provenir d'assets dont la licence est vérifiée.
+
+
+### Avancement technique — première passe de sécurisation de la côte (17/11/2026)
+- [x] Les surfaces d'eau sont maintenues au-dessus du plan de sol mondial pour éviter leur masquage.
+- [x] Les enrochements côtiers reçoivent désormais des collisions physiques alignées sur leur géométrie visible ; ils forment une première barrière entre la promenade et l'eau.
+- [ ] La côte reste une approximation par segments et les nappes d'eau restent rectangulaires : le tracé réel devra être géoréférencé avant de déclarer la rive fidèle au site.
+- [ ] Aucun lancement Godot 4.3 ni test de déplacement du joueur n'a été exécuté dans cet environnement ; validation utilisateur nécessaire.
