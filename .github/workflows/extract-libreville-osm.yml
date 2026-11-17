@@ -11,16 +11,20 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: libreville-osm-extraction
+  cancel-in-progress: true
+
 jobs:
   extract:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
 
-      - name: Extract roads and building footprints
-        run: python3 tools/map-generator/extract_libreville.py
+      - name: Extract roads and building footprints by small tiles
+        run: python3 -u tools/map-generator/extract_libreville.py --grid 3 --timeout 90
 
       - name: Upload GeoJSON and extraction report
         uses: actions/upload-artifact@v4
