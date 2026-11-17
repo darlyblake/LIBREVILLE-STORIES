@@ -126,7 +126,7 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - [x] Remplacer les blocs d'eau opaques/sous le sol par des surfaces de mer dédiées, légèrement au-dessus du plan de sol, avec shader animé léger (variations de houle et reflets stylisés).
 - [x] Ajouter les nappes d'eau dédiées au-dessus du plan mondial, séparées de la promenade (première couverture rectangulaire à contrôler visuellement).
 - [ ] Corriger la limite terre/mer avec une géométrie côtière continue et une digue/enrochement précisément alignés ; les nappes actuelles ne suivent pas encore un relevé géoréférencé.
-- [x] Ajouter des collisions physiques aux segments d'enrochement pour bloquer l'accès direct à la mer depuis la promenade ; vérifier en jeu les raccords entre segments et les possibilités de saut.
+- [x] Ajouter une barrière de collision continue par segments chevauchants, dimensionnée au-dessus de la hauteur de saut du personnage ; les essais en jeu restent à effectuer.
 - [ ] Remplacer les kiosques génériques par les modèles correspondant aux références (bois, ouvertures, auvents, enseignes, mobilier).
 - [ ] Remodéliser le pavillon de concert à coque courbe et sa place, au lieu du volume rectangulaire provisoire.
 - [ ] Modéliser la passerelle piétonne en bois/métal avec tablier, poutres, garde-corps et appuis ; vérifier ses deux raccordements.
@@ -155,3 +155,18 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - [x] Les enrochements côtiers reçoivent désormais des collisions physiques alignées sur leur géométrie visible ; ils forment une première barrière entre la promenade et l'eau.
 - [ ] La côte reste une approximation par segments et les nappes d'eau restent rectangulaires : le tracé réel devra être géoréférencé avant de déclarer la rive fidèle au site.
 - [ ] Aucun lancement Godot 4.3 ni test de déplacement du joueur n'a été exécuté dans cet environnement ; validation utilisateur nécessaire.
+
+
+### Consolidation de la phase 1 — 17/11/2026
+- [x] La barrière côtière est passée à 24 segments chevauchants sur 230 m afin de réduire les interstices entre collisions.
+- [x] La collision invisible est plus haute que la hauteur de saut théorique du joueur (vitesse de saut 5,2 m/s ; gravité projet à confirmer en exécution).
+- [ ] La géométrie actuelle reste une approximation locale ; les données OSM de littoral disponibles autour du secteur sont fragmentées en plusieurs ways et ne forment pas à elles seules un polygone de mer fiable. Ne pas les assembler arbitrairement.
+- [ ] Validation finale dans Godot 4.3 indispensable : vérifier le rendu, les raccords, le franchissement aux extrémités et l'absence d'accès au sol sous-marin.
+- [ ] Mesurer le coût GPU/CPU sur la configuration cible avant d'ajouter des effets d'eau plus coûteux.
+
+### Références consultées pour la zone
+- OpenStreetMap / données locales data/osm/environment.geojson : segments de coastline présents autour de 9.432–9.438°E et 0.397–0.405°N, mais géométries fragmentées ; elles nécessitent un contrôle cartographique avant assemblage.
+- DGMP Gabon, marché de conception et réalisation de la promenade du front de mer de la zone 1 : https://lejmp.com/marches_approuves/marche-14050/
+- Land'Act, fiche projet Baie des Rois (40 hectares, marina, corniche botanique, espaces de vie) : https://land-act.fr/projets/la-baie-des-rois/
+- VOA Afrique, ouverture partielle de la promenade et superficie livrée en 2022 : https://www.voaafrique.com/a/gabon-loisirs-la-promenade-de-la-baie-des-rois-enfin-ouverte-aux-librevillois/6710716.html
+- GabonActu, distinction zones Nord, Centre (Port-Môle) et Sud et passerelle Nord-Centre : https://gabonactu.com/blog/2023/08/04/baie-des-rois-la-promenade-centre-bientot-ouverte-au-public/
