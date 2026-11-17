@@ -117,10 +117,17 @@ jobs:
               if kind in {"LineString", "MultiLineString"}:
                   lines = [coords] if kind == "LineString" else coords
                   assert all(len(line) >= 2 for line in lines)
-              else:
+              elif kind in {"Polygon", "MultiPolygon"}:
                   polygons = [coords] if kind == "Polygon" else coords
-                  for polygon in polygons:
-                      assert polygon and all(len(ring) >= 4 and ring[0] == ring[-1] for ring in polygon)
+                  assert isinstance(polygons, list) and polygons, f"empty polygon geometry: {feature.get('id')}"
+                  for polygon_index, polygon in enumerate(polygons):
+                      assert isinstance(polygon, list) and polygon, f"invalid polygon ring collection: {feature.get('id')}"
+                      for ring_index, ring in enumerate(polygon):
+                          assert isinstance(ring, list) and len(ring) >= 4, f"invalid ring: {feature.get('id')} polygon {polygon_index} ring {ring_index}"
+                          assert all(isinstance(point, list) and len(point) >= 2 for point in ring), f"invalid coordinate pair: {feature.get('id')} polygon {polygon_index} ring {ring_index}"
+                          assert ring[0] == ring[-1], f"open polygon ring: {feature.get('id')} polygon {polygon_index} ring {ring_index}"
+              else:
+                  raise AssertionError(f"polygon validation not applicable to {kind}")
 
           for feature in roads["features"]:
               check_geometry(feature, {"LineString", "MultiLineString"})
