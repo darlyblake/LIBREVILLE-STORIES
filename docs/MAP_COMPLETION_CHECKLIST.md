@@ -11,7 +11,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] HUD de position du joueur : coordonnées et localité OSM la plus proche.
 - [x] Extraction complète des 16 secteurs vérifiée et publiée sur `main` (workflow n°44149287481, 17/11/2026).
 - [x] Comptes vérifiés : 4 503 routes, 49 359 bâtiments, 2 595 POI, 256 éléments environnementaux et 73 localités nommées ; 0 polygone de quartier fourni par OSM dans cette extraction.
-- [x] Réduire la hauteur des étiquettes de localités à 1,35 m, diminuer la taille générale des libellés 3D et réduire leur portée d'affichage ; inspection visuelle en jeu encore requise.
+- [x] Abaisser les étiquettes 3D près du sol : localités à 0,65 m, noms de routes et POI à 0,55 m ; inspection visuelle en jeu encore requise.
 - [ ] Vérifier visuellement les noms et leur placement dans la carte en jeu.
 - [ ] Compléter les limites des quartiers avec une source administrative officielle ou vérifiable ; ne pas déduire de frontières depuis les points place=*.
 
