@@ -8,89 +8,187 @@
     0.445,
     9.495
   ],
-  "extracted_at_utc": "2026-11-17T13:59:52.449061+00:00",
+  "grid": "4x4",
+  "source_mode": "Overpass API",
+  "tiles": [
+    {
+      "row": 1,
+      "column": 1,
+      "elements": 0,
+      "from_cache": true
+    },
+    {
+      "row": 1,
+      "column": 2,
+      "elements": 0,
+      "from_cache": true
+    },
+    {
+      "row": 1,
+      "column": 3,
+      "elements": 1001,
+      "from_cache": true
+    },
+    {
+      "row": 1,
+      "column": 4,
+      "elements": 1526,
+      "from_cache": true
+    },
+    {
+      "row": 2,
+      "column": 1,
+      "elements": 0,
+      "from_cache": true
+    },
+    {
+      "row": 2,
+      "column": 2,
+      "elements": 1130,
+      "from_cache": true
+    },
+    {
+      "row": 2,
+      "column": 3,
+      "elements": 7579,
+      "from_cache": false
+    },
+    {
+      "row": 2,
+      "column": 4,
+      "elements": 3689,
+      "from_cache": false
+    },
+    {
+      "row": 3,
+      "column": 1,
+      "elements": 10,
+      "from_cache": false
+    },
+    {
+      "row": 3,
+      "column": 2,
+      "elements": 2407,
+      "from_cache": false
+    },
+    {
+      "row": 3,
+      "column": 3,
+      "elements": 6585,
+      "from_cache": false
+    },
+    {
+      "row": 3,
+      "column": 4,
+      "elements": 11474,
+      "from_cache": false
+    },
+    {
+      "row": 4,
+      "column": 1,
+      "elements": 737,
+      "from_cache": false
+    },
+    {
+      "row": 4,
+      "column": 2,
+      "elements": 3790,
+      "from_cache": false
+    },
+    {
+      "row": 4,
+      "column": 3,
+      "elements": 2359,
+      "from_cache": false
+    },
+    {
+      "row": 4,
+      "column": 4,
+      "elements": 12365,
+      "from_cache": false
+    }
+  ],
+  "extracted_at_utc": "2026-11-17T14:58:51.271888+00:00",
   "files": {
     "roads.geojson": {
       "features": 4503,
-      "osm_elements_received": 4503,
       "categories": {
-        "trunk": 67,
-        "service": 1059,
-        "trunk_link": 114,
-        "secondary": 374,
-        "residential": 1914,
         "tertiary": 200,
+        "trunk_link": 114,
         "primary": 145,
+        "residential": 1914,
+        "secondary": 374,
+        "service": 1059,
         "primary_link": 151,
-        "secondary_link": 102,
-        "unclassified": 44,
+        "trunk": 67,
         "tertiary_link": 97,
         "footway": 149,
-        "construction": 27,
+        "unclassified": 44,
         "path": 54,
-        "track": 3,
+        "secondary_link": 102,
+        "construction": 27,
+        "pedestrian": 1,
         "steps": 2,
-        "pedestrian": 1
+        "track": 3
       },
       "size_bytes": 2109453
     },
     "buildings.geojson": {
       "features": 49359,
-      "osm_elements_received": 49359,
       "categories": {
-        "yes": 46408,
-        "gym": 1,
-        "retail": 178,
-        "cathedral": 3,
-        "school": 249,
-        "public": 22,
         "office": 124,
-        "commercial": 79,
-        "mosque": 11,
-        "church": 50,
-        "warehouse": 7,
-        "apartments": 164,
-        "chapel": 1,
         "roof": 85,
+        "yes": 46408,
+        "commercial": 79,
+        "apartments": 164,
+        "church": 50,
+        "supermarket": 17,
         "detached": 37,
+        "hotel": 38,
+        "retail": 178,
         "house": 1433,
-        "residential": 210,
-        "bank": 7,
-        "dormitory": 6,
-        "university": 15,
+        "mosque": 11,
+        "toilets": 17,
+        "school": 249,
+        "warehouse": 7,
         "hospital": 27,
         "construction": 45,
-        "hotel": 38,
+        "industrial": 16,
+        "garage": 7,
+        "residential": 210,
+        "public": 22,
+        "hangar": 3,
+        "cathedral": 3,
         "government": 9,
         "college": 35,
-        "supermarket": 17,
-        "toilets": 17,
-        "industrial": 16,
-        "semidetached_house": 4,
-        "administrative": 1,
-        "temple": 1,
-        "shed": 1,
-        "hangar": 3,
-        "service": 4,
-        "civic": 1,
-        "garage": 7,
-        "terrace": 4,
-        "anne": 1,
-        "wayside_shrine": 1,
-        "allotment_house": 4,
-        "ruins": 16,
         "motel": 1,
+        "grandstand": 1,
+        "toitq": 1,
+        "bank": 7,
+        "temple": 1,
+        "sports_hall": 1,
+        "terrace": 4,
+        "container": 1,
+        "semidetached_house": 4,
+        "service": 4,
+        "chapel": 1,
+        "dormitory": 6,
+        "university": 15,
+        "administrative": 1,
+        "allotment_house": 4,
         "fire_station": 1,
         "boathouse": 1,
         "carport": 1,
-        "grandstand": 1,
-        "sports_hall": 1,
-        "tent": 3,
         "military": 4,
         "clinic": 1,
-        "container": 1,
-        "toitq": 1,
-        "place_of_worship": 1
+        "place_of_worship": 1,
+        "anne": 1,
+        "ruins": 16,
+        "civic": 1,
+        "wayside_shrine": 1,
+        "gym": 1,
+        "tent": 3,
+        "shed": 1
       },
       "size_bytes": 14755243
     }
