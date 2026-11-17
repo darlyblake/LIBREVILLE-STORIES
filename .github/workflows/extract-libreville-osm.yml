@@ -30,10 +30,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: data/osm/.tiles
-          key: ${{ runner.os }}-libreville-osm-v6-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
+          key: ${{ runner.os }}-libreville-osm-v7-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-libreville-osm-v6-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-
-            ${{ runner.os }}-libreville-osm-v6-
+            ${{ runner.os }}-libreville-osm-v7-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-
+            ${{ runner.os }}-libreville-osm-v7-
 
       - name: Install OSM and geometry libraries
         run: python3 -m pip install --disable-pip-version-check osmium shapely
@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: data/osm/.tiles
-          key: ${{ runner.os }}-libreville-osm-v6-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
+          key: ${{ runner.os }}-libreville-osm-v7-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
 
       - name: Validate GeoJSON and extraction coverage
         run: |
@@ -62,6 +62,7 @@ jobs:
           pois = json.loads((base / "pois.geojson").read_text())
           environment = json.loads((base / "environment.geojson").read_text())
           neighbourhoods = json.loads((base / "neighbourhoods.geojson").read_text())
+          localities = json.loads((base / "localities.geojson").read_text())
           report = json.loads((base / "extraction-report.json").read_text())
 
           assert roads.get("type") == "FeatureCollection"
@@ -69,7 +70,10 @@ jobs:
           assert pois.get("type") == "FeatureCollection"
           assert environment.get("type") == "FeatureCollection"
           assert neighbourhoods.get("type") == "FeatureCollection"
+          assert localities.get("type") == "FeatureCollection"
           assert report["files"]["neighbourhoods.geojson"]["features"] == len(neighbourhoods.get("features", []))
+          assert report["files"]["localities.geojson"]["features"] == len(localities.get("features", []))
+          assert len(localities.get("features", [])) > 0, "Aucun nom de localité OSM extrait."
           assert report["files"]["environment.geojson"]["features"] == len(environment.get("features", []))
           assert len(environment.get("features", [])) > 0, "Aucune géométrie naturelle/eau/espace vert extraite."
           assert report["files"]["pois.geojson"]["features"] == len(pois.get("features", []))
@@ -119,6 +123,10 @@ jobs:
           for feature in neighbourhoods["features"]:
               check_geometry(feature, {"Polygon"})
               assert feature.get("properties", {}).get("name"), "Limite locale sans nom"
+          for feature in localities["features"]:
+              check_geometry(feature, {"Point"})
+              props = feature.get("properties", {})
+              assert props.get("name") and props.get("place"), "Localité sans nom ou catégorie"
           for feature in buildings["features"]:
               check_geometry(feature, {"Polygon", "MultiPolygon"})
           print("Secteurs vérifiés :", len(report["tiles"]))
@@ -134,6 +142,7 @@ jobs:
           print("Lieux identifiables vérifiés :", len(pois["features"]))
           print("Géométries environnementales vérifiées :", len(environment["features"]))
           print("Limites locales vérifiées :", len(neighbourhoods["features"]))
+          print("Noms de localités vérifiés :", len(localities["features"]))
           print("Attribution :", report["attribution"])
           PY
 
@@ -143,7 +152,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git -c rebase.autoStash=true rebase origin/main
-          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/pois.geojson data/osm/environment.geojson data/osm/neighbourhoods.geojson data/osm/extraction-report.json
+          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/pois.geojson data/osm/environment.geojson data/osm/neighbourhoods.geojson data/osm/localities.geojson data/osm/extraction-report.json
           if git diff --cached --quiet; then
             echo "Les données cartographiques sont déjà à jour."
           else
@@ -161,6 +170,7 @@ jobs:
             data/osm/pois.geojson
             data/osm/environment.geojson
             data/osm/neighbourhoods.geojson
+            data/osm/localities.geojson
             data/osm/extraction-report.json
           if-no-files-found: error
           retention-days: 30
