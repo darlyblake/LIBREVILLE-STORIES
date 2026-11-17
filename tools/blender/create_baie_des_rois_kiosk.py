@@ -25,7 +25,24 @@ def material(name, color, roughness=0.72, metallic=0.0):
     mat = bpy.data.materials.new(name)
     mat.diffuse_color = (*color, 1.0)
     mat.use_nodes = True
-    bsdf = mat.node_tree.nodes.get("Principled BSDF")
+
+    # Blender 5.x may create a node tree without the default Principled node.
+    # Create the shader and output explicitly instead of assuming they exist.
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    bsdf = next((node for node in nodes if node.type == "BSDF_PRINCIPLED"), None)
+    if bsdf is None:
+        bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+        bsdf.location = (0, 0)
+
+    output = next((node for node in nodes if node.type == "OUTPUT_MATERIAL"), None)
+    if output is None:
+        output = nodes.new("ShaderNodeOutputMaterial")
+        output.location = (300, 0)
+
+    if not output.inputs["Surface"].is_linked:
+        links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+
     bsdf.inputs["Base Color"].default_value = (*color, 1.0)
     bsdf.inputs["Roughness"].default_value = roughness
     bsdf.inputs["Metallic"].default_value = metallic
