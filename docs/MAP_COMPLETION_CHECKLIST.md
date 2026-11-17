@@ -94,3 +94,9 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - Rapport ONU Gabon 2021 : vue aérienne montrant le mélange de bâtiments résidentiels/administratifs, végétation tropicale, grands axes et littoral.
 - Étude sur les typologies d'habitat de l'agglomération : coexistence de villas, immeubles, logements sociaux et habitat spontané ; les styles doivent varier par secteur et non être uniformisés.
 - Ces références guident la direction artistique, mais ne remplacent pas un relevé architectural géolocalisé ni une licence d'utilisation des photographies.
+
+
+### Présentation du terrain et atmosphère
+- [x] Texture procédurale légère de variation herbe/terre sur le plan de sol, générée au démarrage et sans maillage additionnel.
+- [x] Première atmosphère de distance par brouillard doux, éclairage ambiant renforcé et lumière solaire légèrement chaude.
+- [ ] Ajuster visuellement densité du brouillard, répétition de texture et direction des ombres sur la machine cible.
