@@ -99,11 +99,11 @@ def is_point_of_interest(tags):
     """Retient les lieux nommés et catégorisés utiles à l'identification en jeu."""
     keys = ("amenity", "shop", "tourism", "healthcare", "school", "office",
             "public_transport", "leisure", "historic", "emergency", "government",
-            "railway", "aeroway", "place")
+            "railway", "aeroway", "place", "building")
     return bool(tags.get("name")) and any(key in tags for key in keys)
 
 
-def make_poi_collection(nodes):
+def make_poi_collection(nodes, elements):
     features = []
     for node in nodes.values():
         tags = node.get("tags", {})
@@ -194,7 +194,7 @@ def extract_from_geofabrik_pbf(south, west, north, east):
 
         def way(self, way):
             tags = dict(way.tags)
-            if "highway" not in tags and "building" not in tags:
+            if "highway" not in tags and "building" not in tags and not is_point_of_interest(tags):
                 return
             geometry = []
             min_lon = min_lat = float("inf")
@@ -334,7 +334,7 @@ def main():
     }
 
     generated = {}
-    generated["pois.geojson"] = make_poi_collection(all_nodes)
+    generated["pois.geojson"] = make_poi_collection(all_nodes, elements)
     report["files"]["pois.geojson"] = {
         "features": len(generated["pois.geojson"]["features"]),
         "categories": dict(Counter(
