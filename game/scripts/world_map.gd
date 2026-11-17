@@ -80,7 +80,9 @@ func _load_environment() -> void:
 	var surface := _new_surface(_environment_material)
 	var batch_count := 0
 	var batch_index := 0
-	for feature in data.get("features", []):
+	var road_features: Array = data.get("features", []).duplicate()
+	road_features.sort_custom(Callable(self, "_compare_road_features"))
+	for feature in road_features:
 		var geometry: Dictionary = feature.get("geometry", {})
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("environment_kind", ""))
@@ -201,6 +203,34 @@ func _load_roads() -> void:
 			surface = _new_surface(_road_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
+
+func _compare_road_features(a: Dictionary, b: Dictionary) -> bool:
+	var props_a: Dictionary = a.get("properties", {})
+	var props_b: Dictionary = b.get("properties", {})
+	var priority_a := _road_label_priority(props_a)
+	var priority_b := _road_label_priority(props_b)
+	if priority_a == priority_b:
+		return str(props_a.get("name", "")) < str(props_b.get("name", ""))
+	return priority_a < priority_b
+
+
+func _road_label_priority(props: Dictionary) -> int:
+	if str(props.get("name", "")).strip_edges().is_empty():
+		return 99
+	match str(props.get("highway", "")):
+		"motorway", "trunk":
+			return 0
+		"primary":
+			return 1
+		"secondary":
+			return 2
+		"tertiary":
+			return 3
+		"residential", "unclassified":
+			return 4
+		_:
+			return 5
+
 
 func _load_buildings() -> void:
 	var data := _read_geojson("res://data/osm/buildings.geojson")
