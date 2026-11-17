@@ -39,7 +39,8 @@ func _make_material(color: Color, roughness: float) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
 	material.roughness = 0.95 if roughness == 0.0 else roughness
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED\n\tmaterial.vertex_color_use_as_albedo = true
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.vertex_color_use_as_albedo = true
 	return material
 
 func _load_roads() -> void:
