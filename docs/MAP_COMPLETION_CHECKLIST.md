@@ -25,7 +25,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [ ] Inspecter leur rendu en jeu sur la machine cible.
 - [ ] Corriger les objets réellement flottants après inspection de leurs coordonnées et de leur ancrage (les étiquettes 3D ont été abaissées ; les objets géométriques restants doivent être diagnostiqués).
 - [x] Première variété de matériaux procéduraux : tuiles, tôle nervurée et dalle béton, sélectionnés par typologie OSM (approximation visuelle).
-- [x] Première toiture géométrique à deux pans sur les petites maisons OSM aux empreintes quadrilatérales convexes et allongées ; les bâtiments complexes conservent un toit plat.
+- [x] Première toiture géométrique à deux pans sur les empreintes quadrilatérales compatibles ; `roof:shape=gabled` est prioritaire, `flat` désactive la pente, et les formes non prises en charge (hipped, pyramidal, skillion, dôme…) restent volontairement en toiture plate provisoire.
 - [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
 - [x] Première passe de balcons stylisés sur certains immeubles à plusieurs niveaux, regroupés dans le mesh des façades.
 - [ ] Ajouter auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
