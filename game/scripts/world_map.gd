@@ -742,7 +742,7 @@ func _load_buildings() -> void:
 			if indices.is_empty():
 				continue
 			surface.set_color(_building_color(building_kind, osm_id, props))
-			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props)
+			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props, polygon.size() > 1)
 			added = true
 		if added:
 			_building_count += 1
@@ -1158,7 +1158,7 @@ func _add_uv_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: V
 
 func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		points: PackedVector2Array, indices: PackedInt32Array, height: float,
-		roof_tint: Color, building_kind: String, osm_id: int, props: Dictionary = {}) -> void:
+		roof_tint: Color, building_kind: String, osm_id: int, props: Dictionary = {}, has_inner_rings: bool = false) -> void:
 	var longest_edge_index := 0
 	var longest_edge_length := 0.0
 	var signed_area := 0.0
@@ -1189,6 +1189,10 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
 		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_door(details, door_a, door_b, door_normal)
+	# Les anneaux intérieurs OSM signalent des cours ou vides. La triangulation
+	# actuelle ne sait pas les soustraire : laisser le toit ouvert évite de les boucher.
+	if has_inner_rings:
+		return
 	roofs.set_color(roof_tint)
 	var roof_style := _roof_style(building_kind, osm_id, props)
 	var pitched_roof := false
