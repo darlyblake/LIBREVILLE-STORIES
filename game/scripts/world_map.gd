@@ -356,16 +356,16 @@ func _road_sidewalk_mode(props: Dictionary, road_kind: String) -> String:
 	if general in ["no", "none", "separate"]:
 		return "none"
 	if left == "no":
-		return "right" if right in ["yes", "both", "separate"] else "none"
+		return "right" if right in ["yes", "both"] else "none"
 	if right == "no":
-		return "left" if left in ["yes", "both", "separate"] else "none"
-	if left in ["yes", "both", "separate"] and right in ["yes", "both", "separate"]:
+		return "left" if left in ["yes", "both"] else "none"
+	if left in ["yes", "both"] and right in ["yes", "both"]:
 		return "both"
-	if left in ["yes", "both", "separate"]:
+	if left in ["yes", "both"]:
 		return "left"
-	if right in ["yes", "both", "separate"]:
+	if right in ["yes", "both"]:
 		return "right"
-	if general in ["yes", "both", "separate"]:
+	if general in ["yes", "both"]:
 		return "both"
 	# Sur les axes structurants, trottoirs de représentation visuelle faute de tag explicite.
 	if road_kind in ["trunk", "primary", "secondary"]:
