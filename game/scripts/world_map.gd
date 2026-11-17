@@ -989,6 +989,21 @@ func _building_color(kind: String, osm_id: int, props: Dictionary = {}) -> Color
 		selected = Color(0.72, 0.72, 0.67) if abs(osm_id) % 2 == 0 else Color(0.78, 0.75, 0.67)
 	return selected
 
+func _should_use_pitched_roof(kind: String, props: Dictionary, point_count: int) -> bool:
+	if point_count != 4:
+		return false
+	# roof:shape explicite prime sur la règle heuristique par type de bâtiment.
+	var shape := str(props.get("roof:shape", "")).strip_edges().to_lower()
+	if shape in ["flat", "none"]:
+		return false
+	if shape == "gabled":
+		return true
+	# Ces formes nécessitent une géométrie dédiée ; ne pas les dessiner à tort en deux pans.
+	if shape in ["hipped", "pyramidal", "skillion", "shed", "round", "dome", "onion"]:
+		return false
+	return kind in ["house", "residential", "detached", "semidetached_house", "bungalow"]
+
+
 func _roof_style(kind: String, osm_id: int, props: Dictionary = {}) -> int:
 	# Les tags de matériau OSM priment sur la règle visuelle de secours.
 	var material_tag := str(props.get("roof:material", "")).to_lower()
@@ -1116,7 +1131,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 	roofs.set_color(roof_tint)
 	var roof_style := _roof_style(building_kind, osm_id, props)
 	var pitched_roof := false
-	if points.size() == 4 and building_kind in ["house", "residential", "detached", "semidetached_house", "bungalow"]:
+	if _should_use_pitched_roof(building_kind, props, points.size()):
 		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style)
 	if not pitched_roof:
 		for i in range(0, indices.size(), 3):
