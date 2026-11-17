@@ -260,8 +260,8 @@ def make_poi_collection(nodes, elements, bounds):
     return {"type": "FeatureCollection", "name": "libreville_pois", "features": features}
 
 
-def make_neighbourhood_collection(elements, bounds):
-    """Extrait uniquement les polygones OSM nommés décrivant des localités/frontières."""
+def make_neighbourhood_collection(elements, bounds, relations=None):
+    """Assemble les ways fermés et relations multipolygones OSM nommés."""
     from shapely.geometry import Polygon, box
 
     south, west, north, east = bounds
@@ -315,6 +315,73 @@ def make_neighbourhood_collection(elements, bounds):
                     "coordinates": [[list(point) for point in part.exterior.coords]],
                 },
             })
+
+    # Les frontières administratives sont souvent des relations multipolygones.
+    # Reconstituer les anneaux outer/inner à partir des géométries des membres.
+    if relations:
+        from shapely.geometry import LineString
+        from shapely.ops import polygonize, unary_union
+
+        for relation in relations:
+            tags = relation.get("tags", {})
+            place = str(tags.get("place", "")).lower()
+            boundary = str(tags.get("boundary", "")).lower()
+            name = str(tags.get("name", "")).strip()
+            if not name or (place not in accepted_places and boundary != "administrative"):
+                continue
+            outer_lines, inner_lines = [], []
+            for member in relation.get("members") or []:
+                if member.get("type") != "way":
+                    continue
+                coords = [
+                    (float(point["lon"]), float(point["lat"]))
+                    for point in (member.get("geometry") or [])
+                    if "lon" in point and "lat" in point
+                    and math.isfinite(float(point["lon"])) and math.isfinite(float(point["lat"]))
+                ]
+                if len(coords) < 2:
+                    continue
+                try:
+                    line = LineString(coords)
+                except Exception:
+                    continue
+                if str(member.get("role", "outer")).lower() == "inner":
+                    inner_lines.append(line)
+                else:
+                    outer_lines.append(line)
+            if not outer_lines:
+                continue
+            try:
+                outer_polygons = list(polygonize(unary_union(outer_lines)))
+                if not outer_polygons:
+                    continue
+                shape = unary_union(outer_polygons)
+                if inner_lines:
+                    inner_polygons = list(polygonize(unary_union(inner_lines)))
+                    if inner_polygons:
+                        shape = shape.difference(unary_union(inner_polygons))
+                parts = list(_geometry_parts(shape.intersection(clip), {"Polygon"}))
+            except Exception as exc:
+                print("Relation locale ignorée relation/" + str(relation.get("id")) + ": " + str(exc), flush=True)
+                continue
+            for index, part in enumerate(parts):
+                if part.is_empty or part.area <= 0:
+                    continue
+                rings = [[list(point) for point in part.exterior.coords]]
+                rings.extend([[list(point) for point in ring.coords] for ring in part.interiors])
+                suffix = "" if len(parts) == 1 else "#part/" + str(index + 1)
+                features.append({
+                    "type": "Feature",
+                    "id": "relation/" + str(relation["id"]) + suffix,
+                    "properties": {
+                        "osm_id": int(relation["id"]), "osm_type": "relation",
+                        "name": name, "place": place, "boundary": boundary,
+                        "admin_level": tags.get("admin_level", ""),
+                        "source": "OpenStreetMap multipolygon relation",
+                    },
+                    "geometry": {"type": "Polygon", "coordinates": rings},
+                })
+
     return {"type": "FeatureCollection", "name": "libreville_neighbourhoods", "features": features}
 
 
@@ -447,6 +514,7 @@ def main():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     CACHE.mkdir(parents=True, exist_ok=True)
     all_elements = {}
+    all_relations = {}
     all_nodes = {}
     tile_report = []
     tiles = list(split_bbox(args.south, args.west, args.north, args.east, args.grid))
@@ -454,7 +522,7 @@ def main():
     used_geofabrik_fallback = False
     try:
         for index, (row, col, south, west, north, east) in enumerate(tiles, 1):
-            cache_file = CACHE / f"grid{args.grid}_v5_tile_{row}_{col}.json"
+            cache_file = CACHE / f"grid{args.grid}_v6_tile_{row}_{col}.json"
             data = load_cached_tile(cache_file)
             from_cache = data is not None
             if data is not None:
@@ -477,7 +545,9 @@ def main():
                     f'way["tourism"]({bbox});way["healthcare"]({bbox});'
                     f'way["leisure"]({bbox});way["historic"]({bbox});'
                     f'way["public_transport"]({bbox});way["office"]({bbox});'
-                    f'way["emergency"]({bbox});way["place"]({bbox});way["railway"]({bbox});way["aeroway"]({bbox});way["government"]({bbox});way["man_made"]({bbox});way["natural"]({bbox});way["boundary"]({bbox});way["sport"]({bbox});way["waterway"]({bbox});way["landuse"]({bbox}););'
+                    f'way["emergency"]({bbox});way["place"]({bbox});way["railway"]({bbox});way["aeroway"]({bbox});way["government"]({bbox});way["man_made"]({bbox});way["natural"]({bbox});way["boundary"]({bbox});way["sport"]({bbox});way["waterway"]({bbox});way["landuse"]({bbox});'
+                    f'relation["boundary"="administrative"]({bbox});'
+                    f'relation["place"~"^(suburb|neighbourhood|quarter|district|borough|city|town|village)$"]({bbox}););'
                     "out body geom;"
                 )
                 print(f"[{index}/{len(tiles)}] Extraction secteur {row + 1}-{col + 1}…", flush=True)
@@ -494,6 +564,8 @@ def main():
                     all_elements[element["id"]] = element
                 elif element.get("type") == "node":
                     all_nodes[element["id"]] = element
+                elif element.get("type") == "relation":
+                    all_relations[element["id"]] = element
             tile_report.append({
                 "row": row + 1,
                 "column": col + 1,
@@ -509,6 +581,7 @@ def main():
             args.south, args.west, args.north, args.east
         )
         all_elements = {element["id"]: element for element in elements_from_pbf}
+        all_relations = {}  # Le repli Geofabrik ne reconstruit pas encore les relations.
         all_nodes = nodes_from_pbf
         tile_report = []
         for row, col, tile_south, tile_west, tile_north, tile_east in tiles:
@@ -541,10 +614,10 @@ def main():
 
     generated = {}
     generated["environment.geojson"] = make_environment_collection(elements, (args.south, args.west, args.north, args.east))
-    generated["neighbourhoods.geojson"] = make_neighbourhood_collection(elements, (args.south, args.west, args.north, args.east))
+    generated["neighbourhoods.geojson"] = make_neighbourhood_collection(elements, (args.south, args.west, args.north, args.east), list(all_relations.values()))
     report["files"]["neighbourhoods.geojson"] = {
         "features": len(generated["neighbourhoods.geojson"]["features"]),
-        "note": "Polygones nommés issus de ways OSM fermés uniquement; les relations multipolygones ne sont pas encore assemblées.",
+        "note": "Polygones nommés issus de ways fermés et relations multipolygones Overpass; le repli Geofabrik ne reconstruit pas encore les relations.",
     }
     report["files"]["environment.geojson"] = {
         "features": len(generated["environment.geojson"]["features"]),

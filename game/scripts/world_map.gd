@@ -163,19 +163,22 @@ func _load_neighbourhoods() -> void:
 		if str(geometry.get("type", "")) != "Polygon":
 			continue
 		var rings: Array = geometry.get("coordinates", [])
-		if rings.is_empty() or rings[0].size() < 4:
+		if rings.is_empty():
 			continue
-		var coords: Array = rings[0]
 		var added := false
-		for index in range(coords.size() - 1):
-			var a := _geo_to_world(coords[index])
-			var b := _geo_to_world(coords[index + 1])
-			var direction := Vector2(b.x - a.x, b.z - a.z)
-			if direction.length_squared() < 0.01:
+		# Tracer aussi les anneaux intérieurs des multipolygones (îlots/exclusions).
+		for coords in rings:
+			if coords.size() < 4:
 				continue
-			var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * 1.8
-			_add_quad(surface, a + side + Vector3.UP * 0.045, a - side + Vector3.UP * 0.045, b - side + Vector3.UP * 0.045, b + side + Vector3.UP * 0.045)
-			added = true
+			for index in range(coords.size() - 1):
+				var a := _geo_to_world(coords[index])
+				var b := _geo_to_world(coords[index + 1])
+				var direction := Vector2(b.x - a.x, b.z - a.z)
+				if direction.length_squared() < 0.01:
+					continue
+				var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * 1.8
+				_add_quad(surface, a + side + Vector3.UP * 0.045, a - side + Vector3.UP * 0.045, b - side + Vector3.UP * 0.045, b + side + Vector3.UP * 0.045)
+				added = true
 		if added:
 			_neighbourhood_count += 1
 			batch_count += 1
