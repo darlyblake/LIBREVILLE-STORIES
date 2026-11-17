@@ -91,10 +91,16 @@ jobs:
           south, west, north, east = report["bbox_south_west_north_east"]
 
           def walk_points(value):
-              if isinstance(value, list) and len(value) >= 2 and all(isinstance(v, (int, float)) for v in value[:2]):
+              # GeoJSON imbrique des listes jusqu'aux paires [longitude, latitude].
+              # Ne jamais recursiver dans un scalaire : certaines geometries mal formees
+              # peuvent contenir une liste de longueur 1.
+              if not isinstance(value, list):
+                  return
+              if len(value) >= 2 and all(isinstance(v, (int, float)) and math.isfinite(v) for v in value[:2]):
                   yield value
-              elif isinstance(value, list):
-                  for child in value:
+                  return
+              for child in value:
+                  if isinstance(child, list):
                       yield from walk_points(child)
 
           def check_geometry(feature, expected):
