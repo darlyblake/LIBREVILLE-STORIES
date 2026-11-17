@@ -11,7 +11,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] HUD de position du joueur : coordonnées et localité OSM la plus proche.
 - [x] Extraction complète des 16 secteurs vérifiée et publiée sur `main` (workflow n°44149287481, 17/11/2026).
 - [x] Comptes vérifiés : 4 503 routes, 49 359 bâtiments, 2 595 POI, 256 éléments environnementaux et 73 localités nommées ; 0 polygone de quartier fourni par OSM dans cette extraction.
-- [x] Réduire la hauteur et la taille des étiquettes 3D pour limiter l'effet d'objets flottants ; inspection visuelle en jeu encore requise.
+- [x] Réduire la hauteur des étiquettes de localités à 1,35 m, diminuer la taille générale des libellés 3D et réduire leur portée d'affichage ; inspection visuelle en jeu encore requise.
 - [ ] Vérifier visuellement les noms et leur placement dans la carte en jeu.
 - [ ] Compléter les limites des quartiers avec une source administrative officielle ou vérifiable ; ne pas déduire de frontières depuis les points place=*.
 
@@ -23,7 +23,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Validation Godot 4.3 du générateur de fenêtres/portes sur `main` (rendu Compatibility réussi).
 - [x] Validation Godot 4.3 après ajout des balcons (PR n°13, rendu Compatibility réussi).
 - [ ] Inspecter leur rendu en jeu sur la machine cible.
-- [ ] Corriger les objets réellement flottants après inspection de leurs coordonnées et de leur ancrage (les étiquettes 3D ont déjà été abaissées, mais les autres cas restent à diagnostiquer).
+- [ ] Corriger les objets réellement flottants après inspection de leurs coordonnées et de leur ancrage (les étiquettes 3D ont été abaissées ; les objets géométriques restants doivent être diagnostiqués).
 - [x] Première variété de matériaux procéduraux : tuiles, tôle nervurée et dalle béton, sélectionnés par typologie OSM (approximation visuelle).
 - [x] Première toiture géométrique à deux pans sur les petites maisons OSM aux empreintes quadrilatérales convexes et allongées ; les bâtiments complexes conservent un toit plat.
 - [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
