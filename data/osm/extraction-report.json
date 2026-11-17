@@ -124,11 +124,11 @@
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     }
   ],
-  "extracted_at_utc": "2026-11-17T16:27:21.299141+00:00",
+  "extracted_at_utc": "2026-11-17T16:37:09.342651+00:00",
   "files": {
     "neighbourhoods.geojson": {
       "features": 0,
-      "note": "Polygones nommés issus de ways OSM fermés uniquement; les relations multipolygones ne sont pas encore assemblées.",
+      "note": "Polygones nommés issus de ways fermés et relations multipolygones Overpass; le repli Geofabrik ne reconstruit pas encore les relations.",
       "size_bytes": 77
     },
     "environment.geojson": {
