@@ -307,7 +307,9 @@ func _load_pois() -> void:
 		var coordinates: Array = geometry.get("coordinates", [])
 		if coordinates.size() < 2:
 			continue
-		var kind := str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("place", props.get("building", "place"))))))
+		var kind := str(props.get("place", ""))
+		if kind.is_empty():
+			kind = str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("building", "place"))))))
 		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 4.0, _poi_color(kind), 500.0)
 		_poi_count += 1
 
