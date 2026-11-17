@@ -502,8 +502,9 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 		var a := TAU * float(i) / float(segments)
 		var b := TAU * float(i + 1) / float(segments)
 		surface.add_vertex(Vector3(center.x, y, center.z))
-		surface.add_vertex(Vector3(center.x + cos(a) * radius, y, center.z + sin(a) * radius))
+		# Inverser l'ordre pour orienter les faces vers le haut (normale +Y).
 		surface.add_vertex(Vector3(center.x + cos(b) * radius, y, center.z + sin(b) * radius))
+		surface.add_vertex(Vector3(center.x + cos(a) * radius, y, center.z + sin(a) * radius))
 
 
 func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float) -> void:
