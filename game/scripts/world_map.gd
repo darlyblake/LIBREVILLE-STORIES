@@ -105,9 +105,9 @@ func _load_environment() -> void:
 				var p0 := points[indices[i]]
 				var p1 := points[indices[i + 1]]
 				var p2 := points[indices[i + 2]]
-				surface.add_vertex(Vector3(p0.x, -0.035, p0.y))
-				surface.add_vertex(Vector3(p1.x, -0.035, p1.y))
-				surface.add_vertex(Vector3(p2.x, -0.035, p2.y))
+				surface.add_vertex(Vector3(p0.x, 0.012, p0.y))
+				surface.add_vertex(Vector3(p1.x, 0.012, p1.y))
+				surface.add_vertex(Vector3(p2.x, 0.012, p2.y))
 			added = true
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
@@ -120,7 +120,7 @@ func _load_environment() -> void:
 				if direction.length_squared() < 0.01:
 					continue
 				var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
-				_add_quad(surface, a + side + Vector3.UP * -0.025, a - side + Vector3.UP * -0.025, b - side + Vector3.UP * -0.025, b + side + Vector3.UP * -0.025)
+				_add_quad(surface, a + side + Vector3.UP * 0.014, a - side + Vector3.UP * -0.025, b - side + Vector3.UP * -0.025, b + side + Vector3.UP * -0.025)
 				added = true
 		if added:
 			_environment_count += 1
