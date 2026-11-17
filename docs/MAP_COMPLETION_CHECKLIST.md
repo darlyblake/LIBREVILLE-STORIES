@@ -38,7 +38,8 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Hiérarchie de largeur et de couleur des routes selon leur catégorie OSM.
 - [x] Étiquettes limitées des axes et des lieux importants.
 - [ ] Vérifier les intersections, ponts, voies à sens unique et connexions des routes.
-- [ ] Ajouter trottoirs, carrefours détaillés, marquages et mobilier urbain à partir de données ou d'approximations visuelles signalées.
+- [x] Première passe de trottoirs 3D regroupés sur les grands axes et lorsque les tags OSM indiquent leur présence.
+- [ ] Ajouter carrefours détaillés, marquages et mobilier urbain à partir de données ou d'approximations visuelles signalées.
 - [ ] Ajouter une mini-carte et une navigation plus complète après stabilisation des données.
 
 ## 5. Performance et validation
