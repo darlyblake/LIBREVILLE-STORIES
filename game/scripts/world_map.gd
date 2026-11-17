@@ -397,7 +397,7 @@ func _load_roads() -> void:
 					break
 			if not label_coords.is_empty():
 				var midpoint: Array = label_coords[int(label_coords.size() / 2)]
-				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 2.0, Color(0.92, 0.95, 1.0), 280.0)
+				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 1.25, Color(0.92, 0.95, 1.0), 280.0)
 				_road_labels += 1
 		var road_kind := str(props.get("highway", "residential"))
 		var width := _road_width(road_kind)
@@ -609,7 +609,7 @@ func _load_buildings() -> void:
 			var indices := Geometry2D.triangulate_polygon(points)
 			if indices.is_empty():
 				continue
-			surface.set_color(_building_color(building_kind, osm_id))
+			surface.set_color(_building_color(building_kind, osm_id, props))
 			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id), building_kind, osm_id)
 			added = true
 		if added:
@@ -705,7 +705,7 @@ func _load_pois() -> void:
 		var kind := str(props.get("place", ""))
 		if kind.is_empty():
 			kind = str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("building", "place"))))))
-		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 2.2, _poi_color(kind), 500.0)
+		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 1.15, _poi_color(kind), 500.0)
 		_poi_count += 1
 
 
@@ -780,30 +780,30 @@ func _road_color(kind: String) -> Color:
 	# Hiérarchie visuelle lisible : axes structurants plus clairs, rues locales sobres.
 	match kind:
 		"motorway", "trunk":
-			return Color(0.88, 0.62, 0.34)
+			return Color(0.22, 0.25, 0.26)
 		"primary":
-			return Color(0.82, 0.69, 0.48)
+			return Color(0.25, 0.28, 0.29)
 		"secondary":
-			return Color(0.70, 0.68, 0.60)
+			return Color(0.28, 0.30, 0.30)
 		"tertiary":
-			return Color(0.56, 0.58, 0.57)
+			return Color(0.30, 0.32, 0.31)
 		"residential", "unclassified":
-			return Color(0.39, 0.42, 0.43)
+			return Color(0.33, 0.34, 0.32)
 		"service":
-			return Color(0.32, 0.35, 0.36)
+			return Color(0.30, 0.31, 0.30)
 		"footway", "path", "steps", "cycleway":
-			return Color(0.48, 0.43, 0.34)
+			return Color(0.48, 0.45, 0.39)
 		_:
-			return Color(0.43, 0.45, 0.45)
+			return Color(0.31, 0.33, 0.32)
 
 func _road_width(kind: String) -> float:
 	match kind:
-		"motorway", "trunk": return 13.0
-		"primary": return 10.0
-		"secondary": return 8.0
-		"tertiary": return 6.5
-		"residential", "unclassified": return 5.5
-		"service": return 3.2
+		"motorway", "trunk": return 11.0
+		"primary": return 8.5
+		"secondary": return 7.0
+		"tertiary": return 5.8
+		"residential", "unclassified": return 4.8
+		"service": return 3.0
 		"footway", "path", "steps": return 1.5
 		_: return 4.0
 
@@ -826,17 +826,29 @@ func _building_height(kind: String, osm_id: int, props: Dictionary) -> float:
 		_:
 			return 3.5 + float(abs(osm_id) % 35) / 10.0
 
-func _building_color(kind: String, osm_id: int) -> Color:
-	var variation := float(abs(osm_id) % 8) * 0.008
-	match kind:
-		"commercial", "retail", "supermarket", "office":
-			return Color(0.70 + variation, 0.66 + variation, 0.58 + variation)
-		"industrial", "warehouse":
-			return Color(0.57 + variation, 0.59 + variation, 0.57 + variation)
-		"cathedral", "church", "chapel", "mosque":
-			return Color(0.78 + variation, 0.73 + variation, 0.63 + variation)
-		_:
-			return Color(0.76 + variation, 0.68 + variation, 0.56 + variation)
+func _building_color(kind: String, osm_id: int, props: Dictionary = {}) -> Color:
+	# Priorité aux couleurs réellement renseignées dans OSM.
+	var tagged := str(props.get("building:colour", props.get("building:color", ""))).strip_edges()
+	if not tagged.is_empty():
+		return Color.from_string(tagged, Color(0.76, 0.70, 0.62))
+	# Palette sobre et variée inspirée des façades observées à Libreville :
+	# enduit clair, sable, gris ciment, blanc cassé et quelques tons chauds.
+	var palette: Array[Color] = [
+		Color(0.78, 0.72, 0.63),
+		Color(0.70, 0.66, 0.58),
+		Color(0.83, 0.80, 0.72),
+		Color(0.62, 0.62, 0.57),
+		Color(0.76, 0.67, 0.57),
+		Color(0.86, 0.82, 0.73),
+		Color(0.67, 0.70, 0.67),
+		Color(0.73, 0.61, 0.51)
+	]
+	var selected := palette[abs(osm_id) % palette.size()]
+	if kind in ["industrial", "warehouse"]:
+		selected = Color(0.58, 0.61, 0.59) if abs(osm_id) % 3 == 0 else Color(0.67, 0.67, 0.62)
+	elif kind in ["commercial", "retail", "supermarket", "office"]:
+		selected = Color(0.72, 0.72, 0.67) if abs(osm_id) % 2 == 0 else Color(0.78, 0.75, 0.67)
+	return selected
 
 func _roof_style(kind: String, osm_id: int) -> int:
 	# 0 = tuiles (habitat), 1 = tôle nervurée (hangars/industrie),
