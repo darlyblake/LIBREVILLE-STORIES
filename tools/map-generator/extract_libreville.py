@@ -104,6 +104,77 @@ def is_point_of_interest(tags):
     return bool(tags.get("name")) and any(key in tags for key in keys)
 
 
+def environment_kind(tags):
+    """Classe les objets naturels/eau/végétation utiles au décor de Libreville."""
+    natural = tags.get("natural", "")
+    landuse = tags.get("landuse", "")
+    leisure = tags.get("leisure", "")
+    waterway = tags.get("waterway", "")
+    if natural == "coastline":
+        return "coastline"
+    if waterway or natural in {"river", "stream", "canal"}:
+        return "waterway"
+    if natural in {"water", "wetland"} or landuse in {"reservoir", "basin"}:
+        return "water"
+    if natural in {"wood", "scrub", "grassland", "heath", "tree_row"} or landuse in {"forest", "grass", "meadow", "orchard", "vineyard"}:
+        return "vegetation"
+    if leisure in {"park", "garden", "nature_reserve", "golf_course"} or landuse in {"recreation_ground", "village_green"}:
+        return "green_space"
+    if natural in {"beach", "sand", "bare_rock"}:
+        return "natural_surface"
+    return ""
+
+
+def is_environment_feature(tags):
+    return bool(environment_kind(tags))
+
+
+def make_environment_collection(elements):
+    features = []
+    seen = set()
+    for way in elements:
+        tags = way.get("tags", {})
+        kind = environment_kind(tags)
+        if not kind or way.get("type") != "way":
+            continue
+        points = way.get("geometry") or []
+        coords = [
+            [float(point["lon"]), float(point["lat"])]
+            for point in points
+            if "lon" in point and "lat" in point
+            and math.isfinite(float(point["lon"])) and math.isfinite(float(point["lat"]))
+        ]
+        if len(coords) < 2:
+            continue
+        is_area = len(coords) >= 4 and coords[0] == coords[-1]
+        if kind not in {"waterway", "coastline"} and not is_area:
+            continue
+        geometry = (
+            {"type": "Polygon", "coordinates": [coords]}
+            if is_area else {"type": "LineString", "coordinates": coords}
+        )
+        osm_id = int(way["id"])
+        if osm_id in seen:
+            continue
+        seen.add(osm_id)
+        features.append({
+            "type": "Feature",
+            "id": f"way/{osm_id}",
+            "properties": {
+                "osm_id": osm_id,
+                "osm_type": "way",
+                "environment_kind": kind,
+                **tags,
+            },
+            "geometry": geometry,
+        })
+    return {
+        "type": "FeatureCollection",
+        "name": "libreville_environment",
+        "features": features,
+    }
+
+
 def make_poi_collection(nodes, elements):
     features = []
     for node in nodes.values():
@@ -212,7 +283,7 @@ def extract_from_geofabrik_pbf(south, west, north, east):
 
         def way(self, way):
             tags = dict(way.tags)
-            if "highway" not in tags and "building" not in tags and not is_point_of_interest(tags):
+            if "highway" not in tags and "building" not in tags and not is_point_of_interest(tags) and not is_environment_feature(tags):
                 return
             geometry = []
             min_lon = min_lat = float("inf")
@@ -357,6 +428,14 @@ def main():
     }
 
     generated = {}
+    generated["environment.geojson"] = make_environment_collection(elements)
+    report["files"]["environment.geojson"] = {
+        "features": len(generated["environment.geojson"]["features"]),
+        "categories": dict(Counter(
+            feature["properties"].get("environment_kind", "other")
+            for feature in generated["environment.geojson"]["features"]
+        )),
+    }
     generated["pois.geojson"] = make_poi_collection(all_nodes, elements)
     report["files"]["pois.geojson"] = {
         "features": len(generated["pois.geojson"]["features"]),
