@@ -104,7 +104,8 @@ func _load_buildings() -> void:
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("building", "yes"))
 		var osm_id := int(props.get("osm_id", index))
-		var height := _building_height(kind, osm_id)
+		var height := _building_height(kind, osm_id, props)
+		_building_surface.set_color(_building_color(kind, osm_id))
 		_add_building(points, indices, height)
 		_building_count += 1
 	_building_surface.generate_normals()
