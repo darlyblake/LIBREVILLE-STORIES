@@ -6,8 +6,5 @@ export_presets.cfg
 Thumbs.db
 .vscode/
 .idea/
-data/osm/*.geojson
-data/osm/*.json
-!data/osm/.gitkeep
 *.blend1
 *.tmp
