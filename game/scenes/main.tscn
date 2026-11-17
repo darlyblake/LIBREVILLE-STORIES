@@ -62,3 +62,16 @@ rotation = Vector3(-0.18, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
 current = true
+
+[node name="MapCredits" type="CanvasLayer" parent="."]
+
+[node name="Attribution" type="Label" parent="MapCredits"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -34.0
+offset_right = 480.0
+offset_bottom = -12.0
+text = "© OpenStreetMap contributors  |  LIBREVILLE STORIES"
+theme_override_font_sizes/font_size = 12
