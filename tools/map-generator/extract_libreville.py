@@ -129,9 +129,22 @@ def is_environment_feature(tags):
     return bool(environment_kind(tags))
 
 
-def make_environment_collection(elements):
+def _geometry_parts(geometry, accepted_types):
+    if geometry.is_empty:
+        return
+    if geometry.geom_type in accepted_types:
+        yield geometry
+    elif hasattr(geometry, "geoms"):
+        for part in geometry.geoms:
+            yield from _geometry_parts(part, accepted_types)
+
+
+def make_environment_collection(elements, bounds):
+    from shapely.geometry import LineString, Polygon, box
+
     features = []
-    seen = set()
+    south, west, north, east = bounds
+    clip = box(west, south, east, north)
     for way in elements:
         tags = way.get("tags", {})
         kind = environment_kind(tags)
@@ -139,7 +152,7 @@ def make_environment_collection(elements):
             continue
         points = way.get("geometry") or []
         coords = [
-            [float(point["lon"]), float(point["lat"])]
+            (float(point["lon"]), float(point["lat"]))
             for point in points
             if "lon" in point and "lat" in point
             and math.isfinite(float(point["lon"])) and math.isfinite(float(point["lat"]))
@@ -149,31 +162,36 @@ def make_environment_collection(elements):
         is_area = len(coords) >= 4 and coords[0] == coords[-1]
         if kind not in {"waterway", "coastline"} and not is_area:
             continue
-        geometry = (
-            {"type": "Polygon", "coordinates": [coords]}
-            if is_area else {"type": "LineString", "coordinates": coords}
-        )
-        osm_id = int(way["id"])
-        if osm_id in seen:
-            continue
-        seen.add(osm_id)
-        features.append({
-            "type": "Feature",
-            "id": f"way/{osm_id}",
-            "properties": {
-                "osm_id": osm_id,
-                "osm_type": "way",
-                "environment_kind": kind,
-                **tags,
-            },
-            "geometry": geometry,
-        })
-    return {
-        "type": "FeatureCollection",
-        "name": "libreville_environment",
-        "features": features,
-    }
-
+        try:
+            if is_area:
+                shape = Polygon(coords)
+                if not shape.is_valid:
+                    shape = shape.buffer(0)
+                clipped = shape.intersection(clip)
+                parts = list(_geometry_parts(clipped, {"Polygon"}))
+                for index, part in enumerate(parts):
+                    geometry = {"type": "Polygon", "coordinates": [[list(point) for point in part.exterior.coords]]}
+                    suffix = "" if len(parts) == 1 else "#part/" + str(index + 1)
+                    features.append({
+                        "type": "Feature", "id": "way/" + str(way["id"]) + suffix,
+                        "properties": {"osm_id": int(way["id"]), "osm_type": "way", "environment_kind": kind, **tags},
+                        "geometry": geometry,
+                    })
+            else:
+                clipped = LineString(coords).intersection(clip)
+                parts = list(_geometry_parts(clipped, {"LineString"}))
+                for index, part in enumerate(parts):
+                    if len(part.coords) < 2:
+                        continue
+                    suffix = "" if len(parts) == 1 else "#part/" + str(index + 1)
+                    features.append({
+                        "type": "Feature", "id": "way/" + str(way["id"]) + suffix,
+                        "properties": {"osm_id": int(way["id"]), "osm_type": "way", "environment_kind": kind, **tags},
+                        "geometry": {"type": "LineString", "coordinates": [list(point) for point in part.coords]},
+                    })
+        except Exception as exc:
+            print("Géométrie environnementale ignorée way/" + str(way["id"]) + ": " + str(exc), flush=True)
+    return {"type": "FeatureCollection", "name": "libreville_environment", "features": features}
 
 def make_poi_collection(nodes, elements):
     features = []
@@ -428,7 +446,7 @@ def main():
     }
 
     generated = {}
-    generated["environment.geojson"] = make_environment_collection(elements)
+    generated["environment.geojson"] = make_environment_collection(elements, (args.south, args.west, args.north, args.east))
     report["files"]["environment.geojson"] = {
         "features": len(generated["environment.geojson"]["features"]),
         "categories": dict(Counter(
