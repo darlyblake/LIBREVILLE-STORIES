@@ -110,8 +110,9 @@ jobs:
           assert roads == expected_roads, f"Routes chargées {roads}, attendues {expected_roads}"
           assert buildings == expected_buildings, f"Bâtiments chargés {buildings}, attendus {expected_buildings}"
           expected_pois = report["files"]["pois.geojson"]["features"]
-          assert pois == expected_pois, f"Lieux chargés {pois}, attendus {expected_pois}"
-          print(f"Carte Godot cohérente : {roads} routes, {buildings} bâtiments et {pois} lieux nommés.")
+          expected_visible_pois = min(expected_pois, 450)
+          assert pois == expected_visible_pois, f"Étiquettes de lieux chargées {pois}, attendues {expected_visible_pois} (limite d’affichage 450)"
+          print(f"Carte Godot cohérente : {roads} routes, {buildings} bâtiments et {pois} étiquettes de lieux (sur {expected_pois} lieux extraits).")
           PY
           if grep -q "SCRIPT ERROR" /tmp/libreville-map.log; then
             echo "GDScript runtime error detected."
