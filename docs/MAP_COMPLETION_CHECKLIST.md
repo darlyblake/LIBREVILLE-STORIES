@@ -23,7 +23,8 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Validation Godot 4.3 après ajout des balcons (PR n°13, rendu Compatibility réussi).
 - [ ] Inspecter leur rendu en jeu sur la machine cible.
 - [x] Première variété de matériaux procéduraux : tuiles, tôle nervurée et dalle béton, sélectionnés par typologie OSM (approximation visuelle).
-- [x] Première toiture géométrique à deux pans sur les petites maisons OSM aux empreintes quadrilatérales convexes et allongées ; les bâtiments complexes conservent un toit plat.\n- [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
+- [x] Première toiture géométrique à deux pans sur les petites maisons OSM aux empreintes quadrilatérales convexes et allongées ; les bâtiments complexes conservent un toit plat.
+- [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
 - [x] Première passe de balcons stylisés sur certains immeubles à plusieurs niveaux, regroupés dans le mesh des façades.
 - [ ] Ajouter auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
 - [ ] Mieux gérer les cours intérieures et trous dans les empreintes polygonales.
@@ -32,6 +33,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 ## 3. Relief, mer et environnement
 - [ ] Intégrer un modèle d'élévation adapté et vérifier son système de coordonnées, sa couverture et sa résolution.
 - [ ] Distinguer relief du sol et hauteur des bâtiments ; un DSM ne doit pas être pris pour un terrain nu.
+- [x] Première représentation visuelle du tracé côtier OSM par une bande littorale couleur sable ; validation Godot 4.3 réussie sur `main` (ce n'est pas encore une surface mer/terre).
 - [ ] Construire une surface mer/terre fiable à partir d'une géométrie côtière cohérente ; les lignes de côte seules ne suffisent pas.
 - [ ] Ajouter plages, mangroves, rivières et zones humides lorsque les données sont vérifiées.
 - [x] Première végétation 3D low-poly instanciée dans les espaces verts OSM (plafond 1 200, PR n°17 validée Godot 4.3) ; inspection visuelle et densité à confirmer.
@@ -42,9 +44,11 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [ ] Vérifier les intersections, ponts, voies à sens unique et connexions des routes.
 - [x] Première passe de trottoirs 3D regroupés sur les grands axes et lorsque les tags OSM indiquent leur présence (PR n°14 fusionnée, validation Godot 4.3 réussie).
 - [x] Premier marquage axial discontinu sur les axes structurants et voies explicitement à plusieurs voies (PR n°16, approximation visuelle, validation Godot 4.3).
-- [x] Première génération de passages piétons schématiques aux extrémités de routes OSM structurantes connectées à trois segments ou plus (approximation, validation Godot 4.3 en attente).\n- [ ] Ajouter carrefours détaillés, ponts, signalisation et mobilier urbain à partir de données ou d'approximations visuelles signalées.
+- [x] Première génération de passages piétons schématiques aux extrémités de routes OSM structurantes connectées à trois segments ou plus (approximation, validation Godot 4.3 réussie sur `main`).
+- [ ] Ajouter carrefours détaillés, ponts, signalisation et mobilier urbain à partir de données ou d'approximations visuelles signalées.
 - [x] Première mini-carte nord en haut : routes OSM rasterisées et repère de position du joueur (PR n°18 fusionnée, validation Godot 4.3 réussie).
-- [x] Première superposition des POI importants sur la mini-carte (santé, écoles, services publics, commerces, tourisme ; validation Godot 4.3 en attente).\n- [ ] Ajouter la navigation avec itinéraires et découverte interactive des POI.
+- [x] Première superposition des POI importants sur la mini-carte (santé, écoles, services publics, commerces, tourisme ; validation Godot 4.3 réussie sur `main`).
+- [ ] Ajouter la navigation avec itinéraires et découverte interactive des POI.
 
 ## 5. Performance et validation
 - [x] Regroupement des routes et bâtiments en meshes pour réduire les draw calls.
