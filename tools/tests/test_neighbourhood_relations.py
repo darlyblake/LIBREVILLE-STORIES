@@ -50,7 +50,7 @@ class NeighbourhoodRelationTests(unittest.TestCase):
         relation = {
             "type": "relation",
             "id": 7002,
-            "tags": {"name": "Quartier bordure", "boundary": "administrative"},
+            "tags": {"name": "Quartier bordure", "boundary": "administrative", "admin_level": "10"},
             "members": [self.member(21, "outer", outer)],
         }
         result = extractor.make_neighbourhood_collection([], self.BOUNDS, [relation])
@@ -77,6 +77,43 @@ class NeighbourhoodRelationTests(unittest.TestCase):
         polygon = shape(result["features"][0]["geometry"])
         self.assertAlmostEqual(polygon.area, 0.64, places=6)
         self.assertTrue(polygon.is_valid)
+
+    def test_country_and_province_boundaries_are_not_neighbourhoods(self):
+        ring = [(0.1, 0.1), (0.9, 0.1), (0.9, 0.9), (0.1, 0.9), (0.1, 0.1)]
+        relations = [
+            {
+                "type": "relation", "id": 8001,
+                "tags": {"name": "Gabon", "boundary": "administrative", "admin_level": "2"},
+                "members": [self.member(51, "outer", ring)],
+            },
+            {
+                "type": "relation", "id": 8002,
+                "tags": {"name": "Estuaire", "boundary": "administrative", "admin_level": "4"},
+                "members": [self.member(52, "outer", ring)],
+            },
+            {
+                "type": "relation", "id": 8003,
+                "tags": {"name": "Libreville", "boundary": "administrative", "admin_level": "6"},
+                "members": [self.member(53, "outer", ring)],
+            },
+            {
+                "type": "relation", "id": 8004,
+                "tags": {"name": "Arrondissement", "boundary": "administrative", "admin_level": "9"},
+                "members": [self.member(54, "outer", ring)],
+            },
+        ]
+        result = extractor.make_neighbourhood_collection([], self.BOUNDS, relations)
+        self.assertEqual(result["features"], [])
+
+    def test_local_administrative_level_10_is_kept(self):
+        ring = [(0.1, 0.1), (0.9, 0.1), (0.9, 0.9), (0.1, 0.9), (0.1, 0.1)]
+        relation = {
+            "type": "relation", "id": 8005,
+            "tags": {"name": "Quartier local", "boundary": "administrative", "admin_level": "10"},
+            "members": [self.member(55, "outer", ring)],
+        }
+        result = extractor.make_neighbourhood_collection([], self.BOUNDS, [relation])
+        self.assertEqual([f["properties"]["name"] for f in result["features"]], ["Quartier local"])
 
     def test_unnamed_relation_is_not_published(self):
         ring = [(0.1, 0.1), (0.9, 0.1), (0.9, 0.9), (0.1, 0.9), (0.1, 0.1)]
