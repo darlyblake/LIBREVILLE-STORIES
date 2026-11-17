@@ -55,3 +55,17 @@ Configuration de référence : Core i7-2600, 12 Go de RAM, GeForce GT 730 2 Go.
 Les anciens générateurs procéduraux de la zone ont été désactivés dans game/scripts/baie_des_rois.gd car ils produisaient des nappes bleues rectangulaires, des kiosques cubiques et des éléments simplifiés mal positionnés. Ils ne doivent pas être réactivés avant la reconstruction géoréférencée et l'import de vrais modèles 3D.
 
 Le projet reste sur Godot 4.3 et le renderer Compatibility. L'installation de Blender et des bibliothèques d'assets est nécessaire pour la prochaine étape de création, mais ne modifie pas automatiquement le rendu du jeu : les modèles et textures devront être produits/importés et intégrés explicitement.
+
+
+## Végétation tropicale — évolution du 18 novembre 2026
+
+Les arbres issus des polygones OSM ne doivent plus être représentés par une seule sphère lisse.
+Le générateur de végétation de `game/scripts/world_map.gd` utilise désormais trois silhouettes
+de couronnes assemblées à partir de plusieurs volumes de feuillage irréguliers, avec variations
+de proportions et de teintes. Les meshes sont mutualisés dans des `MultiMeshInstance3D` pour
+limiter les appels de rendu sur la configuration cible (GT 730 2 Go).
+
+Cette étape améliore la silhouette générale, mais ne constitue pas encore une bibliothèque
+botanique fidèle : les espèces de palmiers, cocotiers et arbres ornementaux doivent être
+modélisées séparément à partir de références photographiques locales. Les emplacements restent
+déduits des zones vertes OSM et doivent être contrôlés en jeu.
