@@ -7,6 +7,7 @@ const CENTER_LON := 9.4475
 const METERS_PER_DEG_LAT := 111320.0
 const BUILDING_LIMIT := 60000
 const BUILDINGS_PER_MESH := 1200
+const BUILDING_SPATIAL_CELL_SIZE := 1000.0
 const ROADS_PER_MESH := 700
 const MAX_ROAD_LABELS := 250
 const MAX_POI_LABELS := 450
@@ -700,8 +701,8 @@ func _road_label_priority(props: Dictionary) -> int:
 
 
 func _building_spatial_cell(feature: Dictionary) -> Vector2i:
-	# Cellule grossière de 250 m calculée depuis l'emprise extérieure.
-	# Elle sert uniquement à ordonner les lots pour un meilleur culling ;
+	# Cellule de 1 km calculée depuis le centre de l'emprise extérieure.
+	# Elle sert à regrouper les meshes pour un culling spatial plus précis ;
 	# ce n'est pas un système de streaming.
 	var geometry: Dictionary = feature.get("geometry", {})
 	var polygons: Array = []
@@ -729,7 +730,7 @@ func _building_spatial_cell(feature: Dictionary) -> Vector2i:
 		max_z = maxf(max_z, world.z)
 	var center_x := (min_x + max_x) * 0.5
 	var center_z := (min_z + max_z) * 0.5
-	return Vector2i(floori(center_x / 250.0), floori(center_z / 250.0))
+	return Vector2i(floori(center_x / BUILDING_SPATIAL_CELL_SIZE), floori(center_z / BUILDING_SPATIAL_CELL_SIZE))
 
 
 func _load_buildings() -> void:
@@ -760,8 +761,25 @@ func _load_buildings() -> void:
 	var detail_surface := _new_surface(_facade_detail_material)
 	var batch_count := 0
 	var batch_index := 0
+	var previous_cell := Vector2i(2147483647, 2147483647)
 	for index in range(limit):
-		var feature: Dictionary = spatial_features[index]["feature"]
+		var spatial_entry: Dictionary = spatial_features[index]
+		var current_cell := Vector2i(int(spatial_entry["cell_x"]), int(spatial_entry["cell_z"]))
+		# Ne jamais mélanger deux cellules dans le même mesh : les bornes
+		# spatiales restent ainsi resserrées pour le culling de Godot.
+		if batch_count > 0 and current_cell != previous_cell:
+			_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
+			batch_index += 1
+			_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
+			batch_index += 1
+			_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
+			batch_index += 1
+			batch_count = 0
+			surface = _new_surface(_building_material)
+			roof_surface = _new_surface(_roof_material)
+			detail_surface = _new_surface(_facade_detail_material)
+		previous_cell = current_cell
+		var feature: Dictionary = spatial_entry["feature"]
 		var geometry: Dictionary = feature.get("geometry", {})
 		var polygons: Array = []
 		match str(geometry.get("type", "")):
