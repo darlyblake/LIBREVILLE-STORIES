@@ -99,7 +99,8 @@ def is_point_of_interest(tags):
     """Retient les lieux nommés et catégorisés utiles à l'identification en jeu."""
     keys = ("amenity", "shop", "tourism", "healthcare", "school", "office",
             "public_transport", "leisure", "historic", "emergency", "government",
-            "railway", "aeroway", "place", "building")
+            "railway", "aeroway", "place", "building", "man_made", "natural",
+            "boundary", "sport", "waterway", "landuse")
     return bool(tags.get("name")) and any(key in tags for key in keys)
 
 
@@ -270,7 +271,7 @@ def main():
     used_geofabrik_fallback = False
     try:
         for index, (row, col, south, west, north, east) in enumerate(tiles, 1):
-            cache_file = CACHE / f"grid{args.grid}_v4_tile_{row}_{col}.json"
+            cache_file = CACHE / f"grid{args.grid}_v5_tile_{row}_{col}.json"
             data = load_cached_tile(cache_file)
             from_cache = data is not None
             if data is not None:
@@ -293,7 +294,7 @@ def main():
                     f'way["tourism"]({bbox});way["healthcare"]({bbox});'
                     f'way["leisure"]({bbox});way["historic"]({bbox});'
                     f'way["public_transport"]({bbox});way["office"]({bbox});'
-                    f'way["emergency"]({bbox}););'
+                    f'way["emergency"]({bbox});way["place"]({bbox});way["railway"]({bbox});way["aeroway"]({bbox});way["government"]({bbox});way["man_made"]({bbox});way["natural"]({bbox});way["boundary"]({bbox});way["sport"]({bbox});way["waterway"]({bbox});way["landuse"]({bbox}););'
                     "out body geom;"
                 )
                 print(f"[{index}/{len(tiles)}] Extraction secteur {row + 1}-{col + 1}…", flush=True)
