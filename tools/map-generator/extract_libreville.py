@@ -207,17 +207,21 @@ def make_environment_collection(elements, bounds):
             print("Géométrie environnementale ignorée way/" + str(way["id"]) + ": " + str(exc), flush=True)
     return {"type": "FeatureCollection", "name": "libreville_environment", "features": features}
 
-def make_poi_collection(nodes, elements):
+def make_poi_collection(nodes, elements, bounds):
+    from shapely.geometry import LineString, Polygon, box
+
     features = []
+    south, west, north, east = bounds
+    clip = box(west, south, east, north)
     for node in nodes.values():
         tags = node.get("tags", {})
         if not is_point_of_interest(tags):
             continue
         lon, lat = float(node["lon"]), float(node["lat"])
-        if not (math.isfinite(lon) and math.isfinite(lat)):
+        if not (west <= lon <= east and south <= lat <= north):
             continue
         features.append({
-            "type": "Feature", "id": f"node/{node['id']}",
+            "type": "Feature", "id": "node/" + str(node["id"]),
             "properties": {"osm_id": node["id"], "osm_type": "node", **tags},
             "geometry": {"type": "Point", "coordinates": [lon, lat]},
         })
@@ -226,20 +230,34 @@ def make_poi_collection(nodes, elements):
         if not is_point_of_interest(tags):
             continue
         points = way.get("geometry") or []
-        if len(points) < 2:
+        coords = [
+            (float(point["lon"]), float(point["lat"]))
+            for point in points
+            if "lon" in point and "lat" in point
+            and math.isfinite(float(point["lon"])) and math.isfinite(float(point["lat"]))
+        ]
+        if len(coords) < 2:
             continue
-        # Centroïde des sommets pour positionner l'étiquette du lieu.
-        lon = sum(float(point["lon"]) for point in points) / len(points)
-        lat = sum(float(point["lat"]) for point in points) / len(points)
-        if not (math.isfinite(lon) and math.isfinite(lat)):
+        try:
+            if len(coords) >= 4 and coords[0] == coords[-1]:
+                shape = Polygon(coords)
+                if not shape.is_valid:
+                    shape = shape.buffer(0)
+            else:
+                shape = LineString(coords)
+            clipped = shape.intersection(clip)
+            if clipped.is_empty:
+                continue
+            point = clipped.representative_point()
+            lon, lat = point.x, point.y
+        except Exception:
             continue
         features.append({
-            "type": "Feature", "id": f"way/{way['id']}",
+            "type": "Feature", "id": "way/" + str(way["id"]),
             "properties": {"osm_id": way["id"], "osm_type": "way", **tags},
             "geometry": {"type": "Point", "coordinates": [lon, lat]},
         })
     return {"type": "FeatureCollection", "name": "libreville_pois", "features": features}
-
 
 def make_collection(elements, kind, bounds):
     unique = {}
@@ -308,8 +326,11 @@ def extract_from_geofabrik_pbf(south, west, north, east):
             tags = dict(node.tags)
             if not node.location.valid() or not is_point_of_interest(tags):
                 return
+            lon, lat = float(node.lon), float(node.lat)
+            if not (west <= lon <= east and south <= lat <= north):
+                return
             self.nodes[int(node.id)] = {
-                "id": int(node.id), "lon": float(node.lon), "lat": float(node.lat),
+                "id": int(node.id), "lon": lon, "lat": lat,
                 "tags": tags,
             }
 
@@ -468,7 +489,7 @@ def main():
             for feature in generated["environment.geojson"]["features"]
         )),
     }
-    generated["pois.geojson"] = make_poi_collection(all_nodes, elements)
+    generated["pois.geojson"] = make_poi_collection(all_nodes, elements, (args.south, args.west, args.north, args.east))
     report["files"]["pois.geojson"] = {
         "features": len(generated["pois.geojson"]["features"]),
         "categories": dict(Counter(
