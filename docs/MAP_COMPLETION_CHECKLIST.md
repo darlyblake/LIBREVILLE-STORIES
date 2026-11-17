@@ -17,7 +17,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 
 ## 2. Bâtiments et architecture
 - [x] Volumes 3D extrudés à partir des empreintes OSM.
-- [x] Hauteurs OSM utilisées lorsqu'elles sont disponibles ; estimation visuelle clairement utilisée en leur absence.
+- [x] Hauteurs OSM utilisées lorsqu'elles sont disponibles ; lecture des valeurs en mètres, centimètres et pieds, estimation visuelle clairement utilisée en leur absence.
 - [x] Première texture procédurale de tuiles sur les toitures.
 - [x] Détails de façades regroupés en meshes : fenêtres et portes d'entrée stylisées, avec variation déterministe légère.
 - [x] Validation Godot 4.3 du générateur de fenêtres/portes sur `main` (rendu Compatibility réussi).
