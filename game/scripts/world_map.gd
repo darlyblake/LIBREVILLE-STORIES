@@ -8,12 +8,16 @@ const METERS_PER_DEG_LAT := 111320.0
 const BUILDING_LIMIT := 60000
 const BUILDINGS_PER_MESH := 1200
 const ROADS_PER_MESH := 700
+const MAX_ROAD_LABELS := 250
+const MAX_POI_LABELS := 450
 
 @export var show_roads := true
 @export var show_buildings := true
 
 var _road_count := 0
 var _building_count := 0
+var _poi_count := 0
+var _road_labels := 0
 var _road_material: StandardMaterial3D
 var _building_material: StandardMaterial3D
 
@@ -26,7 +30,8 @@ func _ready() -> void:
 		_load_roads()
 	if show_buildings:
 		_load_buildings()
-	print("LIBREVILLE STORIES | routes: %d | bâtiments: %d" % [_road_count, _building_count])
+	_load_pois()
+	print("LIBREVILLE STORIES | routes: %d | bâtiments: %d | lieux identifiables: %d" % [_road_count, _building_count, _poi_count])
 
 func _make_material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
@@ -81,6 +86,16 @@ func _load_roads() -> void:
 			_:
 				continue
 		var props: Dictionary = feature.get("properties", {})
+		if _road_labels < MAX_ROAD_LABELS and str(props.get("name", "")).strip_edges() != "":
+			var label_coords: Array = []
+			for candidate_line in lines:
+				if candidate_line.size() >= 2:
+					label_coords = candidate_line
+					break
+			if not label_coords.is_empty():
+				var midpoint: Array = label_coords[int(label_coords.size() / 2)]
+				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 3.0, Color(0.92, 0.95, 1.0), 280.0)
+				_road_labels += 1
 		var width := _road_width(str(props.get("highway", "residential")))
 		var added := false
 		for coords in lines:
@@ -159,6 +174,60 @@ func _load_buildings() -> void:
 			surface = _new_surface(_building_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
+
+
+func _load_pois() -> void:
+	var data := _read_geojson("res://data/osm/pois.geojson")
+	if data.is_empty():
+		push_warning("pois.geojson absent : les lieux nommés ne seront pas affichés.")
+		return
+	for feature in data.get("features", []):
+		if _poi_count >= MAX_POI_LABELS:
+			break
+		var geometry: Dictionary = feature.get("geometry", {})
+		if str(geometry.get("type", "")) != "Point":
+			continue
+		var props: Dictionary = feature.get("properties", {})
+		var place_name := str(props.get("name", "")).strip_edges()
+		if place_name.is_empty():
+			continue
+		var coordinates: Array = geometry.get("coordinates", [])
+		if coordinates.size() < 2:
+			continue
+		var kind := str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", "place")))))
+		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 4.0, _poi_color(kind), 500.0)
+		_poi_count += 1
+
+
+func _add_map_label(label_text: String, world_position: Vector3, label_color: Color, max_distance: float) -> void:
+	var label := Label3D.new()
+	label.text = label_text
+	label.position = world_position
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.font_size = 32
+	label.pixel_size = 0.01
+	label.modulate = label_color
+	label.outline_size = 8
+	label.outline_modulate = Color(0.08, 0.10, 0.12, 0.95)
+	label.visibility_range_end = max_distance
+	label.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	add_child(label)
+
+
+func _poi_color(kind: String) -> Color:
+	match kind:
+		"hospital", "clinic", "doctors", "pharmacy", "healthcare":
+			return Color(1.0, 0.48, 0.43)
+		"school", "college", "university", "kindergarten":
+			return Color(0.48, 0.72, 1.0)
+		"police", "fire_station", "government", "townhall":
+			return Color(0.72, 0.78, 1.0)
+		"marketplace", "supermarket", "mall", "convenience":
+			return Color(1.0, 0.82, 0.42)
+		"hotel", "museum", "attraction", "viewpoint":
+			return Color(0.60, 0.90, 0.72)
+		_:
+			return Color(0.96, 0.96, 0.90)
 
 func _geo_to_world(coordinate: Array) -> Vector3:
 	var lon := float(coordinate[0])
