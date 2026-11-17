@@ -29,6 +29,8 @@ Ces noms définissent le périmètre de travail. La zone technique actuelle est 
 - [x] Fichiers GeoJSON vérifiés et intégrés dans le dépôt : 4 503 voies, 49 359 bâtiments, 2 595 POI et 256 éléments environnementaux
 - [x] Couche dédiée aux noms OSM de localités/quartiers (`localities.geojson`) ajoutée au moteur ; extraction fraîche en cours après fusion
 - [x] Attribution OpenStreetMap affichée dans la scène
+- [x] Première passe de détails de façades (fenêtres et portes stylisées) regroupés en meshes ; validation Godot CI en cours sur la PR dédiée
+- [x] Liste de contrôle de finalisation de la carte : [docs/MAP_COMPLETION_CHECKLIST.md](docs/MAP_COMPLETION_CHECKLIST.md)
 - [x] Validation Godot 4.3 sous OpenGL Compatibility (Mesa/llvmpipe) : scène chargée et 4 503 routes + 49 359 bâtiments générés
 - [ ] Vérifier l'extraction fraîche et le nombre réel de noms de localités ; les contours de quartiers restent à 0 dans le dernier rapport validé
 - [ ] Test d'ouverture et de performance dans Godot sur le PC cible
