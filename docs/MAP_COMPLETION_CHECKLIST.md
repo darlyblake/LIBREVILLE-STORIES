@@ -40,6 +40,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Première représentation visuelle du tracé côtier OSM par une bande littorale couleur sable ; validation Godot 4.3 réussie sur `main` (ce n'est pas encore une surface mer/terre).
 - [ ] Construire une surface mer/terre fiable à partir d'une géométrie côtière cohérente ; les lignes de côte seules ne suffisent pas.
 - [ ] Ajouter plages, mangroves, rivières et zones humides lorsque les données sont vérifiées.
+- [x] Prendre en charge les géométries environnementales `MultiPolygon` ; les polygones avec anneaux intérieurs sont volontairement ignorés pour éviter de remplir incorrectement leurs trous (triangulation avec trous encore à implémenter).
 - [x] Première végétation 3D low-poly instanciée dans les espaces verts OSM (plafond 1 200, PR n°17 validée Godot 4.3) ; inspection visuelle et densité à confirmer.
 
 ## 4. Routes, mobilier et navigation
