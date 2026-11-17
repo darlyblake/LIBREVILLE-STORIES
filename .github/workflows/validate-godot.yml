@@ -45,7 +45,7 @@ jobs:
           from pathlib import Path
           log = Path("/tmp/libreville-map.log").read_text(errors="replace")
           report = json.loads(Path("data/osm/extraction-report.json").read_text())
-          match = re.search(r"routes:\\s*(\\d+)\\s*\\|\\s*bâtiments:\\s*(\\d+)", log)
+          match = re.search(r"routes:\s*(\d+)\s*\|\s*bâtiments:\s*(\d+)", log)
           assert match, "Les compteurs de la carte ne sont pas présents dans le journal Godot."
           roads, buildings = map(int, match.groups())
           expected_roads = report["files"]["roads.geojson"]["features"]
