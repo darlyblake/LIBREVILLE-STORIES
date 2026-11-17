@@ -39,7 +39,7 @@ func _make_material(color: Color, roughness: float) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
 	material.roughness = 0.95 if roughness == 0.0 else roughness
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED\n\tmaterial.vertex_color_use_as_albedo = true
 	return material
 
 func _load_roads() -> void:
@@ -141,13 +141,38 @@ func _road_width(kind: String) -> float:
 		"footway", "path", "steps": return 1.5
 		_: return 4.0
 
-func _building_height(kind: String, osm_id: int) -> float:
+func _building_height(kind: String, osm_id: int, props: Dictionary) -> float:
+	# Utilise les mesures OSM lorsqu'elles existent, puis les niveaux déclarés.
+	var tagged_height := str(props.get("height", "")).to_float()
+	if tagged_height >= 2.5 and tagged_height <= 150.0:
+		return tagged_height
+	var levels := str(props.get("building:levels", "")).to_int()
+	if levels > 0 and levels <= 40:
+		return clampf(float(levels) * 3.1, 3.0, 120.0)
+	# Hauteur visuelle de secours : estimation, jamais une mesure réelle.
 	match kind:
-		"cathedral", "university", "hospital", "government", "commercial", "office": return 10.0 + float(abs(osm_id) % 90) / 10.0
-		"apartments", "hotel", "dormitory": return 9.0 + float(abs(osm_id) % 70) / 10.0
-		"house", "detached", "residential", "semidetached_house": return 4.0 + float(abs(osm_id) % 25) / 10.0
-		"warehouse", "industrial", "supermarket": return 5.0 + float(abs(osm_id) % 35) / 10.0
-		_: return 3.5 + float(abs(osm_id) % 35) / 10.0
+		"cathedral", "university", "hospital", "government", "commercial", "office":
+			return 10.0 + float(abs(osm_id) % 90) / 10.0
+		"apartments", "hotel", "dormitory":
+			return 9.0 + float(abs(osm_id) % 70) / 10.0
+		"house", "detached", "residential", "semidetached_house":
+			return 4.0 + float(abs(osm_id) % 25) / 10.0
+		"warehouse", "industrial", "supermarket":
+			return 5.0 + float(abs(osm_id) % 35) / 10.0
+		_:
+			return 3.5 + float(abs(osm_id) % 35) / 10.0
+
+func _building_color(kind: String, osm_id: int) -> Color:
+	var variation := float(abs(osm_id) % 8) * 0.008
+	match kind:
+		"commercial", "retail", "supermarket", "office":
+			return Color(0.70 + variation, 0.66 + variation, 0.58 + variation)
+		"industrial", "warehouse":
+			return Color(0.57 + variation, 0.59 + variation, 0.57 + variation)
+		"cathedral", "church", "chapel", "mosque":
+			return Color(0.78 + variation, 0.73 + variation, 0.63 + variation)
+		_:
+			return Color(0.76 + variation, 0.68 + variation, 0.56 + variation)
 
 func _add_building(points: PackedVector2Array, indices: PackedInt32Array, height: float) -> void:
 	var n := points.size()
