@@ -100,3 +100,11 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - [x] Texture procédurale légère de variation herbe/terre sur le plan de sol, générée au démarrage et sans maillage additionnel.
 - [x] Première atmosphère de distance par brouillard doux, éclairage ambiant renforcé et lumière solaire légèrement chaude.
 - [ ] Ajuster visuellement densité du brouillard, répétition de texture et direction des ombres sur la machine cible.
+
+
+### Végétation et sources géographiques
+- [x] Première variation déterministe des arbres instanciés : hauteur, largeur, orientation, teinte du tronc et couleur du feuillage ; reste une représentation low-poly simplifiée.
+- [ ] Ajouter plusieurs silhouettes d'espèces tropicales (palmiers, arbres à couronne étalée, arbustes) à partir de données ou références validées.
+- [ ] Télécharger et intégrer un extrait Copernicus DEM GLO-30 couvrant Libreville, puis vérifier le système de coordonnées, l'altitude et la continuité aux bords.
+- [ ] Obtenir l'accès et les conditions de réutilisation des orthophotographies/plans auprès de l'Institut National de Cartographie du Gabon.
+- [ ] Préparer un extrait ESA WorldCover 2021 local pour différencier végétation, zones bâties, eau et mangroves ; conserver l'attribution CC BY 4.0.
