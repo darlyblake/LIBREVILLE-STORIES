@@ -1,4 +1,5 @@
 name: Validate Godot project
+# Validation manuelle du snapshot OSM publié par le workflow d'extraction.
 
 on:
   push:
