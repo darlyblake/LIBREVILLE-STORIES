@@ -81,8 +81,60 @@ func _build_road_texture() -> void:
 					Vector2i(roundi(b.x), roundi(b.y)), color,
 					2 if road_kind in ["trunk", "primary", "secondary"] else 1)
 
+	_draw_environment_features(image)
 	_draw_poi_markers(image)
 	_road_texture = ImageTexture.create_from_image(image)
+
+
+func _draw_environment_features(image: Image) -> void:
+	var file := FileAccess.open("res://data/osm/environment.geojson", FileAccess.READ)
+	if file == null:
+		push_warning("Mini-carte : environment.geojson introuvable.")
+		return
+	var data: Variant = JSON.parse_string(file.get_as_text())
+	if not data is Dictionary:
+		push_warning("Mini-carte : GeoJSON environnemental invalide.")
+		return
+	for feature in data.get("features", []):
+		var geometry: Dictionary = feature.get("geometry", {})
+		var properties: Dictionary = feature.get("properties", {})
+		var kind := str(properties.get("environment_kind", ""))
+		var color := Color(0.0, 0.0, 0.0, 0.0)
+		var thickness := 1
+		match kind:
+			"coastline":
+				color = Color(0.88, 0.73, 0.49, 1.0)
+				thickness = 2
+			"water", "waterway":
+				color = Color(0.24, 0.66, 0.86, 1.0)
+			"natural_surface":
+				color = Color(0.79, 0.69, 0.49, 1.0)
+			_:
+				continue
+		var geometry_type := str(geometry.get("type", ""))
+		var lines: Array = []
+		if geometry_type == "LineString":
+			lines.append(geometry.get("coordinates", []))
+		elif geometry_type == "MultiLineString":
+			lines = geometry.get("coordinates", [])
+		elif geometry_type == "Polygon":
+			var rings: Array = geometry.get("coordinates", [])
+			if not rings.is_empty():
+				lines.append(rings[0])
+		else:
+			continue
+		for line in lines:
+			if line.size() < 2:
+				continue
+			for index in range(line.size() - 1):
+				var a := _coordinate_to_pixel(line[index])
+				var b := _coordinate_to_pixel(line[index + 1])
+				if a.x < -1.0 or a.x > MAP_SIZE or a.y < -1.0 or a.y > MAP_SIZE:
+					continue
+				if b.x < -1.0 or b.x > MAP_SIZE or b.y < -1.0 or b.y > MAP_SIZE:
+					continue
+				_draw_image_line(image, Vector2i(roundi(a.x), roundi(a.y)),
+					Vector2i(roundi(b.x), roundi(b.y)), color, thickness)
 
 
 func _draw_poi_markers(image: Image) -> void:
