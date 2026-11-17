@@ -59,6 +59,25 @@ class NeighbourhoodRelationTests(unittest.TestCase):
         self.assertAlmostEqual(polygon.bounds[0], 0.0, places=7)
         self.assertAlmostEqual(polygon.bounds[2], 0.5, places=7)
 
+    def test_relation_assembles_separate_outer_member_ways(self):
+        # Les frontières OSM sont souvent découpées en plusieurs ways.
+        segments = [
+            self.member(41, "outer", [(0.1, 0.1), (0.9, 0.1), (0.9, 0.9)]),
+            self.member(42, "outer", [(0.9, 0.9), (0.1, 0.9), (0.1, 0.1)]),
+        ]
+        relation = {
+            "type": "relation",
+            "id": 7004,
+            "tags": {"name": "Quartier en segments", "place": "suburb", "type": "multipolygon"},
+            "members": segments,
+        }
+
+        result = extractor.make_neighbourhood_collection([], self.BOUNDS, [relation])
+        self.assertEqual(len(result["features"]), 1)
+        polygon = shape(result["features"][0]["geometry"])
+        self.assertAlmostEqual(polygon.area, 0.64, places=6)
+        self.assertTrue(polygon.is_valid)
+
     def test_unnamed_relation_is_not_published(self):
         ring = [(0.1, 0.1), (0.9, 0.1), (0.9, 0.9), (0.1, 0.9), (0.1, 0.1)]
         relation = {
