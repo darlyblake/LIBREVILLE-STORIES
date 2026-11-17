@@ -10,11 +10,37 @@ var _rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	_rng.seed = 20261117
 	name = "BaieDesRois"
-	# Les anciens générateurs de blocs, kiosques et nappes d'eau sont volontairement
-	# désactivés : leur implantation approximative donnait un aspect maquette/LEGO
-	# et plaçait l'eau sur des secteurs terrestres. La zone attend un plan géoréférencé
-	# et des modèles 3D texturés avant toute réactivation.
-	print("LIBREVILLE STORIES | Baie des Rois : blockout provisoire désactivé, reconstruction réaliste en attente")
+	_load_kiosk_model()
+	print("LIBREVILLE STORIES | Baie des Rois : chargement du kiosque 3D réel")
+
+
+func _load_kiosk_model() -> void:
+	const MODEL_PATH := "res://assets/models/baie_des_rois/kiosque_baie_des_rois.glb"
+	if not ResourceLoader.exists(MODEL_PATH):
+		push_error("Kiosque Baie des Rois introuvable : " + MODEL_PATH + " — vérifier que le GLB est présent et importé par Godot.")
+		return
+
+	var kiosk_resource: Resource = load(MODEL_PATH)
+	if kiosk_resource == null:
+		push_error("Impossible de charger le modèle GLB du kiosque : " + MODEL_PATH)
+		return
+	if not kiosk_resource is PackedScene:
+		push_error("Le fichier GLB du kiosque n'a pas été importé comme PackedScene.")
+		return
+
+	var kiosk := (kiosk_resource as PackedScene).instantiate() as Node3D
+	if kiosk == null:
+		push_error("Le modèle GLB du kiosque n'a pas produit de nœud Node3D.")
+		return
+
+	kiosk.name = "KiosqueBaieDesRois_3D"
+	# Le joueur apparaît à l'ancre de la Baie des Rois. On place le kiosque
+	# à quelques mètres devant lui pour qu'il soit immédiatement repérable.
+	kiosk.position = Vector3(-1790.0, 0.0, -582.0)
+	kiosk.rotation.y = 0.0
+	kiosk.scale = Vector3.ONE
+	add_child(kiosk)
+	print("LIBREVILLE STORIES | kiosque GLB instancié à ", kiosk.position)
 
 
 # ---------------------------------------------------------------------------
