@@ -1,0 +1,34 @@
+name: Extract Libreville OSM map data
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "tools/map-generator/**"
+      - ".github/workflows/extract-libreville-osm.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Extract roads and building footprints
+        run: python3 tools/map-generator/extract_libreville.py
+
+      - name: Upload GeoJSON and extraction report
+        uses: actions/upload-artifact@v4
+        with:
+          name: libreville-osm-extraction
+          path: |
+            data/osm/roads.geojson
+            data/osm/buildings.geojson
+            data/osm/extraction-report.json
+          if-no-files-found: error
+          retention-days: 14
