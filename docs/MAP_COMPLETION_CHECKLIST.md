@@ -84,3 +84,11 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - [ ] Acquérir et intégrer une couche d'élévation, puis produire une surface mer/terre à partir d'une géométrie côtière fiable.
 - [ ] Obtenir les géométries administratives des six arrondissements depuis la mairie ou une source officielle et documenter leur système de coordonnées.
 - [ ] Définir des profils architecturaux distincts à partir des références visuelles (habitat individuel, habitat spontané, immeubles, commerces, bâtiments publics) plutôt que d'appliquer une texture unique à toute la ville.
+
+
+### Références visuelles complémentaires consultées
+- Wikimedia Commons, catégories Streets in Libreville et Street scenes in Libreville : photographies de rues, marché, boulevard du bord de mer et scènes urbaines ; vérifier chaque licence avant intégration.
+- Service audiovisuel de l'Union européenne, reportage Libreville (P-060454, 27/02/2023) : 36 photographies de vues générales, rues, bâtiments officiels et religieux.
+- Rapport ONU Gabon 2021 : vue aérienne montrant le mélange de bâtiments résidentiels/administratifs, végétation tropicale, grands axes et littoral.
+- Étude sur les typologies d'habitat de l'agglomération : coexistence de villas, immeubles, logements sociaux et habitat spontané ; les styles doivent varier par secteur et non être uniformisés.
+- Ces références guident la direction artistique, mais ne remplacent pas un relevé architectural géolocalisé ni une licence d'utilisation des photographies.
