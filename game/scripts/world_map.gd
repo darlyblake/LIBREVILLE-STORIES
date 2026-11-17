@@ -1183,7 +1183,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 	var roof_style := _roof_style(building_kind, osm_id, props)
 	var pitched_roof := false
 	if _should_use_pitched_roof(building_kind, props, points.size()):
-		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style)
+		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style, props)
 	if not pitched_roof:
 		for i in range(0, indices.size(), 3):
 			var p0 := points[indices[i]]
@@ -1193,7 +1193,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 				Vector3(p1.x, height + 0.035, p1.y), Vector3(p2.x, height + 0.035, p2.y), roof_style)
 
 
-func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int) -> bool:
+func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, props: Dictionary = {}) -> bool:
 	# Première géométrie à deux pans, réservée aux empreintes quadrilatérales
 	# convexes et allongées. Les formes complexes gardent un toit plat.
 	var longest_index := 0
@@ -1224,7 +1224,17 @@ func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_he
 	var p2 := points[(longest_index + 2) % 4]
 	var p3 := points[(longest_index + 3) % 4]
 	var roof_y := wall_height + 0.035
-	var ridge_y := roof_y + clampf(shortest_side * 0.30, 0.75, 1.9)
+	# roof:height est une mesure explicite en priorité ; roof:levels sert
+	# uniquement d'estimation prudente si la hauteur n'est pas renseignée.
+	var tagged_roof_height := _parse_osm_height(str(props.get("roof:height", "")))
+	var roof_rise := clampf(shortest_side * 0.30, 0.75, 1.9)
+	if tagged_roof_height >= 0.5 and tagged_roof_height <= 8.0:
+		roof_rise = tagged_roof_height
+	else:
+		var roof_levels := str(props.get("roof:levels", "")).to_int()
+		if roof_levels > 0 and roof_levels <= 3:
+			roof_rise = clampf(float(roof_levels) * 1.1, 0.75, 3.3)
+	var ridge_y := roof_y + roof_rise
 	var a := Vector3(p0.x, roof_y, p0.y)
 	var b := Vector3(p1.x, roof_y, p1.y)
 	var c := Vector3(p2.x, roof_y, p2.y)
