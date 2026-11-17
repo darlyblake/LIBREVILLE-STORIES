@@ -317,21 +317,27 @@ func _build_coastal_edge() -> void:
 	collision_root.collision_mask = 1
 	root.add_child(collision_root)
 
-	for i in range(22):
-		var t: float = float(i) / 21.0
-		var z: float = -110.0 + t * 220.0
+	const SEGMENT_COUNT := 24
+	const COAST_START_Z := -115.0
+	const COAST_LENGTH := 230.0
+	for i in range(SEGMENT_COUNT):
+		var t: float = float(i) / float(SEGMENT_COUNT - 1)
+		var z: float = COAST_START_Z + t * COAST_LENGTH
 		var x_curve: float = 38.0 + sin(t * PI) * 12.0
 		var width: float = 6.8
-		var x_offset: float = sin(float(i) * 12.9898) * 0.65
+		var segment_length: float = COAST_LENGTH / float(SEGMENT_COUNT - 1) + 0.35
+		var x_offset: float = sin(float(i) * 12.9898) * 0.45
 		var position := ANCHOR + Vector3(x_curve + x_offset, 0.52, z)
-		_add_box(root, Vector3(width, 1.35, 10.2), position, rock, "Riprap_%d" % i)
+		_add_box(root, Vector3(width, 1.35, segment_length), position, rock, "Riprap_%d" % i)
 
 		var collision := CollisionShape3D.new()
 		collision.name = "RiprapCollision_%d" % i
 		var shape := BoxShape3D.new()
-		shape.size = Vector3(width, 1.45, 10.4)
+		# Plus haut que la hauteur de saut du personnage : la barrière ne
+		# peut pas être franchie simplement en sautant depuis la promenade.
+		shape.size = Vector3(width, 2.65, segment_length)
 		collision.shape = shape
-		collision.position = position
+		collision.position = position + Vector3(0.0, 0.65, 0.0)
 		collision_root.add_child(collision)
 
 
