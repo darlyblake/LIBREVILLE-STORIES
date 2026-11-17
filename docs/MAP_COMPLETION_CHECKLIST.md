@@ -23,7 +23,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Validation Godot 4.3 après ajout des balcons (PR n°13, rendu Compatibility réussi).
 - [ ] Inspecter leur rendu en jeu sur la machine cible.
 - [x] Première variété de matériaux procéduraux : tuiles, tôle nervurée et dalle béton, sélectionnés par typologie OSM (approximation visuelle).
-- [ ] Ajouter des profils géométriques de toitures inclinées (deux pans/4 pans) et affiner les choix par secteur.
+- [x] Première toiture géométrique à deux pans sur les petites maisons OSM aux empreintes quadrilatérales convexes et allongées ; les bâtiments complexes conservent un toit plat.\n- [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
 - [x] Première passe de balcons stylisés sur certains immeubles à plusieurs niveaux, regroupés dans le mesh des façades.
 - [ ] Ajouter auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
 - [ ] Mieux gérer les cours intérieures et trous dans les empreintes polygonales.
