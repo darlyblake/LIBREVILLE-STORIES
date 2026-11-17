@@ -11,6 +11,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] HUD de position du joueur : coordonnées et localité OSM la plus proche.
 - [x] Extraction complète des 16 secteurs vérifiée et publiée sur `main` (workflow n°44149287481, 17/11/2026).
 - [x] Comptes vérifiés : 4 503 routes, 49 359 bâtiments, 2 595 POI, 256 éléments environnementaux et 73 localités nommées ; 0 polygone de quartier fourni par OSM dans cette extraction.
+- [x] Réduire la hauteur et la taille des étiquettes 3D pour limiter l'effet d'objets flottants ; inspection visuelle en jeu encore requise.
 - [ ] Vérifier visuellement les noms et leur placement dans la carte en jeu.
 - [ ] Compléter les limites des quartiers avec une source administrative officielle ou vérifiable ; ne pas déduire de frontières depuis les points place=*.
 
@@ -22,6 +23,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Validation Godot 4.3 du générateur de fenêtres/portes sur `main` (rendu Compatibility réussi).
 - [x] Validation Godot 4.3 après ajout des balcons (PR n°13, rendu Compatibility réussi).
 - [ ] Inspecter leur rendu en jeu sur la machine cible.
+- [ ] Corriger les objets réellement flottants après inspection de leurs coordonnées et de leur ancrage (les étiquettes 3D ont déjà été abaissées, mais les autres cas restent à diagnostiquer).
 - [x] Première variété de matériaux procéduraux : tuiles, tôle nervurée et dalle béton, sélectionnés par typologie OSM (approximation visuelle).
 - [x] Première toiture géométrique à deux pans sur les petites maisons OSM aux empreintes quadrilatérales convexes et allongées ; les bâtiments complexes conservent un toit plat.
 - [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
@@ -49,6 +51,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Première mini-carte nord en haut : routes OSM rasterisées et repère de position du joueur (PR n°18 fusionnée, validation Godot 4.3 réussie).
 - [x] Première superposition des POI importants sur la mini-carte (santé, écoles, services publics, commerces, tourisme ; validation Godot 4.3 réussie sur `main`).
 - [ ] Ajouter la navigation avec itinéraires et découverte interactive des POI.
+- [x] Première prise en charge logicielle des manettes : stick gauche, croix directionnelle, bouton A pour sauter et stick droit pour la caméra ; test avec une manette physique encore requis.
 
 ## 5. Performance et validation
 - [x] Regroupement des routes et bâtiments en meshes pour réduire les draw calls.
@@ -70,3 +73,14 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 
 ## Critère de fin de carte
 La carte pourra être considérée comme prête pour la phase de jeu lorsque l'extraction est vérifiée, que les localités et les lieux remarquables sont identifiables, que mer/relief et bâtiments sont cohérents, que le joueur se repère en jeu et que les performances sont mesurées sur la machine cible. Les éléments non couverts par des données fiables devront rester explicitement présentés comme des approximations visuelles.
+
+## 7. Recherche documentaire et sources de référence (17/11/2026)
+- [x] Documentation officielle Godot consultée pour les manettes : axes analogiques via Input.get_vector, zone morte et gestion des événements de manette.
+- [x] Mairie de Libreville consultée : la commune comporte six arrondissements et publie des descriptions de délimitations ; ces descriptions doivent être converties en géométries vérifiables avant affichage.
+- [x] Recherche complémentaire : la Banque mondiale décrit 89 unités de quartier numérotées issues d'un travail de superposition de cartes et de secteurs de recensement ; elles ne sont pas des limites officielles de quartiers nommés.
+- [x] Références photographiques repérées : Wikimedia Commons (scènes de rues de Libreville) et Service audiovisuel de l'Union européenne (36 photos de Libreville).
+- [x] Sources d'imagerie et de relief repérées : Sentinel-2 (10 m) et Copernicus DEM GLO-30 (30 m) ; résolution utile pour occupation du sol et relief général, insuffisante pour reconstruire les façades individuelles.
+- [ ] Vérifier les licences image par image avant toute intégration dans le jeu ; les photos de référence ne sont pas automatiquement libres de réutilisation.
+- [ ] Acquérir et intégrer une couche d'élévation, puis produire une surface mer/terre à partir d'une géométrie côtière fiable.
+- [ ] Obtenir les géométries administratives des six arrondissements depuis la mairie ou une source officielle et documenter leur système de coordonnées.
+- [ ] Définir des profils architecturaux distincts à partir des références visuelles (habitat individuel, habitat spontané, immeubles, commerces, bâtiments publics) plutôt que d'appliquer une texture unique à toute la ville.
