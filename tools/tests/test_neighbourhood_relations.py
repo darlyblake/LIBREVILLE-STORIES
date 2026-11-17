@@ -127,5 +127,38 @@ class NeighbourhoodRelationTests(unittest.TestCase):
         self.assertEqual(result["features"], [])
 
 
+    def test_named_place_nodes_are_exported_as_label_points(self):
+        nodes = {
+            101: {"id": 101, "lon": 0.25, "lat": 0.35,
+                  "tags": {"name": "Nzeng-Ayong", "place": "suburb"}},
+            102: {"id": 102, "lon": 1.25, "lat": 0.35,
+                  "tags": {"name": "Hors emprise", "place": "suburb"}},
+            103: {"id": 103, "lon": 0.45, "lat": 0.45,
+                  "tags": {"name": "Commerce", "shop": "supermarket"}},
+        }
+        result = extractor.make_locality_collection(nodes, [], self.BOUNDS)
+        self.assertEqual(len(result["features"]), 1)
+        feature = result["features"][0]
+        self.assertEqual(feature["id"], "node/101")
+        self.assertEqual(feature["properties"]["name"], "Nzeng-Ayong")
+        self.assertEqual(feature["geometry"]["type"], "Point")
+
+    def test_named_place_way_is_labelled_without_fabricated_boundary(self):
+        ways = [{
+            "type": "way", "id": 202,
+            "tags": {"name": "Akébé", "place": "neighbourhood"},
+            "geometry": [
+                {"lon": 0.2, "lat": 0.2}, {"lon": 0.8, "lat": 0.2},
+                {"lon": 0.8, "lat": 0.8}, {"lon": 0.2, "lat": 0.8},
+                {"lon": 0.2, "lat": 0.2},
+            ],
+        }]
+        result = extractor.make_locality_collection({}, ways, self.BOUNDS)
+        self.assertEqual(len(result["features"]), 1)
+        self.assertEqual(result["features"][0]["geometry"]["type"], "Point")
+        self.assertEqual(result["features"][0]["properties"]["source"],
+                         "OpenStreetMap place way (label point)")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
