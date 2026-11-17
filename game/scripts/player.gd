@@ -34,7 +34,7 @@ func _physics_process(delta: float) -> void:
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var move_direction := (transform.basis * Vector3(input_vector.x, 0.0, input_vector.y)).normalized()
 
-	if move_direction:
+	if move_direction.length() > 0.001:
 		velocity.x = move_direction.x * move_speed
 		velocity.z = move_direction.z * move_speed
 	else:
