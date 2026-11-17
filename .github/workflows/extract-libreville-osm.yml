@@ -61,12 +61,15 @@ jobs:
           buildings = json.loads((base / "buildings.geojson").read_text())
           pois = json.loads((base / "pois.geojson").read_text())
           environment = json.loads((base / "environment.geojson").read_text())
+          neighbourhoods = json.loads((base / "neighbourhoods.geojson").read_text())
           report = json.loads((base / "extraction-report.json").read_text())
 
           assert roads.get("type") == "FeatureCollection"
           assert buildings.get("type") == "FeatureCollection"
           assert pois.get("type") == "FeatureCollection"
           assert environment.get("type") == "FeatureCollection"
+          assert neighbourhoods.get("type") == "FeatureCollection"
+          assert report["files"]["neighbourhoods.geojson"]["features"] == len(neighbourhoods.get("features", []))
           assert report["files"]["environment.geojson"]["features"] == len(environment.get("features", []))
           assert len(environment.get("features", [])) > 0, "Aucune géométrie naturelle/eau/espace vert extraite."
           assert report["files"]["pois.geojson"]["features"] == len(pois.get("features", []))
@@ -113,6 +116,9 @@ jobs:
               check_geometry(feature, {"LineString", "MultiLineString"})
           for feature in environment["features"]:
               check_geometry(feature, {"LineString", "Polygon"})
+          for feature in neighbourhoods["features"]:
+              check_geometry(feature, {"Polygon"})
+              assert feature.get("properties", {}).get("name"), "Limite locale sans nom"
           for feature in buildings["features"]:
               check_geometry(feature, {"Polygon", "MultiPolygon"})
           print("Secteurs vérifiés :", len(report["tiles"]))
@@ -127,6 +133,7 @@ jobs:
           print("Bâtiments vérifiés :", len(buildings["features"]))
           print("Lieux identifiables vérifiés :", len(pois["features"]))
           print("Géométries environnementales vérifiées :", len(environment["features"]))
+          print("Limites locales vérifiées :", len(neighbourhoods["features"]))
           print("Attribution :", report["attribution"])
           PY
 
@@ -136,7 +143,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git -c rebase.autoStash=true rebase origin/main
-          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/pois.geojson data/osm/environment.geojson data/osm/extraction-report.json
+          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/pois.geojson data/osm/environment.geojson data/osm/neighbourhoods.geojson data/osm/extraction-report.json
           if git diff --cached --quiet; then
             echo "Les données cartographiques sont déjà à jour."
           else
@@ -153,6 +160,7 @@ jobs:
             data/osm/buildings.geojson
             data/osm/pois.geojson
             data/osm/environment.geojson
+            data/osm/neighbourhoods.geojson
             data/osm/extraction-report.json
           if-no-files-found: error
           retention-days: 30
