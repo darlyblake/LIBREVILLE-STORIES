@@ -141,31 +141,58 @@ func _add_box(parent: Node3D, size: Vector3, pos: Vector3, mat: Material, nm: St
 # ---------------------------------------------------------------------------
 
 func _build_bay_water() -> void:
+	# La promenade est côté terre ; l'océan se trouve au-delà du bord aménagé.
+	# Les surfaces sont placées légèrement au-dessus du sol mondial (y=0),
+	# car l'ancien niveau négatif était entièrement masqué par le grand plan Ground.
 	var root := Node3D.new()
 	root.name = "BayWater"
 	add_child(root)
 
-	var water_mat := StandardMaterial3D.new()
-	water_mat.albedo_color = Color(0.12, 0.42, 0.62, 0.90)
-	water_mat.albedo_texture = _tex_water()
-	water_mat.roughness = 0.12
-	water_mat.metallic = 0.25
-	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	water_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	water_mat.uv1_scale = Vector3(8, 8, 1)
+	var water_shader := Shader.new()
+	water_shader.code = """
+shader_type spatial;
+render_mode cull_disabled, depth_draw_opaque, specular_schlick_ggx;
 
-	_add_box(root, Vector3(220, 0.08, 320), ANCHOR + Vector3(95, -0.08, 0), water_mat, "OceanMain")
-	_add_box(root, Vector3(40, 0.07, 180), ANCHOR + Vector3(48, -0.06, -10), water_mat, "BayArm")
-	_add_box(root, Vector3(55, 0.07, 60), ANCHOR + Vector3(55, -0.06, -90), water_mat, "BaySouth")
-	_add_box(root, Vector3(50, 0.07, 50), ANCHOR + Vector3(60, -0.06, 80), water_mat, "BayNorth")
+void fragment() {
+	vec2 uv = UV * 18.0;
+	float swell_a = sin(uv.x * 0.42 + TIME * 0.42) * cos(uv.y * 0.31 - TIME * 0.28);
+	float swell_b = sin((uv.x + uv.y) * 0.19 - TIME * 0.20);
+	float fine_ripple = sin(uv.x * 1.7 + uv.y * 1.15 + TIME * 0.75);
+	float variation = swell_a * 0.045 + swell_b * 0.035 + fine_ripple * 0.012;
+	vec3 deep_water = vec3(0.025, 0.19, 0.29);
+	vec3 coastal_water = vec3(0.055, 0.39, 0.48);
+	float shallow_mix = clamp(0.28 + UV.y * 0.18 + variation, 0.0, 0.72);
+	vec3 water_color = mix(deep_water, coastal_water, shallow_mix);
+	float sun_glint = pow(max(0.0, sin(uv.x * 0.62 + uv.y * 0.37 + TIME * 0.48)), 18.0);
+	water_color += vec3(0.20, 0.25, 0.23) * sun_glint * 0.13;
+	ALBEDO = water_color;
+	ROUGHNESS = 0.19;
+	METALLIC = 0.02;
+	SPECULAR = 0.72;
+}
+"""
+	var water_mat := ShaderMaterial.new()
+	water_mat.shader = water_shader
 
-	var shimmer := StandardMaterial3D.new()
-	shimmer.albedo_color = Color(0.55, 0.75, 0.90, 0.18)
-	shimmer.roughness = 0.05
-	shimmer.metallic = 0.4
-	shimmer.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	shimmer.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_add_box(root, Vector3(180, 0.02, 280), ANCHOR + Vector3(100, 0.02, 0), shimmer, "Shimmer")
+	_add_water_surface(root, Vector2(270.0, 320.0), ANCHOR + Vector3(185.0, 0.055, 0.0), water_mat, "OceanMain")
+	_add_water_surface(root, Vector2(46.0, 178.0), ANCHOR + Vector3(73.0, 0.058, -8.0), water_mat, "BayNorthArm")
+	_add_water_surface(root, Vector2(58.0, 76.0), ANCHOR + Vector3(82.0, 0.060, -91.0), water_mat, "BaySouthArm")
+	_add_water_surface(root, Vector2(58.0, 76.0), ANCHOR + Vector3(82.0, 0.060, 91.0), water_mat, "BayNorthInlet")
+
+
+func _add_water_surface(parent: Node3D, dimensions: Vector2, world_position: Vector3, material: Material, node_name: String) -> void:
+	var water := MeshInstance3D.new()
+	water.name = node_name
+	var plane := PlaneMesh.new()
+	plane.size = dimensions
+	plane.subdivide_width = 24
+	plane.subdivide_depth = 24
+	water.mesh = plane
+	water.material_override = material
+	water.position = world_position
+	water.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	water.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+	parent.add_child(water)
 
 
 func _build_promenade() -> void:
