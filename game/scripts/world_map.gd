@@ -38,7 +38,8 @@ func _build_building_material() -> void:
 func _make_material(color: Color, roughness: float) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
-	material.roughness = 0.95 if roughness == 0.0 else roughness\n\tmaterial.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.roughness = 0.95 if roughness == 0.0 else roughness
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	return material
 
 func _load_roads() -> void:
@@ -64,7 +65,8 @@ func _load_roads() -> void:
 			var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
 			_add_quad(_road_surface, a + side + Vector3.UP * 0.025, a - side + Vector3.UP * 0.025, b - side + Vector3.UP * 0.025, b + side + Vector3.UP * 0.025)
 		_road_count += 1
-	_road_surface.generate_normals()\n\tvar mesh := _road_surface.commit()
+	_road_surface.generate_normals()
+	var mesh := _road_surface.commit()
 	if mesh != null:
 		var instance := MeshInstance3D.new()
 		instance.name = "OSM_Road_Network"
@@ -104,7 +106,8 @@ func _load_buildings() -> void:
 		var height := _building_height(kind, osm_id)
 		_add_building(points, indices, height)
 		_building_count += 1
-	_building_surface.generate_normals()\n\tvar mesh := _building_surface.commit()
+	_building_surface.generate_normals()
+	var mesh := _building_surface.commit()
 	if mesh != null:
 		var instance := MeshInstance3D.new()
 		instance.name = "OSM_Building_Block"
