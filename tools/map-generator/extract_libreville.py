@@ -65,35 +65,49 @@ def split_bbox(south, west, north, east, grid):
             yield row, col, s, w, n, e
 
 
-def feature_for_way(element, kind):
+def feature_for_way(element, kind, bounds):
+    from shapely.geometry import LineString, Polygon, box
+
     points = element.get("geometry") or []
     coords = [
-        [point["lon"], point["lat"]]
+        (float(point["lon"]), float(point["lat"]))
         for point in points
         if "lon" in point and "lat" in point
-        and math.isfinite(point["lon"]) and math.isfinite(point["lat"])
+        and math.isfinite(float(point["lon"])) and math.isfinite(float(point["lat"]))
     ]
     if len(coords) < 2:
         return None
-    if kind == "buildings":
-        if len(coords) < 4:
-            return None
-        if coords[0] != coords[-1]:
-            coords.append(coords[0])
-        geometry = {"type": "Polygon", "coordinates": [coords]}
-    else:
-        geometry = {"type": "LineString", "coordinates": coords}
+    south, west, north, east = bounds
+    clip = box(west, south, east, north)
+    try:
+        if kind == "buildings":
+            if len(coords) < 4:
+                return None
+            if coords[0] != coords[-1]:
+                coords.append(coords[0])
+            shape = Polygon(coords)
+            if not shape.is_valid:
+                shape = shape.buffer(0)
+            clipped = shape.intersection(clip)
+            parts = list(_geometry_parts(clipped, {"Polygon"}))
+            if not parts:
+                return None
+            polygons = [[[list(point) for point in part.exterior.coords]] for part in parts]
+            geometry = {"type": "Polygon", "coordinates": polygons[0]} if len(polygons) == 1 else {"type": "MultiPolygon", "coordinates": polygons}
+        else:
+            clipped = LineString(coords).intersection(clip)
+            parts = list(_geometry_parts(clipped, {"LineString"}))
+            lines = [[list(point) for point in part.coords] for part in parts if len(part.coords) >= 2]
+            if not lines:
+                return None
+            geometry = {"type": "LineString", "coordinates": lines[0]} if len(lines) == 1 else {"type": "MultiLineString", "coordinates": lines}
+    except Exception:
+        return None
     return {
-        "type": "Feature",
-        "id": f"way/{element['id']}",
-        "properties": {
-            "osm_id": element["id"],
-            "osm_type": "way",
-            **element.get("tags", {}),
-        },
+        "type": "Feature", "id": "way/" + str(element["id"]),
+        "properties": {"osm_id": element["id"], "osm_type": "way", **element.get("tags", {})},
         "geometry": geometry,
     }
-
 
 def is_point_of_interest(tags):
     """Retient les lieux nommés et catégorisés utiles à l'identification en jeu."""
@@ -227,7 +241,7 @@ def make_poi_collection(nodes, elements):
     return {"type": "FeatureCollection", "name": "libreville_pois", "features": features}
 
 
-def make_collection(elements, kind):
+def make_collection(elements, kind, bounds):
     unique = {}
     for element in elements:
         if element.get("type") != "way":
@@ -237,7 +251,7 @@ def make_collection(elements, kind):
             kind == "buildings" and "building" not in tags
         ):
             continue
-        feature = feature_for_way(element, kind)
+        feature = feature_for_way(element, kind, bounds)
         if feature:
             unique[element["id"]] = feature
     return {
@@ -468,7 +482,7 @@ def main():
         )),
     }
     for name in ("roads", "buildings"):
-        collection = make_collection(elements, name)
+        collection = make_collection(elements, name, (args.south, args.west, args.north, args.east))
         key = "highway" if name == "roads" else "building"
         categories = Counter(
             feature["properties"].get(key, "non_précisé")
