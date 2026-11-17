@@ -181,7 +181,9 @@ func _load_pois() -> void:
 	if data.is_empty():
 		push_warning("pois.geojson absent : les lieux nommés ne seront pas affichés.")
 		return
-	for feature in data.get("features", []):
+	var poi_features: Array = data.get("features", []).duplicate()
+	poi_features.sort_custom(Callable(self, "_compare_poi_features"))
+	for feature in poi_features:
 		if _poi_count >= MAX_POI_LABELS:
 			break
 		var geometry: Dictionary = feature.get("geometry", {})
@@ -197,6 +199,31 @@ func _load_pois() -> void:
 		var kind := str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("building", "place"))))))
 		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 4.0, _poi_color(kind), 500.0)
 		_poi_count += 1
+
+
+func _compare_poi_features(a: Dictionary, b: Dictionary) -> bool:
+	var props_a: Dictionary = a.get("properties", {})
+	var props_b: Dictionary = b.get("properties", {})
+	var priority_a := _poi_priority(props_a)
+	var priority_b := _poi_priority(props_b)
+	if priority_a == priority_b:
+		return str(props_a.get("name", "")) < str(props_b.get("name", ""))
+	return priority_a < priority_b
+
+
+func _poi_priority(props: Dictionary) -> int:
+	var kind := str(props.get("amenity", props.get("healthcare", props.get("shop", props.get("tourism", props.get("place", ""))))))
+	match kind:
+		"hospital", "clinic", "police", "fire_station", "townhall", "government", "marketplace":
+			return 0
+		"school", "college", "university", "kindergarten", "bus_station", "ferry_terminal":
+			return 1
+		"supermarket", "mall", "department_store", "bank", "pharmacy":
+			return 2
+		"museum", "attraction", "monument", "viewpoint", "hotel":
+			return 3
+		_:
+			return 4
 
 
 func _add_map_label(label_text: String, world_position: Vector3, label_color: Color, max_distance: float) -> void:
