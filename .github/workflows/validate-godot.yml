@@ -40,7 +40,20 @@ jobs:
           xvfb-run -a /tmp/godot/Godot_v4.3-stable_linux.x86_64 \
             --rendering-method gl_compatibility --rendering-driver opengl3 \
             --path . --quit-after 5 2>&1 | tee /tmp/libreville-map.log
-          grep -q "routes: 4503 | bâtiments: 49359" /tmp/libreville-map.log
+          python3 - <<'PY'
+          import json, re
+          from pathlib import Path
+          log = Path("/tmp/libreville-map.log").read_text(errors="replace")
+          report = json.loads(Path("data/osm/extraction-report.json").read_text())
+          match = re.search(r"routes:\\s*(\\d+)\\s*\\|\\s*bâtiments:\\s*(\\d+)", log)
+          assert match, "Les compteurs de la carte ne sont pas présents dans le journal Godot."
+          roads, buildings = map(int, match.groups())
+          expected_roads = report["files"]["roads.geojson"]["features"]
+          expected_buildings = report["files"]["buildings.geojson"]["features"]
+          assert roads == expected_roads, f"Routes chargées {roads}, attendues {expected_roads}"
+          assert buildings == expected_buildings, f"Bâtiments chargés {buildings}, attendus {expected_buildings}"
+          print(f"Carte Godot cohérente : {roads} routes et {buildings} bâtiments.")
+          PY
           if grep -q "SCRIPT ERROR" /tmp/libreville-map.log; then
             echo "GDScript runtime error detected."
             exit 1
