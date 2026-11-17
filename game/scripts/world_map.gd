@@ -24,6 +24,7 @@ var _environment_material: StandardMaterial3D
 var _road_labels := 0
 var _road_material: StandardMaterial3D
 var _building_material: StandardMaterial3D
+var _roof_material: StandardMaterial3D
 var _locality_points: Array[Dictionary] = []
 var _location_hud: Label
 var _location_refresh := 0.0
@@ -39,6 +40,9 @@ func _ready() -> void:
 	_building_material = _make_material(Color(0.76, 0.68, 0.56))
 	# Les couleurs attribuées aux bâtiments par type/OSM ID doivent être visibles.
 	_building_material.vertex_color_use_as_albedo = true
+	_roof_material = _make_material(Color.WHITE)
+	_roof_material.vertex_color_use_as_albedo = true
+	_roof_material.albedo_texture = _make_roof_tile_texture()
 	if show_roads:
 		_load_roads()
 	if show_buildings:
@@ -353,6 +357,7 @@ func _load_buildings() -> void:
 	var features: Array = data.get("features", [])
 	var limit := mini(features.size(), BUILDING_LIMIT)
 	var surface := _new_surface(_building_material)
+	var roof_surface := _new_surface(_roof_material)
 	var batch_count := 0
 	var batch_index := 0
 	for index in range(limit):
@@ -386,7 +391,7 @@ func _load_buildings() -> void:
 			if indices.is_empty():
 				continue
 			surface.set_color(_building_color(building_kind, osm_id))
-			_add_building(surface, points, indices, height)
+			_add_building(surface, roof_surface, points, indices, height, _roof_color(building_kind, osm_id))
 			added = true
 		if added:
 			_building_count += 1
@@ -395,9 +400,14 @@ func _load_buildings() -> void:
 			_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
 			batch_index += 1
 			batch_count = 0
+			_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
+			batch_index += 1
+			batch_count = 0
 			surface = _new_surface(_building_material)
+			roof_surface = _new_surface(_roof_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
+		_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
 
 
 
@@ -605,18 +615,80 @@ func _building_color(kind: String, osm_id: int) -> Color:
 		_:
 			return Color(0.76 + variation, 0.68 + variation, 0.56 + variation)
 
-func _add_building(surface: SurfaceTool, points: PackedVector2Array, indices: PackedInt32Array, height: float) -> void:
+func _roof_color(kind: String, osm_id: int) -> Color:
+	# Variantes visuelles de toiture : ce ne sont pas des matériaux mesurés sur le terrain.
+	var variation := float(abs(osm_id) % 7) * 0.018
+	match kind:
+		"industrial", "warehouse":
+			return Color(0.66 + variation, 0.70 + variation, 0.68 + variation)
+		"commercial", "retail", "office":
+			return Color(0.58 + variation, 0.59 + variation, 0.56 + variation)
+		_:
+			return Color(0.78 + variation, 0.48 + variation, 0.34 + variation)
+
+
+func _make_roof_tile_texture() -> Texture2D:
+	# Texture procédurale répétable de petites tuiles, sans image externe à télécharger.
+	var image := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.48, 0.25, 0.18, 1.0))
+	for y in range(128):
+		var row := int(y / 16)
+		for x in range(128):
+			var local_y := y % 16
+			var local_x := (x + (16 if row % 2 == 1 else 0)) % 32
+			var shade := 0.92 if (local_y == 0 or local_x == 0) else 1.0
+			if local_y == 15:
+				shade *= 0.72
+			image.set_pixel(x, y, Color(0.56 * shade, 0.29 * shade, 0.21 * shade, 1.0))
+	return ImageTexture.create_from_image(image)
+
+
+func _add_uv_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3,
+		uv_a: Vector2, uv_b: Vector2, uv_c: Vector2, uv_d: Vector2) -> void:
+	surface.set_uv(uv_a)
+	surface.add_vertex(a)
+	surface.set_uv(uv_b)
+	surface.add_vertex(b)
+	surface.set_uv(uv_c)
+	surface.add_vertex(c)
+	surface.set_uv(uv_a)
+	surface.add_vertex(a)
+	surface.set_uv(uv_c)
+	surface.add_vertex(c)
+	surface.set_uv(uv_d)
+	surface.add_vertex(d)
+
+
+func _add_building(walls: SurfaceTool, roofs: SurfaceTool, points: PackedVector2Array,
+		indices: PackedInt32Array, height: float, roof_tint: Color) -> void:
 	for i in range(points.size()):
 		var a := points[i]
 		var b := points[(i + 1) % points.size()]
-		_add_quad(surface, Vector3(a.x, 0.0, a.y), Vector3(b.x, 0.0, b.y), Vector3(b.x, height, b.y), Vector3(a.x, height, a.y))
+		var edge_length := a.distance_to(b)
+		var uv_length := edge_length / 3.0
+		var uv_height := height / 3.0
+		_add_uv_quad(walls,
+			Vector3(a.x, 0.0, a.y), Vector3(b.x, 0.0, b.y),
+			Vector3(b.x, height, b.y), Vector3(a.x, height, a.y),
+			Vector2(0.0, 0.0), Vector2(uv_length, 0.0),
+			Vector2(uv_length, uv_height), Vector2(0.0, uv_height))
+	roofs.set_color(roof_tint)
 	for i in range(0, indices.size(), 3):
 		var p0 := points[indices[i]]
 		var p1 := points[indices[i + 1]]
 		var p2 := points[indices[i + 2]]
-		surface.add_vertex(Vector3(p0.x, height, p0.y))
-		surface.add_vertex(Vector3(p1.x, height, p1.y))
-		surface.add_vertex(Vector3(p2.x, height, p2.y))
+		_add_uv_triangle(roofs, Vector3(p0.x, height + 0.035, p0.y),
+			Vector3(p1.x, height + 0.035, p1.y), Vector3(p2.x, height + 0.035, p2.y))
+
+
+func _add_uv_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
+	# Coordonnées mondiales : le motif reste à une échelle constante sur chaque toit.
+	surface.set_uv(Vector2(a.x / 2.0, a.z / 2.0))
+	surface.add_vertex(a)
+	surface.set_uv(Vector2(b.x / 2.0, b.z / 2.0))
+	surface.add_vertex(b)
+	surface.set_uv(Vector2(c.x / 2.0, c.z / 2.0))
+	surface.add_vertex(c)
 
 func _add_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
 	surface.add_vertex(a)
