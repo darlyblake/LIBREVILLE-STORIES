@@ -126,8 +126,11 @@ jobs:
                           assert isinstance(ring, list) and len(ring) >= 4, f"invalid ring: {feature.get('id')} polygon {polygon_index} ring {ring_index}"
                           assert all(isinstance(point, list) and len(point) >= 2 for point in ring), f"invalid coordinate pair: {feature.get('id')} polygon {polygon_index} ring {ring_index}"
                           assert ring[0] == ring[-1], f"open polygon ring: {feature.get('id')} polygon {polygon_index} ring {ring_index}"
+              elif kind == "Point":
+                  assert isinstance(coords, list) and len(coords) >= 2, f"invalid point coordinates: {feature.get('id')}"
+                  assert all(isinstance(value, (int, float)) and math.isfinite(value) for value in coords[:2]), f"non-finite point coordinates: {feature.get('id')}"
               else:
-                  raise AssertionError(f"polygon validation not applicable to {kind}")
+                  raise AssertionError(f"unsupported geometry type: {kind}")
 
           for feature in roads["features"]:
               check_geometry(feature, {"LineString", "MultiLineString"})
