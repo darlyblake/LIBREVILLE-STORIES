@@ -50,7 +50,9 @@ def material(name, color, roughness=0.72, metallic=0.0):
 
 ivory = material("Enduit ivoire chaud", (0.78, 0.72, 0.59))
 white = material("Blanc casse", (0.91, 0.88, 0.79))
-blue = material("Bleu profond Baie des Rois", (0.035, 0.13, 0.22), 0.48)
+blue = material("Bois peint brun rouge", (0.34, 0.105, 0.045), 0.72)
+roof_green = material("Toiture metal vert profond", (0.045, 0.19, 0.105), 0.48, 0.18)
+roof_edge = material("Rives toiture vert sombre", (0.025, 0.095, 0.065), 0.5, 0.22)
 wood = material("Bois tropical", (0.30, 0.16, 0.075), 0.66)
 glass = material("Vitrage teinte", (0.10, 0.23, 0.27), 0.22, 0.12)
 concrete = material("Beton", (0.43, 0.43, 0.39))
@@ -98,7 +100,10 @@ for side in (-1, 1):
 
 # Front service counter and timber details.
 cube("Comptoir facade", (0, -D/2+0.20, 1.12), (W-0.45, 0.42, 0.16), wood, 0.035)
-cube("Facade comptoir", (0, -D/2+0.39, 0.70), (W-0.48, 0.12, 0.78), blue, 0.025)
+cube("Facade comptoir", (0, -D/2+0.39, 0.70), (W-0.48, 0.12, 0.78), wood, 0.025)
+for i in range(19):
+    x = -W/2 + 0.34 + i*0.23
+    cube("Lame verticale facade", (x, -D/2+0.315, 0.70), (0.045, 0.035, 0.78), ivory, 0.006)
 cube("Plan de travail", (0, -D/2+0.18, 1.23), (W-0.34, 0.58, 0.09), wood, 0.025)
 for i in range(17):
     x = -W/2 + 0.55 + i*0.23
@@ -117,25 +122,36 @@ for side in (-1, 1):
 for x in (-W/2+0.16, W/2-0.16):
     for y in (-D/2+0.16, D/2-0.16):
         cube("Poteau structure", (x, y, 1.72), (0.13, 0.13, 3.0), blue, 0.025)
-cube("Auvent toiture", (0, 0, ROOF_H), (W+0.65, D+0.55, 0.22), blue, 0.07)
-cube("Bandeau facade", (0, -D/2-0.23, 3.12), (W+0.30, 0.12, 0.34), ivory, 0.035)
-cube("Sous face auvent", (0, 0, 3.215), (W+0.46, D+0.34, 0.035), white, 0.015)
+# Two-slope pavilion roof, matching the green pitched roofs visible on site.
+roof_angle = math.radians(19.0)
+roof_half_run = 1.18
+roof_slope_length = roof_half_run / math.cos(roof_angle)
+roof_center_z = 3.58
+for side in (-1, 1):
+    panel = cube("Pan toiture deux pentes", (0, side*roof_half_run*0.5, roof_center_z),
+                 (W+0.58, roof_slope_length, 0.16), roof_green, 0.035)
+    panel.rotation_euler[0] = math.radians(19.0) if side == 1 else math.radians(-19.0)
+cube("Faitage toiture", (0, 0, 3.99), (W+0.68, 0.18, 0.16), roof_edge, 0.035)
+for side in (-1, 1):
+    cube("Bandeau rive toiture", (0, side*1.23, 3.55), (W+0.72, 0.12, 0.20), roof_edge, 0.025)
+cube("Bandeau facade", (0, -D/2-0.23, 3.05), (W+0.30, 0.12, 0.30), ivory, 0.035)
+cube("Sous face toiture", (0, 0, 3.43), (W+0.42, D+0.28, 0.045), wood, 0.015)
 
 # Rainwater details.
-cube("Gouttiere avant", (0, -D/2-0.29, 3.20), (W+0.55, 0.10, 0.10), metal, 0.025)
+cube("Gouttiere avant", (0, -1.25, 3.48), (W+0.55, 0.10, 0.10), metal, 0.025)
 for x in (-W/2+0.22, W/2-0.22):
-    beam_between("Descente eau pluviale", (x, -D/2-0.27, 3.16),
-                 (x, -D/2-0.27, 0.34), 0.035, metal)
+    beam_between("Descente eau pluviale", (x, -1.25, 3.45),
+                 (x, -1.25, 0.34), 0.035, metal)
 
 # Sign panel and text converted to mesh for reliable GLB export.
-cube("Enseigne fond", (0, -D/2-0.30, 3.12), (2.65, 0.055, 0.25), blue, 0.02)
+cube("Enseigne fond", (0, -D/2-0.30, 3.05), (2.65, 0.055, 0.25), roof_edge, 0.02)
 font = bpy.data.curves.new("Texte enseigne", type="FONT")
 font.body = "BAIE DES ROIS"
 font.size = 0.19
 font.extrude = 0.001
 text_obj = bpy.data.objects.new("Enseigne BAIE DES ROIS", font)
 bpy.context.collection.objects.link(text_obj)
-text_obj.location = (-1.10, -D/2-0.337, 3.055)
+text_obj.location = (-1.10, -D/2-0.337, 2.985)
 text_obj.rotation_euler[0] = math.radians(90)
 font.materials.append(white)
 bpy.ops.object.select_all(action="DESELECT")
@@ -146,7 +162,7 @@ text_obj = bpy.context.object
 created.append(text_obj)
 
 # Exterior menu panel.
-cube("Panneau menu", (1.72, -D/2-0.12, 1.88), (0.48, 0.06, 0.72), blue, 0.025)
+cube("Panneau menu", (1.72, -D/2-0.12, 1.88), (0.48, 0.06, 0.72), roof_edge, 0.025)
 for z in (1.66, 1.84, 2.02):
     cube("Ligne menu", (1.72, -D/2-0.155, z), (0.30, 0.012, 0.025), white, 0.004)
 
