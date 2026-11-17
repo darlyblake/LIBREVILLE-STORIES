@@ -288,27 +288,48 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 	if positions.is_empty():
 		return
 	var trunk_mesh := CylinderMesh.new()
-	trunk_mesh.top_radius = 0.10
-	trunk_mesh.bottom_radius = 0.16
-	trunk_mesh.height = 1.4
+	trunk_mesh.top_radius = 0.09
+	trunk_mesh.bottom_radius = 0.17
+	trunk_mesh.height = 1.45
 	var canopy_mesh := SphereMesh.new()
-	canopy_mesh.radius = 0.85
+	canopy_mesh.radius = 0.9
 	canopy_mesh.height = 2.0
-	var trunk_material := _make_material(Color(0.30, 0.20, 0.12))
-	var canopy_material := _make_material(Color(0.16, 0.34, 0.18))
+	var trunk_material := _make_material(Color.WHITE)
+	trunk_material.vertex_color_use_as_albedo = true
+	var canopy_material := _make_material(Color.WHITE)
+	canopy_material.vertex_color_use_as_albedo = true
 	var trunks := MultiMesh.new()
 	trunks.transform_format = MultiMesh.TRANSFORM_3D
+	trunks.use_colors = true
 	trunks.mesh = trunk_mesh
 	trunks.instance_count = positions.size()
 	var canopies := MultiMesh.new()
 	canopies.transform_format = MultiMesh.TRANSFORM_3D
+	canopies.use_colors = true
 	canopies.mesh = canopy_mesh
 	canopies.instance_count = positions.size()
+	var foliage_palette: Array[Color] = [
+		Color(0.12, 0.30, 0.16),
+		Color(0.17, 0.38, 0.20),
+		Color(0.22, 0.42, 0.22),
+		Color(0.26, 0.36, 0.17),
+		Color(0.14, 0.34, 0.25),
+		Color(0.30, 0.43, 0.22)
+	]
 	for i in range(positions.size()):
 		var position := positions[i]
-		trunks.set_instance_transform(i, Transform3D(Basis.IDENTITY, position + Vector3.UP * 0.7))
-		var canopy_basis := Basis.IDENTITY.scaled(Vector3(1.0, 1.25, 1.0))
-		canopies.set_instance_transform(i, Transform3D(canopy_basis, position + Vector3.UP * 2.25))
+		var rng := RandomNumberGenerator.new()
+		rng.seed = int(absf(position.x * 13.0 + position.z * 29.0)) + i * 7919
+		var height_scale := rng.randf_range(0.78, 1.32)
+		var width_scale := rng.randf_range(0.78, 1.28)
+		var yaw := rng.randf_range(0.0, TAU)
+		var trunk_scale := Vector3(rng.randf_range(0.88, 1.12), height_scale, rng.randf_range(0.88, 1.12))
+		var trunk_basis := Basis(Vector3.UP, yaw).scaled(trunk_scale)
+		trunks.set_instance_transform(i, Transform3D(trunk_basis, position + Vector3.UP * (0.72 * height_scale)))
+		trunks.set_instance_color(i, Color(0.72, 0.57, 0.40).lerp(Color(0.30, 0.22, 0.14), rng.randf()))
+		var canopy_basis := Basis(Vector3.UP, yaw).scaled(Vector3(width_scale, 1.25 * height_scale, width_scale))
+		canopies.set_instance_transform(i, Transform3D(canopy_basis, position + Vector3.UP * (2.2 * height_scale)))
+		canopies.set_instance_color(i, foliage_palette[rng.randi_range(0, foliage_palette.size() - 1)])
 	var trunk_instance := MultiMeshInstance3D.new()
 	trunk_instance.name = "OSM_Tree_Trunks"
 	trunk_instance.multimesh = trunks
@@ -321,7 +342,7 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 	canopy_instance.material_override = canopy_material
 	canopy_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(canopy_instance)
-	print("LIBREVILLE STORIES | arbres 3D instanciés : %d" % positions.size())
+	print("LIBREVILLE STORIES | arbres 3D variés instanciés : %d" % positions.size())
 
 
 func _environment_color(kind: String) -> Color:
