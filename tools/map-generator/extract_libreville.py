@@ -154,6 +154,7 @@ def main():
     for index, (row, col, south, west, north, east) in enumerate(tiles, 1):
         cache_file = CACHE / f"grid{args.grid}_tile_{row}_{col}.json"
         data = load_cached_tile(cache_file)
+        from_cache = data is not None
         if data is not None:
             print(
                 f"[{index}/{len(tiles)}] Secteur {row + 1}-{col + 1} : "
@@ -183,7 +184,7 @@ def main():
             "row": row + 1,
             "column": col + 1,
             "elements": len(data["elements"]),
-            "from_cache": load_cached_tile(cache_file) is not None,
+            "from_cache": from_cache,
         })
 
     elements = list(all_elements.values())
