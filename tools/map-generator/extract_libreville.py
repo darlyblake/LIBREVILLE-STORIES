@@ -128,6 +128,60 @@ def load_cached_tile(cache_file):
     return None
 
 
+
+def extract_from_geofabrik_pbf(south, west, north, east):
+    """Repli fiable sur l'extrait PBF national Geofabrik si Overpass est indisponible."""
+    try:
+        import osmium
+    except ImportError as exc:
+        raise RuntimeError("Le module Python 'osmium' est requis pour le repli Geofabrik.") from exc
+
+    pbf_path = OUTPUT / "gabon-latest.osm.pbf"
+    if not pbf_path.exists() or pbf_path.stat().st_size < 1_000_000:
+        temp_path = pbf_path.with_suffix(".pbf.part")
+        url = "https://download.geofabrik.de/africa/gabon-latest.osm.pbf"
+        print("Téléchargement du PBF Gabon depuis Geofabrik…", flush=True)
+        request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(request, timeout=180) as response, temp_path.open("wb") as output:
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                output.write(chunk)
+        if temp_path.stat().st_size < 1_000_000:
+            raise RuntimeError("Fichier PBF Geofabrik incomplet ou trop petit.")
+        temp_path.replace(pbf_path)
+
+    class LibrevilleHandler(osmium.SimpleHandler):
+        def __init__(self):
+            super().__init__()
+            self.elements = []
+
+        def way(self, way):
+            tags = dict(way.tags)
+            if "highway" not in tags and "building" not in tags:
+                return
+            geometry = []
+            inside = False
+            for node in way.nodes:
+                if not node.location.valid():
+                    continue
+                lon, lat = float(node.lon), float(node.lat)
+                geometry.append({"lon": lon, "lat": lat})
+                if west <= lon <= east and south <= lat <= north:
+                    inside = True
+            if len(geometry) >= 2 and inside:
+                self.elements.append({
+                    "type": "way", "id": int(way.id),
+                    "tags": tags, "geometry": geometry,
+                })
+
+    handler = LibrevilleHandler()
+    print("Lecture et découpage local du PBF sur l'emprise de Libreville…", flush=True)
+    handler.apply_file(str(pbf_path), locations=True)
+    print(f"Repli Geofabrik : {len(handler.elements)} voies et bâtiments candidats.", flush=True)
+    return handler.elements
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--south", type=float, default=DEFAULT_BBOX[0])
@@ -151,41 +205,62 @@ def main():
     tile_report = []
     tiles = list(split_bbox(args.south, args.west, args.north, args.east, args.grid))
 
-    for index, (row, col, south, west, north, east) in enumerate(tiles, 1):
-        cache_file = CACHE / f"grid{args.grid}_tile_{row}_{col}.json"
-        data = load_cached_tile(cache_file)
-        from_cache = data is not None
-        if data is not None:
-            print(
-                f"[{index}/{len(tiles)}] Secteur {row + 1}-{col + 1} : "
-                f"cache réutilisé ({len(data['elements'])} éléments)",
-                flush=True,
+    used_geofabrik_fallback = False
+    try:
+        for index, (row, col, south, west, north, east) in enumerate(tiles, 1):
+            cache_file = CACHE / f"grid{args.grid}_tile_{row}_{col}.json"
+            data = load_cached_tile(cache_file)
+            from_cache = data is not None
+            if data is not None:
+                print(
+                    f"[{index}/{len(tiles)}] Secteur {row + 1}-{col + 1} : "
+                    f"cache réutilisé ({len(data['elements'])} éléments)",
+                    flush=True,
+                )
+            else:
+                bbox = f"{south:.7f},{west:.7f},{north:.7f},{east:.7f}"
+                query = (
+                    f"[out:json][timeout:{args.timeout}];"
+                    f'(way["highway"]({bbox});way["building"]({bbox}););'
+                    "out body geom;"
+                )
+                print(f"[{index}/{len(tiles)}] Extraction secteur {row + 1}-{col + 1}…", flush=True)
+                data = request_overpass(query, args.timeout)
+                temp_cache = cache_file.with_suffix(".json.tmp")
+                temp_cache.write_text(
+                    json.dumps(data, separators=(",", ":")), encoding="utf-8"
+                )
+                temp_cache.replace(cache_file)
+                time.sleep(2)  # limite la pression sur les serveurs publics
+    
+            for element in data["elements"]:
+                if element.get("type") == "way":
+                    all_elements[element["id"]] = element
+            tile_report.append({
+                "row": row + 1,
+                "column": col + 1,
+                "elements": len(data["elements"]),
+                "from_cache": from_cache,
+            })
+    
+    
+    except Exception as extraction_error:
+        print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
+        used_geofabrik_fallback = True
+        all_elements = {
+            element["id"]: element
+            for element in extract_from_geofabrik_pbf(
+                args.south, args.west, args.north, args.east
             )
-        else:
-            bbox = f"{south:.7f},{west:.7f},{north:.7f},{east:.7f}"
-            query = (
-                f"[out:json][timeout:{args.timeout}];"
-                f'(way["highway"]({bbox});way["building"]({bbox}););'
-                "out body geom;"
-            )
-            print(f"[{index}/{len(tiles)}] Extraction secteur {row + 1}-{col + 1}…", flush=True)
-            data = request_overpass(query, args.timeout)
-            temp_cache = cache_file.with_suffix(".json.tmp")
-            temp_cache.write_text(
-                json.dumps(data, separators=(",", ":")), encoding="utf-8"
-            )
-            temp_cache.replace(cache_file)
-            time.sleep(2)  # limite la pression sur les serveurs publics
-
-        for element in data["elements"]:
-            if element.get("type") == "way":
-                all_elements[element["id"]] = element
-        tile_report.append({
-            "row": row + 1,
-            "column": col + 1,
-            "elements": len(data["elements"]),
-            "from_cache": from_cache,
-        })
+        }
+        tile_report = [
+            {
+                "row": row + 1, "column": col + 1,
+                "elements": None, "from_cache": False,
+                "source": "Geofabrik Gabon PBF",
+            }
+            for row, col, *_ in tiles
+        ]
 
     elements = list(all_elements.values())
     report = {
@@ -196,6 +271,7 @@ def main():
             args.south, args.west, args.north, args.east
         ],
         "grid": f"{args.grid}x{args.grid}",
+        "source_mode": "Geofabrik Gabon PBF (fallback)" if used_geofabrik_fallback else "Overpass API",
         "tiles": tile_report,
         "extracted_at_utc": datetime.now(timezone.utc).isoformat(),
         "files": {},
