@@ -23,15 +23,14 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Validation Godot 4.3 du générateur de fenêtres/portes sur `main` (rendu Compatibility réussi).
 - [x] Validation Godot 4.3 après ajout des balcons (PR n°13, rendu Compatibility réussi).
 - [ ] Inspecter leur rendu en jeu sur la machine cible.
-- [ ] Corriger les objets réellement flottants après inspection de leurs coordonnées et de leur ancrage (les étiquettes 3D ont été abaissées ; les objets géométriques restants doivent être diagnostiqués).
+- [x] Corriger le bug de double-hauteur des balcons (ils flottaient au-dessus des toits) + ancrage plus serré des fenêtres/portes + plinthe de base pour éviter l'aspect flottant au sol.
 - [x] Première variété de matériaux procéduraux : tuiles, tôle nervurée et dalle béton, sélectionnés par typologie OSM (approximation visuelle).
 - [x] Exploiter `building:material` pour nuancer la teinte des façades (brique, bois, béton, métal, pierre, verre, enduit) quand aucune couleur explicite OSM n'est fournie ; cela ne remplace pas encore des textures photographiques.
 - [x] Première toiture géométrique à deux pans sur les empreintes quadrilatérales compatibles ; `roof:shape=gabled` est prioritaire, `flat` désactive la pente, et les formes non prises en charge (hipped, pyramidal, skillion, dôme…) restent volontairement en toiture plate provisoire.
-- [x] Lire `roof:height` pour régler la hauteur du faîtage ; utiliser `roof:levels` comme estimation limitée uniquement si `roof:height` manque. Les formes restent limitées aux toits à deux pans compatibles.
 - [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
 - [x] Première passe de balcons stylisés sur certains immeubles à plusieurs niveaux, regroupés dans le mesh des façades.
 - [ ] Ajouter auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
-- [x] Détecter les anneaux intérieurs des empreintes OSM et laisser le toit ouvert pour ne pas boucher artificiellement les cours ; les murs intérieurs et la triangulation exacte des trous restent à implémenter.
+- [ ] Mieux gérer les cours intérieures et trous dans les empreintes polygonales.
 - [ ] Affiner les typologies architecturales locales à partir de photos/références vérifiables ; ne pas uniformiser toutes les constructions.
 
 ## 3. Relief, mer et environnement
@@ -40,7 +39,6 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Première représentation visuelle du tracé côtier OSM par une bande littorale couleur sable ; validation Godot 4.3 réussie sur `main` (ce n'est pas encore une surface mer/terre).
 - [ ] Construire une surface mer/terre fiable à partir d'une géométrie côtière cohérente ; les lignes de côte seules ne suffisent pas.
 - [ ] Ajouter plages, mangroves, rivières et zones humides lorsque les données sont vérifiées.
-- [x] Prendre en charge les géométries environnementales `MultiPolygon` ; les polygones avec anneaux intérieurs sont volontairement ignorés pour éviter de remplir incorrectement leurs trous (triangulation avec trous encore à implémenter).
 - [x] Première végétation 3D low-poly instanciée dans les espaces verts OSM (plafond 1 200, PR n°17 validée Godot 4.3) ; inspection visuelle et densité à confirmer.
 
 ## 4. Routes, mobilier et navigation
@@ -65,9 +63,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Validation Godot 4.3 après fenêtres et portes (rendu Compatibility réussi).
 - [x] Validation Godot 4.3 après les balcons (PR n°13, rendu Compatibility réussi).
 - [x] Validation Godot 4.3 de l'atlas procédural de toitures (PR n°15 fusionnée).
-- [x] Regrouper les lots de bâtiments par cellules spatiales de 1 km (maximum 1 200 bâtiments par lot) pour resserrer les volumes de culling ; validation visuelle et mesure des gains encore requises.
 - [ ] Mettre en place le chargement/déchargement spatial par secteurs.
-- [ ] Vérifier que le nombre de MeshInstance3D générés par cellules reste acceptable sur la GT 730 ; le découpage spatial peut augmenter le nombre de lots.
 - [ ] Mesurer FPS, mémoire et temps de chargement sur la machine cible (GT 730 2 Go) ; aucun chiffre ne doit être annoncé avant ce test.
 - [ ] Vérifier les collisions et la circulation du joueur sur les routes et autour des bâtiments.
 - [ ] Faire une inspection visuelle en jeu à plusieurs endroits reconnaissables de Libreville.

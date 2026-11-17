@@ -7,7 +7,6 @@ const CENTER_LON := 9.4475
 const METERS_PER_DEG_LAT := 111320.0
 const BUILDING_LIMIT := 60000
 const BUILDINGS_PER_MESH := 1200
-const BUILDING_SPATIAL_CELL_SIZE := 1000.0
 const ROADS_PER_MESH := 700
 const MAX_ROAD_LABELS := 250
 const MAX_POI_LABELS := 450
@@ -33,8 +32,12 @@ var _location_refresh := 0.0
 
 func _ready() -> void:
 	_apply_ground_surface()
+	_add_ocean_plane()
 	_road_material = _make_material(Color.WHITE)
 	_road_material.vertex_color_use_as_albedo = true
+	_road_material.albedo_texture = _make_asphalt_texture()
+	_road_material.roughness = 0.88
+	_road_material.uv1_scale = Vector3(1.0, 1.0, 1.0)
 	_environment_material = _make_material(Color.WHITE)
 	_environment_material.vertex_color_use_as_albedo = true
 	_load_environment()
@@ -46,8 +49,11 @@ func _ready() -> void:
 	_roof_material = _make_material(Color.WHITE)
 	_roof_material.vertex_color_use_as_albedo = true
 	_roof_material.albedo_texture = _make_roof_tile_texture()
+	_roof_material.roughness = 0.78
+	_roof_material.metallic = 0.08
 	_facade_detail_material = _make_material(Color.WHITE)
 	_facade_detail_material.vertex_color_use_as_albedo = true
+	_facade_detail_material.roughness = 0.85
 	if show_roads:
 		_load_roads()
 	if show_buildings:
@@ -86,7 +92,7 @@ func _create_location_hud() -> void:
 
 	_location_hud = Label.new()
 	_location_hud.name = "CurrentLocation"
-	_location_hud.text = "LIBREVILLE  |  localisation en cours..."
+	_location_hud.text = "Localisation..."
 	_location_hud.add_theme_color_override("font_color", Color(0.92, 0.96, 1.0))
 	_location_hud.add_theme_font_size_override("font_size", 15)
 	margin.add_child(_location_hud)
@@ -114,7 +120,7 @@ func _update_location_hud() -> void:
 		location_line += "  ·  %.0f m" % nearest_distance
 	else:
 		location_line = "Hors des localités nommées OSM"
-	_location_hud.text = "LIBREVILLE  |  POSITION DU JOUEUR\n%s\nGPS  %.5f, %.5f" % [location_line, latitude, longitude]
+	_location_hud.text = "%s\n%.4f  ·  %.4f" % [location_line, latitude, longitude]
 
 func _apply_ground_surface() -> void:
 	# Le grand plan de sol uni donne un aspect artificiel. Une texture légère
@@ -153,11 +159,41 @@ func _apply_ground_surface() -> void:
 	ground.material_override = material
 
 
+func _add_ocean_plane() -> void:
+	# Plan mer Atlantique / estuaire — plus visible, teinte GTA.
+	var ocean := MeshInstance3D.new()
+	ocean.name = "OceanSurface"
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(16000.0, 11000.0)
+	ocean.mesh = plane
+	ocean.position = Vector3(-2600.0, -0.12, 100.0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.08, 0.36, 0.55, 0.94)
+	mat.roughness = 0.15
+	mat.metallic = 0.22
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# Texture eau procédurale légère
+	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	for y in range(128):
+		for x in range(128):
+			var wave := sin(float(x) * 0.12) * cos(float(y) * 0.09) * 0.06
+			img.set_pixel(x, y, Color(0.10 + wave, 0.40 + wave * 0.5, 0.58 + wave, 0.94))
+	img.generate_mipmaps()
+	mat.albedo_texture = ImageTexture.create_from_image(img)
+	mat.uv1_scale = Vector3(40, 40, 1)
+	ocean.material_override = mat
+	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(ocean)
+
+
 func _make_material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
-	material.roughness = 0.95
+	material.roughness = 0.92
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# Évite le z-fighting trop visible entre façades et détails décalés.
+	material.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_OPAQUE_ONLY
 	return material
 
 func _read_geojson(path: String) -> Dictionary:
@@ -201,45 +237,35 @@ func _load_environment() -> void:
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("environment_kind", ""))
 		var added := false
-		var geometry_type := str(geometry.get("type", ""))
-		if geometry_type in ["Polygon", "MultiPolygon"]:
-			var polygons: Array = []
-			if geometry_type == "Polygon":
-				polygons.append(geometry.get("coordinates", []))
-			else:
-				polygons = geometry.get("coordinates", [])
-			for polygon_rings in polygons:
-				if polygon_rings.is_empty() or polygon_rings[0].size() < 4:
-					continue
-				# Geometry2D.triangulate_polygon ne gère qu'un contour simple.
-				# Ignorer prudemment les surfaces avec trous plutôt que de les remplir à tort.
-				if polygon_rings.size() > 1:
-					continue
-				var points := PackedVector2Array()
-				for coordinate in polygon_rings[0]:
-					var p := _geo_to_world(coordinate)
-					points.append(Vector2(p.x, p.z))
-				if points.size() > 1 and points[0].distance_squared_to(points[points.size() - 1]) < 0.0001:
-					points.remove_at(points.size() - 1)
-				if points.size() < 3:
-					continue
-				var indices := Geometry2D.triangulate_polygon(points)
-				if indices.is_empty():
-					continue
-				if kind in ["vegetation", "green_space"]:
-					_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
-				surface.set_color(_environment_color(kind))
-				for i in range(0, indices.size(), 3):
-					var p0 := points[indices[i]]
-					var p1 := points[indices[i + 1]]
-					var p2 := points[indices[i + 2]]
-					surface.add_vertex(Vector3(p0.x, 0.012, p0.y))
-					surface.add_vertex(Vector3(p1.x, 0.012, p1.y))
-					surface.add_vertex(Vector3(p2.x, 0.012, p2.y))
-				added = true
-		elif geometry_type == "LineString":
+		if str(geometry.get("type", "")) == "Polygon":
+			var rings: Array = geometry.get("coordinates", [])
+			if rings.is_empty() or rings[0].size() < 4:
+				continue
+			var points := PackedVector2Array()
+			for coordinate in rings[0]:
+				var p := _geo_to_world(coordinate)
+				points.append(Vector2(p.x, p.z))
+			if points.size() > 1 and points[0].distance_squared_to(points[points.size() - 1]) < 0.0001:
+				points.remove_at(points.size() - 1)
+			if points.size() < 3:
+				continue
+			var indices := Geometry2D.triangulate_polygon(points)
+			if indices.is_empty():
+				continue
+			if kind in ["vegetation", "green_space"]:
+				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
+			surface.set_color(_environment_color(kind))
+			for i in range(0, indices.size(), 3):
+				var p0 := points[indices[i]]
+				var p1 := points[indices[i + 1]]
+				var p2 := points[indices[i + 2]]
+				surface.add_vertex(Vector3(p0.x, 0.012, p0.y))
+				surface.add_vertex(Vector3(p1.x, 0.012, p1.y))
+				surface.add_vertex(Vector3(p2.x, 0.012, p2.y))
+			added = true
+		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
-			var width := 5.0 if kind == "coastline" else (2.0 if kind == "waterway" else 1.2)
+			var width := 14.0 if kind == "coastline" else (5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6))
 			surface.set_color(_environment_color(kind))
 			for i in range(coords.size() - 1):
 				var a := _geo_to_world(coords[i])
@@ -386,17 +412,17 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 func _environment_color(kind: String) -> Color:
 	match kind:
 		"water", "waterway":
-			return Color(0.20, 0.48, 0.66)
+			return Color(0.12, 0.42, 0.62)   # mer / rivières plus visibles
 		"coastline":
-			return Color(0.78, 0.69, 0.49)
+			return Color(0.86, 0.76, 0.52)   # bande sable littoral
 		"vegetation":
-			return Color(0.20, 0.39, 0.25)
+			return Color(0.16, 0.38, 0.22)
 		"green_space":
-			return Color(0.29, 0.48, 0.27)
+			return Color(0.24, 0.46, 0.24)
 		"natural_surface":
-			return Color(0.72, 0.65, 0.48)
+			return Color(0.70, 0.62, 0.45)
 		_:
-			return Color(0.36, 0.43, 0.32)
+			return Color(0.34, 0.42, 0.30)
 
 
 func _load_neighbourhoods() -> void:
@@ -441,19 +467,58 @@ func _load_neighbourhoods() -> void:
 	print("LIBREVILLE STORIES | limites locales OSM : %d" % _neighbourhood_count)
 
 
+func _make_asphalt_texture() -> Texture2D:
+	# Asphalte procédural type GTA : grain sombre + micro-variation.
+	var image := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20261117
+	for y in range(128):
+		for x in range(128):
+			var n := rng.randf()
+			var base := 0.22 + n * 0.08
+			# Légères stries longitudinales (usure / bitume).
+			var streak := 0.03 if (x + y * 3) % 17 == 0 else 0.0
+			var shade := clampf(base + streak + ((x * 7 + y * 11) % 5) * 0.008, 0.14, 0.38)
+			image.set_pixel(x, y, Color(shade, shade * 1.01, shade * 0.98, 1.0))
+	image.generate_mipmaps()
+	return ImageTexture.create_from_image(image)
+
+
+func _make_sidewalk_texture() -> Texture2D:
+	# Trottoir béton / dalles — joints discrets style urbain africain / GTA.
+	var image := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	for y in range(128):
+		for x in range(128):
+			var tile := 16
+			var is_joint := (x % tile == 0) or (y % tile == 0)
+			var grain := 0.78 + float((x * 13 + y * 19) % 7) * 0.012
+			if is_joint:
+				grain *= 0.82
+			image.set_pixel(x, y, Color(0.62 * grain, 0.61 * grain, 0.57 * grain, 1.0))
+	image.generate_mipmaps()
+	return ImageTexture.create_from_image(image)
+
+
 func _load_roads() -> void:
 	var data := _read_geojson("res://data/osm/roads.geojson")
 	if data.is_empty():
 		push_warning("roads.geojson absent : carte routière non chargée.")
 		return
 	var surface := _new_surface(_road_material)
-	var sidewalk_material := _make_material(Color(0.62, 0.61, 0.56))
+	var sidewalk_material := _make_material(Color.WHITE)
 	sidewalk_material.vertex_color_use_as_albedo = true
+	sidewalk_material.albedo_texture = _make_sidewalk_texture()
+	sidewalk_material.roughness = 0.95
 	var sidewalk_surface := _new_surface(sidewalk_material)
-	var marking_material := _make_material(Color(0.92, 0.92, 0.86))
+	var curb_material := _make_material(Color(0.48, 0.47, 0.44))
+	curb_material.vertex_color_use_as_albedo = true
+	curb_material.roughness = 0.9
+	var curb_surface := _new_surface(curb_material)
+	var marking_material := _make_material(Color(0.95, 0.95, 0.90))
 	marking_material.vertex_color_use_as_albedo = true
+	marking_material.roughness = 0.7
 	var marking_surface := _new_surface(marking_material)
-	var crosswalk_material := _make_material(Color(0.94, 0.95, 0.90))
+	var crosswalk_material := _make_material(Color(0.96, 0.96, 0.92))
 	crosswalk_material.vertex_color_use_as_albedo = true
 	var crosswalk_surface := _new_surface(crosswalk_material)
 	var junction_counts: Dictionary = {}
@@ -525,14 +590,15 @@ func _load_roads() -> void:
 		var sidewalk_mode := _road_sidewalk_mode(props, road_kind)
 		var has_center_marking := _road_has_center_marking(props, road_kind)
 		surface.set_color(_road_color(road_kind, props))
-		marking_surface.set_color(Color(0.94, 0.94, 0.88))
-		sidewalk_surface.set_color(Color(0.66, 0.65, 0.60))
+		marking_surface.set_color(Color(0.96, 0.96, 0.90))
+		sidewalk_surface.set_color(Color(0.78, 0.76, 0.70))
+		curb_surface.set_color(Color(0.42, 0.41, 0.38))
 		var added := false
 		for coords in lines:
 			if coords.size() < 2:
 				continue
-			var supports_crosswalk := road_kind in ["primary", "secondary", "tertiary"]
-			if supports_crosswalk:
+			var supports_crosswalk := road_kind in ["primary", "secondary", "tertiary", "trunk"]
+			if supports_crosswalk and coords.size() >= 2:
 				var first_direction := _geo_to_world(coords[1]) - _geo_to_world(coords[0])
 				var last_direction := _geo_to_world(coords[coords.size() - 2]) - _geo_to_world(coords[coords.size() - 1])
 				if int(junction_counts.get(_road_junction_key(coords[0]), 0)) >= 3 and first_direction.length() > 0.1:
@@ -543,28 +609,57 @@ func _load_roads() -> void:
 				var a := _geo_to_world(coords[i])
 				var b := _geo_to_world(coords[i + 1])
 				var direction := Vector2(b.x - a.x, b.z - a.z)
-				if direction.length_squared() < 0.01:
+				var seg_len := direction.length()
+				if seg_len < 0.08:
 					continue
-				var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
-				_add_quad(surface, a + side + Vector3.UP * 0.025, a - side + Vector3.UP * 0.025, b - side + Vector3.UP * 0.025, b + side + Vector3.UP * 0.025)
+				var dir_n := direction / seg_len
+				# Vecteur perpendiculaire unitaire (pas pré-multiplié).
+				var perp := Vector3(-dir_n.y, 0.0, dir_n.x)
+				var half := width * 0.5
+				var y_road := 0.022
+				# Chaussée avec UV pour la texture d'asphalte.
+				_add_road_quad(surface,
+					a + perp * half + Vector3.UP * y_road,
+					a - perp * half + Vector3.UP * y_road,
+					b - perp * half + Vector3.UP * y_road,
+					b + perp * half + Vector3.UP * y_road,
+					seg_len, width)
 				if has_center_marking:
 					_add_road_center_dashes(marking_surface, a, b)
+					# Bandes de rive blanches discrètes sur les grands axes.
+					if road_kind in ["trunk", "primary", "motorway"]:
+						_add_road_edge_line(marking_surface, a, b, perp, half - 0.18)
 				if sidewalk_mode != "none":
-					var side_width := 1.25
-					var outer_offset := width * 0.5 + side_width
-					var inner_offset := width * 0.5
+					var sw := 1.55  # largeur trottoir (m)
+					var curb_w := 0.22
+					var y_sw := 0.055
+					var y_curb := 0.048
 					if sidewalk_mode in ["both", "left"]:
-						_add_quad(sidewalk_surface,
-							a + side * inner_offset + Vector3.UP * 0.04,
-						a + side * outer_offset + Vector3.UP * 0.04,
-						b + side * outer_offset + Vector3.UP * 0.04,
-						b + side * inner_offset + Vector3.UP * 0.04)
+						# Bordure / caniveau
+						_add_quad(curb_surface,
+							a + perp * half + Vector3.UP * y_curb,
+							a + perp * (half + curb_w) + Vector3.UP * y_curb,
+							b + perp * (half + curb_w) + Vector3.UP * y_curb,
+							b + perp * half + Vector3.UP * y_curb)
+						# Trottoir
+						_add_sidewalk_quad(sidewalk_surface,
+							a + perp * (half + curb_w) + Vector3.UP * y_sw,
+							a + perp * (half + curb_w + sw) + Vector3.UP * y_sw,
+							b + perp * (half + curb_w + sw) + Vector3.UP * y_sw,
+							b + perp * (half + curb_w) + Vector3.UP * y_sw,
+							seg_len, sw)
 					if sidewalk_mode in ["both", "right"]:
-						_add_quad(sidewalk_surface,
-							a - side * inner_offset + Vector3.UP * 0.04,
-						a - side * outer_offset + Vector3.UP * 0.04,
-						b - side * outer_offset + Vector3.UP * 0.04,
-						b - side * inner_offset + Vector3.UP * 0.04)
+						_add_quad(curb_surface,
+							a - perp * half + Vector3.UP * y_curb,
+							a - perp * (half + curb_w) + Vector3.UP * y_curb,
+							b - perp * (half + curb_w) + Vector3.UP * y_curb,
+							b - perp * half + Vector3.UP * y_curb)
+						_add_sidewalk_quad(sidewalk_surface,
+							a - perp * (half + curb_w) + Vector3.UP * y_sw,
+							a - perp * (half + curb_w + sw) + Vector3.UP * y_sw,
+							b - perp * (half + curb_w + sw) + Vector3.UP * y_sw,
+							b - perp * (half + curb_w) + Vector3.UP * y_sw,
+							seg_len, sw)
 				added = true
 		if added:
 			_road_count += 1
@@ -572,17 +667,20 @@ func _load_roads() -> void:
 		if batch_count >= ROADS_PER_MESH:
 			_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
 			_commit_surface(sidewalk_surface, "OSM_Sidewalks_%03d" % batch_index)
+			_commit_surface(curb_surface, "OSM_Curbs_%03d" % batch_index)
 			_commit_surface(marking_surface, "OSM_Road_Markings_%03d" % batch_index)
 			_commit_surface(crosswalk_surface, "OSM_Crosswalks_%03d" % batch_index)
 			batch_index += 1
 			batch_count = 0
 			surface = _new_surface(_road_material)
 			sidewalk_surface = _new_surface(sidewalk_material)
+			curb_surface = _new_surface(curb_material)
 			marking_surface = _new_surface(marking_material)
 			crosswalk_surface = _new_surface(crosswalk_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
 		_commit_surface(sidewalk_surface, "OSM_Sidewalks_%03d" % batch_index)
+		_commit_surface(curb_surface, "OSM_Curbs_%03d" % batch_index)
 		_commit_surface(marking_surface, "OSM_Road_Markings_%03d" % batch_index)
 		_commit_surface(crosswalk_surface, "OSM_Crosswalks_%03d" % batch_index)
 
@@ -605,16 +703,16 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 
 
 func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float) -> void:
-	if road_width < 5.0:
+	if road_width < 5.5:
 		return
-	var direction := Vector3(inward_direction.x, 0.0, inward_direction.y)
-	var side := Vector3(-direction.z, 0.0, direction.x) * road_width * 0.40
-	var center := junction + direction * 3.2 + Vector3.UP * 0.075
-	# Marquage schématique aux carrefours OSM à trois branches ou plus.
-	for stripe_index in range(5):
-		var offset := (float(stripe_index) - 2.0) * 0.78
+	var direction := Vector3(inward_direction.x, 0.0, inward_direction.y).normalized()
+	var side := Vector3(-direction.z, 0.0, direction.x) * (road_width * 0.42)
+	var center := junction + direction * 3.5 + Vector3.UP * 0.062
+	# Bandes piétonnes plus nettes (style GTA).
+	for stripe_index in range(6):
+		var offset := (float(stripe_index) - 2.5) * 0.72
 		var stripe_center := center + direction * offset
-		var along := direction * 0.18
+		var along := direction * 0.22
 		_add_quad(surface,
 			stripe_center - along + side,
 			stripe_center - along - side,
@@ -631,19 +729,71 @@ func _road_has_center_marking(props: Dictionary, road_kind: String) -> bool:
 	return road_kind in ["trunk", "primary", "secondary"]
 
 
+func _add_road_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, length: float, width: float) -> void:
+	# UV proportionnels à la longueur / largeur pour un asphalte stable.
+	var u_scale := length / 4.0
+	var v_scale := width / 4.0
+	surface.set_uv(Vector2(0.0, 0.0))
+	surface.add_vertex(a)
+	surface.set_uv(Vector2(0.0, v_scale))
+	surface.add_vertex(b)
+	surface.set_uv(Vector2(u_scale, v_scale))
+	surface.add_vertex(c)
+	surface.set_uv(Vector2(0.0, 0.0))
+	surface.add_vertex(a)
+	surface.set_uv(Vector2(u_scale, v_scale))
+	surface.add_vertex(c)
+	surface.set_uv(Vector2(u_scale, 0.0))
+	surface.add_vertex(d)
+
+
+func _add_sidewalk_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, length: float, width: float) -> void:
+	var u_scale := length / 2.5
+	var v_scale := width / 2.5
+	surface.set_uv(Vector2(0.0, 0.0))
+	surface.add_vertex(a)
+	surface.set_uv(Vector2(0.0, v_scale))
+	surface.add_vertex(b)
+	surface.set_uv(Vector2(u_scale, v_scale))
+	surface.add_vertex(c)
+	surface.set_uv(Vector2(0.0, 0.0))
+	surface.add_vertex(a)
+	surface.set_uv(Vector2(u_scale, v_scale))
+	surface.add_vertex(c)
+	surface.set_uv(Vector2(u_scale, 0.0))
+	surface.add_vertex(d)
+
+
+func _add_road_edge_line(surface: SurfaceTool, a: Vector3, b: Vector3, perp: Vector3, offset: float) -> void:
+	var delta := Vector3(b.x - a.x, 0.0, b.z - a.z)
+	var length := delta.length()
+	if length < 2.0:
+		return
+	var half_w: float = 0.06
+	var y: float = 0.058
+	# Ligne continue de chaque côté.
+	var signs: Array[float] = [-1.0, 1.0]
+	for sign in signs:
+		var signed_offset: float = offset * sign
+		var center_a: Vector3 = a + perp * signed_offset + Vector3.UP * y
+		var center_b: Vector3 = b + perp * signed_offset + Vector3.UP * y
+		var side: Vector3 = perp * half_w
+		_add_quad(surface, center_a + side, center_a - side, center_b - side, center_b + side)
+
+
 func _add_road_center_dashes(surface: SurfaceTool, a: Vector3, b: Vector3) -> void:
 	var delta := Vector3(b.x - a.x, 0.0, b.z - a.z)
 	var length := delta.length()
-	if length < 5.0:
+	if length < 4.0:
 		return
 	var direction := delta / length
-	var side := Vector3(-direction.z, 0.0, direction.x) * 0.07
-	var dash_length := 3.0
-	var gap_length := 5.0
-	var distance := 1.0
+	var side := Vector3(-direction.z, 0.0, direction.x) * 0.09
+	var dash_length := 2.8
+	var gap_length := 4.2
+	var distance := 0.8
 	while distance + dash_length < length:
-		var start_point := a + direction * distance + Vector3.UP * 0.065
-		var end_point := a + direction * (distance + dash_length) + Vector3.UP * 0.065
+		var start_point := a + direction * distance + Vector3.UP * 0.058
+		var end_point := a + direction * (distance + dash_length) + Vector3.UP * 0.058
 		_add_quad(surface, start_point + side, start_point - side, end_point - side, end_point + side)
 		distance += dash_length + gap_length
 
@@ -666,8 +816,8 @@ func _road_sidewalk_mode(props: Dictionary, road_kind: String) -> String:
 		return "right"
 	if general in ["yes", "both"]:
 		return "both"
-	# Sur les axes structurants, trottoirs de représentation visuelle faute de tag explicite.
-	if road_kind in ["trunk", "primary", "secondary"]:
+	# Axes structurants + rues résidentielles : trottoirs de représentation (style GTA / Libreville).
+	if road_kind in ["trunk", "primary", "secondary", "tertiary", "residential"]:
 		return "both"
 	return "none"
 
@@ -700,39 +850,6 @@ func _road_label_priority(props: Dictionary) -> int:
 			return 5
 
 
-func _building_spatial_cell(feature: Dictionary) -> Vector2i:
-	# Cellule de 1 km calculée depuis le centre de l'emprise extérieure.
-	# Elle sert à regrouper les meshes pour un culling spatial plus précis ;
-	# ce n'est pas un système de streaming.
-	var geometry: Dictionary = feature.get("geometry", {})
-	var polygons: Array = []
-	match str(geometry.get("type", "")):
-		"Polygon":
-			polygons.append(geometry.get("coordinates", []))
-		"MultiPolygon":
-			polygons = geometry.get("coordinates", [])
-		_:
-			return Vector2i.ZERO
-	if polygons.is_empty() or polygons[0].is_empty():
-		return Vector2i.ZERO
-	var ring: Array = polygons[0][0]
-	if ring.is_empty():
-		return Vector2i.ZERO
-	var min_x := INF
-	var max_x := -INF
-	var min_z := INF
-	var max_z := -INF
-	for coordinate in ring:
-		var world := _geo_to_world(coordinate)
-		min_x = minf(min_x, world.x)
-		max_x = maxf(max_x, world.x)
-		min_z = minf(min_z, world.z)
-		max_z = maxf(max_z, world.z)
-	var center_x := (min_x + max_x) * 0.5
-	var center_z := (min_z + max_z) * 0.5
-	return Vector2i(floori(center_x / BUILDING_SPATIAL_CELL_SIZE), floori(center_z / BUILDING_SPATIAL_CELL_SIZE))
-
-
 func _load_buildings() -> void:
 	var data := _read_geojson("res://data/osm/buildings.geojson")
 	if data.is_empty():
@@ -740,46 +857,13 @@ func _load_buildings() -> void:
 		return
 	var features: Array = data.get("features", [])
 	var limit := mini(features.size(), BUILDING_LIMIT)
-	# Préordonner les empreintes par cellules géographiques : les meshes
-	# consécutifs couvrent ainsi des zones plus proches, ce qui améliore le
-	# rejet des lots hors champ par rapport à l'ordre arbitraire du GeoJSON.
-	var spatial_features: Array[Dictionary] = []
-	for feature_variant in features:
-		if not (feature_variant is Dictionary):
-			continue
-		var feature: Dictionary = feature_variant
-		var cell := _building_spatial_cell(feature)
-		spatial_features.append({"cell_x": cell.x, "cell_z": cell.y, "feature": feature})
-	spatial_features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		if int(a["cell_x"]) == int(b["cell_x"]):
-			return int(a["cell_z"]) < int(b["cell_z"])
-		return int(a["cell_x"]) < int(b["cell_x"])
-	)
-	limit = mini(spatial_features.size(), BUILDING_LIMIT)
 	var surface := _new_surface(_building_material)
 	var roof_surface := _new_surface(_roof_material)
 	var detail_surface := _new_surface(_facade_detail_material)
 	var batch_count := 0
 	var batch_index := 0
-	var previous_cell := Vector2i(2147483647, 2147483647)
 	for index in range(limit):
-		var spatial_entry: Dictionary = spatial_features[index]
-		var current_cell := Vector2i(int(spatial_entry["cell_x"]), int(spatial_entry["cell_z"]))
-		# Ne jamais mélanger deux cellules dans le même mesh : les bornes
-		# spatiales restent ainsi resserrées pour le culling de Godot.
-		if batch_count > 0 and current_cell != previous_cell:
-			_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
-			batch_index += 1
-			_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
-			batch_index += 1
-			_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
-			batch_index += 1
-			batch_count = 0
-			surface = _new_surface(_building_material)
-			roof_surface = _new_surface(_roof_material)
-			detail_surface = _new_surface(_facade_detail_material)
-		previous_cell = current_cell
-		var feature: Dictionary = spatial_entry["feature"]
+		var feature: Dictionary = features[index]
 		var geometry: Dictionary = feature.get("geometry", {})
 		var polygons: Array = []
 		match str(geometry.get("type", "")):
@@ -808,8 +892,9 @@ func _load_buildings() -> void:
 			var indices := Geometry2D.triangulate_polygon(points)
 			if indices.is_empty():
 				continue
-			surface.set_color(_building_color(building_kind, osm_id, props))
-			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props, polygon.size() > 1)
+			var facade_col := _building_color(building_kind, osm_id, props)
+			surface.set_color(facade_col)
+			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props, facade_col)
 			added = true
 		if added:
 			_building_count += 1
@@ -976,55 +1061,63 @@ func _geo_to_world(coordinate: Array) -> Vector3:
 	return Vector3(x, 0.0, z)
 
 func _road_color(kind: String, props: Dictionary = {}) -> Color:
-	# Les surfaces OSM priment sur la palette de secours par catégorie.
+	# Palette asphalte plus propre / GTA, teintée par la texture procédurale.
 	var surface_tag := str(props.get("surface", "")).to_lower()
 	match surface_tag:
 		"asphalt", "paved":
-			return Color(0.25, 0.27, 0.27)
+			return Color(0.55, 0.56, 0.55)
 		"concrete":
-			return Color(0.43, 0.44, 0.42)
+			return Color(0.72, 0.72, 0.70)
 		"paving_stones", "sett":
-			return Color(0.48, 0.46, 0.41)
+			return Color(0.68, 0.66, 0.60)
 		"gravel", "fine_gravel":
-			return Color(0.48, 0.44, 0.36)
+			return Color(0.62, 0.58, 0.50)
 		"ground", "dirt", "earth", "unpaved":
-			return Color(0.43, 0.37, 0.29)
-	# Hiérarchie de secours lorsque le revêtement n'est pas renseigné.
+			return Color(0.58, 0.50, 0.40)
 	match kind:
 		"motorway", "trunk":
-			return Color(0.22, 0.25, 0.26)
+			return Color(0.48, 0.50, 0.50)   # axes principaux plus sombres
 		"primary":
-			return Color(0.25, 0.28, 0.29)
+			return Color(0.52, 0.53, 0.53)
 		"secondary":
-			return Color(0.28, 0.30, 0.30)
+			return Color(0.56, 0.57, 0.56)
 		"tertiary":
-			return Color(0.30, 0.32, 0.31)
+			return Color(0.58, 0.59, 0.57)
 		"residential", "unclassified":
-			return Color(0.33, 0.34, 0.32)
+			return Color(0.60, 0.60, 0.58)
 		"service":
-			return Color(0.30, 0.31, 0.30)
+			return Color(0.58, 0.58, 0.56)
 		"footway", "path", "steps", "cycleway":
-			return Color(0.48, 0.45, 0.39)
+			return Color(0.70, 0.66, 0.58)
 		_:
-			return Color(0.31, 0.33, 0.32)
+			return Color(0.58, 0.58, 0.56)
 
 func _road_width(kind: String, props: Dictionary = {}) -> float:
 	# Utilise la largeur réelle ou le nombre de voies OSM quand ils existent.
+	# Largeurs inspirées de Libreville : Boulevard Triomphal / Bord de mer ≈ 4 voies.
 	var tagged_width := str(props.get("width", "")).replace("m", "").strip_edges().to_float()
 	if tagged_width >= 1.5 and tagged_width <= 40.0:
 		return tagged_width
 	var lanes := str(props.get("lanes", "")).to_int()
 	if lanes >= 1 and lanes <= 8:
-		return clampf(float(lanes) * 3.1 + 0.6, 3.0, 25.0)
+		return clampf(float(lanes) * 3.4 + 1.2, 3.5, 28.0)
 	match kind:
-		"motorway", "trunk": return 11.0
-		"primary": return 8.5
-		"secondary": return 7.0
-		"tertiary": return 5.8
-		"residential", "unclassified": return 4.8
-		"service": return 3.0
-		"footway", "path", "steps": return 1.5
-		_: return 4.0
+		"motorway", "trunk":
+			return 16.0   # type autoroute / voie rapide
+		"primary":
+			return 12.5  # Boulevard Triomphal, Bd de l'Indépendance
+		"secondary":
+			return 9.0
+		"tertiary":
+			return 7.0
+		"residential", "unclassified":
+			return 5.5
+		"service":
+			return 3.6
+		"footway", "path", "steps", "cycleway":
+			return 1.8
+		_:
+			return 5.0
 
 func _parse_osm_height(raw_value: String) -> float:
 	# OSM accepte des hauteurs en mètres, centimètres ou pieds.
@@ -1056,60 +1149,71 @@ func _building_height(kind: String, osm_id: int, props: Dictionary) -> float:
 		return tagged_height
 	var levels := str(props.get("building:levels", "")).to_int()
 	if levels > 0 and levels <= 40:
-		return clampf(float(levels) * 3.1, 3.0, 120.0)
+		return clampf(float(levels) * 3.15, 3.0, 120.0)
+	# Hauteurs différenciées inspirées de Libreville :
+	# cathédrale, bâtiments admin (Bd Triomphal), immeubles, maisons populaires.
 	match kind:
-		"cathedral", "university", "hospital", "government", "commercial", "office":
-			return 10.0 + float(abs(osm_id) % 90) / 10.0
+		"cathedral", "church", "mosque", "temple":
+			return 14.0 + float(abs(osm_id) % 60) / 10.0
+		"government", "public", "civic":
+			return 16.0 + float(abs(osm_id) % 80) / 8.0
+		"university", "hospital", "school", "college":
+			return 11.0 + float(abs(osm_id) % 70) / 10.0
+		"commercial", "office", "retail":
+			return 12.0 + float(abs(osm_id) % 90) / 8.0
 		"apartments", "hotel", "dormitory":
-			return 9.0 + float(abs(osm_id) % 70) / 10.0
-		"house", "detached", "residential", "semidetached_house":
-			return 4.0 + float(abs(osm_id) % 25) / 10.0
-		"warehouse", "industrial", "supermarket":
-			return 5.0 + float(abs(osm_id) % 35) / 10.0
+			return 10.0 + float(abs(osm_id) % 80) / 8.0
+		"house", "detached", "residential", "semidetached_house", "bungalow":
+			return 4.2 + float(abs(osm_id) % 28) / 10.0
+		"warehouse", "industrial", "supermarket", "hangar":
+			return 6.0 + float(abs(osm_id) % 40) / 10.0
 		_:
-			return 3.5 + float(abs(osm_id) % 35) / 10.0
+			return 4.0 + float(abs(osm_id) % 40) / 10.0
 
 func _building_color(kind: String, osm_id: int, props: Dictionary = {}) -> Color:
 	# Priorité aux couleurs réellement renseignées dans OSM.
 	var tagged := str(props.get("building:colour", props.get("building:color", ""))).strip_edges()
 	if not tagged.is_empty():
 		return Color.from_string(tagged, Color(0.76, 0.70, 0.62))
-	# Palette sobre et variée inspirée des façades observées à Libreville :
-	# enduit clair, sable, gris ciment, blanc cassé et quelques tons chauds.
+	# Palette inspirée de Libreville (enduits clairs, parpaings, planches, ocre) :
+	# tons sable, crème, gris ciment, blanc cassé, quelques pastels chauds.
 	var palette: Array[Color] = [
-		Color(0.78, 0.72, 0.63),
-		Color(0.70, 0.66, 0.58),
-		Color(0.83, 0.80, 0.72),
-		Color(0.62, 0.62, 0.57),
-		Color(0.76, 0.67, 0.57),
-		Color(0.86, 0.82, 0.73),
-		Color(0.67, 0.70, 0.67),
-		Color(0.73, 0.61, 0.51)
+		Color(0.82, 0.76, 0.66),  # sable clair
+		Color(0.74, 0.70, 0.62),  # beige ciment
+		Color(0.88, 0.84, 0.76),  # blanc cassé
+		Color(0.66, 0.66, 0.61),  # gris clair
+		Color(0.80, 0.70, 0.58),  # ocre doux
+		Color(0.90, 0.86, 0.78),  # crème
+		Color(0.70, 0.73, 0.68),  # vert-gris très pâle
+		Color(0.78, 0.64, 0.52),  # terre cuite claire
+		Color(0.72, 0.68, 0.60),  # taupe
+		Color(0.84, 0.80, 0.72)   # ivoire
 	]
 	var selected := palette[abs(osm_id) % palette.size()]
 	if kind in ["industrial", "warehouse"]:
 		selected = Color(0.58, 0.61, 0.59) if abs(osm_id) % 3 == 0 else Color(0.67, 0.67, 0.62)
 	elif kind in ["commercial", "retail", "supermarket", "office"]:
-		selected = Color(0.72, 0.72, 0.67) if abs(osm_id) % 2 == 0 else Color(0.78, 0.75, 0.67)
-	# building:material n'est pas une texture : il module seulement la teinte
-	# lorsque building:colour/building:color n'a pas fourni de couleur explicite.
+		selected = Color(0.76, 0.76, 0.71) if abs(osm_id) % 2 == 0 else Color(0.82, 0.78, 0.70)
+	elif kind in ["apartments", "hotel"]:
+		selected = Color(0.80, 0.76, 0.68) if abs(osm_id) % 2 == 0 else Color(0.72, 0.70, 0.64)
+	# building:material module la teinte quand aucune couleur explicite n'est fournie.
 	var material_tag := str(props.get("building:material", "")).strip_edges().to_lower()
 	var material_tint := Color.WHITE
 	match material_tag:
 		"brick", "bricks":
-			material_tint = Color(1.08, 0.88, 0.78)
+			material_tint = Color(1.06, 0.90, 0.80)
 		"wood", "timber":
-			material_tint = Color(1.08, 0.91, 0.78)
+			material_tint = Color(1.06, 0.93, 0.80)
 		"concrete", "cement_block", "concrete_block":
-			material_tint = Color(0.91, 0.95, 0.96)
+			material_tint = Color(0.93, 0.95, 0.96)
 		"metal", "steel", "aluminium":
-			material_tint = Color(0.86, 0.93, 0.98)
+			material_tint = Color(0.88, 0.93, 0.97)
 		"stone", "limestone":
-			material_tint = Color(1.04, 1.00, 0.91)
+			material_tint = Color(1.03, 1.00, 0.92)
 		"glass":
-			material_tint = Color(0.82, 0.94, 1.08)
+			material_tint = Color(0.84, 0.94, 1.06)
 		"plaster", "render", "stucco":
-			material_tint = Color(1.04, 1.02, 0.98)
+			material_tint = Color(1.03, 1.02, 0.98)
 	return Color(
 		clampf(selected.r * material_tint.r, 0.0, 1.0),
 		clampf(selected.g * material_tint.g, 0.0, 1.0),
@@ -1135,35 +1239,51 @@ func _should_use_pitched_roof(kind: String, props: Dictionary, point_count: int)
 func _roof_style(kind: String, osm_id: int, props: Dictionary = {}) -> int:
 	# Les tags de matériau OSM priment sur la règle visuelle de secours.
 	var material_tag := str(props.get("roof:material", "")).to_lower()
-	if material_tag in ["metal", "tin", "corrugated_metal", "sheet", "steel"]:
+	if material_tag in ["metal", "tin", "corrugated_metal", "sheet", "steel", "aluminium"]:
 		return 1
 	if material_tag in ["concrete", "concrete_plates", "asphalt"]:
 		return 2
-	if material_tag in ["tile", "tiles", "roof_tiles", "terracotta"]:
+	if material_tag in ["tile", "tiles", "roof_tiles", "terracotta", "slate"]:
 		return 0
-	# 0 = tuiles, 1 = tôle nervurée, 2 = dalle béton. Sans tag, estimation.
+	# 0 = tuiles, 1 = tôle nervurée (très répandue à Libreville), 2 = dalle béton.
+	# Répartition inspirée des quartiers populaires et résidentiels de la capitale :
+	# tôle ondulée dominante, béton sur le tertiaire, tuiles plus rares.
 	match kind:
-		"industrial", "warehouse", "carport", "shed":
+		"industrial", "warehouse", "carport", "shed", "garage", "hangar":
 			return 1
-		"commercial", "retail", "office", "supermarket", "government":
+		"commercial", "retail", "office", "supermarket", "government", "hospital", "university":
+			return 2 if abs(osm_id) % 4 != 0 else 1
+		"apartments", "hotel", "dormitory":
+			return 1 if abs(osm_id) % 3 != 0 else 2
+		"house", "detached", "residential", "semidetached_house", "bungalow":
+			# Majorité de tôles, quelques toits en tuiles ou béton.
+			var roll: int = abs(osm_id) % 10
+			if roll < 7:
+				return 1
+			if roll < 9:
+				return 0
 			return 2
 		_:
-			return 0 if abs(osm_id) % 5 != 0 else 2
+			return 1 if abs(osm_id) % 5 < 3 else (0 if abs(osm_id) % 2 == 0 else 2)
 
 
 func _roof_color(kind: String, osm_id: int, props: Dictionary = {}) -> Color:
 	var tagged := str(props.get("roof:colour", props.get("roof:color", ""))).strip_edges()
 	if not tagged.is_empty():
 		return Color.from_string(tagged, Color(0.62, 0.34, 0.25))
-	# La teinte varie légèrement, le motif vient de la bande de texture choisie.
-	var variation := float(abs(osm_id) % 7) * 0.018
+	# Teintes inspirées de Libreville : tôle grise/rouille, béton clair, tuiles orangées.
+	var variation := float(abs(osm_id) % 9) * 0.015
 	match _roof_style(kind, osm_id, props):
 		1:
-			return Color(0.91 + variation * 0.3, 0.94 + variation * 0.2, 0.94 + variation * 0.2)
+			# Tôle ondulée : grise neuve ou légèrement oxydée (très courant).
+			if abs(osm_id) % 5 == 0:
+				return Color(0.62 + variation, 0.48 + variation * 0.6, 0.38 + variation * 0.4)  # rouille douce
+			return Color(0.72 + variation * 0.4, 0.74 + variation * 0.3, 0.73 + variation * 0.3)
 		2:
-			return Color(0.83 + variation * 0.3, 0.84 + variation * 0.3, 0.80 + variation * 0.3)
+			return Color(0.78 + variation * 0.25, 0.79 + variation * 0.25, 0.75 + variation * 0.25)
 		_:
-			return Color(0.96 + variation * 0.2, 0.92 + variation * 0.2, 0.88 + variation * 0.2)
+			# Tuiles / terre cuite claire, style tropical.
+			return Color(0.78 + variation * 0.15, 0.42 + variation * 0.2, 0.28 + variation * 0.15)
 
 
 func _make_roof_tile_texture() -> Texture2D:
@@ -1177,18 +1297,24 @@ func _make_roof_tile_texture() -> Texture2D:
 			var local_x := x % 32
 			var pixel := Color(0.58, 0.30, 0.21, 1.0)
 			if style == 0:
-				var row := int(local_y / 16)
-				var tile_x := (x + (16 if row % 2 == 1 else 0)) % 32
-				var shade := 0.78 if local_y % 16 == 15 else (0.91 if local_y % 16 == 0 or tile_x == 0 else 1.0)
-				pixel = Color(0.60 * shade, 0.31 * shade, 0.22 * shade, 1.0)
+				# Tuiles terre cuite — joints plus marqués, légère variation.
+				var row := int(local_y / 14)
+				var tile_x := (x + (15 if row % 2 == 1 else 0)) % 32
+				var is_joint := local_y % 14 == 0 or local_y % 14 == 13 or tile_x == 0 or tile_x == 31
+				var shade := 0.72 if is_joint else (0.88 + float((x * 11 + local_y * 7) % 5) * 0.025)
+				pixel = Color(0.72 * shade, 0.38 * shade, 0.24 * shade, 1.0)
 			elif style == 1:
-				var rib := 0.76 if local_x == 0 or local_x == 1 else (1.0 if local_x < 27 else 0.88)
-				var wave := 0.94 if local_y % 8 == 0 else 1.0
-				pixel = Color(0.48 * rib * wave, 0.53 * rib * wave, 0.55 * rib * wave, 1.0)
+				# Tôle ondulée réaliste (nervures verticales + légère oxydation).
+				var rib_pos := local_x % 8
+				var rib := 0.70 if rib_pos <= 1 else (0.92 if rib_pos >= 6 else 1.0)
+				var wave := 0.93 if local_y % 10 == 0 else 1.0
+				var rust := 1.0 - float((x * 13 + y * 17) % 11) * 0.012
+				pixel = Color(0.55 * rib * wave * rust, 0.57 * rib * wave * rust, 0.56 * rib * wave * rust, 1.0)
 			else:
-				var seam := 0.91 if local_x == 0 or local_y % 32 == 0 else 1.0
-				var grain := 0.985 + float((x * 17 + local_y * 13) % 7) * 0.004
-				pixel = Color(0.58 * seam * grain, 0.59 * seam * grain, 0.56 * seam * grain, 1.0)
+				# Dalle béton / bitume : joints discrets + grain.
+				var seam := 0.88 if local_x == 0 or local_y % 28 == 0 else 1.0
+				var grain := 0.97 + float((x * 19 + local_y * 11) % 9) * 0.005
+				pixel = Color(0.62 * seam * grain, 0.63 * seam * grain, 0.60 * seam * grain, 1.0)
 			image.set_pixel(x, y, pixel)
 	return ImageTexture.create_from_image(image)
 
@@ -1225,7 +1351,8 @@ func _add_uv_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: V
 
 func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		points: PackedVector2Array, indices: PackedInt32Array, height: float,
-		roof_tint: Color, building_kind: String, osm_id: int, props: Dictionary = {}, has_inner_rings: bool = false) -> void:
+		roof_tint: Color, building_kind: String, osm_id: int, props: Dictionary = {},
+		facade_color: Color = Color(0.76, 0.68, 0.56)) -> void:
 	var longest_edge_index := 0
 	var longest_edge_length := 0.0
 	var signed_area := 0.0
@@ -1233,6 +1360,9 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var area_a := points[area_index]
 		var area_b := points[(area_index + 1) % points.size()]
 		signed_area += area_a.x * area_b.y - area_b.x * area_a.y
+	# Petite plinthe (0 → 0.12 m) pour ancrer proprement le bâtiment au sol
+	# et éviter l'aspect "flottant" à la base.
+	var plinth_h := 0.12
 	for i in range(points.size()):
 		var a := points[i]
 		var b := points[(i + 1) % points.size()]
@@ -1242,11 +1372,20 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 			longest_edge_index = i
 		var uv_length := edge_length / 3.0
 		var uv_height := height / 3.0
+		# Mur principal (du haut de la plinthe jusqu'au toit).
+		walls.set_color(facade_color)
 		_add_uv_quad(walls,
-			Vector3(a.x, 0.0, a.y), Vector3(b.x, 0.0, b.y),
+			Vector3(a.x, plinth_h, a.y), Vector3(b.x, plinth_h, b.y),
 			Vector3(b.x, height, b.y), Vector3(a.x, height, a.y),
 			Vector2(0.0, 0.0), Vector2(uv_length, 0.0),
 			Vector2(uv_length, uv_height), Vector2(0.0, uv_height))
+		# Plinthe légèrement plus sombre.
+		walls.set_color(Color(0.52, 0.49, 0.44))
+		_add_uv_quad(walls,
+			Vector3(a.x, 0.0, a.y), Vector3(b.x, 0.0, b.y),
+			Vector3(b.x, plinth_h, b.y), Vector3(a.x, plinth_h, a.y),
+			Vector2(0.0, 0.0), Vector2(uv_length * 0.2, 0.0),
+			Vector2(uv_length * 0.2, 0.15), Vector2(0.0, 0.15))
 		var edge_direction := Vector3((b.x - a.x) / maxf(edge_length, 0.001), 0.0, (b.y - a.y) / maxf(edge_length, 0.001))
 		var outward_normal := Vector3(edge_direction.z, 0.0, -edge_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_windows(details, a, b, height, building_kind, osm_id, outward_normal)
@@ -1256,25 +1395,21 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
 		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_door(details, door_a, door_b, door_normal)
-	# Les anneaux intérieurs OSM signalent des cours ou vides. La triangulation
-	# actuelle ne sait pas les soustraire : laisser le toit ouvert évite de les boucher.
-	if has_inner_rings:
-		return
 	roofs.set_color(roof_tint)
 	var roof_style := _roof_style(building_kind, osm_id, props)
 	var pitched_roof := false
 	if _should_use_pitched_roof(building_kind, props, points.size()):
-		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style, props)
+		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style)
 	if not pitched_roof:
 		for i in range(0, indices.size(), 3):
 			var p0 := points[indices[i]]
 			var p1 := points[indices[i + 1]]
 			var p2 := points[indices[i + 2]]
-			_add_roof_uv_triangle(roofs, Vector3(p0.x, height + 0.035, p0.y),
-				Vector3(p1.x, height + 0.035, p1.y), Vector3(p2.x, height + 0.035, p2.y), roof_style)
+			_add_roof_uv_triangle(roofs, Vector3(p0.x, height + 0.04, p0.y),
+				Vector3(p1.x, height + 0.04, p1.y), Vector3(p2.x, height + 0.04, p2.y), roof_style)
 
 
-func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, props: Dictionary = {}) -> bool:
+func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int) -> bool:
 	# Première géométrie à deux pans, réservée aux empreintes quadrilatérales
 	# convexes et allongées. Les formes complexes gardent un toit plat.
 	var longest_index := 0
@@ -1305,17 +1440,7 @@ func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_he
 	var p2 := points[(longest_index + 2) % 4]
 	var p3 := points[(longest_index + 3) % 4]
 	var roof_y := wall_height + 0.035
-	# roof:height est une mesure explicite en priorité ; roof:levels sert
-	# uniquement d'estimation prudente si la hauteur n'est pas renseignée.
-	var tagged_roof_height := _parse_osm_height(str(props.get("roof:height", "")))
-	var roof_rise := clampf(shortest_side * 0.30, 0.75, 1.9)
-	if tagged_roof_height >= 0.5 and tagged_roof_height <= 8.0:
-		roof_rise = tagged_roof_height
-	else:
-		var roof_levels := str(props.get("roof:levels", "")).to_int()
-		if roof_levels > 0 and roof_levels <= 3:
-			roof_rise = clampf(float(roof_levels) * 1.1, 0.75, 3.3)
-	var ridge_y := roof_y + roof_rise
+	var ridge_y := roof_y + clampf(shortest_side * 0.30, 0.75, 1.9)
 	var a := Vector3(p0.x, roof_y, p0.y)
 	var b := Vector3(p1.x, roof_y, p1.y)
 	var c := Vector3(p2.x, roof_y, p2.y)
@@ -1341,79 +1466,81 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 		return
 	var edge := b - a
 	var edge_length := edge.length()
-	if edge_length < 4.2 or height < 2.8:
+	if edge_length < 4.0 or height < 2.6:
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
-	var floors := clampi(int(ceil(height / 3.1)), 1, 8)
-	var window_count := clampi(int(floor(edge_length / 5.2)), 1, 5)
+	var floors := clampi(int(ceil(height / 3.05)), 1, 8)
+	var window_count := clampi(int(floor(edge_length / 4.8)), 1, 6)
 	var spacing := edge_length / float(window_count)
-	var window_width := clampf(spacing * 0.34, 0.65, 1.25)
-	var window_height := 0.95 if floors == 1 else 1.15
-	var glass := Color(0.16, 0.25, 0.31) if abs(osm_id) % 3 == 0 else Color(0.22, 0.31, 0.36)
+	var window_width := clampf(spacing * 0.36, 0.60, 1.20)
+	var window_height := 0.92 if floors == 1 else 1.10
+	var glass := Color(0.14, 0.22, 0.28) if abs(osm_id) % 3 == 0 else Color(0.20, 0.28, 0.33)
 	for floor_index in range(floors):
-		var center_y := 1.15 + float(floor_index) * 3.05
-		if center_y + window_height * 0.5 > height - 0.25:
+		var center_y := 1.10 + float(floor_index) * 3.00
+		if center_y + window_height * 0.5 > height - 0.30:
 			continue
 		for window_index in range(window_count):
 			var center_distance := (float(window_index) + 0.5) * spacing
 			var center := Vector3(a.x, 0.0, a.y) + tangent * center_distance + Vector3.UP * center_y
 			var half_width := window_width * 0.5
 			var half_height := window_height * 0.5
+			# Offset très léger pour coller la fenêtre à la façade (évite le flottement).
+			var offset := normal * 0.028
 			surface.set_color(glass)
-			var offset := normal * 0.035
 			_add_quad(surface,
 				center - tangent * half_width - Vector3.UP * half_height + offset,
 				center + tangent * half_width - Vector3.UP * half_height + offset,
 				center + tangent * half_width + Vector3.UP * half_height + offset,
 				center - tangent * half_width + Vector3.UP * half_height + offset)
-			if floors >= 2 and building_kind in ["apartments", "residential", "house", "commercial", "office"] and (window_index + abs(osm_id)) % 3 == 0 and floor_index > 0:
-				_add_facade_balcony(surface, center, tangent, normal, half_width, center_y - half_height - 0.08)
-			# Appui discret sous la fenêtre, légèrement avancé sur la façade.
-			surface.set_color(Color(0.72, 0.70, 0.64))
-			var sill_center := center - Vector3.UP * (half_height + 0.07)
-			var sill_offset := normal * 0.045
+			if floors >= 2 and building_kind in ["apartments", "residential", "house", "commercial", "office"] and (window_index + abs(osm_id)) % 4 == 0 and floor_index > 0:
+				_add_facade_balcony(surface, center, tangent, normal, half_width, center_y - half_height - 0.06)
+			# Appui de fenêtre discret, collé à la façade.
+			surface.set_color(Color(0.70, 0.68, 0.62))
+			var sill_center := center - Vector3.UP * (half_height + 0.05)
+			var sill_offset := normal * 0.038
 			_add_quad(surface,
-				sill_center - tangent * (half_width + 0.04) + sill_offset,
-				sill_center + tangent * (half_width + 0.04) + sill_offset,
-				sill_center + tangent * (half_width + 0.04) + Vector3.UP * 0.08 + sill_offset,
-				sill_center - tangent * (half_width + 0.04) + Vector3.UP * 0.08 + sill_offset)
+				sill_center - tangent * (half_width + 0.03) + sill_offset,
+				sill_center + tangent * (half_width + 0.03) + sill_offset,
+				sill_center + tangent * (half_width + 0.03) + Vector3.UP * 0.07 + sill_offset,
+				sill_center - tangent * (half_width + 0.03) + Vector3.UP * 0.07 + sill_offset)
 
 
 func _add_facade_balcony(surface: SurfaceTool, center: Vector3, tangent: Vector3,
 		normal: Vector3, half_width: float, floor_y: float) -> void:
-	# Balcon stylisé à faible profondeur : dalle, garde-corps et deux montants.
-	# Il s'agit d'un détail visuel procédural, pas d'une donnée OSM.
-	var depth := 0.72
-	var width := half_width + 0.22
-	var front := center + normal * depth
-	var back_left := center - tangent * width + normal * 0.05
-	var back_right := center + tangent * width + normal * 0.05
+	# Balcon stylisé à faible profondeur : dalle, garde-corps et montants.
+	# floor_y est une hauteur mondiale absolue (sous le bas de la fenêtre).
+	# On ignore volontairement center.y pour éviter le double-ajout qui faisait
+	# flotter les balcons au-dessus des toits.
+	var depth := 0.68
+	var width := half_width + 0.18
+	var base := Vector3(center.x, floor_y, center.z)
+	var front := base + normal * depth
+	var back_left := base - tangent * width + normal * 0.04
+	var back_right := base + tangent * width + normal * 0.04
 	var front_left := front - tangent * width
 	var front_right := front + tangent * width
-	surface.set_color(Color(0.66, 0.64, 0.59))
+	# Dalle du balcon (légèrement en dessous du seuil de fenêtre).
+	surface.set_color(Color(0.68, 0.66, 0.60))
+	_add_quad(surface, back_left, back_right, front_right, front_left)
+	# Garde-corps avant + côtés.
+	var rail_bottom := floor_y + 0.06
+	var rail_top := floor_y + 0.88
+	surface.set_color(Color(0.32, 0.34, 0.33))
 	_add_quad(surface,
-		back_left + Vector3.UP * floor_y,
-		back_right + Vector3.UP * floor_y,
-		front_right + Vector3.UP * floor_y,
-		front_left + Vector3.UP * floor_y)
-	var rail_bottom := floor_y + 0.08
-	var rail_top := floor_y + 0.92
-	surface.set_color(Color(0.28, 0.31, 0.31))
+		Vector3(front_left.x, rail_bottom, front_left.z),
+		Vector3(front_right.x, rail_bottom, front_right.z),
+		Vector3(front_right.x, rail_top, front_right.z),
+		Vector3(front_left.x, rail_top, front_left.z))
 	_add_quad(surface,
-		front_left + Vector3.UP * rail_bottom,
-		front_right + Vector3.UP * rail_bottom,
-		front_right + Vector3.UP * rail_top,
-		front_left + Vector3.UP * rail_top)
+		Vector3(back_left.x, rail_bottom, back_left.z),
+		Vector3(back_left.x, rail_top, back_left.z),
+		Vector3(front_left.x, rail_top, front_left.z),
+		Vector3(front_left.x, rail_bottom, front_left.z))
 	_add_quad(surface,
-		back_left + Vector3.UP * rail_bottom,
-		back_left + Vector3.UP * rail_top,
-		front_left + Vector3.UP * rail_top,
-		front_left + Vector3.UP * rail_bottom)
-	_add_quad(surface,
-		back_right + Vector3.UP * rail_bottom,
-		front_right + Vector3.UP * rail_bottom,
-		front_right + Vector3.UP * rail_top,
-		back_right + Vector3.UP * rail_top)
+		Vector3(back_right.x, rail_bottom, back_right.z),
+		Vector3(front_right.x, rail_bottom, front_right.z),
+		Vector3(front_right.x, rail_top, front_right.z),
+		Vector3(back_right.x, rail_top, back_right.z))
 
 func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3) -> void:
 	var edge := b - a
@@ -1421,11 +1548,12 @@ func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vect
 	if edge_length < 2.8:
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
+	# Porte ancrée au sol (y ≈ 1.05 = centre d'une porte de 2,1 m).
 	var center := Vector3(a.x, 1.05, a.y) + tangent * (edge_length * 0.5)
-	var half_width := 0.46
+	var half_width := 0.44
 	var half_height := 1.05
-	surface.set_color(Color(0.27, 0.20, 0.15))
-	var offset := normal * 0.05
+	surface.set_color(Color(0.30, 0.22, 0.16))
+	var offset := normal * 0.032
 	_add_quad(surface,
 		center - tangent * half_width - Vector3.UP * half_height + offset,
 		center + tangent * half_width - Vector3.UP * half_height + offset,

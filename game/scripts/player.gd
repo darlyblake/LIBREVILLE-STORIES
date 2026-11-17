@@ -3,8 +3,9 @@ extends CharacterBody3D
 ## Contrôles clavier/souris et manettes reconnues par Godot.
 ## ZQSD/WASD : déplacement | Espace/A : saut | souris ou stick droit : caméra
 
-@export var move_speed: float = 5.0
-@export var jump_velocity: float = 4.5
+@export var move_speed: float = 8.5
+@export var sprint_speed: float = 16.0
+@export var jump_velocity: float = 5.2
 @export var mouse_sensitivity: float = 0.0025
 
 @onready var camera_pivot: Node3D = $CameraPivot
@@ -90,13 +91,16 @@ func _physics_process(delta: float) -> void:
 
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var move_direction := (transform.basis * Vector3(input_vector.x, 0.0, input_vector.y)).normalized()
+	# Sprint (Shift ou stick clic gauche) pour explorer plus vite — style GTA.
+	var sprinting := Input.is_key_pressed(KEY_SHIFT) or Input.is_action_pressed("ui_select")
+	var current_speed := sprint_speed if sprinting else move_speed
 
 	if move_direction.length() > 0.001:
-		velocity.x = move_direction.x * move_speed
-		velocity.z = move_direction.z * move_speed
+		velocity.x = move_direction.x * current_speed
+		velocity.z = move_direction.z * current_speed
 	else:
-		velocity.x = move_toward(velocity.x, 0.0, move_speed * 5.0 * delta)
-		velocity.z = move_toward(velocity.z, 0.0, move_speed * 5.0 * delta)
+		velocity.x = move_toward(velocity.x, 0.0, current_speed * 5.0 * delta)
+		velocity.z = move_toward(velocity.z, 0.0, current_speed * 5.0 * delta)
 
 	move_and_slide()
 
