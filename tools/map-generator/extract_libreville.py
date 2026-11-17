@@ -117,6 +117,23 @@ def make_poi_collection(nodes, elements):
             "properties": {"osm_id": node["id"], "osm_type": "node", **tags},
             "geometry": {"type": "Point", "coordinates": [lon, lat]},
         })
+    for way in elements:
+        tags = way.get("tags", {})
+        if not is_point_of_interest(tags):
+            continue
+        points = way.get("geometry") or []
+        if len(points) < 2:
+            continue
+        # Centroïde des sommets pour positionner l'étiquette du lieu.
+        lon = sum(float(point["lon"]) for point in points) / len(points)
+        lat = sum(float(point["lat"]) for point in points) / len(points)
+        if not (math.isfinite(lon) and math.isfinite(lat)):
+            continue
+        features.append({
+            "type": "Feature", "id": f"way/{way['id']}",
+            "properties": {"osm_id": way["id"], "osm_type": "way", **tags},
+            "geometry": {"type": "Point", "coordinates": [lon, lat]},
+        })
     return {"type": "FeatureCollection", "name": "libreville_pois", "features": features}
 
 
@@ -271,7 +288,12 @@ def main():
                     f'node["shop"]({bbox});node["tourism"]({bbox});'
                     f'node["healthcare"]({bbox});node["leisure"]({bbox});'
                     f'node["public_transport"]({bbox});node["historic"]({bbox});'
-                    f'node["emergency"]({bbox}););'
+                    f'node["emergency"]({bbox});'
+                    f'way["amenity"]({bbox});way["shop"]({bbox});'
+                    f'way["tourism"]({bbox});way["healthcare"]({bbox});'
+                    f'way["leisure"]({bbox});way["historic"]({bbox});'
+                    f'way["public_transport"]({bbox});way["office"]({bbox});'
+                    f'way["emergency"]({bbox}););'
                     "out body geom;"
                 )
                 print(f"[{index}/{len(tiles)}] Extraction secteur {row + 1}-{col + 1}…", flush=True)
