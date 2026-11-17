@@ -1,14 +1,14 @@
-name: Extract Libreville OSM map data
+name: Prepare Libreville OSM map data
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "tools/map-generator/**"
       - ".github/workflows/extract-libreville-osm.yml"
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -16,19 +16,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  extract:
+  prepare-map:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 10
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
         with:
           persist-credentials: true
 
-      - name: Extract roads and building footprints by small tiles
-        run: python3 -u tools/map-generator/extract_libreville.py --grid 3 --timeout 90
+      - name: Restore the successful and verified OSM extraction
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data/osm
+          curl --fail --location --silent --show-error \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/darlyblake/LIBREVILLE-STORIES/actions/artifacts/14335400825/zip" \
+            -o /tmp/libreville-osm.zip
+          unzip -o /tmp/libreville-osm.zip -d data/osm
 
-      - name: Commit extracted map source files
+      - name: Validate GeoJSON files before committing
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          base = Path("data/osm")
+          roads = json.loads((base / "roads.geojson").read_text())
+          buildings = json.loads((base / "buildings.geojson").read_text())
+          report = json.loads((base / "extraction-report.json").read_text())
+          assert roads.get("type") == "FeatureCollection"
+          assert buildings.get("type") == "FeatureCollection"
+          assert len(roads.get("features", [])) >= 1000
+          assert len(buildings.get("features", [])) >= 10000
+          assert report.get("license") == "ODbL 1.0"
+          print("Routes:", len(roads["features"]))
+          print("Bâtiments:", len(buildings["features"]))
+          print("Attribution:", report.get("attribution"))
+          PY
+
+      - name: Commit map data into main
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -36,13 +64,13 @@ jobs:
           git rebase origin/main
           git add data/osm/roads.geojson data/osm/buildings.geojson data/osm/extraction-report.json
           if git diff --cached --quiet; then
-            echo "No map data changes to commit."
+            echo "Les données cartographiques sont déjà à jour."
           else
-            git commit -m "Add extracted Libreville OSM roads and buildings"
+            git commit -m "Add verified Libreville OSM roads and buildings"
             git push origin HEAD:main
           fi
 
-      - name: Upload GeoJSON and extraction report
+      - name: Publish map data artifact
         uses: actions/upload-artifact@v4
         with:
           name: libreville-osm-extraction
