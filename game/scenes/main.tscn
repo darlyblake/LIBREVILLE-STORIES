@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://game/scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://game/scripts/world_map.gd" id="2_map"]
+[ext_resource type="Script" path="res://game/scripts/minimap.gd" id="3_minimap"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
 size = Vector2(12000, 12000)
@@ -76,6 +77,9 @@ rotation = Vector3(-0.18, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
 current = true
+
+[node name="Minimap" type="Control" parent="."]
+script = ExtResource("3_minimap")
 
 [node name="MapCredits" type="CanvasLayer" parent="."]
 
