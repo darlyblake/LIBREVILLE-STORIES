@@ -20,8 +20,10 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Première texture procédurale de tuiles sur les toitures.
 - [x] Détails de façades regroupés en meshes : fenêtres et portes d'entrée stylisées, avec variation déterministe légère.
 - [x] Validation Godot 4.3 du générateur de fenêtres/portes sur `main` (rendu Compatibility réussi).
-- [ ] Valider les balcons ajoutés dans Godot CI et inspecter leur rendu en jeu.
-- [ ] Ajouter plusieurs profils de toiture (tôle, dalle béton, tuiles, toiture inclinée) sans présenter les choix visuels comme des données terrain.
+- [x] Validation Godot 4.3 après ajout des balcons (PR n°13, rendu Compatibility réussi).
+- [ ] Inspecter leur rendu en jeu sur la machine cible.
+- [x] Première variété de matériaux procéduraux : tuiles, tôle nervurée et dalle béton, sélectionnés par typologie OSM (approximation visuelle).
+- [ ] Ajouter des profils géométriques de toitures inclinées (deux pans/4 pans) et affiner les choix par secteur.
 - [x] Première passe de balcons stylisés sur certains immeubles à plusieurs niveaux, regroupés dans le mesh des façades.
 - [ ] Ajouter auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
 - [ ] Mieux gérer les cours intérieures et trous dans les empreintes polygonales.
@@ -38,7 +40,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Hiérarchie de largeur et de couleur des routes selon leur catégorie OSM.
 - [x] Étiquettes limitées des axes et des lieux importants.
 - [ ] Vérifier les intersections, ponts, voies à sens unique et connexions des routes.
-- [x] Première passe de trottoirs 3D regroupés sur les grands axes et lorsque les tags OSM indiquent leur présence.
+- [x] Première passe de trottoirs 3D regroupés sur les grands axes et lorsque les tags OSM indiquent leur présence (PR n°14 fusionnée, validation Godot 4.3 réussie).
 - [ ] Ajouter carrefours détaillés, marquages et mobilier urbain à partir de données ou d'approximations visuelles signalées.
 - [ ] Ajouter une mini-carte et une navigation plus complète après stabilisation des données.
 
@@ -46,7 +48,8 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Regroupement des routes et bâtiments en meshes pour réduire les draw calls.
 - [x] Validation automatique Godot 4.3 sous rendu Compatibility déjà passée sur la version précédente.
 - [x] Validation Godot 4.3 après fenêtres et portes (rendu Compatibility réussi).
-- [ ] Repasser la validation Godot 4.3 après les balcons.
+- [x] Validation Godot 4.3 après les balcons (PR n°13, rendu Compatibility réussi).
+- [ ] Valider le nouvel atlas de toitures.
 - [ ] Mettre en place le chargement/déchargement spatial par secteurs.
 - [ ] Mesurer FPS, mémoire et temps de chargement sur la machine cible (GT 730 2 Go) ; aucun chiffre ne doit être annoncé avant ce test.
 - [ ] Vérifier les collisions et la circulation du joueur sur les routes et autour des bâtiments.
