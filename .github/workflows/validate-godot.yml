@@ -33,5 +33,11 @@ jobs:
       - name: Parse project and scripts
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --quit
 
-      - name: Load the playable main scene
-        run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --quit-after 5
+      - name: Load the playable main scene and verify map counts
+        run: |
+          /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --quit-after 5 2>&1 | tee /tmp/libreville-map.log
+          grep -q "routes: 4503 | bâtiments: 49359" /tmp/libreville-map.log
+          if grep -q "SCRIPT ERROR" /tmp/libreville-map.log; then
+            echo "GDScript runtime error detected."
+            exit 1
+          fi
