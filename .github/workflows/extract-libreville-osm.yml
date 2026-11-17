@@ -35,6 +35,9 @@ jobs:
             ${{ runner.os }}-libreville-osm-v2-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-
             ${{ runner.os }}-libreville-osm-v2-
 
+      - name: Install OSM PBF reader for fallback extraction
+        run: python3 -m pip install --disable-pip-version-check osmium
+
       - name: Extract fresh OSM data in 16 small sectors
         id: extract
         run: |
