@@ -28,6 +28,7 @@ Ces noms définissent le périmètre de travail. La zone technique actuelle est 
 - [x] Générateur Godot des routes et bâtiments 3D ajouté
 - [x] Fichiers GeoJSON vérifiés et intégrés dans le dépôt : 4 503 voies et 49 359 bâtiments
 - [x] Attribution OpenStreetMap affichée dans la scène
+- [x] Validation automatique Godot 4.3 : projet chargé et carte générée en mode headless (4 503 routes, 49 359 bâtiments)
 - [ ] Nouvelle extraction actualisée : les serveurs Overpass ont temporairement refusé certaines tuiles
 - [ ] Test d'ouverture et de performance dans Godot sur le PC cible
 - [ ] Relief, littoral, végétation, mobilier urbain et bâtiments détaillés
