@@ -447,6 +447,32 @@ def extract_from_geofabrik_pbf(south, west, north, east):
             super().__init__()
             self.elements = []
             self.nodes = {}
+            self.relations = []
+
+        def relation(self, relation):
+            tags = dict(relation.tags)
+            accepted_places = {"suburb", "neighbourhood", "quarter", "district", "borough", "city", "town", "village"}
+            place = str(tags.get("place", "")).lower()
+            boundary = str(tags.get("boundary", "")).lower()
+            if not str(tags.get("name", "")).strip():
+                return
+            if place not in accepted_places and boundary != "administrative":
+                return
+            members = []
+            for member in relation.members:
+                if member.type == "w":
+                    members.append({
+                        "type": "way",
+                        "ref": int(member.ref),
+                        "role": str(member.role or "outer"),
+                    })
+            if members:
+                self.relations.append({
+                    "type": "relation",
+                    "id": int(relation.id),
+                    "tags": tags,
+                    "members": members,
+                })
 
         def node(self, node):
             tags = dict(node.tags)
@@ -491,8 +517,54 @@ def extract_from_geofabrik_pbf(south, west, north, east):
     handler = LibrevilleHandler()
     print("Lecture et découpage local du PBF sur l'emprise de Libreville…", flush=True)
     handler.apply_file(str(pbf_path), locations=True)
-    print(f"Repli Geofabrik : {len(handler.elements)} voies et bâtiments candidats.", flush=True)
-    return handler.elements, handler.nodes
+
+    # Les relations arrivent après les ways dans un PBF trié. Une seconde
+    # lecture ciblée récupère uniquement les géométries des ways membres.
+    member_roles = {}
+    for relation in handler.relations:
+        for member in relation["members"]:
+            member_roles.setdefault(member["ref"], set()).add(member["role"])
+    member_way_ids = set(member_roles)
+    member_geometries = {}
+
+    class RelationMemberHandler(osmium.SimpleHandler):
+        def way(self, way):
+            way_id = int(way.id)
+            if way_id not in member_way_ids:
+                return
+            geometry = []
+            for node in way.nodes:
+                if node.location.valid():
+                    geometry.append({"lon": float(node.lon), "lat": float(node.lat)})
+            if len(geometry) >= 2:
+                member_geometries[way_id] = geometry
+
+    if member_way_ids:
+        print(f"Relecture ciblée du PBF pour {len(member_way_ids)} ways membres de frontières…", flush=True)
+        RelationMemberHandler().apply_file(str(pbf_path), locations=True)
+
+    relations = []
+    for relation in handler.relations:
+        enriched_members = []
+        for member in relation["members"]:
+            geometry = member_geometries.get(member["ref"])
+            if geometry:
+                enriched_members.append({
+                    "type": "way",
+                    "id": member["ref"],
+                    "role": member["role"],
+                    "geometry": geometry,
+                })
+        if enriched_members:
+            relation["members"] = enriched_members
+            relations.append(relation)
+
+    print(
+        f"Repli Geofabrik : {len(handler.elements)} voies/bâtiments candidats, "
+        f"{len(relations)} relations locales avec membres reconstruits.",
+        flush=True,
+    )
+    return handler.elements, handler.nodes, relations
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -577,11 +649,11 @@ def main():
     except Exception as extraction_error:
         print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
         used_geofabrik_fallback = True
-        elements_from_pbf, nodes_from_pbf = extract_from_geofabrik_pbf(
+        elements_from_pbf, nodes_from_pbf, relations_from_pbf = extract_from_geofabrik_pbf(
             args.south, args.west, args.north, args.east
         )
         all_elements = {element["id"]: element for element in elements_from_pbf}
-        all_relations = {}  # Le repli Geofabrik ne reconstruit pas encore les relations.
+        all_relations = {relation["id"]: relation for relation in relations_from_pbf}
         all_nodes = nodes_from_pbf
         tile_report = []
         for row, col, tile_south, tile_west, tile_north, tile_east in tiles:
@@ -617,7 +689,7 @@ def main():
     generated["neighbourhoods.geojson"] = make_neighbourhood_collection(elements, (args.south, args.west, args.north, args.east), list(all_relations.values()))
     report["files"]["neighbourhoods.geojson"] = {
         "features": len(generated["neighbourhoods.geojson"]["features"]),
-        "note": "Polygones nommés issus de ways fermés et relations multipolygones Overpass; le repli Geofabrik ne reconstruit pas encore les relations.",
+        "note": "Polygones nommés issus de ways fermés et relations multipolygones; le repli Geofabrik reconstruit les membres de relations par seconde lecture ciblée du PBF.",
     }
     report["files"]["environment.geojson"] = {
         "features": len(generated["environment.geojson"]["features"]),
