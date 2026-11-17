@@ -106,6 +106,21 @@ jobs:
                   assert south - 1e-8 <= lat <= north + 1e-8
           print(f"environment.geojson: {len(env_features)} éléments environnementaux dans l'emprise.")
  
+          localities = json.loads((root / "localities.geojson").read_text())
+          assert localities.get("type") == "FeatureCollection"
+          locality_features = localities.get("features", [])
+          assert len(locality_features) == report["files"]["localities.geojson"]["features"]
+          for index, feature in enumerate(locality_features):
+              geometry = feature.get("geometry") or {}
+              assert geometry.get("type") == "Point", f"locality {index}: expected label point"
+              coords = geometry.get("coordinates") or []
+              assert len(coords) >= 2 and coordinates_are_finite(coords), f"locality {index}: invalid coordinates"
+              assert_in_bounds(coords, f"locality {index}")
+              props = feature.get("properties", {})
+              assert str(props.get("name", "")).strip(), f"locality {index}: missing name"
+              assert props.get("place") in {"city", "town", "suburb", "neighbourhood", "quarter", "district", "village", "hamlet", "locality"}
+          print(f"localities.geojson: {len(locality_features)} noms OSM ponctuels contrôlés.")
+
           neighbourhoods = json.loads((root / "neighbourhoods.geojson").read_text())
           assert neighbourhoods.get("type") == "FeatureCollection"
           neighbourhood_features = neighbourhoods.get("features", [])
