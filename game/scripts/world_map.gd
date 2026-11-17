@@ -275,6 +275,9 @@ func _load_roads() -> void:
 	var sidewalk_material := _make_material(Color(0.62, 0.61, 0.56))
 	sidewalk_material.vertex_color_use_as_albedo = true
 	var sidewalk_surface := _new_surface(sidewalk_material)
+	var marking_material := _make_material(Color(0.92, 0.92, 0.86))
+	marking_material.vertex_color_use_as_albedo = true
+	var marking_surface := _new_surface(marking_material)
 	var batch_count := 0
 	var batch_index := 0
 	var road_features: Array = data.get("features", []).duplicate()
@@ -303,7 +306,9 @@ func _load_roads() -> void:
 		var road_kind := str(props.get("highway", "residential"))
 		var width := _road_width(road_kind)
 		var sidewalk_mode := _road_sidewalk_mode(props, road_kind)
+		var has_center_marking := _road_has_center_marking(props, road_kind)
 		surface.set_color(_road_color(road_kind))
+		marking_surface.set_color(Color(0.94, 0.94, 0.88))
 		sidewalk_surface.set_color(Color(0.66, 0.65, 0.60))
 		var added := false
 		for coords in lines:
@@ -317,6 +322,8 @@ func _load_roads() -> void:
 					continue
 				var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
 				_add_quad(surface, a + side + Vector3.UP * 0.025, a - side + Vector3.UP * 0.025, b - side + Vector3.UP * 0.025, b + side + Vector3.UP * 0.025)
+				if has_center_marking:
+					_add_road_center_dashes(marking_surface, a, b)
 				if sidewalk_mode != "none":
 					var side_width := 1.25
 					var outer_offset := width * 0.5 + side_width
@@ -340,13 +347,42 @@ func _load_roads() -> void:
 		if batch_count >= ROADS_PER_MESH:
 			_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
 			_commit_surface(sidewalk_surface, "OSM_Sidewalks_%03d" % batch_index)
+			_commit_surface(marking_surface, "OSM_Road_Markings_%03d" % batch_index)
 			batch_index += 1
 			batch_count = 0
 			surface = _new_surface(_road_material)
 			sidewalk_surface = _new_surface(sidewalk_material)
+			marking_surface = _new_surface(marking_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
 		_commit_surface(sidewalk_surface, "OSM_Sidewalks_%03d" % batch_index)
+		_commit_surface(marking_surface, "OSM_Road_Markings_%03d" % batch_index)
+
+
+func _road_has_center_marking(props: Dictionary, road_kind: String) -> bool:
+	# Marquage de représentation : uniquement sur les axes structurants ou voies
+	# explicitement à plusieurs voies. Ce n'est pas un relevé des lignes peintes.
+	var lanes := str(props.get("lanes", "")).to_int()
+	if lanes >= 2:
+		return true
+	return road_kind in ["trunk", "primary", "secondary"]
+
+
+func _add_road_center_dashes(surface: SurfaceTool, a: Vector3, b: Vector3) -> void:
+	var delta := Vector3(b.x - a.x, 0.0, b.z - a.z)
+	var length := delta.length()
+	if length < 5.0:
+		return
+	var direction := delta / length
+	var side := Vector3(-direction.z, 0.0, direction.x) * 0.07
+	var dash_length := 3.0
+	var gap_length := 5.0
+	var distance := 1.0
+	while distance + dash_length < length:
+		var start_point := a + direction * distance + Vector3.UP * 0.065
+		var end_point := a + direction * (distance + dash_length) + Vector3.UP * 0.065
+		_add_quad(surface, start_point + side, start_point - side, end_point - side, end_point + side)
+		distance += dash_length + gap_length
 
 
 func _road_sidewalk_mode(props: Dictionary, road_kind: String) -> String:
