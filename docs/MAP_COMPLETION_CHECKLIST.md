@@ -110,3 +110,41 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - [ ] Télécharger et intégrer un extrait Copernicus DEM GLO-30 couvrant Libreville, puis vérifier le système de coordonnées, l'altitude et la continuité aux bords.
 - [ ] Obtenir l'accès et les conditions de réutilisation des orthophotographies/plans auprès de l'Institut National de Cartographie du Gabon.
 - [ ] Préparer un extrait ESA WorldCover 2021 local pour différencier végétation, zones bâties, eau et mangroves ; conserver l'attribution CC BY 4.0.
+
+
+## 8. Zone pilote — Baie des Rois (17/11/2026)
+### Références et relevé
+- [x] Repérer les vues aériennes et photos de la promenade, des kiosques, du pavillon de concert et du front de mer.
+- [x] Repérer les trois secteurs décrits dans les sources publiques : Nord, Centre (ancien Port-Môle) et Sud ; ne pas réduire toute la Baie à la seule promenade Nord.
+- [x] Confirmer la présence d'une promenade maritime, de kiosques commerciaux, de zones de loisirs, d'une passerelle piétonne entre Nord et Centre, de terrains remblayés et de chantiers immobiliers.
+- [ ] Géoréférencer précisément les photos aériennes et établir un plan de masse à l'échelle du jeu.
+- [ ] Relever l'emplacement exact, les dimensions et l'orientation de chaque kiosque, du pavillon de concert, des jeux, des terrains sportifs et de la passerelle.
+- [ ] Déterminer l'état réel de chaque parcelle à la date de référence choisie (livré, en chantier, prévu).
+
+### Modélisation et eau
+- [x] Identifier le défaut majeur de la première eau : les surfaces étaient sous le plan de sol mondial (y négatif) et donc masquées.
+- [x] Remplacer les blocs d'eau opaques/sous le sol par des surfaces de mer dédiées, légèrement au-dessus du plan de sol, avec shader animé léger (variations de houle et reflets stylisés).
+- [ ] Vérifier en jeu que l'eau couvre bien le côté mer sans recouvrir la promenade, les kiosques ni les terrains.
+- [ ] Corriger la limite terre/mer avec une géométrie côtière continue et une digue/enrochement précisément alignés.
+- [ ] Empêcher le joueur de marcher sur le fond mondial sous l'eau ; définir collisions et limites de nage/chute.
+- [ ] Remplacer les kiosques génériques par les modèles correspondant aux références (bois, ouvertures, auvents, enseignes, mobilier).
+- [ ] Remodéliser le pavillon de concert à coque courbe et sa place, au lieu du volume rectangulaire provisoire.
+- [ ] Modéliser la passerelle piétonne en bois/métal avec tablier, poutres, garde-corps et appuis ; vérifier ses deux raccordements.
+- [ ] Ajouter mobilier, palmiers, plantations, jeux et éclairage à partir des références visuelles.
+- [ ] Ajouter les bâtiments et chantiers de la zone avec leurs états et hauteurs vérifiés.
+
+### Validation de la zone
+- [ ] Ouvrir la version main dans Godot 4.3 et vérifier les erreurs de parsing/shader.
+- [ ] Inspecter l'eau et la promenade depuis plusieurs points de vue, à pied et depuis les hauteurs.
+- [ ] Contrôler les collisions, les raccords de la passerelle et l'accès aux zones commerciales.
+- [ ] Mesurer FPS et mémoire sur le PC cible ; aucun chiffre de performance n'est validé pour l'instant.
+
+### Sources de référence consultées
+- Construction21, fiche « La Baie des Rois » : photos aériennes et vues de la promenade, des kiosques et du pavillon.
+- FGIS, page « Land Development » : vue aérienne générale du remblai et de la péninsule aménagée.
+- AGP, 20 août 2022 : promenade Nord de 1,2 km et huit kiosques commerciaux.
+- GabonActu, 4 août 2023 : distinction zone Nord, zone Centre et zone Sud ; passerelle piétonne prévue entre Nord et Centre.
+- Le360 Afrique, 30 juin 2024 : reportage vidéo sur le chantier et le développement du front de mer.
+- YouTube, « Promenade sur la Baie des Rois - Libreville (Gabon) », 21 décembre 2024 : vue aérienne du site.
+- YouTube, « Libreville : La Baie des Rois en plein chantier », 27 septembre 2025 : visite filmée du chantier.
+- Les photos et vidéos servent de références de modélisation ; elles ne sont pas automatiquement autorisées comme textures du jeu. Les matériaux du jeu doivent être recréés ou provenir d'assets dont la licence est vérifiée.
