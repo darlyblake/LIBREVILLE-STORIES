@@ -80,9 +80,7 @@ func _load_environment() -> void:
 	var surface := _new_surface(_environment_material)
 	var batch_count := 0
 	var batch_index := 0
-	var road_features: Array = data.get("features", []).duplicate()
-	road_features.sort_custom(Callable(self, "_compare_road_features"))
-	for feature in road_features:
+	for feature in data.get("features", []):
 		var geometry: Dictionary = feature.get("geometry", {})
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("environment_kind", ""))
@@ -122,7 +120,7 @@ func _load_environment() -> void:
 				if direction.length_squared() < 0.01:
 					continue
 				var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
-				_add_quad(surface, a + side + Vector3.UP * 0.014, a - side + Vector3.UP * -0.025, b - side + Vector3.UP * -0.025, b + side + Vector3.UP * -0.025)
+				_add_quad(surface, a + side + Vector3.UP * 0.014, a - side + Vector3.UP * 0.014, b - side + Vector3.UP * 0.014, b + side + Vector3.UP * 0.014)
 				added = true
 		if added:
 			_environment_count += 1
@@ -158,7 +156,9 @@ func _load_roads() -> void:
 	var surface := _new_surface(_road_material)
 	var batch_count := 0
 	var batch_index := 0
-	for feature in data.get("features", []):
+	var road_features: Array = data.get("features", []).duplicate()
+	road_features.sort_custom(Callable(self, "_compare_road_features"))
+	for feature in road_features:
 		var geometry: Dictionary = feature.get("geometry", {})
 		var lines: Array = []
 		match str(geometry.get("type", "")):
