@@ -317,15 +317,15 @@ func _build_coastal_edge() -> void:
 	collision_root.collision_mask = 1
 	root.add_child(collision_root)
 
-	const SEGMENT_COUNT := 24
-	const COAST_START_Z := -115.0
-	const COAST_LENGTH := 230.0
-	for i in range(SEGMENT_COUNT):
-		var t: float = float(i) / float(SEGMENT_COUNT - 1)
-		var z: float = COAST_START_Z + t * COAST_LENGTH
+	var segment_count: int = 24
+	var coast_start_z: float = -115.0
+	var coast_length: float = 230.0
+	for i in range(segment_count):
+		var t: float = float(i) / float(segment_count - 1)
+		var z: float = coast_start_z + t * coast_length
 		var x_curve: float = 38.0 + sin(t * PI) * 12.0
 		var width: float = 6.8
-		var segment_length: float = COAST_LENGTH / float(SEGMENT_COUNT - 1) + 0.35
+		var segment_length: float = coast_length / float(segment_count - 1) + 0.35
 		var x_offset: float = sin(float(i) * 12.9898) * 0.45
 		var position := ANCHOR + Vector3(x_curve + x_offset, 0.52, z)
 		_add_box(root, Vector3(width, 1.35, segment_length), position, rock, "Riprap_%d" % i)
