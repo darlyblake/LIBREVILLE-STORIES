@@ -34,22 +34,22 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [ ] Distinguer relief du sol et hauteur des bâtiments ; un DSM ne doit pas être pris pour un terrain nu.
 - [ ] Construire une surface mer/terre fiable à partir d'une géométrie côtière cohérente ; les lignes de côte seules ne suffisent pas.
 - [ ] Ajouter plages, mangroves, rivières et zones humides lorsque les données sont vérifiées.
-- [ ] Améliorer la végétation (arbres/arbustes) sans multiplier excessivement les objets.
+- [x] Première végétation 3D low-poly instanciée dans les espaces verts OSM (plafond 1 200, PR n°17 validée Godot 4.3) ; inspection visuelle et densité à confirmer.
 
 ## 4. Routes, mobilier et navigation
 - [x] Hiérarchie de largeur et de couleur des routes selon leur catégorie OSM.
 - [x] Étiquettes limitées des axes et des lieux importants.
 - [ ] Vérifier les intersections, ponts, voies à sens unique et connexions des routes.
 - [x] Première passe de trottoirs 3D regroupés sur les grands axes et lorsque les tags OSM indiquent leur présence (PR n°14 fusionnée, validation Godot 4.3 réussie).
-- [ ] Ajouter carrefours détaillés, marquages et mobilier urbain à partir de données ou d'approximations visuelles signalées.
-- [ ] Ajouter une mini-carte et une navigation plus complète après stabilisation des données.
+- [x] Premier marquage axial discontinu sur les axes structurants et voies explicitement à plusieurs voies (PR n°16, approximation visuelle, validation Godot 4.3).\n- [ ] Ajouter carrefours détaillés, passages piétons, ponts et mobilier urbain à partir de données ou d'approximations visuelles signalées.
+- [x] Première mini-carte nord en haut : routes OSM rasterisées et repère de position du joueur (première version, validation Godot 4.3 en cours).\n- [ ] Ajouter la navigation avec itinéraires et découverte des POI.
 
 ## 5. Performance et validation
 - [x] Regroupement des routes et bâtiments en meshes pour réduire les draw calls.
 - [x] Validation automatique Godot 4.3 sous rendu Compatibility déjà passée sur la version précédente.
 - [x] Validation Godot 4.3 après fenêtres et portes (rendu Compatibility réussi).
 - [x] Validation Godot 4.3 après les balcons (PR n°13, rendu Compatibility réussi).
-- [ ] Valider le nouvel atlas de toitures.
+- [x] Validation Godot 4.3 de l'atlas procédural de toitures (PR n°15 fusionnée).
 - [ ] Mettre en place le chargement/déchargement spatial par secteurs.
 - [ ] Mesurer FPS, mémoire et temps de chargement sur la machine cible (GT 730 2 Go) ; aucun chiffre ne doit être annoncé avant ce test.
 - [ ] Vérifier les collisions et la circulation du joueur sur les routes et autour des bâtiments.
