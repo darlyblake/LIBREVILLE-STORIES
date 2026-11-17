@@ -22,6 +22,11 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v4
 
+      - name: Test OSM neighbourhood relation assembly
+        run: |
+          python3 -m pip install --disable-pip-version-check shapely
+          python3 -m unittest discover -s tools/tests -p 'test_*.py' -v
+
       - name: Validate OSM GeoJSON structure and extraction report
         run: |
           python3 - <<'PY'
