@@ -738,10 +738,10 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 			for side_sign in [-1.0, 1.0]:
 				var offset_sill := normal * side_sign * 0.045
 				_add_quad(surface,
-					sill_center - tangent * (half_width + 0.04),
-					sill_center + tangent * (half_width + 0.04),
-					sill_center + tangent * (half_width + 0.04) + Vector3.UP * 0.08,
-					sill_center - tangent * (half_width + 0.04) + Vector3.UP * 0.08)
+					sill_center - tangent * (half_width + 0.04) + offset_sill,
+					sill_center + tangent * (half_width + 0.04) + offset_sill,
+					sill_center + tangent * (half_width + 0.04) + Vector3.UP * 0.08 + offset_sill,
+					sill_center - tangent * (half_width + 0.04) + Vector3.UP * 0.08 + offset_sill)
 
 
 func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2) -> void:
