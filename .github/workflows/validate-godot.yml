@@ -21,6 +21,51 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v4
 
+      - name: Validate OSM GeoJSON structure and extraction report
+        run: |
+          python3 - <<'PY'
+          import json, math
+          from pathlib import Path
+
+          root = Path("data/osm")
+          report = json.loads((root / "extraction-report.json").read_text())
+          assert report.get("license") == "ODbL 1.0"
+          assert report.get("attribution") == "© OpenStreetMap contributors"
+          assert report.get("grid") == "4x4"
+          assert len(report.get("tiles", [])) == 16
+
+          def coordinates_are_finite(value):
+              if isinstance(value, (int, float)):
+                  return math.isfinite(value)
+              if isinstance(value, list):
+                  return all(coordinates_are_finite(item) for item in value)
+              return True
+
+          for filename, expected_type in (("roads.geojson", {"LineString", "MultiLineString"}),
+                                           ("buildings.geojson", {"Polygon", "MultiPolygon"})):
+              data = json.loads((root / filename).read_text())
+              assert data.get("type") == "FeatureCollection", filename
+              features = data.get("features", [])
+              expected_count = report["files"][filename]["features"]
+              assert len(features) == expected_count, f"{filename}: {len(features)} != {expected_count}"
+              for index, feature in enumerate(features):
+                  geometry = feature.get("geometry") or {}
+                  kind = geometry.get("type")
+                  coords = geometry.get("coordinates")
+                  assert kind in expected_type, f"{filename} feature {index}: unexpected {kind}"
+                  assert coords and coordinates_are_finite(coords), f"{filename} feature {index}: invalid coordinates"
+                  if kind == "LineString":
+                      assert len(coords) >= 2
+                  elif kind == "MultiLineString":
+                      assert all(len(line) >= 2 for line in coords)
+                  elif kind == "Polygon":
+                      assert all(len(ring) >= 4 and ring[0] == ring[-1] for ring in coords)
+                  elif kind == "MultiPolygon":
+                      assert all(all(len(ring) >= 4 and ring[0] == ring[-1] for ring in polygon) for polygon in coords)
+              print(f"{filename}: {len(features)} géométries contrôlées.")
+          print("Rapport OSM, attribution, 16 secteurs et géométries : OK.")
+          PY
+
       - name: Install Godot 4.3 and software display
         run: |
           sudo apt-get update
