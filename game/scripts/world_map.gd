@@ -200,33 +200,43 @@ func _load_environment() -> void:
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("environment_kind", ""))
 		var added := false
-		if str(geometry.get("type", "")) == "Polygon":
-			var rings: Array = geometry.get("coordinates", [])
-			if rings.is_empty() or rings[0].size() < 4:
-				continue
-			var points := PackedVector2Array()
-			for coordinate in rings[0]:
-				var p := _geo_to_world(coordinate)
-				points.append(Vector2(p.x, p.z))
-			if points.size() > 1 and points[0].distance_squared_to(points[points.size() - 1]) < 0.0001:
-				points.remove_at(points.size() - 1)
-			if points.size() < 3:
-				continue
-			var indices := Geometry2D.triangulate_polygon(points)
-			if indices.is_empty():
-				continue
-			if kind in ["vegetation", "green_space"]:
-				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
-			surface.set_color(_environment_color(kind))
-			for i in range(0, indices.size(), 3):
-				var p0 := points[indices[i]]
-				var p1 := points[indices[i + 1]]
-				var p2 := points[indices[i + 2]]
-				surface.add_vertex(Vector3(p0.x, 0.012, p0.y))
-				surface.add_vertex(Vector3(p1.x, 0.012, p1.y))
-				surface.add_vertex(Vector3(p2.x, 0.012, p2.y))
-			added = true
-		elif str(geometry.get("type", "")) == "LineString":
+		var geometry_type := str(geometry.get("type", ""))
+		if geometry_type in ["Polygon", "MultiPolygon"]:
+			var polygons: Array = []
+			if geometry_type == "Polygon":
+				polygons.append(geometry.get("coordinates", []))
+			else:
+				polygons = geometry.get("coordinates", [])
+			for polygon_rings in polygons:
+				if polygon_rings.is_empty() or polygon_rings[0].size() < 4:
+					continue
+				# Geometry2D.triangulate_polygon ne gère qu'un contour simple.
+				# Ignorer prudemment les surfaces avec trous plutôt que de les remplir à tort.
+				if polygon_rings.size() > 1:
+					continue
+				var points := PackedVector2Array()
+				for coordinate in polygon_rings[0]:
+					var p := _geo_to_world(coordinate)
+					points.append(Vector2(p.x, p.z))
+				if points.size() > 1 and points[0].distance_squared_to(points[points.size() - 1]) < 0.0001:
+					points.remove_at(points.size() - 1)
+				if points.size() < 3:
+					continue
+				var indices := Geometry2D.triangulate_polygon(points)
+				if indices.is_empty():
+					continue
+				if kind in ["vegetation", "green_space"]:
+					_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
+				surface.set_color(_environment_color(kind))
+				for i in range(0, indices.size(), 3):
+					var p0 := points[indices[i]]
+					var p1 := points[indices[i + 1]]
+					var p2 := points[indices[i + 2]]
+					surface.add_vertex(Vector3(p0.x, 0.012, p0.y))
+					surface.add_vertex(Vector3(p1.x, 0.012, p1.y))
+					surface.add_vertex(Vector3(p2.x, 0.012, p2.y))
+				added = true
+		elif geometry_type == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
 			var width := 5.0 if kind == "coastline" else (2.0 if kind == "waterway" else 1.2)
 			surface.set_color(_environment_color(kind))
