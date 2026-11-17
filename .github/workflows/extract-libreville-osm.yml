@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: libreville-osm-extraction
+  group: libreville-osm-extraction-pbf
   cancel-in-progress: true
 
 jobs:
