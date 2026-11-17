@@ -1014,7 +1014,31 @@ func _building_color(kind: String, osm_id: int, props: Dictionary = {}) -> Color
 		selected = Color(0.58, 0.61, 0.59) if abs(osm_id) % 3 == 0 else Color(0.67, 0.67, 0.62)
 	elif kind in ["commercial", "retail", "supermarket", "office"]:
 		selected = Color(0.72, 0.72, 0.67) if abs(osm_id) % 2 == 0 else Color(0.78, 0.75, 0.67)
-	return selected
+	# building:material n'est pas une texture : il module seulement la teinte
+	# lorsque building:colour/building:color n'a pas fourni de couleur explicite.
+	var material_tag := str(props.get("building:material", "")).strip_edges().to_lower()
+	var material_tint := Color.WHITE
+	match material_tag:
+		"brick", "bricks":
+			material_tint = Color(1.08, 0.88, 0.78)
+		"wood", "timber":
+			material_tint = Color(1.08, 0.91, 0.78)
+		"concrete", "cement_block", "concrete_block":
+			material_tint = Color(0.91, 0.95, 0.96)
+		"metal", "steel", "aluminium":
+			material_tint = Color(0.86, 0.93, 0.98)
+		"stone", "limestone":
+			material_tint = Color(1.04, 1.00, 0.91)
+		"glass":
+			material_tint = Color(0.82, 0.94, 1.08)
+		"plaster", "render", "stucco":
+			material_tint = Color(1.04, 1.02, 0.98)
+	return Color(
+		clampf(selected.r * material_tint.r, 0.0, 1.0),
+		clampf(selected.g * material_tint.g, 0.0, 1.0),
+		clampf(selected.b * material_tint.b, 0.0, 1.0),
+		selected.a
+	)
 
 func _should_use_pitched_roof(kind: String, props: Dictionary, point_count: int) -> bool:
 	if point_count != 4:
