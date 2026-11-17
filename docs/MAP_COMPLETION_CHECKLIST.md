@@ -31,7 +31,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
 - [x] Première passe de balcons stylisés sur certains immeubles à plusieurs niveaux, regroupés dans le mesh des façades.
 - [ ] Ajouter auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
-- [ ] Mieux gérer les cours intérieures et trous dans les empreintes polygonales.
+- [x] Détecter les anneaux intérieurs des empreintes OSM et laisser le toit ouvert pour ne pas boucher artificiellement les cours ; les murs intérieurs et la triangulation exacte des trous restent à implémenter.
 - [ ] Affiner les typologies architecturales locales à partir de photos/références vérifiables ; ne pas uniformiser toutes les constructions.
 
 ## 3. Relief, mer et environnement
