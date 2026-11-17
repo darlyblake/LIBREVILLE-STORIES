@@ -2,12 +2,23 @@ name: Validate Godot project
 # Validation manuelle du snapshot OSM publié par le workflow d'extraction.
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "project.godot"
+      - "game/**"
+      - "data/osm/**"
+      - "tools/map-generator/**"
+      - "tools/tests/**"
+      - ".github/workflows/validate-godot.yml"
   push:
     branches: [main]
     paths:
       - "project.godot"
       - "game/**"
       - "data/osm/**"
+      - "tools/map-generator/**"
+      - "tools/tests/**"
       - ".github/workflows/validate-godot.yml"
   workflow_dispatch:
 
