@@ -307,7 +307,7 @@ func _load_pois() -> void:
 		var coordinates: Array = geometry.get("coordinates", [])
 		if coordinates.size() < 2:
 			continue
-		var kind := str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("building", "place"))))))
+		var kind := str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("place", props.get("building", "place"))))))
 		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 4.0, _poi_color(kind), 500.0)
 		_poi_count += 1
 
@@ -323,7 +323,10 @@ func _compare_poi_features(a: Dictionary, b: Dictionary) -> bool:
 
 
 func _poi_priority(props: Dictionary) -> int:
-	var kind := str(props.get("amenity", props.get("healthcare", props.get("shop", props.get("tourism", props.get("place", ""))))))
+	var place_kind := str(props.get("place", ""))
+	if place_kind in ["city", "town", "suburb", "neighbourhood", "quarter", "district", "village", "hamlet"]:
+		return 0
+	var kind := str(props.get("amenity", props.get("healthcare", props.get("shop", props.get("tourism", place_kind)))))
 	match kind:
 		"hospital", "clinic", "police", "fire_station", "townhall", "government", "marketplace":
 			return 0
@@ -354,6 +357,8 @@ func _add_map_label(label_text: String, world_position: Vector3, label_color: Co
 
 func _poi_color(kind: String) -> Color:
 	match kind:
+		"city", "town", "suburb", "neighbourhood", "quarter", "district", "village", "hamlet":
+			return Color(1.0, 0.88, 0.58)
 		"hospital", "clinic", "doctors", "pharmacy", "healthcare":
 			return Color(1.0, 0.48, 0.43)
 		"school", "college", "university", "kindergarten", "school_building":
