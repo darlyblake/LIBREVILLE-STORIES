@@ -194,7 +194,7 @@ func _load_pois() -> void:
 		var coordinates: Array = geometry.get("coordinates", [])
 		if coordinates.size() < 2:
 			continue
-		var kind := str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", "place")))))
+		var kind := str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("building", "place"))))))
 		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 4.0, _poi_color(kind), 500.0)
 		_poi_count += 1
 
@@ -218,9 +218,9 @@ func _poi_color(kind: String) -> Color:
 	match kind:
 		"hospital", "clinic", "doctors", "pharmacy", "healthcare":
 			return Color(1.0, 0.48, 0.43)
-		"school", "college", "university", "kindergarten":
+		"school", "college", "university", "kindergarten", "school_building":
 			return Color(0.48, 0.72, 1.0)
-		"police", "fire_station", "government", "townhall":
+		"police", "fire_station", "government", "townhall", "civic", "administrative":
 			return Color(0.72, 0.78, 1.0)
 		"marketplace", "supermarket", "mall", "convenience":
 			return Color(1.0, 0.82, 0.42)
