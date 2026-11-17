@@ -11,6 +11,9 @@ La chaîne d'extraction découpe la zone en 16 secteurs, conserve les propriét�
 - roads.geojson : axes routiers, catégories highway, noms de voies lorsqu'ils sont renseignés.
 - buildings.geojson : empreintes des bâtiments et tags descriptifs disponibles.
 - pois.geojson : lieux nommés ponctuels (équipements, commerces, santé, éducation, tourisme, transports, lieux historiques et services).
+- environment.geojson : éléments OSM d'eau, hydrographie, végétation, espaces verts, littoral et surfaces naturelles.
+- neighbourhoods.geojson : contours locaux nommés uniquement lorsqu'une géométrie OSM vérifiable existe ; cette couche peut rester vide.
+- localities.geojson : points d'étiquetage pour les objets OSM `place=*` nommés (nœuds et ways). Pour les ways, le point représentatif sert uniquement à positionner le nom : il ne représente pas une frontière officielle.
 
 Source : OpenStreetMap contributors, licence ODbL 1.0. Attribution à afficher dans le jeu et les crédits : « © OpenStreetMap contributors ».
 
@@ -22,12 +25,14 @@ Les noms de rues présents dans OSM sont affichés sur un nombre limité d'axes 
 - Les hauteurs de bâtiments restent approximatives lorsque height ou building:levels ne sont pas renseignés.
 - Les volumes sont des extrusions simples, pas des façades ou modèles architecturaux fidèles.
 - Les polygones avec cours intérieures (trous) ne sont pas encore modélisés correctement.
-- Le relief, les plages, le trait de côte détaillé, les mangroves, les cours d'eau et les limites officielles des quartiers restent à intégrer/valider avec des sources adaptées.
+- Le relief n'est pas encore intégré. Le Copernicus DEM GLO-30 est une source candidate (résolution globale de 30 m), mais c'est un modèle de surface (DSM) qui inclut bâtiments et végétation, pas un modèle de terrain nu (DTM). Il ne doit donc pas servir à attribuer des hauteurs exactes aux bâtiments. Référence : https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM.
+- Le remplissage de l'océan n'est pas encore intégré : les traits de côte OSM sont actuellement rendus comme des lignes. Il faut reconstruire une surface terre/mer à partir de géométries côtières topologiquement cohérentes, sans colorier arbitrairement un côté.
+- Les plages, mangroves et limites officielles des quartiers restent à intégrer/valider avec des sources adaptées.
 - La présence d'un lieu dans OSM ne garantit pas que son nom, son activité ou son état actuel soit encore exact. Une vérification terrain ou une source officielle est nécessaire pour les lieux sensibles/importants.
 
 ## Étapes de précision
-1. Valider les couches routes, bâtiments et lieux nommés après extraction.
-2. Ajouter les limites et noms de quartiers depuis une source administrative fiable.
+1. Valider les couches routes, bâtiments, lieux nommés et localités après chaque extraction fraîche.
+2. Compléter les noms de localités avec OSM, puis ajouter les limites de quartiers depuis une source administrative fiable.
 3. Ajouter le relief, le littoral, l'hydrographie et les espaces naturels.
 4. Améliorer l'architecture des bâtiments uniquement avec des références vérifiables (photos, hauteurs, niveaux, typologies).
 5. Créer le chargement spatial par secteurs et mesurer les performances sur la machine cible.
