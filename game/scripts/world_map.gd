@@ -699,6 +699,39 @@ func _road_label_priority(props: Dictionary) -> int:
 			return 5
 
 
+func _building_spatial_cell(feature: Dictionary) -> Vector2i:
+	# Cellule grossière de 250 m calculée depuis l'emprise extérieure.
+	# Elle sert uniquement à ordonner les lots pour un meilleur culling ;
+	# ce n'est pas un système de streaming.
+	var geometry: Dictionary = feature.get("geometry", {})
+	var polygons: Array = []
+	match str(geometry.get("type", "")):
+		"Polygon":
+			polygons.append(geometry.get("coordinates", []))
+		"MultiPolygon":
+			polygons = geometry.get("coordinates", [])
+		_:
+			return Vector2i.ZERO
+	if polygons.is_empty() or polygons[0].is_empty():
+		return Vector2i.ZERO
+	var ring: Array = polygons[0][0]
+	if ring.is_empty():
+		return Vector2i.ZERO
+	var min_x := INF
+	var max_x := -INF
+	var min_z := INF
+	var max_z := -INF
+	for coordinate in ring:
+		var world := _geo_to_world(coordinate)
+		min_x = minf(min_x, world.x)
+		max_x = maxf(max_x, world.x)
+		min_z = minf(min_z, world.z)
+		max_z = maxf(max_z, world.z)
+	var center_x := (min_x + max_x) * 0.5
+	var center_z := (min_z + max_z) * 0.5
+	return Vector2i(floori(center_x / 250.0), floori(center_z / 250.0))
+
+
 func _load_buildings() -> void:
 	var data := _read_geojson("res://data/osm/buildings.geojson")
 	if data.is_empty():
@@ -706,13 +739,29 @@ func _load_buildings() -> void:
 		return
 	var features: Array = data.get("features", [])
 	var limit := mini(features.size(), BUILDING_LIMIT)
+	# Préordonner les empreintes par cellules géographiques : les meshes
+	# consécutifs couvrent ainsi des zones plus proches, ce qui améliore le
+	# rejet des lots hors champ par rapport à l'ordre arbitraire du GeoJSON.
+	var spatial_features: Array[Dictionary] = []
+	for feature_variant in features:
+		if not feature_variant is Dictionary:
+			continue
+		var feature: Dictionary = feature_variant
+		var cell := _building_spatial_cell(feature)
+		spatial_features.append({"cell_x": cell.x, "cell_z": cell.y, "feature": feature})
+	spatial_features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if int(a["cell_x"]) == int(b["cell_x"]):
+			return int(a["cell_z"]) < int(b["cell_z"])
+		return int(a["cell_x"]) < int(b["cell_x"])
+	)
+	limit = mini(spatial_features.size(), BUILDING_LIMIT)
 	var surface := _new_surface(_building_material)
 	var roof_surface := _new_surface(_roof_material)
 	var detail_surface := _new_surface(_facade_detail_material)
 	var batch_count := 0
 	var batch_index := 0
 	for index in range(limit):
-		var feature: Dictionary = features[index]
+		var feature: Dictionary = spatial_features[index]["feature"]
 		var geometry: Dictionary = feature.get("geometry", {})
 		var polygons: Array = []
 		match str(geometry.get("type", "")):
