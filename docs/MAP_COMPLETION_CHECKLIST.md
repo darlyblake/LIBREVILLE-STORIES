@@ -57,7 +57,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 
 ## 5. Performance et validation
 - [x] Regroupement des routes et bâtiments en meshes pour réduire les draw calls.
-- [x] Validation automatique Godot 4.3 sous rendu Compatibility déjà passée sur la version précédente.
+- [x] Validation automatique Godot 4.3 sous rendu Compatibility passée après les améliorations de largeur, surface et raccords routiers (workflow `44160434574`, commit de base `3cc0325`). Le dernier ajustement d'orientation des faces a été ajouté ensuite et reste à confirmer par un nouveau rendu.
 - [x] Validation Godot 4.3 après fenêtres et portes (rendu Compatibility réussi).
 - [x] Validation Godot 4.3 après les balcons (PR n°13, rendu Compatibility réussi).
 - [x] Validation Godot 4.3 de l'atlas procédural de toitures (PR n°15 fusionnée).
