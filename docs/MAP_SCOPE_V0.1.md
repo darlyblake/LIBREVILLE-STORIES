@@ -1,24 +1,39 @@
-# Périmètre cartographique — version 0.1
+# Périmètre cartographique — version 0.2
 
 ## Objectif
-Préparer une première zone de jeu inspirée de sept quartiers de Libreville : Centre-ville, Louis, Glass, Nombakélé, Mont-Bouët, Nkembo et Akébé.
+Construire une première zone de jeu inspirée du Centre-ville, de Louis, Glass, Nombakélé, Mont-Bouët, Nkembo et Akébé.
 
-## Attention aux limites
-Le périmètre de travail initial est une zone technique provisoire. Il ne représente pas des limites administratives officielles. Les contours seront affinés à partir de sources géographiques vérifiables et d'une validation visuelle.
+## Emprise provisoire
+L'extraction initiale utilise la boîte géographique sud/ouest/nord/est suivante : 0.355, 9.400, 0.445, 9.495. C'est une emprise technique rectangulaire autour de Libreville et de ses environs, pas une limite officielle des quartiers. Elle devra être affinée après inspection de la carte.
 
-## Couches à préparer
-- Routes et chemins
-- Empreintes de bâtiments
-- Espaces verts et occupation du sol
-- Eau et littoral
-- Points d'intérêt
+## Extraction contrôlée
+Une première extraction OpenStreetMap terminée avec succès a produit :
+- 4 503 géométries de voies (LineString).
+- 49 359 empreintes de bâtiments (Polygon).
+- Deux fichiers GeoJSON et un rapport d'extraction.
+- Les types de voies et de bâtiments sont conservés dans les propriétés.
+
+Une seconde version du processus découpe la zone en 9 tuiles, met en cache les réponses et réessaie plusieurs serveurs Overpass. Le workflow GitHub Actions doit aussi déposer les fichiers extraits dans le dépôt.
+
+## Génération 3D
+Le script `game/scripts/world_map.gd` :
+- convertit longitude/latitude en coordonnées locales métriques ;
+- construit un réseau routier à partir des lignes OSM ;
+- extrude les empreintes de bâtiments en volumes simples ;
+- regroupe les géométries en meshes pour réduire le nombre d'objets de rendu.
+
+Les hauteurs des bâtiments sont approximatives lorsqu'aucune hauteur fiable n'est fournie. Les bâtiments sont des volumes de prototype, pas des modèles architecturaux fidèles.
+
+## Couches à compléter
+- Relief et pente du terrain
+- Littoral, cours d'eau et zones humides
+- Végétation et espaces verts
+- Points d'intérêt et mobilier urbain
+- Bâtiments détaillés et enseignes locales
+- Découpage et chargement progressif par secteurs
 
 ## Sources et attribution
-OpenStreetMap peut fournir une base de données géographiques. Les extractions doivent respecter l'ODbL et afficher l'attribution « © OpenStreetMap contributors ». Les données doivent être contrôlées, nettoyées et adaptées à l'échelle du jeu. Les hauteurs de bâtiments et détails manquants nécessiteront des traitements ou créations complémentaires.
+Source : OpenStreetMap contributors, licence ODbL 1.0. Afficher « © OpenStreetMap contributors » dans le jeu et les crédits. Contrôler les données et respecter les obligations de partage à l'identique applicables à la base dérivée.
 
-## Priorité de production
-1. Obtenir une géométrie de routes cohérente.
-2. Générer un terrain test jouable.
-3. Ajouter des bâtiments simples à partir des empreintes.
-4. Découper la ville en secteurs chargés progressivement.
-5. Vérifier les performances sur le PC cible.
+## Tests restant à effectuer
+Le script de génération doit encore être ouvert et exécuté dans Godot 4 sur la machine cible. La scène n'a pas encore fait l'objet d'un test réel de rendu, de collision ni de performance.
