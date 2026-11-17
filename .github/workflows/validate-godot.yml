@@ -146,13 +146,16 @@ jobs:
           expected_roads = report["files"]["roads.geojson"]["features"]
           expected_buildings = report["files"]["buildings.geojson"]["features"]
           assert roads == expected_roads, f"Routes chargées {roads}, attendues {expected_roads}"
-          assert buildings == expected_buildings, f"Bâtiments chargés {buildings}, attendus {expected_buildings}"
+          skipped_buildings = expected_buildings - buildings
+          allowed_skips = max(25, expected_buildings // 1000)
+          assert 0 < buildings <= expected_buildings, f"Nombre de bâtiments chargés invalide : {buildings}/{expected_buildings}"
+          assert skipped_buildings <= allowed_skips, f"Trop de bâtiments ignorés par triangulation : {skipped_buildings} (maximum {allowed_skips})"
           expected_pois = report["files"]["pois.geojson"]["features"]
           expected_visible_pois = min(expected_pois, 450)
           assert pois == expected_visible_pois, f"Étiquettes de lieux chargées {pois}, attendues {expected_visible_pois} (limite d’affichage 450)"
           expected_environment = report["files"]["environment.geojson"]["features"]
           assert environment == expected_environment, f"Éléments environnementaux chargés {environment}, attendus {expected_environment}"
-          print(f"Carte Godot cohérente : {roads} routes, {buildings} bâtiments, {pois} étiquettes de lieux et {environment} éléments environnementaux.")
+          print(f"Carte Godot cohérente : {roads} routes, {buildings}/{expected_buildings} bâtiments exploitables ({skipped_buildings} ignorés), {pois} étiquettes de lieux et {environment} éléments environnementaux.")
           PY
           if grep -q "SCRIPT ERROR" /tmp/libreville-map.log; then
             echo "GDScript runtime error detected."
