@@ -744,7 +744,7 @@ func _load_buildings() -> void:
 	# rejet des lots hors champ par rapport à l'ordre arbitraire du GeoJSON.
 	var spatial_features: Array[Dictionary] = []
 	for feature_variant in features:
-		if not feature_variant is Dictionary:
+		if not (feature_variant is Dictionary):
 			continue
 		var feature: Dictionary = feature_variant
 		var cell := _building_spatial_cell(feature)
