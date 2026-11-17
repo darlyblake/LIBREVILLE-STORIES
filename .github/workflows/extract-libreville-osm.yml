@@ -1,62 +1,98 @@
-name: Prepare Libreville OSM map data
+name: Extract Libreville OSM map data
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
+      - "tools/map-generator/extract_libreville.py"
       - ".github/workflows/extract-libreville-osm.yml"
 
 permissions:
-  actions: read
+  actions: write
   contents: write
 
 concurrency:
   group: libreville-osm-extraction
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  prepare-map:
+  extract-map:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 120
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
         with:
           persist-credentials: true
 
-      - name: Restore the successful and verified OSM extraction
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p data/osm
-          curl --fail --location --silent --show-error \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/darlyblake/LIBREVILLE-STORIES/actions/artifacts/14335400825/zip" \
-            -o /tmp/libreville-osm.zip
-          unzip -o /tmp/libreville-osm.zip -d data/osm
+      - name: Restore previous successful tile cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data/osm/.tiles
+          key: ${{ runner.os }}-libreville-osm-v2-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-libreville-osm-v2-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-
+            ${{ runner.os }}-libreville-osm-v2-
 
-      - name: Validate GeoJSON files before committing
+      - name: Extract fresh OSM data in 16 small sectors
+        id: extract
+        run: |
+          python3 tools/map-generator/extract_libreville.py --grid 4 --timeout 45
+
+      - name: Save successful tiles, including partial progress after a failure
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/osm/.tiles
+          key: ${{ runner.os }}-libreville-osm-v2-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
+
+      - name: Validate GeoJSON and extraction coverage
         run: |
           python3 - <<'PY'
-          import json
+          import json, math
           from pathlib import Path
+
           base = Path("data/osm")
           roads = json.loads((base / "roads.geojson").read_text())
           buildings = json.loads((base / "buildings.geojson").read_text())
           report = json.loads((base / "extraction-report.json").read_text())
+
           assert roads.get("type") == "FeatureCollection"
           assert buildings.get("type") == "FeatureCollection"
           assert len(roads.get("features", [])) >= 1000
           assert len(buildings.get("features", [])) >= 10000
           assert report.get("license") == "ODbL 1.0"
-          print("Routes:", len(roads["features"]))
-          print("Bâtiments:", len(buildings["features"]))
-          print("Attribution:", report.get("attribution"))
+          assert report.get("attribution") == "© OpenStreetMap contributors"
+          assert report.get("grid") == "4x4"
+          assert len(report.get("tiles", [])) == 16
+
+          def check_geometry(feature, expected):
+              geometry = feature.get("geometry") or {}
+              assert geometry.get("type") == expected
+              coords = geometry.get("coordinates") or []
+              if expected == "LineString":
+                  points = coords
+              else:
+                  assert coords and coords[0][0] == coords[0][-1]
+                  points = coords[0]
+              assert len(points) >= (2 if expected == "LineString" else 4)
+              for lon, lat in points:
+                  assert math.isfinite(lon) and math.isfinite(lat)
+                  assert -180 <= lon <= 180 and -90 <= lat <= 90
+
+          for feature in roads["features"]:
+              check_geometry(feature, "LineString")
+          for feature in buildings["features"]:
+              check_geometry(feature, "Polygon")
+
+          print("Secteurs vérifiés :", len(report["tiles"]))
+          print("Routes vérifiées :", len(roads["features"]))
+          print("Bâtiments vérifiés :", len(buildings["features"]))
+          print("Attribution :", report["attribution"])
           PY
 
-      - name: Commit map data into main
+      - name: Commit verified map data into main
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -66,11 +102,11 @@ jobs:
           if git diff --cached --quiet; then
             echo "Les données cartographiques sont déjà à jour."
           else
-            git commit -m "Add verified Libreville OSM roads and buildings"
+            git commit -m "Refresh verified Libreville OSM map data"
             git push origin HEAD:main
           fi
 
-      - name: Publish map data artifact
+      - name: Publish verified map data artifact
         uses: actions/upload-artifact@v4
         with:
           name: libreville-osm-extraction
@@ -79,4 +115,4 @@ jobs:
             data/osm/buildings.geojson
             data/osm/extraction-report.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
