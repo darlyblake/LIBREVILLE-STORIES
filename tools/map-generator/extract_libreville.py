@@ -267,7 +267,7 @@ def make_neighbourhood_collection(elements, bounds, relations=None):
     south, west, north, east = bounds
     clip = box(west, south, east, north)
     features = []
-    accepted_places = {"suburb", "neighbourhood", "quarter", "district", "borough", "city", "town", "village"}
+    accepted_places = {"suburb", "neighbourhood", "quarter", "district", "borough"}
     for way in elements:
         if way.get("type") != "way":
             continue
@@ -275,7 +275,10 @@ def make_neighbourhood_collection(elements, bounds, relations=None):
         place = str(tags.get("place", "")).lower()
         boundary = str(tags.get("boundary", "")).lower()
         name = str(tags.get("name", "")).strip()
-        if not name or (place not in accepted_places and boundary != "administrative"):
+        admin_level = str(tags.get("admin_level", "")).strip()
+        is_local_place = place in accepted_places
+        is_local_admin_boundary = boundary == "administrative" and admin_level == "10"
+        if not name or not (is_local_place or is_local_admin_boundary):
             continue
         points = way.get("geometry") or []
         coords = [
@@ -327,7 +330,10 @@ def make_neighbourhood_collection(elements, bounds, relations=None):
             place = str(tags.get("place", "")).lower()
             boundary = str(tags.get("boundary", "")).lower()
             name = str(tags.get("name", "")).strip()
-            if not name or (place not in accepted_places and boundary != "administrative"):
+            admin_level = str(tags.get("admin_level", "")).strip()
+            is_local_place = place in accepted_places
+            is_local_admin_boundary = boundary == "administrative" and admin_level == "10"
+            if not name or not (is_local_place or is_local_admin_boundary):
                 continue
             outer_lines, inner_lines = [], []
             for member in relation.get("members") or []:
@@ -451,12 +457,13 @@ def extract_from_geofabrik_pbf(south, west, north, east):
 
         def relation(self, relation):
             tags = dict(relation.tags)
-            accepted_places = {"suburb", "neighbourhood", "quarter", "district", "borough", "city", "town", "village"}
+            accepted_places = {"suburb", "neighbourhood", "quarter", "district", "borough"}
             place = str(tags.get("place", "")).lower()
             boundary = str(tags.get("boundary", "")).lower()
+            admin_level = str(tags.get("admin_level", "")).strip()
             if not str(tags.get("name", "")).strip():
                 return
-            if place not in accepted_places and boundary != "administrative":
+            if place not in accepted_places and not (boundary == "administrative" and admin_level == "10"):
                 return
             members = []
             for member in relation.members:
