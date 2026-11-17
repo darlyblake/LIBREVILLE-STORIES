@@ -26,7 +26,9 @@ Ces noms définissent le périmètre de travail. La zone technique actuelle est 
 - [x] Contrôles de déplacement et caméra de troisième personne
 - [x] Première extraction OpenStreetMap contrôlée : 4 503 voies et 49 359 empreintes de bâtiments
 - [x] Générateur Godot des routes et bâtiments 3D ajouté
-- [ ] Nouvelle extraction découpée en neuf tuiles et intégration automatique des fichiers dans le dépôt
+- [x] Fichiers GeoJSON vérifiés et intégrés dans le dépôt : 4 503 voies et 49 359 bâtiments
+- [x] Attribution OpenStreetMap affichée dans la scène
+- [ ] Nouvelle extraction actualisée : les serveurs Overpass ont temporairement refusé certaines tuiles
 - [ ] Test d'ouverture et de performance dans Godot sur le PC cible
 - [ ] Relief, littoral, végétation, mobilier urbain et bâtiments détaillés
 - [ ] Chargement par secteurs et optimisation avancée
