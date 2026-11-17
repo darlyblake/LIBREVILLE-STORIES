@@ -31,7 +31,13 @@ background_mode = 1
 background_color = Color(0.48, 0.66, 0.78, 1)
 ambient_light_source = 3
 ambient_light_color = Color(0.72, 0.76, 0.82, 1)
-ambient_light_energy = 0.65
+ambient_light_energy = 0.78
+fog_enabled = true
+fog_light_color = Color(0.62, 0.72, 0.77, 1)
+fog_density = 0.00012
+fog_sun_scatter = 0.12
+fog_aerial_perspective = 0.22
+fog_sky_affect = 0.18
 
 [node name="Main" type="Node3D"]
 
@@ -42,8 +48,11 @@ script = ExtResource("2_map")
 environment = SubResource("Environment_world")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-rotation = Vector3(-0.9, -0.6, 0)
+rotation = Vector3(-0.82, -0.55, 0)
+light_energy = 1.05
+light_color = Color(1, 0.94, 0.82, 1)
 shadow_enabled = true
+shadow_bias = 0.06
 
 [node name="Ground" type="StaticBody3D" parent="."]
 
