@@ -174,6 +174,8 @@ void fragment() {
 	var water_mat := ShaderMaterial.new()
 	water_mat.shader = water_shader
 
+	# Quatre nappes séparées évitent de couvrir toute la promenade.
+	# Le bord côté terre est recouvert par l'enrochement collisionné.
 	_add_water_surface(root, Vector2(270.0, 320.0), ANCHOR + Vector3(185.0, 0.055, 0.0), water_mat, "OceanMain")
 	_add_water_surface(root, Vector2(46.0, 178.0), ANCHOR + Vector3(73.0, 0.058, -8.0), water_mat, "BayNorthArm")
 	_add_water_surface(root, Vector2(58.0, 76.0), ANCHOR + Vector3(82.0, 0.060, -91.0), water_mat, "BaySouthArm")
@@ -305,12 +307,32 @@ func _build_coastal_edge() -> void:
 	var root := Node3D.new()
 	root.name = "CoastEdge"
 	add_child(root)
+
+	# Enrochements visibles et collisionnés : ils matérialisent la limite
+	# praticable entre l'esplanade et la mer. Le sol mondial reste sous l'eau,
+	# mais le joueur ne peut plus traverser librement cette bordure.
+	var collision_root := StaticBody3D.new()
+	collision_root.name = "CoastalCollision"
+	collision_root.collision_layer = 1
+	collision_root.collision_mask = 1
+	root.add_child(collision_root)
+
 	for i in range(22):
 		var t: float = float(i) / 21.0
 		var z: float = -110.0 + t * 220.0
 		var x_curve: float = 38.0 + sin(t * PI) * 12.0
-		var w: float = _rng.randf_range(5.0, 8.5)
-		_add_box(root, Vector3(w, 1.4, 10.0), ANCHOR + Vector3(x_curve + _rng.randf_range(-1.2, 1.2), 0.5, z), rock, "Riprap_%d" % i)
+		var width: float = 6.8
+		var x_offset: float = sin(float(i) * 12.9898) * 0.65
+		var position := ANCHOR + Vector3(x_curve + x_offset, 0.52, z)
+		_add_box(root, Vector3(width, 1.35, 10.2), position, rock, "Riprap_%d" % i)
+
+		var collision := CollisionShape3D.new()
+		collision.name = "RiprapCollision_%d" % i
+		var shape := BoxShape3D.new()
+		shape.size = Vector3(width, 1.45, 10.4)
+		collision.shape = shape
+		collision.position = position
+		collision_root.add_child(collision)
 
 
 func _build_street_furniture() -> void:
