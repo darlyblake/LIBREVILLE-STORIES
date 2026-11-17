@@ -32,12 +32,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git rebase origin/main
           git add data/osm/roads.geojson data/osm/buildings.geojson data/osm/extraction-report.json
           if git diff --cached --quiet; then
             echo "No map data changes to commit."
           else
             git commit -m "Add extracted Libreville OSM roads and buildings"
-            git push
+            git push origin HEAD:main
           fi
 
       - name: Upload GeoJSON and extraction report
