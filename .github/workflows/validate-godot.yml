@@ -89,6 +89,20 @@ jobs:
                   assert west - 1e-8 <= lon <= east + 1e-8
                   assert south - 1e-8 <= lat <= north + 1e-8
           print(f"environment.geojson: {len(env_features)} éléments environnementaux dans l'emprise.")
+ 
+          neighbourhoods = json.loads((root / "neighbourhoods.geojson").read_text())
+          assert neighbourhoods.get("type") == "FeatureCollection"
+          neighbourhood_features = neighbourhoods.get("features", [])
+          assert len(neighbourhood_features) == report["files"]["neighbourhoods.geojson"]["features"]
+          for index, feature in enumerate(neighbourhood_features):
+              geometry = feature.get("geometry") or {}
+              assert geometry.get("type") == "Polygon", f"neighbourhood {index}: unexpected geometry"
+              coords = geometry.get("coordinates") or []
+              assert coords and coordinates_are_finite(coords), f"neighbourhood {index}: invalid coordinates"
+              assert_in_bounds(coords, f"neighbourhood {index}")
+              assert all(len(ring) >= 4 and ring[0] == ring[-1] for ring in coords)
+              assert str(feature.get("properties", {}).get("name", "")).strip(), f"neighbourhood {index}: missing name"
+          print(f"neighbourhoods.geojson: {len(neighbourhood_features)} limites locales OSM contrôlées.")
 
           for filename, expected_type in (("roads.geojson", {"LineString", "MultiLineString"}),
                                            ("buildings.geojson", {"Polygon", "MultiPolygon"})):
