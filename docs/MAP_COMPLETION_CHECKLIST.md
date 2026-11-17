@@ -42,8 +42,10 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 
 ## 4. Routes, mobilier et navigation
 - [x] Hiérarchie de largeur et de couleur des routes selon leur catégorie OSM.
+- [x] Lecture des tags OSM `width`, `lanes` et `surface` pour adapter largeur et revêtement lorsque ces informations existent.
+- [x] Première fermeture des trous aux carrefours avec des raccords de chaussée légers sur les nœuds OSM partagés ; géométrie encore schématique, pas un vrai dessin de carrefour.
 - [x] Étiquettes limitées des axes et des lieux importants.
-- [ ] Vérifier les intersections, ponts, voies à sens unique et connexions des routes.
+- [ ] Vérifier les intersections complexes, ponts, voies à sens unique et connexions des routes ; les raccords circulaires ajoutés ne remplacent pas une modélisation de carrefour.
 - [x] Première passe de trottoirs 3D regroupés sur les grands axes et lorsque les tags OSM indiquent leur présence (PR n°14 fusionnée, validation Godot 4.3 réussie).
 - [x] Premier marquage axial discontinu sur les axes structurants et voies explicitement à plusieurs voies (PR n°16, approximation visuelle, validation Godot 4.3).
 - [x] Première génération de passages piétons schématiques aux extrémités de routes OSM structurantes connectées à trois segments ou plus (approximation, validation Godot 4.3 réussie sur `main`).
