@@ -10,37 +10,8 @@ var _rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	_rng.seed = 20261117
 	name = "BaieDesRois"
-	_load_kiosk_model()
-	print("LIBREVILLE STORIES | Baie des Rois : chargement du kiosque 3D réel")
-
-
-func _load_kiosk_model() -> void:
-	const MODEL_PATH := "res://assets/models/baie_des_rois/kiosque_baie_des_rois.glb"
-	if not ResourceLoader.exists(MODEL_PATH):
-		push_error("Kiosque Baie des Rois introuvable : " + MODEL_PATH + " — vérifier que le GLB est présent et importé par Godot.")
-		return
-
-	var kiosk_resource: Resource = load(MODEL_PATH)
-	if kiosk_resource == null:
-		push_error("Impossible de charger le modèle GLB du kiosque : " + MODEL_PATH)
-		return
-	if not kiosk_resource is PackedScene:
-		push_error("Le fichier GLB du kiosque n'a pas été importé comme PackedScene.")
-		return
-
-	var kiosk := (kiosk_resource as PackedScene).instantiate() as Node3D
-	if kiosk == null:
-		push_error("Le modèle GLB du kiosque n'a pas produit de nœud Node3D.")
-		return
-
-	kiosk.name = "KiosqueBaieDesRois_3D"
-	# Le joueur apparaît à l'ancre de la Baie des Rois. On place le kiosque
-	# à quelques mètres devant lui pour qu'il soit immédiatement repérable.
-	kiosk.position = Vector3(-1790.0, 0.0, -582.0)
-	kiosk.rotation.y = 0.0
-	kiosk.scale = Vector3.ONE
-	add_child(kiosk)
-	print("LIBREVILLE STORIES | kiosque GLB instancié à ", kiosk.position)
+	_build_pavilions()
+	print("LIBREVILLE STORIES | Baie des Rois : kiosques 3D réels chargés sur les emplacements des anciens repères")
 
 
 # ---------------------------------------------------------------------------
@@ -253,25 +224,36 @@ func _build_lawns() -> void:
 
 
 func _build_pavilions() -> void:
-	var wood := _make_mat(Color(0.90, 0.70, 0.45), 0.72, _tex_wood())
-	wood.uv1_scale = Vector3(0.4, 0.4, 1)
-	var roof_green := _make_mat(Color(0.22, 0.48, 0.30), 0.65)
-	var roof_dark := _make_mat(Color(0.20, 0.22, 0.24), 0.50)
-	var root := Node3D.new()
-	root.name = "Pavilions"
-	add_child(root)
+	const MODEL_PATH := "res://assets/models/baie_des_rois/kiosque_baie_des_rois.glb"
+	if not ResourceLoader.exists(MODEL_PATH):
+		push_error("Modèle de kiosque absent : " + MODEL_PATH)
+		return
+	var kiosk_scene := load(MODEL_PATH) as PackedScene
+	if kiosk_scene == null:
+		push_error("Le GLB du kiosque n'est pas disponible comme PackedScene.")
+		return
+
+	# On conserve les coordonnées relatives des anciens repères de kiosques :
+	# le modèle remplace leur géométrie provisoire au lieu d'être posé ailleurs.
 	var spots: Array[Vector3] = [
 		Vector3(-10, 0, -18), Vector3(10, 0, 28), Vector3(-18, 0, 38),
 		Vector3(16, 0, -48), Vector3(4, 0, 58), Vector3(-22, 0, -68),
 		Vector3(8, 0, -5),
 	]
+	var root := Node3D.new()
+	root.name = "Kiosques3D"
+	add_child(root)
 	for i in range(spots.size()):
-		var p: Vector3 = ANCHOR + spots[i]
-		var body_h: float = 2.7
-		_add_box(root, Vector3(7.0, body_h, 5.2), p + Vector3(0, body_h * 0.5, 0), wood, "KioskBody_%d" % i)
-		var roof_mat: StandardMaterial3D = roof_green if i % 2 == 0 else roof_dark
-		_add_box(root, Vector3(8.0, 0.38, 6.0), p + Vector3(0, body_h + 0.28, 0), roof_mat, "KioskRoof_%d" % i)
-		_add_box(root, Vector3(8.6, 0.14, 2.4), p + Vector3(0, body_h + 0.08, 3.4), roof_mat, "KioskAwning_%d" % i)
+		var kiosk := kiosk_scene.instantiate() as Node3D
+		if kiosk == null:
+			push_warning("Impossible d'instancier le kiosque numéro %d." % (i + 1))
+			continue
+		kiosk.name = "Kiosque_BaieDesRois_%02d" % (i + 1)
+		kiosk.position = ANCHOR + spots[i]
+		kiosk.rotation.y = 0.0
+		kiosk.scale = Vector3.ONE
+		root.add_child(kiosk)
+	print("LIBREVILLE STORIES | %d kiosques GLB instanciés sur les anciens emplacements de référence" % root.get_child_count())
 
 
 func _build_amphitheater() -> void:
