@@ -9,9 +9,9 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] POI nommés et couches environnementales intégrés.
 - [x] Couche séparée des localités OSM nommées (place=*) et affichage des étiquettes.
 - [x] HUD de position du joueur : coordonnées et localité OSM la plus proche.
-- [ ] Terminer et vérifier l'extraction fraîche des 16 secteurs.
-- [ ] Contrôler les rapports et les comptes réels après extraction : routes, bâtiments, POI, environnement, localités et limites locales.
-- [ ] Vérifier visuellement les noms et leur placement dans la carte.
+- [x] Extraction complète des 16 secteurs vérifiée et publiée sur `main` (workflow n°44149287481, 17/11/2026).
+- [x] Comptes vérifiés : 4 503 routes, 49 359 bâtiments, 2 595 POI, 256 éléments environnementaux et 73 localités nommées ; 0 polygone de quartier fourni par OSM dans cette extraction.
+- [ ] Vérifier visuellement les noms et leur placement dans la carte en jeu.
 - [ ] Compléter les limites des quartiers avec une source administrative officielle ou vérifiable ; ne pas déduire de frontières depuis les points place=*.
 
 ## 2. Bâtiments et architecture
@@ -42,7 +42,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [ ] Vérifier les intersections, ponts, voies à sens unique et connexions des routes.
 - [x] Première passe de trottoirs 3D regroupés sur les grands axes et lorsque les tags OSM indiquent leur présence (PR n°14 fusionnée, validation Godot 4.3 réussie).
 - [x] Premier marquage axial discontinu sur les axes structurants et voies explicitement à plusieurs voies (PR n°16, approximation visuelle, validation Godot 4.3).
-- [ ] Ajouter carrefours détaillés, passages piétons, ponts et mobilier urbain à partir de données ou d'approximations visuelles signalées.
+- [x] Première génération de passages piétons schématiques aux extrémités de routes OSM structurantes connectées à trois segments ou plus (approximation, validation Godot 4.3 en attente).\n- [ ] Ajouter carrefours détaillés, ponts, signalisation et mobilier urbain à partir de données ou d'approximations visuelles signalées.
 - [x] Première mini-carte nord en haut : routes OSM rasterisées et repère de position du joueur (PR n°18 fusionnée, validation Godot 4.3 réussie).
 - [ ] Ajouter la navigation avec itinéraires et découverte des POI.
 

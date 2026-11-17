@@ -354,6 +354,24 @@ func _load_roads() -> void:
 	var marking_material := _make_material(Color(0.92, 0.92, 0.86))
 	marking_material.vertex_color_use_as_albedo = true
 	var marking_surface := _new_surface(marking_material)
+	var crosswalk_material := _make_material(Color(0.94, 0.95, 0.90))
+	crosswalk_material.vertex_color_use_as_albedo = true
+	var crosswalk_surface := _new_surface(crosswalk_material)
+	var junction_counts: Dictionary = {}
+	for feature in data.get("features", []):
+		var junction_geometry: Dictionary = feature.get("geometry", {})
+		var junction_lines: Array = []
+		match str(junction_geometry.get("type", "")):
+			"LineString":
+				junction_lines.append(junction_geometry.get("coordinates", []))
+			"MultiLineString":
+				junction_lines = junction_geometry.get("coordinates", [])
+		for junction_line in junction_lines:
+			if junction_line.size() < 2:
+				continue
+			for endpoint in [junction_line[0], junction_line[junction_line.size() - 1]]:
+				var key := _road_junction_key(endpoint)
+				junction_counts[key] = int(junction_counts.get(key, 0)) + 1
 	var batch_count := 0
 	var batch_index := 0
 	var road_features: Array = data.get("features", []).duplicate()
@@ -390,6 +408,14 @@ func _load_roads() -> void:
 		for coords in lines:
 			if coords.size() < 2:
 				continue
+			var supports_crosswalk := road_kind in ["primary", "secondary", "tertiary"]
+			if supports_crosswalk:
+				var first_direction := _geo_to_world(coords[1]) - _geo_to_world(coords[0])
+				var last_direction := _geo_to_world(coords[coords.size() - 2]) - _geo_to_world(coords[coords.size() - 1])
+				if int(junction_counts.get(_road_junction_key(coords[0]), 0)) >= 3 and first_direction.length() > 0.1:
+					_add_crosswalk(crosswalk_surface, _geo_to_world(coords[0]), Vector2(first_direction.x, first_direction.z).normalized(), width)
+				if int(junction_counts.get(_road_junction_key(coords[coords.size() - 1]), 0)) >= 3 and last_direction.length() > 0.1:
+					_add_crosswalk(crosswalk_surface, _geo_to_world(coords[coords.size() - 1]), Vector2(last_direction.x, last_direction.z).normalized(), width)
 			for i in range(coords.size() - 1):
 				var a := _geo_to_world(coords[i])
 				var b := _geo_to_world(coords[i + 1])
@@ -424,15 +450,41 @@ func _load_roads() -> void:
 			_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
 			_commit_surface(sidewalk_surface, "OSM_Sidewalks_%03d" % batch_index)
 			_commit_surface(marking_surface, "OSM_Road_Markings_%03d" % batch_index)
+			_commit_surface(crosswalk_surface, "OSM_Crosswalks_%03d" % batch_index)
 			batch_index += 1
 			batch_count = 0
 			surface = _new_surface(_road_material)
 			sidewalk_surface = _new_surface(sidewalk_material)
 			marking_surface = _new_surface(marking_material)
+			crosswalk_surface = _new_surface(crosswalk_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
 		_commit_surface(sidewalk_surface, "OSM_Sidewalks_%03d" % batch_index)
 		_commit_surface(marking_surface, "OSM_Road_Markings_%03d" % batch_index)
+		_commit_surface(crosswalk_surface, "OSM_Crosswalks_%03d" % batch_index)
+
+
+func _road_junction_key(coordinate: Array) -> String:
+	# Arrondi d'environ 2 m pour regrouper les nœuds OSM partagés malgré de légères différences.
+	return "%.5f:%.5f" % [float(coordinate[0]), float(coordinate[1])]
+
+
+func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float) -> void:
+	if road_width < 5.0:
+		return
+	var direction := Vector3(inward_direction.x, 0.0, inward_direction.y)
+	var side := Vector3(-direction.z, 0.0, direction.x) * road_width * 0.40
+	var center := junction + direction * 3.2 + Vector3.UP * 0.075
+	# Marquage schématique aux carrefours OSM à trois branches ou plus.
+	for stripe_index in range(5):
+		var offset := (float(stripe_index) - 2.0) * 0.78
+		var stripe_center := center + direction * offset
+		var along := direction * 0.18
+		_add_quad(surface,
+			stripe_center - along + side,
+			stripe_center - along - side,
+			stripe_center + along - side,
+			stripe_center + along + side)
 
 
 func _road_has_center_marking(props: Dictionary, road_kind: String) -> bool:
