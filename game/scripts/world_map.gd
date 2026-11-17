@@ -397,7 +397,7 @@ func _load_roads() -> void:
 					break
 			if not label_coords.is_empty():
 				var midpoint: Array = label_coords[int(label_coords.size() / 2)]
-				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 3.0, Color(0.92, 0.95, 1.0), 280.0)
+				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 2.0, Color(0.92, 0.95, 1.0), 280.0)
 				_road_labels += 1
 		var road_kind := str(props.get("highway", "residential"))
 		var width := _road_width(road_kind)
@@ -652,7 +652,7 @@ func _load_localities() -> void:
 			continue
 		var world_position := _geo_to_world(coordinates)
 		_locality_points.append({"name": label_text, "position": Vector2(world_position.x, world_position.z)})
-		_add_map_label(label_text, world_position + Vector3.UP * 5.5, Color(1.0, 0.84, 0.48), 900.0)
+		_add_map_label(label_text, world_position + Vector3.UP * 2.8, Color(1.0, 0.84, 0.48), 900.0)
 		_locality_count += 1
 	print("LIBREVILLE STORIES | noms de quartiers/localités OSM : %d" % _locality_count)
 
@@ -705,7 +705,7 @@ func _load_pois() -> void:
 		var kind := str(props.get("place", ""))
 		if kind.is_empty():
 			kind = str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("building", "place"))))))
-		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 4.0, _poi_color(kind), 500.0)
+		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 2.2, _poi_color(kind), 500.0)
 		_poi_count += 1
 
 
@@ -742,10 +742,10 @@ func _add_map_label(label_text: String, world_position: Vector3, label_color: Co
 	label.text = label_text
 	label.position = world_position
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.font_size = 32
-	label.pixel_size = 0.01
+	label.font_size = 24
+	label.pixel_size = 0.008
 	label.modulate = label_color
-	label.outline_size = 8
+	label.outline_size = 5
 	label.outline_modulate = Color(0.08, 0.10, 0.12, 0.95)
 	label.visibility_range_end = max_distance
 	label.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
