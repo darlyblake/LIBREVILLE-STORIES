@@ -260,6 +260,75 @@ def make_poi_collection(nodes, elements, bounds):
     return {"type": "FeatureCollection", "name": "libreville_pois", "features": features}
 
 
+
+def make_locality_collection(nodes, elements, bounds):
+    """Publie les noms de localités OSM ponctuels sans inventer de polygones."""
+    from shapely.geometry import LineString, Polygon, box
+
+    south, west, north, east = bounds
+    clip = box(west, south, east, north)
+    accepted_places = {
+        "city", "town", "suburb", "neighbourhood", "quarter",
+        "district", "village", "hamlet", "locality",
+    }
+    features = {}
+    for node in nodes.values():
+        tags = node.get("tags", {})
+        name = str(tags.get("name", "")).strip()
+        place = str(tags.get("place", "")).lower()
+        if not name or place not in accepted_places:
+            continue
+        lon, lat = float(node["lon"]), float(node["lat"])
+        if not (west <= lon <= east and south <= lat <= north):
+            continue
+        osm_id = int(node["id"])
+        features[f"node/{osm_id}"] = {
+            "type": "Feature", "id": f"node/{osm_id}",
+            "properties": {
+                "osm_id": osm_id, "osm_type": "node",
+                "name": name, "place": place,
+                "source": "OpenStreetMap place node",
+            },
+            "geometry": {"type": "Point", "coordinates": [lon, lat]},
+        }
+
+    for way in elements:
+        tags = way.get("tags", {})
+        name = str(tags.get("name", "")).strip()
+        place = str(tags.get("place", "")).lower()
+        if not name or place not in accepted_places:
+            continue
+        coords = [
+            (float(point["lon"]), float(point["lat"]))
+            for point in (way.get("geometry") or [])
+            if "lon" in point and "lat" in point
+            and math.isfinite(float(point["lon"])) and math.isfinite(float(point["lat"]))
+        ]
+        if len(coords) < 2:
+            continue
+        try:
+            geometry = Polygon(coords) if len(coords) >= 4 and coords[0] == coords[-1] else LineString(coords)
+            point = geometry.intersection(clip).representative_point()
+            if point.is_empty:
+                continue
+        except Exception:
+            continue
+        osm_id = int(way["id"])
+        features[f"way/{osm_id}"] = {
+            "type": "Feature", "id": f"way/{osm_id}",
+            "properties": {
+                "osm_id": osm_id, "osm_type": "way",
+                "name": name, "place": place,
+                "source": "OpenStreetMap place way (label point)",
+            },
+            "geometry": {"type": "Point", "coordinates": [point.x, point.y]},
+        }
+    return {
+        "type": "FeatureCollection",
+        "name": "libreville_localities",
+        "features": list(features.values()),
+    }
+
 def make_neighbourhood_collection(elements, bounds, relations=None):
     """Assemble les ways fermés et relations multipolygones OSM nommés."""
     from shapely.geometry import Polygon, box
@@ -693,6 +762,15 @@ def main():
 
     generated = {}
     generated["environment.geojson"] = make_environment_collection(elements, (args.south, args.west, args.north, args.east))
+    generated["localities.geojson"] = make_locality_collection(all_nodes, elements, (args.south, args.west, args.north, args.east))
+    report["files"]["localities.geojson"] = {
+        "features": len(generated["localities.geojson"]["features"]),
+        "categories": dict(Counter(
+            feature["properties"].get("place", "other")
+            for feature in generated["localities.geojson"]["features"]
+        )),
+        "note": "Noms OSM ponctuels de localités/quartiers; aucun contour géographique n'est déduit.",
+    }
     generated["neighbourhoods.geojson"] = make_neighbourhood_collection(elements, (args.south, args.west, args.north, args.east), list(all_relations.values()))
     report["files"]["neighbourhoods.geojson"] = {
         "features": len(generated["neighbourhoods.geojson"]["features"]),
