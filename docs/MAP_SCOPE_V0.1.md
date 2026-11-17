@@ -1,39 +1,36 @@
-# Périmètre cartographique — version 0.2
+# Périmètre cartographique — version 0.3
 
 ## Objectif
-Construire une première zone de jeu inspirée du Centre-ville, de Louis, Glass, Nombakélé, Mont-Bouët, Nkembo et Akébé.
+Construire une représentation jouable de Libreville et de ses environs à partir de données géographiques réelles, sans inventer les tracés des routes ni la position des bâtiments.
 
 ## Emprise provisoire
-L'extraction initiale utilise la boîte géographique sud/ouest/nord/est suivante : 0.355, 9.400, 0.445, 9.495. C'est une emprise technique rectangulaire autour de Libreville et de ses environs, pas une limite officielle des quartiers. Elle devra être affinée après inspection de la carte.
+L'extraction utilise la boîte sud/ouest/nord/est suivante : 0.355, 9.400, 0.445, 9.495. Cette emprise technique couvre une partie de Libreville et de ses environs ; elle ne constitue pas une limite administrative officielle des quartiers.
 
-## Extraction contrôlée
-La dernière extraction OpenStreetMap validée utilise une grille de 4 × 4 (16 secteurs). Elle a produit :
-- 4 503 géométries de voies (LineString et géométries multiparties possibles).
-- 49 359 empreintes de bâtiments (Polygon et géométries multiparties possibles).
-- Deux fichiers GeoJSON et un rapport d'extraction.
-- Les types de voies et de bâtiments sont conservés dans les propriétés.
+## Données OpenStreetMap
+La chaîne d'extraction découpe la zone en 16 secteurs, conserve les propriétés OSM, met les réponses en cache et prévoit un repli vers le PBF du Gabon de Geofabrik. Les couches suivies sont :
+- roads.geojson : axes routiers, catégories highway, noms de voies lorsqu'ils sont renseignés.
+- buildings.geojson : empreintes des bâtiments et tags descriptifs disponibles.
+- pois.geojson : lieux nommés ponctuels (équipements, commerces, santé, éducation, tourisme, transports, lieux historiques et services).
 
-Le processus découpe la zone en 16 secteurs, met en cache les réponses, réessaie plusieurs serveurs Overpass et dispose d’un repli vers l’extrait PBF régional de Geofabrik lorsque nécessaire. Les données et le rapport sont versionnés dans le dépôt.
+Source : OpenStreetMap contributors, licence ODbL 1.0. Attribution à afficher dans le jeu et les crédits : « © OpenStreetMap contributors ».
 
-## Génération 3D
-Le script `game/scripts/world_map.gd` :
-- convertit longitude/latitude en coordonnées locales métriques ;
-- construit un réseau routier à partir des lignes OSM ;
-- extrude les empreintes de bâtiments en volumes simples ;
-- regroupe les géométries en meshes pour réduire le nombre d'objets de rendu.
+## Identification en jeu
+Les noms de rues présents dans OSM sont affichés sur un nombre limité d'axes pour éviter de surcharger l'écran. Les lieux nommés sont affichés avec une couleur indicative selon leur catégorie (santé, éducation, administration, commerce, tourisme). Les catégories et noms sont ceux fournis par la base ; un lieu absent ou non renseigné dans OSM ne doit pas être inventé.
 
-Les hauteurs des bâtiments sont approximatives lorsqu'aucune hauteur fiable n'est fournie. Les bâtiments sont des volumes de prototype, pas des modèles architecturaux fidèles.
+## Fidélité géométrique et limites connues
+- Les positions et contours des routes et bâtiments proviennent des géométries OSM.
+- Les hauteurs de bâtiments restent approximatives lorsque height ou building:levels ne sont pas renseignés.
+- Les volumes sont des extrusions simples, pas des façades ou modèles architecturaux fidèles.
+- Les polygones avec cours intérieures (trous) ne sont pas encore modélisés correctement.
+- Le relief, les plages, le trait de côte détaillé, les mangroves, les cours d'eau et les limites officielles des quartiers restent à intégrer/valider avec des sources adaptées.
+- La présence d'un lieu dans OSM ne garantit pas que son nom, son activité ou son état actuel soit encore exact. Une vérification terrain ou une source officielle est nécessaire pour les lieux sensibles/importants.
 
-## Couches à compléter
-- Relief et pente du terrain
-- Littoral, cours d'eau et zones humides
-- Végétation et espaces verts
-- Points d'intérêt et mobilier urbain
-- Bâtiments détaillés et enseignes locales
-- Regroupement spatial des meshes et chargement progressif par secteurs
+## Étapes de précision
+1. Valider les couches routes, bâtiments et lieux nommés après extraction.
+2. Ajouter les limites et noms de quartiers depuis une source administrative fiable.
+3. Ajouter le relief, le littoral, l'hydrographie et les espaces naturels.
+4. Améliorer l'architecture des bâtiments uniquement avec des références vérifiables (photos, hauteurs, niveaux, typologies).
+5. Créer le chargement spatial par secteurs et mesurer les performances sur la machine cible.
 
-## Sources et attribution
-Source : OpenStreetMap contributors, licence ODbL 1.0. Afficher « © OpenStreetMap contributors » dans le jeu et les crédits. Contrôler les données et respecter les obligations de partage à l'identique applicables à la base dérivée.
-
-## Tests restant à effectuer
-Le script de génération doit encore être ouvert et exécuté dans Godot 4 sur la machine cible. La scène n'a pas encore fait l'objet d'un test réel de rendu, de collision ni de performance.
+## Tests
+Les validations automatisées vérifient les GeoJSON, les géométries, les attributs et le chargement de la scène Godot. Elles ne remplacent pas une inspection visuelle, une vérification terrain, ni un test FPS sur la machine cible.
