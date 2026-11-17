@@ -41,6 +41,17 @@ jobs:
                   return all(coordinates_are_finite(item) for item in value)
               return True
 
+          pois = json.loads((root / "pois.geojson").read_text())
+          assert pois.get("type") == "FeatureCollection"
+          assert len(pois.get("features", [])) == report["files"]["pois.geojson"]["features"]
+          for index, feature in enumerate(pois.get("features", [])):
+              geometry = feature.get("geometry") or {}
+              assert geometry.get("type") == "Point", f"POI {index}: unexpected geometry"
+              coords = geometry.get("coordinates") or []
+              assert len(coords) >= 2 and coordinates_are_finite(coords), f"POI {index}: invalid coordinates"
+              assert str(feature.get("properties", {}).get("name", "")).strip(), f"POI {index}: missing name"
+          print(f"pois.geojson: {len(pois.get('features', []))} lieux nommés contrôlés.")
+
           for filename, expected_type in (("roads.geojson", {"LineString", "MultiLineString"}),
                                            ("buildings.geojson", {"Polygon", "MultiPolygon"})):
               data = json.loads((root / filename).read_text())
@@ -90,14 +101,16 @@ jobs:
           from pathlib import Path
           log = Path("/tmp/libreville-map.log").read_text(errors="replace")
           report = json.loads(Path("data/osm/extraction-report.json").read_text())
-          match = re.search(r"routes:\s*(\d+)\s*\|\s*bâtiments:\s*(\d+)", log)
-          assert match, "Les compteurs de la carte ne sont pas présents dans le journal Godot."
-          roads, buildings = map(int, match.groups())
+          match = re.search(r"routes:\s*(\d+)\s*\|\s*bâtiments:\s*(\d+)\s*\|\s*lieux identifiables:\s*(\d+)", log)
+          assert match, "Les compteurs routes/bâtiments/lieux ne sont pas présents dans le journal Godot."
+          roads, buildings, pois = map(int, match.groups())
           expected_roads = report["files"]["roads.geojson"]["features"]
           expected_buildings = report["files"]["buildings.geojson"]["features"]
           assert roads == expected_roads, f"Routes chargées {roads}, attendues {expected_roads}"
           assert buildings == expected_buildings, f"Bâtiments chargés {buildings}, attendus {expected_buildings}"
-          print(f"Carte Godot cohérente : {roads} routes et {buildings} bâtiments.")
+          expected_pois = report["files"]["pois.geojson"]["features"]
+          assert pois == expected_pois, f"Lieux chargés {pois}, attendus {expected_pois}"
+          print(f"Carte Godot cohérente : {roads} routes, {buildings} bâtiments et {pois} lieux nommés.")
           PY
           if grep -q "SCRIPT ERROR" /tmp/libreville-map.log; then
             echo "GDScript runtime error detected."
