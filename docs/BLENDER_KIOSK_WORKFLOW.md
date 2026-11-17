@@ -29,7 +29,8 @@ Godot importe ensuite le fichier GLB lorsqu'il est présent dans le dossier du p
 - Comptoir de service
 - Lames décoratives en bois
 - Vitrages latéraux et cadres métalliques
-- Poteaux et auvent
+- Poteaux et toiture à deux pans inclinés, finition métallique vert profond
+- Façade et comptoir à lames verticales bois, bandeaux de rive et faîtage
 - Gouttière et descentes d'eau
 - Enseigne « BAIE DES ROIS »
 
@@ -39,4 +40,4 @@ Les dimensions sont exprimées en mètres. La façade de service est orientée v
 
 Ce modèle est un premier prototype de production, pas une reproduction certifiée d'un kiosque existant de la Baie des Rois. Il ne doit pas être positionné définitivement sur la carte avant validation des références photographiques, de la forme réelle de la promenade et des emplacements. Le script ne modifie pas automatiquement la scène Godot.
 
-Le modèle est volontairement sobre en géométrie pour rester adapté à la cible matérielle ancienne (GT 730 2 Go). Les matériaux utilisent des couleurs simples ; des textures PBR et détails supplémentaires pourront être ajoutés après validation de la silhouette.
+Le modèle est volontairement sobre en géométrie pour rester adapté à la cible matérielle ancienne (GT 730 2 Go). Les matériaux utilisent encore des couleurs simples ; des textures PBR, variations de bois, joints de toiture et détails supplémentaires pourront être ajoutés après validation de la silhouette.
