@@ -30,10 +30,10 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: data/osm/.tiles
-          key: ${{ runner.os }}-libreville-osm-v4-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
+          key: ${{ runner.os }}-libreville-osm-v5-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-libreville-osm-v4-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-
-            ${{ runner.os }}-libreville-osm-v4-
+            ${{ runner.os }}-libreville-osm-v5-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-
+            ${{ runner.os }}-libreville-osm-v5-
 
       - name: Install OSM PBF reader for fallback extraction
         run: python3 -m pip install --disable-pip-version-check osmium
@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: data/osm/.tiles
-          key: ${{ runner.os }}-libreville-osm-v4-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
+          key: ${{ runner.os }}-libreville-osm-v5-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
 
       - name: Validate GeoJSON and extraction coverage
         run: |
