@@ -522,7 +522,7 @@ def main():
     used_geofabrik_fallback = False
     try:
         for index, (row, col, south, west, north, east) in enumerate(tiles, 1):
-            cache_file = CACHE / f"grid{args.grid}_v5_tile_{row}_{col}.json"
+            cache_file = CACHE / f"grid{args.grid}_v6_tile_{row}_{col}.json"
             data = load_cached_tile(cache_file)
             from_cache = data is not None
             if data is not None:
