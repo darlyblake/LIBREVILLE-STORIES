@@ -154,6 +154,7 @@ func _load_environment() -> void:
 		push_warning("environment.geojson absent : littoral, eau et espaces verts non chargés.")
 		return
 	var surface := _new_surface(_environment_material)
+	var tree_positions: Array[Vector3] = []
 	var batch_count := 0
 	var batch_index := 0
 	for feature in data.get("features", []):
@@ -176,6 +177,8 @@ func _load_environment() -> void:
 			var indices := Geometry2D.triangulate_polygon(points)
 			if indices.is_empty():
 				continue
+			if kind in ["vegetation", "green_space"]:
+				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
 			surface.set_color(_environment_color(kind))
 			for i in range(0, indices.size(), 3):
 				var p0 := points[indices[i]]
@@ -208,6 +211,79 @@ func _load_environment() -> void:
 			surface = _new_surface(_environment_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Environment_%03d" % batch_index)
+	_commit_tree_instances(tree_positions)
+
+
+func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: Array[Vector3]) -> void:
+	if points.size() < 3 or output.size() >= 1200:
+		return
+	var min_x := points[0].x
+	var max_x := points[0].x
+	var min_y := points[0].y
+	var max_y := points[0].y
+	var twice_area := 0.0
+	for i in range(points.size()):
+		var a := points[i]
+		var b := points[(i + 1) % points.size()]
+		min_x = minf(min_x, a.x)
+		max_x = maxf(max_x, a.x)
+		min_y = minf(min_y, a.y)
+		max_y = maxf(max_y, a.y)
+		twice_area += a.x * b.y - b.x * a.y
+	var area := absf(twice_area) * 0.5
+	if area < 90.0:
+		return
+	var desired := mini(clampi(int(area / 260.0), 1, 12), 1200 - output.size())
+	var rng := RandomNumberGenerator.new()
+	rng.seed = abs(osm_id) + 73421
+	var added := 0
+	var attempts := 0
+	while added < desired and attempts < desired * 18:
+		attempts += 1
+		var candidate := Vector2(rng.randf_range(min_x, max_x), rng.randf_range(min_y, max_y))
+		if Geometry2D.is_point_in_polygon(candidate, points):
+			output.append(Vector3(candidate.x, 0.0, candidate.y))
+			added += 1
+
+
+func _commit_tree_instances(positions: Array[Vector3]) -> void:
+	if positions.is_empty():
+		return
+	var trunk_mesh := CylinderMesh.new()
+	trunk_mesh.top_radius = 0.10
+	trunk_mesh.bottom_radius = 0.16
+	trunk_mesh.height = 1.4
+	var canopy_mesh := SphereMesh.new()
+	canopy_mesh.radius = 0.85
+	canopy_mesh.height = 2.0
+	var trunk_material := _make_material(Color(0.30, 0.20, 0.12))
+	var canopy_material := _make_material(Color(0.16, 0.34, 0.18))
+	var trunks := MultiMesh.new()
+	trunks.transform_format = MultiMesh.TRANSFORM_3D
+	trunks.mesh = trunk_mesh
+	trunks.instance_count = positions.size()
+	var canopies := MultiMesh.new()
+	canopies.transform_format = MultiMesh.TRANSFORM_3D
+	canopies.mesh = canopy_mesh
+	canopies.instance_count = positions.size()
+	for i in range(positions.size()):
+		var position := positions[i]
+		trunks.set_instance_transform(i, Transform3D(Basis.IDENTITY, position + Vector3.UP * 0.7))
+		var canopy_basis := Basis.IDENTITY.scaled(Vector3(1.0, 1.25, 1.0))
+		canopies.set_instance_transform(i, Transform3D(canopy_basis, position + Vector3.UP * 2.25))
+	var trunk_instance := MultiMeshInstance3D.new()
+	trunk_instance.name = "OSM_Tree_Trunks"
+	trunk_instance.multimesh = trunks
+	trunk_instance.material_override = trunk_material
+	trunk_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(trunk_instance)
+	var canopy_instance := MultiMeshInstance3D.new()
+	canopy_instance.name = "OSM_Tree_Canopies"
+	canopy_instance.multimesh = canopies
+	canopy_instance.material_override = canopy_material
+	canopy_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(canopy_instance)
+	print("LIBREVILLE STORIES | arbres 3D instanciés : %d" % positions.size())
 
 
 func _environment_color(kind: String) -> Color:
