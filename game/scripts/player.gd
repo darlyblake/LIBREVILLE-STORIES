@@ -16,7 +16,27 @@ var camera_pitch: float = -0.18
 
 func _ready() -> void:
 	_register_gamepad_inputs()
+	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
+		Input.joy_connection_changed.connect(_on_joy_connection_changed)
+	_log_connected_gamepads()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _log_connected_gamepads() -> void:
+	var devices := Input.get_connected_joypads()
+	if devices.is_empty():
+		print("LIBREVILLE STORIES | aucune manette connectée ; clavier/souris actifs")
+		return
+	for device in devices:
+		print("LIBREVILLE STORIES | manette détectée : %s (ID %d)" % [Input.get_joy_name(device), device])
+
+
+func _on_joy_connection_changed(device: int, connected: bool) -> void:
+	if connected:
+		print("LIBREVILLE STORIES | manette connectée : %s (ID %d)" % [Input.get_joy_name(device), device])
+		_register_gamepad_inputs()
+	else:
+		print("LIBREVILLE STORIES | manette déconnectée (ID %d)" % device)
 
 
 func _register_gamepad_inputs() -> void:
