@@ -42,7 +42,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [ ] Vérifier les intersections, ponts, voies à sens unique et connexions des routes.
 - [x] Première passe de trottoirs 3D regroupés sur les grands axes et lorsque les tags OSM indiquent leur présence (PR n°14 fusionnée, validation Godot 4.3 réussie).
 - [x] Premier marquage axial discontinu sur les axes structurants et voies explicitement à plusieurs voies (PR n°16, approximation visuelle, validation Godot 4.3).
-- [ ] Ajouter carrefours détaillés, passages piétons, ponts et mobilier urbain à partir de données ou d'approximations visuelles signalées.
+- [x] Première génération de passages piétons schématiques aux extrémités de routes OSM structurantes connectées à trois segments ou plus (approximation, validation Godot 4.3 en attente).\n- [ ] Ajouter carrefours détaillés, ponts, signalisation et mobilier urbain à partir de données ou d'approximations visuelles signalées.
 - [x] Première mini-carte nord en haut : routes OSM rasterisées et repère de position du joueur (PR n°18 fusionnée, validation Godot 4.3 réussie).
 - [ ] Ajouter la navigation avec itinéraires et découverte des POI.
 
