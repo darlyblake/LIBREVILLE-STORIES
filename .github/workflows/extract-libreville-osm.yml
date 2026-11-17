@@ -81,43 +81,48 @@ jobs:
           assert report.get("grid") == "4x4"
           assert len(report.get("tiles", [])) == 16
 
+          south, west, north, east = report["bbox_south_west_north_east"]
+
+          def walk_points(value):
+              if isinstance(value, list) and len(value) >= 2 and all(isinstance(v, (int, float)) for v in value[:2]):
+                  yield value
+              elif isinstance(value, list):
+                  for child in value:
+                      yield from walk_points(child)
+
           def check_geometry(feature, expected):
               geometry = feature.get("geometry") or {}
-              assert geometry.get("type") == expected
+              kind = geometry.get("type")
+              assert kind in expected, f"unexpected geometry type: {kind}"
               coords = geometry.get("coordinates") or []
-              if expected == "LineString":
-                  points = coords
-              else:
-                  assert coords and coords[0][0] == coords[0][-1]
-                  points = coords[0]
-              assert len(points) >= (2 if expected == "LineString" else 4)
-              for lon, lat in points:
+              points = list(walk_points(coords))
+              assert points, "empty geometry"
+              for lon, lat, *rest in points:
                   assert math.isfinite(lon) and math.isfinite(lat)
-                  assert -180 <= lon <= 180 and -90 <= lat <= 90
+                  assert west - 1e-8 <= lon <= east + 1e-8, f"longitude outside map: {lon}"
+                  assert south - 1e-8 <= lat <= north + 1e-8, f"latitude outside map: {lat}"
+              if kind in {"LineString", "MultiLineString"}:
+                  lines = [coords] if kind == "LineString" else coords
+                  assert all(len(line) >= 2 for line in lines)
+              else:
+                  polygons = [coords] if kind == "Polygon" else coords
+                  for polygon in polygons:
+                      assert polygon and all(len(ring) >= 4 and ring[0] == ring[-1] for ring in polygon)
 
           for feature in roads["features"]:
-              check_geometry(feature, "LineString")
+              check_geometry(feature, {"LineString", "MultiLineString"})
           for feature in environment["features"]:
-              geometry = feature.get("geometry", {})
-              kind = geometry.get("type")
-              assert kind in {"LineString", "Polygon"}
-              coords = geometry.get("coordinates") or []
-              points = coords if kind == "LineString" else coords[0]
-              assert len(points) >= (2 if kind == "LineString" else 4)
-              if kind == "Polygon":
-                  assert points[0] == points[-1]
-              for lon, lat in points:
-                  assert math.isfinite(lon) and math.isfinite(lat)
-                  assert -180 <= lon <= 180 and -90 <= lat <= 90
+              check_geometry(feature, {"LineString", "Polygon"})
           for feature in buildings["features"]:
-              check_geometry(feature, "Polygon")
-
+              check_geometry(feature, {"Polygon", "MultiPolygon"})
           print("Secteurs vérifiés :", len(report["tiles"]))
           print("Routes vérifiées :", len(roads["features"]))
           for feature in pois["features"]:
               assert feature.get("geometry", {}).get("type") == "Point"
               lon, lat = feature["geometry"]["coordinates"]
               assert math.isfinite(lon) and math.isfinite(lat)
+              assert west - 1e-8 <= lon <= east + 1e-8
+              assert south - 1e-8 <= lat <= north + 1e-8
               assert feature.get("properties", {}).get("name")
           print("Bâtiments vérifiés :", len(buildings["features"]))
           print("Lieux identifiables vérifiés :", len(pois["features"]))
