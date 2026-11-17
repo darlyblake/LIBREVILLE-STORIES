@@ -7,13 +7,13 @@ Construire une première zone de jeu inspirée du Centre-ville, de Louis, Glass,
 L'extraction initiale utilise la boîte géographique sud/ouest/nord/est suivante : 0.355, 9.400, 0.445, 9.495. C'est une emprise technique rectangulaire autour de Libreville et de ses environs, pas une limite officielle des quartiers. Elle devra être affinée après inspection de la carte.
 
 ## Extraction contrôlée
-Une première extraction OpenStreetMap terminée avec succès a produit :
-- 4 503 géométries de voies (LineString).
-- 49 359 empreintes de bâtiments (Polygon).
+La dernière extraction OpenStreetMap validée utilise une grille de 4 × 4 (16 secteurs). Elle a produit :
+- 4 503 géométries de voies (LineString et géométries multiparties possibles).
+- 49 359 empreintes de bâtiments (Polygon et géométries multiparties possibles).
 - Deux fichiers GeoJSON et un rapport d'extraction.
 - Les types de voies et de bâtiments sont conservés dans les propriétés.
 
-Une seconde version du processus découpe la zone en 9 tuiles, met en cache les réponses et réessaie plusieurs serveurs Overpass. Le workflow GitHub Actions doit aussi déposer les fichiers extraits dans le dépôt.
+Le processus découpe la zone en 16 secteurs, met en cache les réponses, réessaie plusieurs serveurs Overpass et dispose d’un repli vers l’extrait PBF régional de Geofabrik lorsque nécessaire. Les données et le rapport sont versionnés dans le dépôt.
 
 ## Génération 3D
 Le script `game/scripts/world_map.gd` :
@@ -30,7 +30,7 @@ Les hauteurs des bâtiments sont approximatives lorsqu'aucune hauteur fiable n'e
 - Végétation et espaces verts
 - Points d'intérêt et mobilier urbain
 - Bâtiments détaillés et enseignes locales
-- Découpage et chargement progressif par secteurs
+- Regroupement spatial des meshes et chargement progressif par secteurs
 
 ## Sources et attribution
 Source : OpenStreetMap contributors, licence ODbL 1.0. Afficher « © OpenStreetMap contributors » dans le jeu et les crédits. Contrôler les données et respecter les obligations de partage à l'identique applicables à la base dérivée.
