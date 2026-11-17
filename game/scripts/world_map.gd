@@ -922,8 +922,32 @@ func _road_width(kind: String, props: Dictionary = {}) -> float:
 		"footway", "path", "steps": return 1.5
 		_: return 4.0
 
+func _parse_osm_height(raw_value: String) -> float:
+	# OSM accepte des hauteurs en mètres, centimètres ou pieds.
+	# Sans unité explicite, la convention OSM est le mètre.
+	var value := raw_value.strip_edges().to_lower().replace(",", ".")
+	if value.is_empty():
+		return -1.0
+	var multiplier := 1.0
+	if value.ends_with("ft") or value.ends_with("feet"):
+		multiplier = 0.3048
+		value = value.replace("feet", "").replace("ft", "").strip_edges()
+	elif value.ends_with("cm"):
+		multiplier = 0.01
+		value = value.replace("cm", "").strip_edges()
+	elif value.ends_with("m"):
+		value = value.substr(0, value.length() - 1).strip_edges()
+	elif value.ends_with("'"):
+		multiplier = 0.3048
+		value = value.substr(0, value.length() - 1).strip_edges()
+	var parsed := value.to_float()
+	if parsed <= 0.0:
+		return -1.0
+	return parsed * multiplier
+
+
 func _building_height(kind: String, osm_id: int, props: Dictionary) -> float:
-	var tagged_height := str(props.get("height", "")).to_float()
+	var tagged_height := _parse_osm_height(str(props.get("height", "")))
 	if tagged_height >= 2.5 and tagged_height <= 150.0:
 		return tagged_height
 	var levels := str(props.get("building:levels", "")).to_int()
