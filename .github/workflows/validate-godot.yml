@@ -21,8 +21,10 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v4
 
-      - name: Install Godot 4.3
+      - name: Install Godot 4.3 and software display
         run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri
           curl --fail --location --silent --show-error \
             https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip \
             -o /tmp/godot.zip
@@ -33,9 +35,11 @@ jobs:
       - name: Parse project and scripts
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --quit
 
-      - name: Load the playable main scene and verify map counts
+      - name: Render the main scene with OpenGL Compatibility
         run: |
-          /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --quit-after 5 2>&1 | tee /tmp/libreville-map.log
+          xvfb-run -a /tmp/godot/Godot_v4.3-stable_linux.x86_64 \
+            --rendering-method gl_compatibility --rendering-driver opengl3 \
+            --path . --quit-after 5 2>&1 | tee /tmp/libreville-map.log
           grep -q "routes: 4503 | bâtiments: 49359" /tmp/libreville-map.log
           if grep -q "SCRIPT ERROR" /tmp/libreville-map.log; then
             echo "GDScript runtime error detected."
