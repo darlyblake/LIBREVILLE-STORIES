@@ -18,6 +18,7 @@ var _road_count := 0
 var _building_count := 0
 var _poi_count := 0
 var _environment_count := 0
+var _neighbourhood_count := 0
 var _environment_material: StandardMaterial3D
 var _road_labels := 0
 var _road_material: StandardMaterial3D
@@ -28,6 +29,7 @@ func _ready() -> void:
 	_environment_material = _make_material(Color.WHITE)
 	_environment_material.vertex_color_use_as_albedo = true
 	_load_environment()
+	_load_neighbourhoods()
 	_building_material = _make_material(Color(0.76, 0.68, 0.56))
 	# Les couleurs attribuées aux bâtiments par type/OSM ID doivent être visibles.
 	_building_material.vertex_color_use_as_albedo = true
@@ -146,6 +148,45 @@ func _environment_color(kind: String) -> Color:
 			return Color(0.72, 0.65, 0.48)
 		_:
 			return Color(0.36, 0.43, 0.32)
+
+
+func _load_neighbourhoods() -> void:
+	var data := _read_geojson("res://data/osm/neighbourhoods.geojson")
+	if data.is_empty():
+		return
+	var material := _make_material(Color(0.96, 0.72, 0.30))
+	var surface := _new_surface(material)
+	var batch_count := 0
+	var batch_index := 0
+	for feature in data.get("features", []):
+		var geometry: Dictionary = feature.get("geometry", {})
+		if str(geometry.get("type", "")) != "Polygon":
+			continue
+		var rings: Array = geometry.get("coordinates", [])
+		if rings.is_empty() or rings[0].size() < 4:
+			continue
+		var coords: Array = rings[0]
+		var added := false
+		for index in range(coords.size() - 1):
+			var a := _geo_to_world(coords[index])
+			var b := _geo_to_world(coords[index + 1])
+			var direction := Vector2(b.x - a.x, b.z - a.z)
+			if direction.length_squared() < 0.01:
+				continue
+			var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * 1.8
+			_add_quad(surface, a + side + Vector3.UP * 0.045, a - side + Vector3.UP * 0.045, b - side + Vector3.UP * 0.045, b + side + Vector3.UP * 0.045)
+			added = true
+		if added:
+			_neighbourhood_count += 1
+			batch_count += 1
+		if batch_count >= 500:
+			_commit_surface(surface, "OSM_Neighbourhood_Boundaries_%03d" % batch_index)
+			batch_index += 1
+			batch_count = 0
+			surface = _new_surface(material)
+	if batch_count > 0:
+		_commit_surface(surface, "OSM_Neighbourhood_Boundaries_%03d" % batch_index)
+	print("LIBREVILLE STORIES | limites locales OSM : %d" % _neighbourhood_count)
 
 
 func _load_roads() -> void:
