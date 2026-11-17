@@ -59,10 +59,13 @@ jobs:
           base = Path("data/osm")
           roads = json.loads((base / "roads.geojson").read_text())
           buildings = json.loads((base / "buildings.geojson").read_text())
+          pois = json.loads((base / "pois.geojson").read_text())
           report = json.loads((base / "extraction-report.json").read_text())
 
           assert roads.get("type") == "FeatureCollection"
           assert buildings.get("type") == "FeatureCollection"
+          assert pois.get("type") == "FeatureCollection"
+          assert report["files"]["pois.geojson"]["features"] == len(pois.get("features", []))
           assert len(roads.get("features", [])) >= 1000
           assert len(buildings.get("features", [])) >= 10000
           assert report["files"]["roads.geojson"]["features"] == len(roads["features"])
@@ -94,7 +97,13 @@ jobs:
 
           print("Secteurs vérifiés :", len(report["tiles"]))
           print("Routes vérifiées :", len(roads["features"]))
+          for feature in pois["features"]:
+              assert feature.get("geometry", {}).get("type") == "Point"
+              lon, lat = feature["geometry"]["coordinates"]
+              assert math.isfinite(lon) and math.isfinite(lat)
+              assert feature.get("properties", {}).get("name")
           print("Bâtiments vérifiés :", len(buildings["features"]))
+          print("Lieux identifiables vérifiés :", len(pois["features"]))
           print("Attribution :", report["attribution"])
           PY
 
@@ -104,7 +113,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git -c rebase.autoStash=true rebase origin/main
-          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/extraction-report.json
+          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/pois.geojson data/osm/extraction-report.json
           if git diff --cached --quiet; then
             echo "Les données cartographiques sont déjà à jour."
           else
@@ -119,6 +128,7 @@ jobs:
           path: |
             data/osm/roads.geojson
             data/osm/buildings.geojson
+            data/osm/pois.geojson
             data/osm/extraction-report.json
           if-no-files-found: error
           retention-days: 30
