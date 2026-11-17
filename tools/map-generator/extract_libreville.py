@@ -95,6 +95,31 @@ def feature_for_way(element, kind):
     }
 
 
+def is_point_of_interest(tags):
+    """Retient les lieux nommés et catégorisés utiles à l'identification en jeu."""
+    keys = ("amenity", "shop", "tourism", "healthcare", "school", "office",
+            "public_transport", "leisure", "historic", "emergency", "government",
+            "railway", "aeroway", "place")
+    return bool(tags.get("name")) and any(key in tags for key in keys)
+
+
+def make_poi_collection(nodes):
+    features = []
+    for node in nodes.values():
+        tags = node.get("tags", {})
+        if not is_point_of_interest(tags):
+            continue
+        lon, lat = float(node["lon"]), float(node["lat"])
+        if not (math.isfinite(lon) and math.isfinite(lat)):
+            continue
+        features.append({
+            "type": "Feature", "id": f"node/{node['id']}",
+            "properties": {"osm_id": node["id"], "osm_type": "node", **tags},
+            "geometry": {"type": "Point", "coordinates": [lon, lat]},
+        })
+    return {"type": "FeatureCollection", "name": "libreville_pois", "features": features}
+
+
 def make_collection(elements, kind):
     unique = {}
     for element in elements:
@@ -156,6 +181,16 @@ def extract_from_geofabrik_pbf(south, west, north, east):
         def __init__(self):
             super().__init__()
             self.elements = []
+            self.nodes = {}
+
+        def node(self, node):
+            tags = dict(node.tags)
+            if not node.location.valid() or not is_point_of_interest(tags):
+                return
+            self.nodes[int(node.id)] = {
+                "id": int(node.id), "lon": float(node.lon), "lat": float(node.lat),
+                "tags": tags,
+            }
 
         def way(self, way):
             tags = dict(way.tags)
@@ -189,7 +224,7 @@ def extract_from_geofabrik_pbf(south, west, north, east):
     print("Lecture et découpage local du PBF sur l'emprise de Libreville…", flush=True)
     handler.apply_file(str(pbf_path), locations=True)
     print(f"Repli Geofabrik : {len(handler.elements)} voies et bâtiments candidats.", flush=True)
-    return handler.elements
+    return handler.elements, handler.nodes
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -211,6 +246,7 @@ def main():
     OUTPUT.mkdir(parents=True, exist_ok=True)
     CACHE.mkdir(parents=True, exist_ok=True)
     all_elements = {}
+    all_nodes = {}
     tile_report = []
     tiles = list(split_bbox(args.south, args.west, args.north, args.east, args.grid))
 
@@ -230,7 +266,12 @@ def main():
                 bbox = f"{south:.7f},{west:.7f},{north:.7f},{east:.7f}"
                 query = (
                     f"[out:json][timeout:{args.timeout}];"
-                    f'(way["highway"]({bbox});way["building"]({bbox}););'
+                    f'(way["highway"]({bbox});way["building"]({bbox});'
+                    f'node["name"]({bbox});node["amenity"]({bbox});'
+                    f'node["shop"]({bbox});node["tourism"]({bbox});'
+                    f'node["healthcare"]({bbox});node["leisure"]({bbox});'
+                    f'node["public_transport"]({bbox});node["historic"]({bbox});'
+                    f'node["emergency"]({bbox}););'
                     "out body geom;"
                 )
                 print(f"[{index}/{len(tiles)}] Extraction secteur {row + 1}-{col + 1}…", flush=True)
@@ -245,6 +286,8 @@ def main():
             for element in data["elements"]:
                 if element.get("type") == "way":
                     all_elements[element["id"]] = element
+                elif element.get("type") == "node":
+                    all_nodes[element["id"]] = element
             tile_report.append({
                 "row": row + 1,
                 "column": col + 1,
@@ -256,13 +299,11 @@ def main():
     except Exception as extraction_error:
         print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
         used_geofabrik_fallback = True
-        elements_from_pbf = extract_from_geofabrik_pbf(
+        elements_from_pbf, nodes_from_pbf = extract_from_geofabrik_pbf(
             args.south, args.west, args.north, args.east
         )
-        all_elements = {
-            element["id"]: element
-            for element in elements_from_pbf
-        }
+        all_elements = {element["id"]: element for element in elements_from_pbf}
+        all_nodes = nodes_from_pbf
         tile_report = []
         for row, col, tile_south, tile_west, tile_north, tile_east in tiles:
             tile_count = sum(
@@ -293,6 +334,19 @@ def main():
     }
 
     generated = {}
+    generated["pois.geojson"] = make_poi_collection(all_nodes)
+    report["files"]["pois.geojson"] = {
+        "features": len(generated["pois.geojson"]["features"]),
+        "categories": dict(Counter(
+            feature["properties"].get("amenity")
+            or feature["properties"].get("shop")
+            or feature["properties"].get("tourism")
+            or feature["properties"].get("healthcare")
+            or feature["properties"].get("leisure")
+            or "other"
+            for feature in generated["pois.geojson"]["features"]
+        )),
+    }
     for name in ("roads", "buildings"):
         collection = make_collection(elements, name)
         key = "highway" if name == "roads" else "building"
@@ -332,6 +386,7 @@ def main():
     print(f"Extraction terminée : {len(tile_report)} secteurs traités.", flush=True)
     print(f"Routes : {report['files']['roads.geojson']['features']}", flush=True)
     print(f"Bâtiments : {report['files']['buildings.geojson']['features']}", flush=True)
+    print(f"Lieux identifiables : {report['files']['pois.geojson']['features']}", flush=True)
     print("Attribution à conserver : © OpenStreetMap contributors", flush=True)
 
 
