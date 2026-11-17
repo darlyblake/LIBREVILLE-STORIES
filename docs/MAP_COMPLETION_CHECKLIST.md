@@ -27,6 +27,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Première variété de matériaux procéduraux : tuiles, tôle nervurée et dalle béton, sélectionnés par typologie OSM (approximation visuelle).
 - [x] Exploiter `building:material` pour nuancer la teinte des façades (brique, bois, béton, métal, pierre, verre, enduit) quand aucune couleur explicite OSM n'est fournie ; cela ne remplace pas encore des textures photographiques.
 - [x] Première toiture géométrique à deux pans sur les empreintes quadrilatérales compatibles ; `roof:shape=gabled` est prioritaire, `flat` désactive la pente, et les formes non prises en charge (hipped, pyramidal, skillion, dôme…) restent volontairement en toiture plate provisoire.
+- [x] Lire `roof:height` pour régler la hauteur du faîtage ; utiliser `roof:levels` comme estimation limitée uniquement si `roof:height` manque. Les formes restent limitées aux toits à deux pans compatibles.
 - [ ] Étendre et affiner les profils de toitures inclinées (4 pans, formes complexes) selon des références architecturales locales.
 - [x] Première passe de balcons stylisés sur certains immeubles à plusieurs niveaux, regroupés dans le mesh des façades.
 - [ ] Ajouter auvents, escaliers et autres détails seulement là où le type et la taille du bâtiment le permettent.
