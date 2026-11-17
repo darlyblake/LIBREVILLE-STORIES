@@ -272,6 +272,9 @@ func _load_roads() -> void:
 		push_warning("roads.geojson absent : carte routière non chargée.")
 		return
 	var surface := _new_surface(_road_material)
+	var sidewalk_material := _make_material(Color(0.62, 0.61, 0.56))
+	sidewalk_material.vertex_color_use_as_albedo = true
+	var sidewalk_surface := _new_surface(sidewalk_material)
 	var batch_count := 0
 	var batch_index := 0
 	var road_features: Array = data.get("features", []).duplicate()
@@ -299,7 +302,9 @@ func _load_roads() -> void:
 				_road_labels += 1
 		var road_kind := str(props.get("highway", "residential"))
 		var width := _road_width(road_kind)
+		var sidewalk_mode := _road_sidewalk_mode(props, road_kind)
 		surface.set_color(_road_color(road_kind))
+		sidewalk_surface.set_color(Color(0.66, 0.65, 0.60))
 		var added := false
 		for coords in lines:
 			if coords.size() < 2:
@@ -312,17 +317,61 @@ func _load_roads() -> void:
 					continue
 				var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
 				_add_quad(surface, a + side + Vector3.UP * 0.025, a - side + Vector3.UP * 0.025, b - side + Vector3.UP * 0.025, b + side + Vector3.UP * 0.025)
+				if sidewalk_mode != "none":
+					var side_width := 1.25
+					var outer_offset := width * 0.5 + side_width
+					var inner_offset := width * 0.5
+					if sidewalk_mode in ["both", "left"]:
+						_add_quad(sidewalk_surface,
+							a + side * inner_offset + Vector3.UP * 0.04,
+						a + side * outer_offset + Vector3.UP * 0.04,
+						b + side * outer_offset + Vector3.UP * 0.04,
+						b + side * inner_offset + Vector3.UP * 0.04)
+					if sidewalk_mode in ["both", "right"]:
+						_add_quad(sidewalk_surface,
+							a - side * inner_offset + Vector3.UP * 0.04,
+						a - side * outer_offset + Vector3.UP * 0.04,
+						b - side * outer_offset + Vector3.UP * 0.04,
+						b - side * inner_offset + Vector3.UP * 0.04)
 				added = true
 		if added:
 			_road_count += 1
 			batch_count += 1
 		if batch_count >= ROADS_PER_MESH:
 			_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
+			_commit_surface(sidewalk_surface, "OSM_Sidewalks_%03d" % batch_index)
 			batch_index += 1
 			batch_count = 0
 			surface = _new_surface(_road_material)
+			sidewalk_surface = _new_surface(sidewalk_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Roads_%03d" % batch_index)
+		_commit_surface(sidewalk_surface, "OSM_Sidewalks_%03d" % batch_index)
+
+
+func _road_sidewalk_mode(props: Dictionary, road_kind: String) -> String:
+	var general := str(props.get("sidewalk", "")).to_lower()
+	var left := str(props.get("sidewalk:left", "")).to_lower()
+	var right := str(props.get("sidewalk:right", "")).to_lower()
+	if general in ["no", "none", "separate"]:
+		return "none"
+	if left == "no":
+		return "right" if right in ["yes", "both", "separate"] else "none"
+	if right == "no":
+		return "left" if left in ["yes", "both", "separate"] else "none"
+	if left in ["yes", "both", "separate"] and right in ["yes", "both", "separate"]:
+		return "both"
+	if left in ["yes", "both", "separate"]:
+		return "left"
+	if right in ["yes", "both", "separate"]:
+		return "right"
+	if general in ["yes", "both", "separate"]:
+		return "both"
+	# Sur les axes structurants, trottoirs de représentation visuelle faute de tag explicite.
+	if road_kind in ["trunk", "primary", "secondary"]:
+		return "both"
+	return "none"
+
 
 func _compare_road_features(a: Dictionary, b: Dictionary) -> bool:
 	var props_a: Dictionary = a.get("properties", {})
