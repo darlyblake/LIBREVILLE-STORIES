@@ -170,3 +170,13 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - Land'Act, fiche projet Baie des Rois (40 hectares, marina, corniche botanique, espaces de vie) : https://land-act.fr/projets/la-baie-des-rois/
 - VOA Afrique, ouverture partielle de la promenade et superficie livrée en 2022 : https://www.voaafrique.com/a/gabon-loisirs-la-promenade-de-la-baie-des-rois-enfin-ouverte-aux-librevillois/6710716.html
 - GabonActu, distinction zones Nord, Centre (Port-Môle) et Sud et passerelle Nord-Centre : https://gabonactu.com/blog/2023/08/04/baie-des-rois-la-promenade-centre-bientot-ouverte-au-public/
+
+### Correctif direction artistique — mise en sécurité du blockout (17/11/2026)
+- [x] Désactiver l'exécution des anciens générateurs procéduraux de la Baie des Rois : nappes d'eau rectangulaires, kiosques cubiques, palmiers en boîtes, pelouses et mobilier simplifiés.
+- [x] Empêcher ces éléments approximatifs de recouvrir les routes et bâtiments de la carte.
+- [ ] Refaire la zone à partir d'un plan géoréférencé, avec contour terre/mer relevé et kiosques positionnés sur l'arc de promenade.
+- [ ] Remplacer les volumes temporaires par des modèles Blender détaillés, matériaux PBR et textures photographiques sous licence.
+- [ ] Réintroduire l'eau uniquement après validation de la géométrie de rive ; shader d'eau réaliste et reflets adaptés au renderer Compatibility.
+- [ ] Valider le rendu et les performances dans Godot 4.3 sur la GT 730 2 Go.
+
+**Important :** le blockout précédent est volontairement neutralisé. Cela retire les éléments faux, mais ne signifie pas que la Baie des Rois est déjà reconstruite. La prochaine version visuelle doit venir de modèles et de données géographiques vérifiés, pas de nouveaux rectangles ou cubes générés au hasard.
