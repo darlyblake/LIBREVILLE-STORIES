@@ -672,32 +672,69 @@ func _building_color(kind: String, osm_id: int) -> Color:
 		_:
 			return Color(0.76 + variation, 0.68 + variation, 0.56 + variation)
 
-func _roof_color(kind: String, osm_id: int) -> Color:
-	# Variantes visuelles de toiture : ce ne sont pas des matériaux mesurés sur le terrain.
-	var variation := float(abs(osm_id) % 7) * 0.018
+func _roof_style(kind: String, osm_id: int) -> int:
+	# 0 = tuiles (habitat), 1 = tôle nervurée (hangars/industrie),
+	# 2 = dalle béton (bureaux et commerces). Styles visuels, non relevés terrain.
 	match kind:
-		"industrial", "warehouse":
-			return Color(0.66 + variation, 0.70 + variation, 0.68 + variation)
-		"commercial", "retail", "office":
-			return Color(0.58 + variation, 0.59 + variation, 0.56 + variation)
+		"industrial", "warehouse", "carport", "shed":
+			return 1
+		"commercial", "retail", "office", "supermarket", "government":
+			return 2
 		_:
-			return Color(0.78 + variation, 0.48 + variation, 0.34 + variation)
+			return 0 if abs(osm_id) % 5 != 0 else 2
+
+
+func _roof_color(kind: String, osm_id: int) -> Color:
+	# La teinte varie légèrement, le motif vient de la bande de texture choisie.
+	var variation := float(abs(osm_id) % 7) * 0.018
+	match _roof_style(kind, osm_id):
+		1:
+			return Color(0.91 + variation * 0.3, 0.94 + variation * 0.2, 0.94 + variation * 0.2)
+		2:
+			return Color(0.83 + variation * 0.3, 0.84 + variation * 0.3, 0.80 + variation * 0.3)
+		_:
+			return Color(0.96 + variation * 0.2, 0.92 + variation * 0.2, 0.88 + variation * 0.2)
 
 
 func _make_roof_tile_texture() -> Texture2D:
-	# Texture procédurale répétable de petites tuiles, sans image externe à télécharger.
-	var image := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0.48, 0.25, 0.18, 1.0))
-	for y in range(128):
-		var row := int(y / 16)
+	# Atlas procédural compact : tuiles, tôle nervurée et dalle béton.
+	# Chaque bande est répétée séparément par _add_roof_uv_triangle.
+	var image := Image.create(128, 192, false, Image.FORMAT_RGBA8)
+	for y in range(192):
+		var style := int(y / 64)
+		var local_y := y % 64
 		for x in range(128):
-			var local_y := y % 16
-			var local_x := (x + (16 if row % 2 == 1 else 0)) % 32
-			var shade := 0.92 if (local_y == 0 or local_x == 0) else 1.0
-			if local_y == 15:
-				shade *= 0.72
-			image.set_pixel(x, y, Color(0.56 * shade, 0.29 * shade, 0.21 * shade, 1.0))
+			var local_x := x % 32
+			var pixel := Color(0.58, 0.30, 0.21, 1.0)
+			if style == 0:
+				var row := int(local_y / 16)
+				var tile_x := (x + (16 if row % 2 == 1 else 0)) % 32
+				var shade := 0.78 if local_y % 16 == 15 else (0.91 if local_y % 16 == 0 or tile_x == 0 else 1.0)
+				pixel = Color(0.60 * shade, 0.31 * shade, 0.22 * shade, 1.0)
+			elif style == 1:
+				var rib := 0.76 if local_x == 0 or local_x == 1 else (1.0 if local_x < 27 else 0.88)
+				var wave := 0.94 if local_y % 8 == 0 else 1.0
+				pixel = Color(0.48 * rib * wave, 0.53 * rib * wave, 0.55 * rib * wave, 1.0)
+			else:
+				var seam := 0.91 if local_x == 0 or local_y % 32 == 0 else 1.0
+				var grain := 0.985 + float((x * 17 + local_y * 13) % 7) * 0.004
+				pixel = Color(0.58 * seam * grain, 0.59 * seam * grain, 0.56 * seam * grain, 1.0)
+		image.set_pixel(x, y, pixel)
 	return ImageTexture.create_from_image(image)
+
+
+func _add_roof_uv_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, style: int) -> void:
+	var band := 1.0 / 3.0
+	var v_offset := float(style) * band
+	var uv_a := Vector2(fposmod(a.x / 3.0, 1.0), v_offset + fposmod(a.z / 3.0, 1.0) * band)
+	var uv_b := Vector2(fposmod(b.x / 3.0, 1.0), v_offset + fposmod(b.z / 3.0, 1.0) * band)
+	var uv_c := Vector2(fposmod(c.x / 3.0, 1.0), v_offset + fposmod(c.z / 3.0, 1.0) * band)
+	surface.set_uv(uv_a)
+	surface.add_vertex(a)
+	surface.set_uv(uv_b)
+	surface.add_vertex(b)
+	surface.set_uv(uv_c)
+	surface.add_vertex(c)
 
 
 func _add_uv_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3,
@@ -750,12 +787,13 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_door(details, door_a, door_b, door_normal)
 	roofs.set_color(roof_tint)
+	var roof_style := _roof_style(building_kind, osm_id)
 	for i in range(0, indices.size(), 3):
 		var p0 := points[indices[i]]
 		var p1 := points[indices[i + 1]]
 		var p2 := points[indices[i + 2]]
-		_add_uv_triangle(roofs, Vector3(p0.x, height + 0.035, p0.y),
-			Vector3(p1.x, height + 0.035, p1.y), Vector3(p2.x, height + 0.035, p2.y))
+		_add_roof_uv_triangle(roofs, Vector3(p0.x, height + 0.035, p0.y),
+			Vector3(p1.x, height + 0.035, p1.y), Vector3(p2.x, height + 0.035, p2.y), roof_style)
 
 
 func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
