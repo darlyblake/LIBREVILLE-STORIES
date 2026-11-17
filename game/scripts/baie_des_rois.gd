@@ -1,5 +1,5 @@
 extends Node3D
-## Baie des Rois — version améliorée (forme de baie + eau + textures type GTA).
+## Baie des Rois — anciens générateurs conservés comme référence, désactivés en attendant la reconstruction réaliste.
 ## Ancre OSM ≈ 0.40512 N, 9.43142 E  →  monde (-1790, -570)
 
 const ANCHOR := Vector3(-1790.0, 0.0, -570.0)
