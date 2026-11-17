@@ -65,7 +65,9 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Validation Godot 4.3 après fenêtres et portes (rendu Compatibility réussi).
 - [x] Validation Godot 4.3 après les balcons (PR n°13, rendu Compatibility réussi).
 - [x] Validation Godot 4.3 de l'atlas procédural de toitures (PR n°15 fusionnée).
+- [x] Regrouper les lots de bâtiments par cellules spatiales de 1 km (maximum 1 200 bâtiments par lot) pour resserrer les volumes de culling ; validation visuelle et mesure des gains encore requises.
 - [ ] Mettre en place le chargement/déchargement spatial par secteurs.
+- [ ] Vérifier que le nombre de MeshInstance3D générés par cellules reste acceptable sur la GT 730 ; le découpage spatial peut augmenter le nombre de lots.
 - [ ] Mesurer FPS, mémoire et temps de chargement sur la machine cible (GT 730 2 Go) ; aucun chiffre ne doit être annoncé avant ce test.
 - [ ] Vérifier les collisions et la circulation du joueur sur les routes et autour des bâtiments.
 - [ ] Faire une inspection visuelle en jeu à plusieurs endroits reconnaissables de Libreville.
