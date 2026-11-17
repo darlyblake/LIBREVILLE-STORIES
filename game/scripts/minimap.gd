@@ -45,11 +45,12 @@ func _build_road_texture() -> void:
 	if file == null:
 		push_warning("Mini-carte : roads.geojson introuvable.")
 		_draw_poi_markers(image)
-	_road_texture = ImageTexture.create_from_image(image)
+		_road_texture = ImageTexture.create_from_image(image)
 		return
 	var data: Variant = JSON.parse_string(file.get_as_text())
 	if not data is Dictionary:
 		push_warning("Mini-carte : GeoJSON des routes invalide.")
+		_draw_poi_markers(image)
 		_road_texture = ImageTexture.create_from_image(image)
 		return
 
@@ -80,6 +81,7 @@ func _build_road_texture() -> void:
 					Vector2i(roundi(b.x), roundi(b.y)), color,
 					2 if road_kind in ["trunk", "primary", "secondary"] else 1)
 
+	_draw_poi_markers(image)
 	_road_texture = ImageTexture.create_from_image(image)
 
 
