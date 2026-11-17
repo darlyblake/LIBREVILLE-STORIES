@@ -900,12 +900,67 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		_add_facade_door(details, door_a, door_b, door_normal)
 	roofs.set_color(roof_tint)
 	var roof_style := _roof_style(building_kind, osm_id)
-	for i in range(0, indices.size(), 3):
-		var p0 := points[indices[i]]
-		var p1 := points[indices[i + 1]]
-		var p2 := points[indices[i + 2]]
-		_add_roof_uv_triangle(roofs, Vector3(p0.x, height + 0.035, p0.y),
-			Vector3(p1.x, height + 0.035, p1.y), Vector3(p2.x, height + 0.035, p2.y), roof_style)
+	var pitched_roof := false
+	if points.size() == 4 and building_kind in ["house", "residential", "detached", "semidetached_house", "bungalow"]:
+		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style)
+	if not pitched_roof:
+		for i in range(0, indices.size(), 3):
+			var p0 := points[indices[i]]
+			var p1 := points[indices[i + 1]]
+			var p2 := points[indices[i + 2]]
+			_add_roof_uv_triangle(roofs, Vector3(p0.x, height + 0.035, p0.y),
+				Vector3(p1.x, height + 0.035, p1.y), Vector3(p2.x, height + 0.035, p2.y), roof_style)
+
+
+func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int) -> bool:
+	# Première géométrie à deux pans, réservée aux empreintes quadrilatérales
+	# convexes et allongées. Les formes complexes gardent un toit plat.
+	var longest_index := 0
+	var longest_length := 0.0
+	var shortest_side := INF
+	var cross_sign := 0.0
+	for i in range(4):
+		var edge := points[(i + 1) % 4] - points[i]
+		var next_edge := points[(i + 2) % 4] - points[(i + 1) % 4]
+		var edge_length := edge.length()
+		longest_length = maxf(longest_length, edge_length)
+		if edge_length > longest_length - 0.001:
+			longest_index = i
+		var cross_value := edge.cross(next_edge)
+		if absf(cross_value) < 0.01:
+			return false
+		if cross_sign == 0.0:
+			cross_sign = signf(cross_value)
+		elif signf(cross_value) != cross_sign:
+			return false
+	for i in [((longest_index + 1) % 4), ((longest_index + 3) % 4)]:
+		shortest_side = minf(shortest_side, points[i].distance_to(points[(i + 1) % 4]))
+	if shortest_side <= 0.1 or longest_length / shortest_side < 1.18:
+		return false
+
+	var p0 := points[longest_index]
+	var p1 := points[(longest_index + 1) % 4]
+	var p2 := points[(longest_index + 2) % 4]
+	var p3 := points[(longest_index + 3) % 4]
+	var roof_y := wall_height + 0.035
+	var ridge_y := roof_y + clampf(shortest_side * 0.30, 0.75, 1.9)
+	var a := Vector3(p0.x, roof_y, p0.y)
+	var b := Vector3(p1.x, roof_y, p1.y)
+	var c := Vector3(p2.x, roof_y, p2.y)
+	var d := Vector3(p3.x, roof_y, p3.y)
+	var ridge_start_2d := (p0 + p3) * 0.5
+	var ridge_end_2d := (p1 + p2) * 0.5
+	var ridge_start := Vector3(ridge_start_2d.x, ridge_y, ridge_start_2d.y)
+	var ridge_end := Vector3(ridge_end_2d.x, ridge_y, ridge_end_2d.y)
+
+	# Deux pans inclinés et deux triangles de pignon.
+	_add_roof_uv_triangle(surface, a, b, ridge_end, style)
+	_add_roof_uv_triangle(surface, a, ridge_end, ridge_start, style)
+	_add_roof_uv_triangle(surface, ridge_start, ridge_end, c, style)
+	_add_roof_uv_triangle(surface, ridge_start, c, d, style)
+	_add_roof_uv_triangle(surface, a, ridge_start, d, style)
+	_add_roof_uv_triangle(surface, b, c, ridge_end, style)
+	return true
 
 
 func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
