@@ -24,6 +24,9 @@ var _environment_material: StandardMaterial3D
 var _road_labels := 0
 var _road_material: StandardMaterial3D
 var _building_material: StandardMaterial3D
+var _locality_points: Array[Dictionary] = []
+var _location_hud: Label
+var _location_refresh := 0.0
 
 func _ready() -> void:
 	_road_material = _make_material(Color.WHITE)
@@ -41,7 +44,68 @@ func _ready() -> void:
 	if show_buildings:
 		_load_buildings()
 	_load_pois()
+	_create_location_hud()
 	print("LIBREVILLE STORIES | routes: %d | bâtiments: %d | lieux identifiables: %d | éléments environnementaux: %d" % [_road_count, _building_count, _poi_count, _environment_count])
+
+
+func _process(delta: float) -> void:
+	_location_refresh += delta
+	if _location_refresh < 0.35:
+		return
+	_location_refresh = 0.0
+	_update_location_hud()
+
+
+func _create_location_hud() -> void:
+	var layer := CanvasLayer.new()
+	layer.name = "NavigationHUD"
+	layer.layer = 5
+	add_child(layer)
+
+	var panel := PanelContainer.new()
+	panel.name = "PositionPanel"
+	panel.position = Vector2(18, 18)
+	panel.custom_minimum_size = Vector2(310, 0)
+	layer.add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_top", 9)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_bottom", 9)
+	panel.add_child(margin)
+
+	_location_hud = Label.new()
+	_location_hud.name = "CurrentLocation"
+	_location_hud.text = "LIBREVILLE  |  localisation en cours..."
+	_location_hud.add_theme_color_override("font_color", Color(0.92, 0.96, 1.0))
+	_location_hud.add_theme_font_size_override("font_size", 15)
+	margin.add_child(_location_hud)
+
+
+func _update_location_hud() -> void:
+	if _location_hud == null:
+		return
+	var player := get_parent().get_node_or_null("Player") as Node3D
+	if player == null:
+		_location_hud.text = "LIBREVILLE  |  joueur introuvable"
+		return
+	var position := player.global_position
+	var latitude := CENTER_LAT - position.z / METERS_PER_DEG_LAT
+	var longitude := CENTER_LON + position.x / (METERS_PER_DEG_LAT * cos(deg_to_rad(CENTER_LAT)))
+	var nearest_name := "Localité non renseignée"
+	var nearest_distance := INF
+	for locality in _locality_points:
+		var distance: float = Vector2(position.x, position.z).distance_to(locality.position)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest_name = str(locality.name)
+	var location_line := nearest_name
+	if nearest_distance < 2500.0:
+		location_line += "  ·  %.0f m" % nearest_distance
+	else:
+		location_line = "Hors des localités nommées OSM"
+	_location_hud.text = "LIBREVILLE  |  POSITION DU JOUEUR\n%s\nGPS  %.5f, %.5f" % [location_line, latitude, longitude]
 
 func _make_material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
@@ -353,7 +417,9 @@ func _load_localities() -> void:
 		var coordinates: Array = geometry.get("coordinates", [])
 		if label_text.is_empty() or coordinates.size() < 2:
 			continue
-		_add_map_label(label_text, _geo_to_world(coordinates) + Vector3.UP * 5.5, Color(1.0, 0.84, 0.48), 900.0)
+		var world_position := _geo_to_world(coordinates)
+		_locality_points.append({"name": label_text, "position": Vector2(world_position.x, world_position.z)})
+		_add_map_label(label_text, world_position + Vector3.UP * 5.5, Color(1.0, 0.84, 0.48), 900.0)
 		_locality_count += 1
 	print("LIBREVILLE STORIES | noms de quartiers/localités OSM : %d" % _locality_count)
 
