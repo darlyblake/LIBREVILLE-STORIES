@@ -14,118 +14,130 @@
     {
       "row": 1,
       "column": 1,
+      "elements": 2,
+      "from_cache": false,
+      "source": "Geofabrik Gabon PBF (intersection géographique)"
+    },
+    {
+      "row": 1,
+      "column": 2,
+      "elements": 2,
+      "from_cache": false,
+      "source": "Geofabrik Gabon PBF (intersection géographique)"
+    },
+    {
+      "row": 1,
+      "column": 3,
+      "elements": 1020,
+      "from_cache": false,
+      "source": "Geofabrik Gabon PBF (intersection géographique)"
+    },
+    {
+      "row": 1,
+      "column": 4,
+      "elements": 1540,
+      "from_cache": false,
+      "source": "Geofabrik Gabon PBF (intersection géographique)"
+    },
+    {
+      "row": 2,
+      "column": 1,
       "elements": 1,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
-      "row": 1,
-      "column": 2,
-      "elements": 1,
-      "from_cache": false,
-      "source": "Geofabrik Gabon PBF (intersection géographique)"
-    },
-    {
-      "row": 1,
-      "column": 3,
-      "elements": 1012,
-      "from_cache": false,
-      "source": "Geofabrik Gabon PBF (intersection géographique)"
-    },
-    {
-      "row": 1,
-      "column": 4,
-      "elements": 1536,
-      "from_cache": false,
-      "source": "Geofabrik Gabon PBF (intersection géographique)"
-    },
-    {
-      "row": 2,
-      "column": 1,
-      "elements": 0,
-      "from_cache": false,
-      "source": "Geofabrik Gabon PBF (intersection géographique)"
-    },
-    {
       "row": 2,
       "column": 2,
-      "elements": 1142,
+      "elements": 1160,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 2,
       "column": 3,
-      "elements": 7594,
+      "elements": 7626,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 2,
       "column": 4,
-      "elements": 3702,
+      "elements": 3707,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 3,
       "column": 1,
-      "elements": 11,
+      "elements": 16,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 3,
       "column": 2,
-      "elements": 2441,
+      "elements": 2529,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 3,
       "column": 3,
-      "elements": 6604,
+      "elements": 6626,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 3,
       "column": 4,
-      "elements": 11485,
+      "elements": 11501,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 4,
       "column": 1,
-      "elements": 746,
+      "elements": 766,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 4,
       "column": 2,
-      "elements": 3818,
+      "elements": 3829,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 4,
       "column": 3,
-      "elements": 2364,
+      "elements": 2385,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
     {
       "row": 4,
       "column": 4,
-      "elements": 12381,
+      "elements": 12393,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     }
   ],
-  "extracted_at_utc": "2026-11-17T15:34:20.781882+00:00",
+  "extracted_at_utc": "2026-11-17T15:46:29.463032+00:00",
   "files": {
+    "environment.geojson": {
+      "features": 256,
+      "categories": {
+        "coastline": 17,
+        "waterway": 93,
+        "green_space": 15,
+        "water": 20,
+        "vegetation": 109,
+        "natural_surface": 2
+      },
+      "size_bytes": 227003
+    },
     "pois.geojson": {
       "features": 5336,
       "categories": {
