@@ -162,18 +162,27 @@ def extract_from_geofabrik_pbf(south, west, north, east):
             if "highway" not in tags and "building" not in tags:
                 return
             geometry = []
-            inside = False
+            min_lon = min_lat = float("inf")
+            max_lon = max_lat = float("-inf")
             for node in way.nodes:
                 if not node.location.valid():
                     continue
                 lon, lat = float(node.lon), float(node.lat)
                 geometry.append({"lon": lon, "lat": lat})
-                if west <= lon <= east and south <= lat <= north:
-                    inside = True
-            if len(geometry) >= 2 and inside:
+                min_lon, max_lon = min(min_lon, lon), max(max_lon, lon)
+                min_lat, max_lat = min(min_lat, lat), max(max_lat, lat)
+
+            # Garder aussi les voies qui traversent l'emprise sans sommet dedans.
+            intersects_bbox = (
+                len(geometry) >= 2
+                and max_lon >= west and min_lon <= east
+                and max_lat >= south and min_lat <= north
+            )
+            if intersects_bbox:
                 self.elements.append({
                     "type": "way", "id": int(way.id),
                     "tags": tags, "geometry": geometry,
+                    "_bounds": [min_lat, min_lon, max_lat, max_lon],
                 })
 
     handler = LibrevilleHandler()
@@ -247,20 +256,26 @@ def main():
     except Exception as extraction_error:
         print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
         used_geofabrik_fallback = True
+        elements_from_pbf = extract_from_geofabrik_pbf(
+            args.south, args.west, args.north, args.east
+        )
         all_elements = {
             element["id"]: element
-            for element in extract_from_geofabrik_pbf(
-                args.south, args.west, args.north, args.east
-            )
+            for element in elements_from_pbf
         }
-        tile_report = [
-            {
+        tile_report = []
+        for row, col, tile_south, tile_west, tile_north, tile_east in tiles:
+            tile_count = sum(
+                1 for element in elements_from_pbf
+                if (bounds := element.get("_bounds")) is not None
+                and bounds[2] >= tile_south and bounds[0] <= tile_north
+                and bounds[3] >= tile_west and bounds[1] <= tile_east
+            )
+            tile_report.append({
                 "row": row + 1, "column": col + 1,
-                "elements": None, "from_cache": False,
-                "source": "Geofabrik Gabon PBF",
-            }
-            for row, col, *_ in tiles
-        ]
+                "elements": tile_count, "from_cache": False,
+                "source": "Geofabrik Gabon PBF (intersection géographique)",
+            })
 
     elements = list(all_elements.values())
     report = {
