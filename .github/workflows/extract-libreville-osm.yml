@@ -60,11 +60,15 @@ jobs:
           roads = json.loads((base / "roads.geojson").read_text())
           buildings = json.loads((base / "buildings.geojson").read_text())
           pois = json.loads((base / "pois.geojson").read_text())
+          environment = json.loads((base / "environment.geojson").read_text())
           report = json.loads((base / "extraction-report.json").read_text())
 
           assert roads.get("type") == "FeatureCollection"
           assert buildings.get("type") == "FeatureCollection"
           assert pois.get("type") == "FeatureCollection"
+          assert environment.get("type") == "FeatureCollection"
+          assert report["files"]["environment.geojson"]["features"] == len(environment.get("features", []))
+          assert len(environment.get("features", [])) > 0, "Aucune géométrie naturelle/eau/espace vert extraite."
           assert report["files"]["pois.geojson"]["features"] == len(pois.get("features", []))
           assert len(pois.get("features", [])) > 0, "Aucun lieu nommé extrait : refuser de publier une couche vide."
           assert len(roads.get("features", [])) >= 1000
@@ -93,6 +97,18 @@ jobs:
 
           for feature in roads["features"]:
               check_geometry(feature, "LineString")
+          for feature in environment["features"]:
+              geometry = feature.get("geometry", {})
+              kind = geometry.get("type")
+              assert kind in {"LineString", "Polygon"}
+              coords = geometry.get("coordinates") or []
+              points = coords if kind == "LineString" else coords[0]
+              assert len(points) >= (2 if kind == "LineString" else 4)
+              if kind == "Polygon":
+                  assert points[0] == points[-1]
+              for lon, lat in points:
+                  assert math.isfinite(lon) and math.isfinite(lat)
+                  assert -180 <= lon <= 180 and -90 <= lat <= 90
           for feature in buildings["features"]:
               check_geometry(feature, "Polygon")
 
@@ -105,6 +121,7 @@ jobs:
               assert feature.get("properties", {}).get("name")
           print("Bâtiments vérifiés :", len(buildings["features"]))
           print("Lieux identifiables vérifiés :", len(pois["features"]))
+          print("Géométries environnementales vérifiées :", len(environment["features"]))
           print("Attribution :", report["attribution"])
           PY
 
@@ -114,7 +131,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git -c rebase.autoStash=true rebase origin/main
-          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/pois.geojson data/osm/extraction-report.json
+          git add -f data/osm/roads.geojson data/osm/buildings.geojson data/osm/pois.geojson data/osm/environment.geojson data/osm/extraction-report.json
           if git diff --cached --quiet; then
             echo "Les données cartographiques sont déjà à jour."
           else
@@ -130,6 +147,7 @@ jobs:
             data/osm/roads.geojson
             data/osm/buildings.geojson
             data/osm/pois.geojson
+            data/osm/environment.geojson
             data/osm/extraction-report.json
           if-no-files-found: error
           retention-days: 30
