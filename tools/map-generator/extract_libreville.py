@@ -259,6 +259,65 @@ def make_poi_collection(nodes, elements, bounds):
         })
     return {"type": "FeatureCollection", "name": "libreville_pois", "features": features}
 
+
+def make_neighbourhood_collection(elements, bounds):
+    """Extrait uniquement les polygones OSM nommés décrivant des localités/frontières."""
+    from shapely.geometry import Polygon, box
+
+    south, west, north, east = bounds
+    clip = box(west, south, east, north)
+    features = []
+    accepted_places = {"suburb", "neighbourhood", "quarter", "district", "borough", "city", "town", "village"}
+    for way in elements:
+        if way.get("type") != "way":
+            continue
+        tags = way.get("tags", {})
+        place = str(tags.get("place", "")).lower()
+        boundary = str(tags.get("boundary", "")).lower()
+        name = str(tags.get("name", "")).strip()
+        if not name or (place not in accepted_places and boundary != "administrative"):
+            continue
+        points = way.get("geometry") or []
+        coords = [
+            (float(point["lon"]), float(point["lat"]))
+            for point in points
+            if "lon" in point and "lat" in point
+            and math.isfinite(float(point["lon"])) and math.isfinite(float(point["lat"]))
+        ]
+        if len(coords) < 4:
+            continue
+        if coords[0] != coords[-1]:
+            continue
+        try:
+            shape = Polygon(coords)
+            if not shape.is_valid:
+                shape = shape.buffer(0)
+            clipped = shape.intersection(clip)
+            parts = list(_geometry_parts(clipped, {"Polygon"}))
+        except Exception as exc:
+            print("Limite locale ignorée way/" + str(way.get("id")) + ": " + str(exc), flush=True)
+            continue
+        for index, part in enumerate(parts):
+            if part.is_empty or part.area <= 0:
+                continue
+            suffix = "" if len(parts) == 1 else "#part/" + str(index + 1)
+            features.append({
+                "type": "Feature",
+                "id": "way/" + str(way["id"]) + suffix,
+                "properties": {
+                    "osm_id": int(way["id"]), "osm_type": "way",
+                    "name": name, "place": place, "boundary": boundary,
+                    "admin_level": tags.get("admin_level", ""),
+                    "source": "OpenStreetMap way polygon",
+                },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[list(point) for point in part.exterior.coords]],
+                },
+            })
+    return {"type": "FeatureCollection", "name": "libreville_neighbourhoods", "features": features}
+
+
 def make_collection(elements, kind, bounds):
     unique = {}
     for element in elements:
@@ -482,6 +541,11 @@ def main():
 
     generated = {}
     generated["environment.geojson"] = make_environment_collection(elements, (args.south, args.west, args.north, args.east))
+    generated["neighbourhoods.geojson"] = make_neighbourhood_collection(elements, (args.south, args.west, args.north, args.east))
+    report["files"]["neighbourhoods.geojson"] = {
+        "features": len(generated["neighbourhoods.geojson"]["features"]),
+        "note": "Polygones nommés issus de ways OSM fermés uniquement; les relations multipolygones ne sont pas encore assemblées.",
+    }
     report["files"]["environment.geojson"] = {
         "features": len(generated["environment.geojson"]["features"]),
         "categories": dict(Counter(
