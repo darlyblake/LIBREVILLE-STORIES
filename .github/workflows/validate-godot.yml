@@ -42,6 +42,18 @@ jobs:
                   return all(coordinates_are_finite(item) for item in value)
               return True
 
+          south, west, north, east = report["bbox_south_west_north_east"]
+
+          def assert_in_bounds(value, label):
+              if isinstance(value, list) and len(value) >= 2 and all(isinstance(v, (int, float)) for v in value[:2]):
+                  lon, lat = value[:2]
+                  assert math.isfinite(lon) and math.isfinite(lat), f"{label}: non-finite coordinate"
+                  assert west - 1e-8 <= lon <= east + 1e-8, f"{label}: longitude outside map bounds ({lon})"
+                  assert south - 1e-8 <= lat <= north + 1e-8, f"{label}: latitude outside map bounds ({lat})"
+              elif isinstance(value, list):
+                  for child in value:
+                      assert_in_bounds(child, label)
+
           pois = json.loads((root / "pois.geojson").read_text())
           assert pois.get("type") == "FeatureCollection"
           assert len(pois.get("features", [])) == report["files"]["pois.geojson"]["features"]
@@ -50,13 +62,13 @@ jobs:
               assert geometry.get("type") == "Point", f"POI {index}: unexpected geometry"
               coords = geometry.get("coordinates") or []
               assert len(coords) >= 2 and coordinates_are_finite(coords), f"POI {index}: invalid coordinates"
+              assert_in_bounds(coords, f"POI {index}")
               assert str(feature.get("properties", {}).get("name", "")).strip(), f"POI {index}: missing name"
           print(f"pois.geojson: {len(pois.get('features', []))} lieux nommés contrôlés.")
           environment = json.loads((root / "environment.geojson").read_text())
           assert environment.get("type") == "FeatureCollection"
           env_features = environment.get("features", [])
           assert len(env_features) == report["files"]["environment.geojson"]["features"]
-          south, west, north, east = report["bbox_south_west_north_east"]
           for index, feature in enumerate(env_features):
               geometry = feature.get("geometry") or {}
               kind = geometry.get("type")
@@ -71,6 +83,7 @@ jobs:
                           collect(child)
               collect(coords)
               assert len(points) >= 2, f"environment {index}: empty geometry"
+              assert_in_bounds(coords, f"environment {index}")
               for lon, lat, *rest in points:
                   assert math.isfinite(lon) and math.isfinite(lat)
                   assert west - 1e-8 <= lon <= east + 1e-8
@@ -90,6 +103,7 @@ jobs:
                   coords = geometry.get("coordinates")
                   assert kind in expected_type, f"{filename} feature {index}: unexpected {kind}"
                   assert coords and coordinates_are_finite(coords), f"{filename} feature {index}: invalid coordinates"
+                  assert_in_bounds(coords, f"{filename} feature {index}")
                   if kind == "LineString":
                       assert len(coords) >= 2
                   elif kind == "MultiLineString":
