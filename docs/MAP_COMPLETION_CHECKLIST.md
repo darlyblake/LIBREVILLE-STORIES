@@ -105,7 +105,7 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 
 ### Végétation et sources géographiques
 - [x] Première variation déterministe des arbres instanciés : hauteur, largeur, orientation, teinte du tronc et couleur du feuillage ; reste une représentation low-poly simplifiée.
-- [ ] Ajouter plusieurs silhouettes d'espèces tropicales (palmiers, arbres à couronne étalée, arbustes) à partir de données ou références validées.
+- [x] Ajouter trois silhouettes low-poly instanciées (couronne ronde, étalée et verticale) avec variation déterministe ; ce sont des profils visuels génériques, pas encore des espèces botaniques identifiées.
 - [ ] Télécharger et intégrer un extrait Copernicus DEM GLO-30 couvrant Libreville, puis vérifier le système de coordonnées, l'altitude et la continuité aux bords.
 - [ ] Obtenir l'accès et les conditions de réutilisation des orthophotographies/plans auprès de l'Institut National de Cartographie du Gabon.
 - [ ] Préparer un extrait ESA WorldCover 2021 local pour différencier végétation, zones bâties, eau et mangroves ; conserver l'attribution CC BY 4.0.
