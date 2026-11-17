@@ -30,7 +30,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: data/osm/.tiles
-          key: ${{ runner.os }}-libreville-osm-v7-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
+          key: ${{ runner.os }}-libreville-osm-v7-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             ${{ runner.os }}-libreville-osm-v7-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-
             ${{ runner.os }}-libreville-osm-v7-
@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: data/osm/.tiles
-          key: ${{ runner.os }}-libreville-osm-v7-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}
+          key: ${{ runner.os }}-libreville-osm-v7-${{ hashFiles('tools/map-generator/extract_libreville.py') }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Validate GeoJSON and extraction coverage
         run: |
