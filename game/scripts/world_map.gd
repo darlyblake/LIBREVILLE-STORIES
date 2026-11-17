@@ -719,7 +719,7 @@ func _make_roof_tile_texture() -> Texture2D:
 				var seam := 0.91 if local_x == 0 or local_y % 32 == 0 else 1.0
 				var grain := 0.985 + float((x * 17 + local_y * 13) % 7) * 0.004
 				pixel = Color(0.58 * seam * grain, 0.59 * seam * grain, 0.56 * seam * grain, 1.0)
-		image.set_pixel(x, y, pixel)
+			image.set_pixel(x, y, pixel)
 	return ImageTexture.create_from_image(image)
 
 
