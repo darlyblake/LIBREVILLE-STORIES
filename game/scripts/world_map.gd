@@ -31,6 +31,7 @@ var _location_hud: Label
 var _location_refresh := 0.0
 
 func _ready() -> void:
+	_apply_ground_surface()
 	_road_material = _make_material(Color.WHITE)
 	_road_material.vertex_color_use_as_albedo = true
 	_environment_material = _make_material(Color.WHITE)
@@ -113,6 +114,43 @@ func _update_location_hud() -> void:
 	else:
 		location_line = "Hors des localités nommées OSM"
 	_location_hud.text = "LIBREVILLE  |  POSITION DU JOUEUR\n%s\nGPS  %.5f, %.5f" % [location_line, latitude, longitude]
+
+func _apply_ground_surface() -> void:
+	# Le grand plan de sol uni donne un aspect artificiel. Une texture légère
+	# de variation végétale/terre apporte de la lecture sans ajouter de géométrie.
+	var ground := get_parent().get_node_or_null("Ground/MeshInstance3D") as MeshInstance3D
+	if ground == null:
+		return
+	var noise := FastNoiseLite.new()
+	noise.seed = 20261117
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.frequency = 0.035
+	noise.fractal_octaves = 3
+	noise.fractal_gain = 0.48
+	var detail_noise := FastNoiseLite.new()
+	detail_noise.seed = 20261118
+	detail_noise.frequency = 0.12
+	var image := Image.create(256, 256, false, Image.FORMAT_RGBA8)
+	var base_grass := Color(0.25, 0.34, 0.27)
+	var dry_soil := Color(0.37, 0.34, 0.27)
+	var dense_grass := Color(0.18, 0.29, 0.21)
+	for y in range(256):
+		for x in range(256):
+			var broad := noise.get_noise_2d(float(x), float(y))
+			var detail := detail_noise.get_noise_2d(float(x), float(y))
+			var color := base_grass.lerp(dry_soil, clampf((broad + 0.45) * 0.42, 0.0, 0.48))
+			color = color.lerp(dense_grass, clampf((-broad - 0.2) * 0.24, 0.0, 0.22))
+			color = color.lightened(detail * 0.035)
+			image.set_pixel(x, y, color)
+	image.generate_mipmaps()
+	var texture := ImageTexture.create_from_image(image)
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = texture
+	material.albedo_color = Color.WHITE
+	material.roughness = 1.0
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	ground.material_override = material
+
 
 func _make_material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
