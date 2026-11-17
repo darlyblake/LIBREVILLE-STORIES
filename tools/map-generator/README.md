@@ -1,43 +1,13 @@
-# Extraction cartographique de Libreville
+# Générateur cartographique
 
-Premier outil de récupération des **routes** et des **empreintes de bâtiments** OpenStreetMap dans l'emprise provisoire du jeu.
+Le dépôt contient un premier jeu de données OpenStreetMap contrôlé dans `data/osm/`.
 
-## Lancer sous Windows
+- `roads.geojson` : lignes de routes et chemins.
+- `buildings.geojson` : empreintes de bâtiments.
+- `extraction-report.json` : compteurs, emprise et attribution.
 
-1. Installer Python 3 en cochant « Add Python to PATH ».
-2. Ouvrir PowerShell dans le dossier du dépôt.
-3. Exécuter :
+Le script `extract_libreville.py` permet de rafraîchir ces données avec Overpass, mais les serveurs publics peuvent être indisponibles ou ralentis. La version vérifiée initiale doit rester disponible si une nouvelle extraction échoue.
 
-```powershell
-py tools/map-generator/extract_libreville.py
-```
+La génération 3D est réalisée par `game/scripts/world_map.gd`. Le script construit des meshes groupés à partir des deux GeoJSON.
 
-Le script utilise uniquement Python (aucun paquet à installer). Il tente plusieurs serveurs Overpass en cas d'indisponibilité.
-
-## Résultats
-
-Les fichiers sont créés localement dans `data/osm/` :
-- `roads.geojson` : lignes des objets portant le tag OSM `highway`.
-- `buildings.geojson` : polygones des objets portant le tag OSM `building`.
-- `extraction-report.json` : date, emprise, nombre d'objets et catégories.
-
-Les fichiers de données générés sont ignorés par Git pour ne pas alourdir le dépôt.
-
-## Emprise provisoire
-
-BBOX Overpass (sud, ouest, nord, est) : `0.355, 9.400, 0.445, 9.495`. C'est une zone technique de départ, pas une frontière administrative officielle.
-
-Pour modifier les limites :
-
-```powershell
-py tools/map-generator/extract_libreville.py --south 0.355 --west 9.400 --north 0.445 --east 9.495
-```
-
-## Limites de cette première extraction
-
-- Cette version récupère les objets OSM de type `way`. Les bâtiments présents uniquement dans des relations multipolygones seront ajoutés lors d'une étape suivante.
-- OSM n'est pas exhaustif : des bâtiments et chemins peuvent manquer.
-- Les coordonnées GeoJSON sont en WGS84 (longitude, latitude) ; elles devront être converties en coordonnées locales métriques avant la génération 3D dans Godot.
-- Attribution obligatoire dans le jeu : **© OpenStreetMap contributors**. Données sous licence ODbL.
-
-Documentation : https://wiki.openstreetmap.org/wiki/Overpass_API
+Source et attribution : © OpenStreetMap contributors — ODbL 1.0.
