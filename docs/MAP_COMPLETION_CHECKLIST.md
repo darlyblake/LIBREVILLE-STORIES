@@ -4,7 +4,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 
 ## 1. Base cartographique et identification
 - [x] Emprise de travail définie autour de Libreville (boîte technique provisoire, pas une frontière administrative).
-- [x] Extraction OpenStreetMap organisée en 16 secteurs avec cache et solution de repli Geofabrik.
+- [x] Extraction OpenStreetMap organisée en 16 secteurs avec cache et solution de repli Geofabrik ; 16/16 secteurs extraits et validés (4 503 routes, 49 359 bâtiments, 2 595 POI, 256 éléments environnementaux, 73 localités nommées).
 - [x] Routes et empreintes de bâtiments OSM intégrées au prototype.
 - [x] POI nommés et couches environnementales intégrés.
 - [x] Couche séparée des localités OSM nommées (place=*) et affichage des étiquettes.
@@ -44,7 +44,7 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [x] Premier marquage axial discontinu sur les axes structurants et voies explicitement à plusieurs voies (PR n°16, approximation visuelle, validation Godot 4.3).
 - [x] Première génération de passages piétons schématiques aux extrémités de routes OSM structurantes connectées à trois segments ou plus (approximation, validation Godot 4.3 en attente).\n- [ ] Ajouter carrefours détaillés, ponts, signalisation et mobilier urbain à partir de données ou d'approximations visuelles signalées.
 - [x] Première mini-carte nord en haut : routes OSM rasterisées et repère de position du joueur (PR n°18 fusionnée, validation Godot 4.3 réussie).
-- [ ] Ajouter la navigation avec itinéraires et découverte des POI.
+- [x] Première superposition des POI importants sur la mini-carte (santé, écoles, services publics, commerces, tourisme ; version en validation).\n- [ ] Ajouter la navigation avec itinéraires et découverte interactive des POI.
 
 ## 5. Performance et validation
 - [x] Regroupement des routes et bâtiments en meshes pour réduire les draw calls.
