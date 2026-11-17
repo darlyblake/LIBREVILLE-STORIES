@@ -190,7 +190,7 @@ func _load_environment() -> void:
 			added = true
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
-			var width := 2.0 if kind == "waterway" else 1.2
+			var width := 5.0 if kind == "coastline" else (2.0 if kind == "waterway" else 1.2)
 			surface.set_color(_environment_color(kind))
 			for i in range(coords.size() - 1):
 				var a := _geo_to_world(coords[i])
@@ -288,8 +288,10 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 
 func _environment_color(kind: String) -> Color:
 	match kind:
-		"water", "waterway", "coastline":
+		"water", "waterway":
 			return Color(0.20, 0.48, 0.66)
+		"coastline":
+			return Color(0.78, 0.69, 0.49)
 		"vegetation":
 			return Color(0.20, 0.39, 0.25)
 		"green_space":
