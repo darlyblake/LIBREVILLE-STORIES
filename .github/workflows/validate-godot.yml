@@ -52,6 +52,30 @@ jobs:
               assert len(coords) >= 2 and coordinates_are_finite(coords), f"POI {index}: invalid coordinates"
               assert str(feature.get("properties", {}).get("name", "")).strip(), f"POI {index}: missing name"
           print(f"pois.geojson: {len(pois.get('features', []))} lieux nommés contrôlés.")
+          environment = json.loads((root / "environment.geojson").read_text())
+          assert environment.get("type") == "FeatureCollection"
+          env_features = environment.get("features", [])
+          assert len(env_features) == report["files"]["environment.geojson"]["features"]
+          south, west, north, east = report["bbox_south_west_north_east"]
+          for index, feature in enumerate(env_features):
+              geometry = feature.get("geometry") or {}
+              kind = geometry.get("type")
+              assert kind in {"LineString", "Polygon"}, f"environment {index}: unexpected {kind}"
+              coords = geometry.get("coordinates") or []
+              points = []
+              def collect(value):
+                  if isinstance(value, list) and len(value) >= 2 and all(isinstance(v, (int, float)) for v in value[:2]):
+                      points.append(value)
+                  elif isinstance(value, list):
+                      for child in value:
+                          collect(child)
+              collect(coords)
+              assert len(points) >= 2, f"environment {index}: empty geometry"
+              for lon, lat, *rest in points:
+                  assert math.isfinite(lon) and math.isfinite(lat)
+                  assert west - 1e-8 <= lon <= east + 1e-8
+                  assert south - 1e-8 <= lat <= north + 1e-8
+          print(f"environment.geojson: {len(env_features)} éléments environnementaux dans l'emprise.")
 
           for filename, expected_type in (("roads.geojson", {"LineString", "MultiLineString"}),
                                            ("buildings.geojson", {"Polygon", "MultiPolygon"})):
@@ -102,9 +126,9 @@ jobs:
           from pathlib import Path
           log = Path("/tmp/libreville-map.log").read_text(errors="replace")
           report = json.loads(Path("data/osm/extraction-report.json").read_text())
-          match = re.search(r"routes:\s*(\d+)\s*\|\s*bâtiments:\s*(\d+)\s*\|\s*lieux identifiables:\s*(\d+)", log)
-          assert match, "Les compteurs routes/bâtiments/lieux ne sont pas présents dans le journal Godot."
-          roads, buildings, pois = map(int, match.groups())
+          match = re.search(r"routes:\s*(\d+)\s*\|\s*bâtiments:\s*(\d+)\s*\|\s*lieux identifiables:\s*(\d+)\s*\|\s*éléments environnementaux:\s*(\d+)", log)
+          assert match, "Les compteurs routes/bâtiments/lieux/environnement ne sont pas présents dans le journal Godot."
+          roads, buildings, pois, environment = map(int, match.groups())
           expected_roads = report["files"]["roads.geojson"]["features"]
           expected_buildings = report["files"]["buildings.geojson"]["features"]
           assert roads == expected_roads, f"Routes chargées {roads}, attendues {expected_roads}"
@@ -112,7 +136,9 @@ jobs:
           expected_pois = report["files"]["pois.geojson"]["features"]
           expected_visible_pois = min(expected_pois, 450)
           assert pois == expected_visible_pois, f"Étiquettes de lieux chargées {pois}, attendues {expected_visible_pois} (limite d’affichage 450)"
-          print(f"Carte Godot cohérente : {roads} routes, {buildings} bâtiments et {pois} étiquettes de lieux (sur {expected_pois} lieux extraits).")
+          expected_environment = report["files"]["environment.geojson"]["features"]
+          assert environment == expected_environment, f"Éléments environnementaux chargés {environment}, attendus {expected_environment}"
+          print(f"Carte Godot cohérente : {roads} routes, {buildings} bâtiments, {pois} étiquettes de lieux et {environment} éléments environnementaux.")
           PY
           if grep -q "SCRIPT ERROR" /tmp/libreville-map.log; then
             echo "GDScript runtime error detected."
