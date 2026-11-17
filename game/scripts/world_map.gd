@@ -672,6 +672,11 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		roof_tint: Color, building_kind: String, osm_id: int) -> void:
 	var longest_edge_index := 0
 	var longest_edge_length := 0.0
+	var signed_area := 0.0
+	for area_index in range(points.size()):
+		var area_a := points[area_index]
+		var area_b := points[(area_index + 1) % points.size()]
+		signed_area += area_a.x * area_b.y - area_b.x * area_a.y
 	for i in range(points.size()):
 		var a := points[i]
 		var b := points[(i + 1) % points.size()]
@@ -686,9 +691,15 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 			Vector3(b.x, height, b.y), Vector3(a.x, height, a.y),
 			Vector2(0.0, 0.0), Vector2(uv_length, 0.0),
 			Vector2(uv_length, uv_height), Vector2(0.0, uv_height))
-		_add_facade_windows(details, a, b, height, building_kind, osm_id)
+		var edge_direction := Vector3((b.x - a.x) / maxf(edge_length, 0.001), 0.0, (b.y - a.y) / maxf(edge_length, 0.001))
+		var outward_normal := Vector3(edge_direction.z, 0.0, -edge_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
+		_add_facade_windows(details, a, b, height, building_kind, osm_id, outward_normal)
 	if longest_edge_length >= 2.8 and building_kind not in ["garage", "shed", "roof", "carport"]:
-		_add_facade_door(details, points[longest_edge_index], points[(longest_edge_index + 1) % points.size()])
+		var door_a := points[longest_edge_index]
+		var door_b := points[(longest_edge_index + 1) % points.size()]
+		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
+		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
+		_add_facade_door(details, door_a, door_b, door_normal)
 	roofs.set_color(roof_tint)
 	for i in range(0, indices.size(), 3):
 		var p0 := points[indices[i]]
@@ -699,7 +710,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 
 
 func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
-		height: float, building_kind: String, osm_id: int) -> void:
+		height: float, building_kind: String, osm_id: int, normal: Vector3) -> void:
 	if building_kind in ["garage", "shed", "roof", "carport", "warehouse", "industrial"]:
 		return
 	var edge := b - a
@@ -707,9 +718,8 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 	if edge_length < 4.2 or height < 2.8:
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
-	var normal := Vector3(tangent.z, 0.0, -tangent.x)
-	var floors := clampi(int(ceil(height / 3.1)), 1, 12)
-	var window_count := clampi(int(floor(edge_length / 5.2)), 1, 8)
+	var floors := clampi(int(ceil(height / 3.1)), 1, 8)
+	var window_count := clampi(int(floor(edge_length / 5.2)), 1, 5)
 	var spacing := edge_length / float(window_count)
 	var window_width := clampf(spacing * 0.34, 0.65, 1.25)
 	var window_height := 0.95 if floors == 1 else 1.15
@@ -724,44 +734,39 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 			var half_width := window_width * 0.5
 			var half_height := window_height * 0.5
 			surface.set_color(glass)
-			for side_sign in [-1.0, 1.0]:
-				var offset := normal * side_sign * 0.035
-				_add_quad(surface,
-					center - tangent * half_width - Vector3.UP * half_height + offset,
-					center + tangent * half_width - Vector3.UP * half_height + offset,
-					center + tangent * half_width + Vector3.UP * half_height + offset,
-					center - tangent * half_width + Vector3.UP * half_height + offset)
-			# Encadrement supérieur clair : détail discret, regroupé dans le même mesh.
-			var sill := Color(0.72, 0.70, 0.64)
-			surface.set_color(sill)
+			var offset := normal * 0.035
+			_add_quad(surface,
+				center - tangent * half_width - Vector3.UP * half_height + offset,
+				center + tangent * half_width - Vector3.UP * half_height + offset,
+				center + tangent * half_width + Vector3.UP * half_height + offset,
+				center - tangent * half_width + Vector3.UP * half_height + offset)
+			# Appui discret sous la fenêtre, légèrement avancé sur la façade.
+			surface.set_color(Color(0.72, 0.70, 0.64))
 			var sill_center := center - Vector3.UP * (half_height + 0.07)
-			for side_sign in [-1.0, 1.0]:
-				var offset_sill := normal * side_sign * 0.045
-				_add_quad(surface,
-					sill_center - tangent * (half_width + 0.04) + offset_sill,
-					sill_center + tangent * (half_width + 0.04) + offset_sill,
-					sill_center + tangent * (half_width + 0.04) + Vector3.UP * 0.08 + offset_sill,
-					sill_center - tangent * (half_width + 0.04) + Vector3.UP * 0.08 + offset_sill)
+			var sill_offset := normal * 0.045
+			_add_quad(surface,
+				sill_center - tangent * (half_width + 0.04) + sill_offset,
+				sill_center + tangent * (half_width + 0.04) + sill_offset,
+				sill_center + tangent * (half_width + 0.04) + Vector3.UP * 0.08 + sill_offset,
+				sill_center - tangent * (half_width + 0.04) + Vector3.UP * 0.08 + sill_offset)
 
 
-func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2) -> void:
+func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3) -> void:
 	var edge := b - a
 	var edge_length := edge.length()
 	if edge_length < 2.8:
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
-	var normal := Vector3(tangent.z, 0.0, -tangent.x)
 	var center := Vector3(a.x, 1.05, a.y) + tangent * (edge_length * 0.5)
 	var half_width := 0.46
 	var half_height := 1.05
 	surface.set_color(Color(0.27, 0.20, 0.15))
-	for side_sign in [-1.0, 1.0]:
-		var offset := normal * side_sign * 0.05
-		_add_quad(surface,
-			center - tangent * half_width - Vector3.UP * half_height + offset,
-			center + tangent * half_width - Vector3.UP * half_height + offset,
-			center + tangent * half_width + Vector3.UP * half_height + offset,
-			center - tangent * half_width + Vector3.UP * half_height + offset)
+	var offset := normal * 0.05
+	_add_quad(surface,
+		center - tangent * half_width - Vector3.UP * half_height + offset,
+		center + tangent * half_width - Vector3.UP * half_height + offset,
+		center + tangent * half_width + Vector3.UP * half_height + offset,
+		center - tangent * half_width + Vector3.UP * half_height + offset)
 
 
 func _add_uv_triangle(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3) -> void:
