@@ -374,6 +374,30 @@ func _load_roads() -> void:
 			for endpoint in [junction_line[0], junction_line[junction_line.size() - 1]]:
 				var key := _road_junction_key(endpoint)
 				junction_counts[key] = int(junction_counts.get(key, 0)) + 1
+	# Petits raccords circulaires aux nœuds OSM partagés : évite les trous
+	# visibles entre plusieurs rubans de chaussée aux carrefours.
+	surface.set_color(Color(0.27, 0.29, 0.29))
+	var patched_junctions: Dictionary = {}
+	for feature in data.get("features", []):
+		var junction_geometry: Dictionary = feature.get("geometry", {})
+		var junction_lines: Array = []
+		match str(junction_geometry.get("type", "")):
+			"LineString":
+				junction_lines.append(junction_geometry.get("coordinates", []))
+			"MultiLineString":
+				junction_lines = junction_geometry.get("coordinates", [])
+		for junction_line in junction_lines:
+			if junction_line.size() < 2:
+				continue
+			for endpoint in [junction_line[0], junction_line[junction_line.size() - 1]]:
+				var key := _road_junction_key(endpoint)
+				if int(junction_counts.get(key, 0)) < 3 or patched_junctions.has(key):
+					continue
+				var props: Dictionary = feature.get("properties", {})
+				var width := _road_width(str(props.get("highway", "residential")), props)
+				var center := _geo_to_world(endpoint)
+				_add_junction_patch(surface, center, maxf(3.0, width * 0.72))
+				patched_junctions[key] = true
 	var batch_count := 0
 	var batch_index := 0
 	var road_features: Array = data.get("features", []).duplicate()
@@ -400,10 +424,10 @@ func _load_roads() -> void:
 				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 1.25, Color(0.92, 0.95, 1.0), 280.0)
 				_road_labels += 1
 		var road_kind := str(props.get("highway", "residential"))
-		var width := _road_width(road_kind)
+		var width := _road_width(road_kind, props)
 		var sidewalk_mode := _road_sidewalk_mode(props, road_kind)
 		var has_center_marking := _road_has_center_marking(props, road_kind)
-		surface.set_color(_road_color(road_kind))
+		surface.set_color(_road_color(road_kind, props))
 		marking_surface.set_color(Color(0.94, 0.94, 0.88))
 		sidewalk_surface.set_color(Color(0.66, 0.65, 0.60))
 		var added := false
@@ -469,6 +493,17 @@ func _load_roads() -> void:
 func _road_junction_key(coordinate: Array) -> String:
 	# Arrondi d'environ 2 m pour regrouper les nœuds OSM partagés malgré de légères différences.
 	return "%.5f:%.5f" % [float(coordinate[0]), float(coordinate[1])]
+
+
+func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -> void:
+	var segments := 12
+	var y := center.y + 0.028
+	for i in range(segments):
+		var a := TAU * float(i) / float(segments)
+		var b := TAU * float(i + 1) / float(segments)
+		surface.add_vertex(Vector3(center.x, y, center.z))
+		surface.add_vertex(Vector3(center.x + cos(a) * radius, y, center.z + sin(a) * radius))
+		surface.add_vertex(Vector3(center.x + cos(b) * radius, y, center.z + sin(b) * radius))
 
 
 func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float) -> void:
@@ -776,8 +811,21 @@ func _geo_to_world(coordinate: Array) -> Vector3:
 	var z := -(lat - CENTER_LAT) * METERS_PER_DEG_LAT
 	return Vector3(x, 0.0, z)
 
-func _road_color(kind: String) -> Color:
-	# Hiérarchie visuelle lisible : axes structurants plus clairs, rues locales sobres.
+func _road_color(kind: String, props: Dictionary = {}) -> Color:
+	# Les surfaces OSM priment sur la palette de secours par catégorie.
+	var surface_tag := str(props.get("surface", "")).to_lower()
+	match surface_tag:
+		"asphalt", "paved":
+			return Color(0.25, 0.27, 0.27)
+		"concrete":
+			return Color(0.43, 0.44, 0.42)
+		"paving_stones", "sett":
+			return Color(0.48, 0.46, 0.41)
+		"gravel", "fine_gravel":
+			return Color(0.48, 0.44, 0.36)
+		"ground", "dirt", "earth", "unpaved":
+			return Color(0.43, 0.37, 0.29)
+	# Hiérarchie de secours lorsque le revêtement n'est pas renseigné.
 	match kind:
 		"motorway", "trunk":
 			return Color(0.22, 0.25, 0.26)
@@ -796,7 +844,14 @@ func _road_color(kind: String) -> Color:
 		_:
 			return Color(0.31, 0.33, 0.32)
 
-func _road_width(kind: String) -> float:
+func _road_width(kind: String, props: Dictionary = {}) -> float:
+	# Utilise la largeur réelle ou le nombre de voies OSM quand ils existent.
+	var tagged_width := str(props.get("width", "")).replace("m", "").strip_edges().to_float()
+	if tagged_width >= 1.5 and tagged_width <= 40.0:
+		return tagged_width
+	var lanes := str(props.get("lanes", "")).to_int()
+	if lanes >= 1 and lanes <= 8:
+		return clampf(float(lanes) * 3.1 + 0.6, 3.0, 25.0)
 	match kind:
 		"motorway", "trunk": return 11.0
 		"primary": return 8.5
