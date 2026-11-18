@@ -19,11 +19,37 @@ def material(name, color, roughness=0.82, metallic=0.0):
     mat = bpy.data.materials.new(name)
     mat.diffuse_color = (*color, 1.0)
     mat.use_nodes = True
-    bsdf = mat.node_tree.nodes.get("Principled BSDF")
+
+    # Blender 5.x peut créer un node tree sans nœud Principled préexistant
+    # dans certains contextes background. On reconstruit explicitement le shader.
+    nodes = mat.node_tree.nodes
+    bsdf = nodes.get("Principled BSDF")
+    if bsdf is None:
+        nodes.clear()
+        bsdf = nodes.new("ShaderNodeBsdfPrincipled")
+        bsdf.location = (0, 0)
+    output = next((n for n in nodes if n.type == "OUTPUT_MATERIAL"), None)
+    if output is None:
+        output = nodes.new("ShaderNodeOutputMaterial")
+        output.location = (320, 0)
+    if not output.inputs["Surface"].is_linked:
+        mat.node_tree.links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+
     bsdf.inputs["Base Color"].default_value = (*color, 1.0)
     bsdf.inputs["Roughness"].default_value = roughness
     bsdf.inputs["Metallic"].default_value = metallic
     return mat
+
+
+def set_material_input(mat, socket_name, value):
+    nodes = mat.node_tree.nodes
+    bsdf = nodes.get("Principled BSDF")
+    if bsdf is None:
+        raise RuntimeError("Shader Principled introuvable dans le matériau " + mat.name)
+    socket = bsdf.inputs.get(socket_name)
+    if socket is None:
+        raise RuntimeError("Entrée shader absente : " + socket_name)
+    socket.default_value = value
 
 
 def assign(obj, mat):
@@ -211,8 +237,8 @@ def make_streetlight():
     clear_scene()
     metal = material("Streetlight_Charcoal", (0.055, 0.07, 0.075), 0.38, 0.78)
     diffuser = material("LED_Diffuser", (0.80, 0.86, 0.78), 0.28)
-    diffuser.node_tree.nodes["Principled BSDF"].inputs["Emission Color"].default_value = (0.75, 0.82, 0.68, 1)
-    diffuser.node_tree.nodes["Principled BSDF"].inputs["Emission Strength"].default_value = 0.35
+    set_material_input(diffuser, "Emission Color", (0.75, 0.82, 0.68, 1))
+    set_material_input(diffuser, "Emission Strength", 0.35)
 
     def cylinder(name, radius, depth, loc, mat, vertices=12):
         bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc)
