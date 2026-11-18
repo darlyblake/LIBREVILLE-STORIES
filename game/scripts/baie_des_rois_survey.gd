@@ -16,15 +16,21 @@ const ROW_DIRECTION := Vector3(-0.9963910, 0.0, 0.0848819)
 # certifiée de la chaussée. Le point P3 est légèrement décalé le long de l'axe.
 const ROW_B_OFFSET := Vector3(0.7222, 0.0, 8.4795)
 
+# Recul provisoire des deux rangées vers l'extérieur : 3 m chacune.
+# Cela conserve l'alignement longitudinal et élargit le passage central
+# d'environ 6 m au total, sans déplacer les kiosques le long de la rangée.
+const ROW_B_NORMAL := Vector3(0.08486, 0.0, 0.99639)
+const ROW_OUTWARD_SETBACK_METERS := 3.0
+
 const ROW_LENGTH_METERS := 101.0742
 const ROW_SPACING_ESTIMATE_METERS := 8.5102
 
 
 static func row_a_position(progress: float, longitudinal_offset: float = 0.0) -> Vector3:
 	var t := clampf(progress, 0.0, 1.0)
-	return ROW_A_START.lerp(ROW_A_END, t) + ROW_DIRECTION * longitudinal_offset
+	return ROW_A_START.lerp(ROW_A_END, t) + ROW_DIRECTION * longitudinal_offset - ROW_B_NORMAL * ROW_OUTWARD_SETBACK_METERS
 
 
 static func row_b_position(progress: float, longitudinal_offset: float = 0.0) -> Vector3:
-	return row_a_position(progress, longitudinal_offset) + ROW_B_OFFSET
+	return ROW_A_START.lerp(ROW_A_END, clampf(progress, 0.0, 1.0)) + ROW_DIRECTION * longitudinal_offset + ROW_B_OFFSET + ROW_B_NORMAL * ROW_OUTWARD_SETBACK_METERS
 
