@@ -15,26 +15,29 @@ def clear_scene():
     bpy.ops.object.delete(use_global=False)
 
 
-def material(name, color, roughness=0.82, metallic=0.0):
-    mat = bpy.data.materials.new(name)
-    mat.diffuse_color = (*color, 1.0)
-    mat.use_nodes = True
-
-    # Blender 5.x peut créer un node tree sans nœud Principled préexistant
-    # dans certains contextes background. On reconstruit explicitement le shader.
+def principled_node(mat):
+    """Retourne le shader Principled, même si Blender lui a donné un nom suffixé."""
+    if mat.node_tree is None:
+        mat.use_nodes = True
     nodes = mat.node_tree.nodes
-    bsdf = nodes.get("Principled BSDF")
+    bsdf = next((node for node in nodes if node.type == "BSDF_PRINCIPLED"), None)
     if bsdf is None:
-        nodes.clear()
         bsdf = nodes.new("ShaderNodeBsdfPrincipled")
         bsdf.location = (0, 0)
-    output = next((n for n in nodes if n.type == "OUTPUT_MATERIAL"), None)
+    output = next((node for node in nodes if node.type == "OUTPUT_MATERIAL"), None)
     if output is None:
         output = nodes.new("ShaderNodeOutputMaterial")
         output.location = (320, 0)
     if not output.inputs["Surface"].is_linked:
         mat.node_tree.links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
+    return bsdf
 
+
+def material(name, color, roughness=0.82, metallic=0.0):
+    mat = bpy.data.materials.new(name)
+    mat.diffuse_color = (*color, 1.0)
+    mat.use_nodes = True
+    bsdf = principled_node(mat)
     bsdf.inputs["Base Color"].default_value = (*color, 1.0)
     bsdf.inputs["Roughness"].default_value = roughness
     bsdf.inputs["Metallic"].default_value = metallic
@@ -42,13 +45,10 @@ def material(name, color, roughness=0.82, metallic=0.0):
 
 
 def set_material_input(mat, socket_name, value):
-    nodes = mat.node_tree.nodes
-    bsdf = nodes.get("Principled BSDF")
-    if bsdf is None:
-        raise RuntimeError("Shader Principled introuvable dans le matériau " + mat.name)
+    bsdf = principled_node(mat)
     socket = bsdf.inputs.get(socket_name)
     if socket is None:
-        raise RuntimeError("Entrée shader absente : " + socket_name)
+        raise RuntimeError("Entrée shader absente : " + socket_name + " dans " + mat.name)
     socket.default_value = value
 
 
@@ -145,7 +145,6 @@ def make_palm():
         lateral = Vector((-math.sin(angle), math.cos(angle), 0))
         base = Vector((0.10 * math.sin(1.8), 0, 6.25))
         tip = base + radial * (2.9 + (frond % 3) * 0.18) + Vector((0, 0, -1.05))
-        # Rachis segmenté.
         curve = bpy.data.curves.new("Palm_Rachis", "CURVE")
         curve.dimensions = "3D"
         curve.resolution_u = 2
@@ -186,12 +185,10 @@ def make_palm():
                 leaf_obj = bpy.data.objects.new("Palm_Leaflet", leaf_mesh)
                 bpy.context.collection.objects.link(leaf_obj)
 
-    # Fusionner les centaines de folioles en un seul mesh pour limiter les draw calls.
     join_named_meshes("Palm_Leaflet", "Palm_Leaves_Merged")
     join_named_meshes("Trunk_Growth_Ring", "Palm_Rings_Merged")
     join_named_meshes("Palm_Rachis", "Palm_Rachis_Merged")
 
-    # Petit cœur de couronne.
     bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=8, radius=0.34, location=(0, 0, 6.35))
     crown = bpy.context.object
     crown.name = "Palm_Crown"
@@ -220,7 +217,6 @@ def make_bench():
             obj.modifiers.new("Weighted_Normals", "WEIGHTED_NORMAL")
         return obj
 
-    # Banc de 1,85 m, assise à 45 cm, dossier incliné.
     for i in range(5):
         cube("Seat_Wood_Slat", (0, 0.43, -0.34 + i * 0.16),
              (1.85, 0.075, 0.13), wood if i % 2 else wood_alt)
@@ -255,7 +251,6 @@ def make_streetlight():
     cylinder("Pole", 0.075, 5.6, (0, 0, 2.92), metal)
     bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=8, radius=0.11, location=(0, 0, 5.72))
     assign(bpy.context.object, metal)
-    # Bras horizontal et tête LED orientée vers le sol.
     bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=0.045, depth=1.15, location=(0.48, 0, 5.68), rotation=(0, math.pi / 2, 0))
     assign(bpy.context.object, metal)
     bpy.ops.mesh.primitive_cube_add(size=1, location=(1.02, 0, 5.58))
