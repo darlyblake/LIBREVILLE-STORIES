@@ -1,8 +1,9 @@
 extends RefCounted
 class_name BaieDesRoisSurvey
 ## Repère topographique provisoire établi à partir des coordonnées GPS fournies.
-## Ne pas instancier les kiosques ici : le nombre, les intervalles et les variantes
-## doivent être confirmés sur Capture7, Capture8 et Capture9.
+## Base d'implantation utilisée par baie_des_rois.gd : deux rangées face à face.
+## Les coordonnées et le décalage transversal viennent des points GPS fournis.
+## Le nombre de huit kiosques et leur répartition régulière sont un placement de travail.
 
 const ROW_A_START := Vector3(-1833.4264, 0.0, -437.0061)
 const ROW_A_END := Vector3(-1934.1359, 0.0, -428.4268)
