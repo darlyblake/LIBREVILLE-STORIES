@@ -11,7 +11,8 @@ func _ready() -> void:
 	_rng.seed = 20261117
 	name = "BaieDesRois"
 	_build_pavilions()
-	print("LIBREVILLE STORIES | Baie des Rois : kiosques 3D réels chargés sur les emplacements des anciens repères")
+	_build_baie_street_props()
+	print("LIBREVILLE STORIES | Baie des Rois : kiosques et mobilier 3D chargés")
 
 
 # ---------------------------------------------------------------------------
@@ -238,11 +239,13 @@ func _build_pavilions() -> void:
 
 	# Implantation GPS : quatre kiosques par rangée sur l'axe mesuré de 101,07 m.
 	# Les centres sont répartis régulièrement, en gardant une marge aux extrémités.
-	# Rangée A et rangée B sont séparées d'environ 8,51 m ; les façades
-	# sont tournées vers le passage central.
+	# Les deux ouvertures se font maintenant face sur le passage client central.
 	const PROGRESS_VALUES: Array[float] = [0.08, 0.36, 0.64, 0.92]
-	const ROW_A_YAW := -3.0567
-	const ROW_B_YAW := 0.0850
+	# Les façades commerciales sont orientées vers le passage central.
+	# Les GLB présentent leur ouverture sur l'axe opposé à l'ancienne hypothèse :
+	# on inverse les deux rotations pour que les deux comptoirs se regardent.
+	const ROW_A_YAW := 0.0850
+	const ROW_B_YAW := -3.0567
 
 	var root := Node3D.new()
 	root.name = "Kiosques3D_GPS"
@@ -268,6 +271,74 @@ func _build_pavilions() -> void:
 			root.add_child(kiosk_b)
 
 	print("LIBREVILLE STORIES | %d kiosques GPS instanciés : 4 type A + 4 type B" % root.get_child_count())
+
+
+func _build_baie_street_props() -> void:
+	const PALM_PATH := "res://assets/models/baie_des_rois/palmier_baie_des_rois.glb"
+	const BENCH_PATH := "res://assets/models/baie_des_rois/banc_baie_des_rois.glb"
+	const LAMP_PATH := "res://assets/models/baie_des_rois/lampadaire_baie_des_rois.glb"
+
+	var palm_scene := load(PALM_PATH) as PackedScene if ResourceLoader.exists(PALM_PATH) else null
+	var bench_scene := load(BENCH_PATH) as PackedScene if ResourceLoader.exists(BENCH_PATH) else null
+	var lamp_scene := load(LAMP_PATH) as PackedScene if ResourceLoader.exists(LAMP_PATH) else null
+	if palm_scene == null or bench_scene == null or lamp_scene == null:
+		push_error("Mobilier Baie des Rois incomplet : vérifier les GLB palmier, banc et lampadaire.")
+		return
+
+	var root := Node3D.new()
+	root.name = "Mobilier3D_BaieDesRois"
+	add_child(root)
+
+	# Mobilier placé à l'extérieur des deux rangées : le passage central,
+	# les entrées des kiosques et les trottoirs restent libres.
+	const PALM_PROGRESS: Array[float] = [0.18, 0.50, 0.82]
+	const LAMP_PROGRESS: Array[float] = [0.08, 0.36, 0.64, 0.92]
+	const BENCH_PROGRESS: Array[float] = [0.28, 0.72]
+	const OUTER_PALM_OFFSET := 7.2
+	const OUTER_LAMP_OFFSET := 5.7
+	const OUTER_BENCH_OFFSET := 6.0
+
+	for row_index in range(2):
+		for i in range(PALM_PROGRESS.size()):
+			var progress: float = PALM_PROGRESS[i]
+			var position: Vector3
+			if row_index == 0:
+				position = BaieDesRoisSurvey.row_a_position(progress) - BaieDesRoisSurvey.ROW_B_NORMAL * OUTER_PALM_OFFSET
+			else:
+				position = BaieDesRoisSurvey.row_b_position(progress) + BaieDesRoisSurvey.ROW_B_NORMAL * OUTER_PALM_OFFSET
+			var palm := palm_scene.instantiate() as Node3D
+			if palm != null:
+				palm.name = "Palmier_R%d_%02d" % [row_index + 1, i + 1]
+				palm.position = position
+				root.add_child(palm)
+
+		for i in range(LAMP_PROGRESS.size()):
+			var progress: float = LAMP_PROGRESS[i]
+			var position: Vector3
+			if row_index == 0:
+				position = BaieDesRoisSurvey.row_a_position(progress) - BaieDesRoisSurvey.ROW_B_NORMAL * OUTER_LAMP_OFFSET
+			else:
+				position = BaieDesRoisSurvey.row_b_position(progress) + BaieDesRoisSurvey.ROW_B_NORMAL * OUTER_LAMP_OFFSET
+			var lamp := lamp_scene.instantiate() as Node3D
+			if lamp != null:
+				lamp.name = "Lampadaire_R%d_%02d" % [row_index + 1, i + 1]
+				lamp.position = position
+				root.add_child(lamp)
+
+		for i in range(BENCH_PROGRESS.size()):
+			var progress: float = BENCH_PROGRESS[i]
+			var position: Vector3
+			if row_index == 0:
+				position = BaieDesRoisSurvey.row_a_position(progress) - BaieDesRoisSurvey.ROW_B_NORMAL * OUTER_BENCH_OFFSET
+			else:
+				position = BaieDesRoisSurvey.row_b_position(progress) + BaieDesRoisSurvey.ROW_B_NORMAL * OUTER_BENCH_OFFSET
+			var bench := bench_scene.instantiate() as Node3D
+			if bench != null:
+				bench.name = "Banc_R%d_%02d" % [row_index + 1, i + 1]
+				bench.position = position
+				root.add_child(bench)
+
+	print("LIBREVILLE STORIES | mobilier ajouté : 6 palmiers, 8 lampadaires, 4 bancs")
 
 func _build_amphitheater() -> void:
 	var root := Node3D.new()
