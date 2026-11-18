@@ -257,6 +257,8 @@ func _load_environment() -> void:
 			var relief_center := Vector2.ZERO
 			var relief_radius := 1.0
 			if has_landscape_relief:
+				# Calcul du centroïde après accumulation de tous les sommets.
+				# La division dans la boucle déformait le centre vers le dernier point.
 				for point in points:
 					relief_center += point
 				relief_center /= float(points.size())
@@ -331,12 +333,16 @@ func _load_environment() -> void:
 
 
 func _landscape_relief_height(point: Vector2, center: Vector2, radius: float, kind: String) -> float:
-	# Relief doux : pelouses principales jusqu'à +0,65 m, végétation secondaire
-	# jusqu'à +0,38 m. Ce sont des bosses paysagères, pas des collines artificielles.
+	# Modelé paysager doux : les bordures rejoignent presque le sol, tandis que
+	# le cœur des îlots monte progressivement. Les ondulations restent faibles
+	# pour ne pas transformer les pelouses de la promenade en collines.
 	var max_height := 0.65 if kind == "green_space" else 0.38
 	var normalized_distance := clampf(point.distance_to(center) / maxf(radius, 1.0), 0.0, 1.0)
 	var mound := pow(1.0 - normalized_distance, 1.45)
-	return 0.035 + max_height * mound
+	var broad_undulation := sin(point.x * 0.075 + center.y * 0.031) * cos(point.y * 0.082 - center.x * 0.027)
+	var fine_undulation := sin(point.x * 0.19 + point.y * 0.13) * 0.35
+	var surface_variation := (broad_undulation * 0.045 + fine_undulation * 0.018) * mound
+	return maxf(0.012, 0.035 + max_height * mound + surface_variation)
 
 
 func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: Array[Vector3], kind: String) -> void:
