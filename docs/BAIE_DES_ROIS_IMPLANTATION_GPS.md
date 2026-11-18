@@ -47,6 +47,23 @@ Le fichier `data/osm/environment.geojson` a été examiné autour des coordonné
 - Ces polygones sont déjà chargés par `world_map.gd` dans `_load_environment()`. Il faut donc éviter de créer par-dessus des rectangles de pelouse inventés qui pourraient masquer ou contredire les formes cartographiées.
 - Le littoral OSM est une ligne de référence cartographique, pas une mesure de la limite exacte du dallage ou de la promenade. Il ne suffit pas à déterminer la largeur des trottoirs.
 
+## Détail géométrique des espaces verts au droit des kiosques
+
+Une extraction ciblée de `data/osm/environment.geojson` autour de P1–P3 confirme plusieurs surfaces végétalisées cartographiées. Les surfaces ci-dessous sont calculées avec la conversion exacte de `world_map.gd` (axe Z inversé par rapport à la latitude) :
+
+| Entité OSM | Type OSM | Surface approximative | Emprise monde X/Z (m) |
+|---|---|---:|---|
+| `way/1070652050` | bande de gazon | 455 m² | X -1838 à -1802 ; Z -418 à -403 |
+| `way/1070652051` | bande de gazon | 363 m² | X -1898 à -1869 ; Z -416 à -401 |
+| `way/1070652052` | bande de gazon | 362 m² | X -1940 à -1912 ; Z -411 à -394 |
+| `way/1070652053` | bande de gazon | 296 m² | X -1787 à -1764 ; Z -415 à -399 |
+| `way/1070652054` | bande de gazon | 348 m² | X -1736 à -1708 ; Z -407 à -387 |
+| `way/1070652055` | grand espace végétalisé | 1 768 m² | X -1942 à -1696 ; Z -429 à -403 |
+
+Ces surfaces sont déjà triangulées et affichées par `world_map.gd`. La grande entité 1070652055 forme une bande allongée à proximité du côté +Z des rangées GPS ; les cinq autres entités sont des îlots/bandes plus petites. Il faut conserver leurs contours OSM et ne pas les remplacer par des rectangles de pelouse.
+
+**Limite des données :** le fichier `roads.geojson` est présent dans le dépôt, mais son contenu n'a pas pu être lu via l'interface GitHub utilisée pour cette inspection. Je ne peux donc pas en déduire ici le bord exact de la chaussée, des trottoirs ou du dallage. Aucun mesh de promenade ne doit être posé à partir d'une largeur supposée.
+
 ## État actuel du code à surveiller
 
 - `game/scripts/baie_des_rois.gd` instancie actuellement quatre kiosques par rangée, soit huit au total, aux progressions `[0.08, 0.36, 0.64, 0.92]`.
