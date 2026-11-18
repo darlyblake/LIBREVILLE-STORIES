@@ -271,7 +271,8 @@ func _load_environment() -> void:
 					relief_radius = maxf(relief_radius, point.distance_to(relief_center))
 				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions, kind)
 				# Vraies touffes 3D uniquement sur les surfaces herbeuses cartographiées.
-				var is_grass_area := str(props.get("landuse", "")) == "grass" or kind == "green_space" or str(props.get("leisure", "")) in ["garden", "park"]
+				var mapped_surface := str(props.get("surface", ""))
+				var is_grass_area := str(props.get("landuse", "")) == "grass" or (kind == "green_space" and mapped_surface not in ["concrete", "paved", "asphalt"]) or str(props.get("leisure", "")) == "garden"
 				if is_grass_area and _grass_generator != null:
 					_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind)
 			surface.set_color(_environment_color(kind))
