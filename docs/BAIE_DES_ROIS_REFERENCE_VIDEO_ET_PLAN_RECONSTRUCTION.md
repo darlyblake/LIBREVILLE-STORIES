@@ -137,3 +137,26 @@ Fichiers générés dans `assets/models/baie_des_rois/` :
 - `restaurant_pavillon_baie_des_rois_large.glb`
 
 Ces modèles sont des assets, pas encore des bâtiments implantés dans la scène. Leur remplacement devra reprendre les centres, orientations et empreintes des anciens composants OSM identifiés dans `buildings.geojson`. Aucun nouvel emplacement GPS n'est introduit par ce générateur.
+
+
+## Nouveaux assets autonomes — éléments absents de la première zone
+
+Le générateur `tools/blender/create_baie_des_rois_missing_assets.py` ajoute cinq familles de modèles 3D qui n'étaient pas encore disponibles dans le dépôt :
+
+| Asset GLB | Contenu |
+|---|---|
+| `pavillon_chaume_baie_des_rois.glb` | Pavillon ouvert en bois avec toiture à fibres végétales/chaume, comptoir et claustras latéraux |
+| `aire_jeux_baie_des_rois.glb` | Module compact d'aire de jeux avec balançoires, toboggan, échelle et bascule, couleurs rouge/jaune/bleu |
+| `table_pique_nique_baie_des_rois.glb` | Table extérieure en bois avec deux bancs longitudinaux |
+| `fontaine_baie_des_rois.glb` | Fontaine circulaire basse en pierre avec bassin et colonne centrale |
+| `massif_tropical_baie_des_rois.glb` | Jardinière avec feuillage tropical varié et petites fleurs |
+
+Exécution sous Windows depuis la racine du dépôt :
+
+```powershell
+& "C:\Program Files\Blender Foundation\Blender 5.3\blender.exe" --background --python tools/blender/create_baie_des_rois_missing_assets.py
+```
+
+Les fichiers sont exportés dans `assets/models/baie_des_rois/`. Ce commit ajoute le générateur, pas les fichiers binaires GLB : ils seront créés localement par Blender puis ajoutés au dépôt par l'utilisateur. Aucun emplacement géographique n'est codé en dur. L'aire de jeux, le pavillon, la fontaine et les massifs devront être implantés uniquement dans les îlots et emplacements confirmés par les données du site et la référence visuelle. La fontaine est un asset disponible, pas la preuve qu'une fontaine est présente dans le cadrage vidéo de référence.
+
+Les cheminements secondaires et les éclairages supplémentaires ne sont pas fabriqués comme objets isolés : ils dépendent des tracés réels des chemins et des besoins d'éclairage, qui devront être dérivés des données cartographiques plutôt que placés arbitrairement.
