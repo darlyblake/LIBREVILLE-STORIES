@@ -8,6 +8,17 @@ Le placement est déterministe à partir de l'identifiant OSM. La densité est p
 
 Cette première version utilise une géométrie simple et légère, adaptée au renderer GL Compatibility et à la cible GT 730. Elle ne constitue pas encore une simulation botanique détaillée : pas de vent animé ni de textures de brins photographiques. Le rendu doit être contrôlé dans Godot avant d'ajuster densité et hauteur.
 
+## Placement des props 3D
+
+Le placement du mobilier est maintenant isolé dans `game/scripts/baie_des_rois_props_placement.gd` (`BaieDesRoisPropsPlacement`). Le script charge les GLB du palmier, du banc et du lampadaire, puis calcule les positions depuis les deux axes GPS de `BaieDesRoisSurvey`.
+
+- Palmiers : progressions 0,18 / 0,50 / 0,82 sur chaque rangée.
+- Lampadaires : progressions 0,08 / 0,36 / 0,64 / 0,92 sur chaque rangée.
+- Bancs : progressions 0,28 / 0,72 sur chaque rangée.
+- Les décalages extérieurs sont respectivement 7,2 m, 5,7 m et 6,0 m depuis les axes des kiosques.
+
+Le module est appelé par `baie_des_rois.gd`. Les coordonnées longitudinales proviennent du relevé GPS, tandis que les décalages latéraux restent des paramètres de mise en scène provisoires. Le placement n'a pas encore été validé visuellement dans Godot : il faudra contrôler que chaque objet repose bien dans une pelouse et ne mord ni sur le trottoir ni sur la chaussée.
+
 ## Périmètre
 
 La vidéo aérienne fournie le 18 novembre 2026 devient la référence visuelle principale pour la reconstruction de la première partie de la Baie des Rois. Le périmètre s'arrête à l'extrémité de la promenade visible avant la zone du pont. La partie située au niveau du pont est explicitement hors périmètre pour cette étape.
