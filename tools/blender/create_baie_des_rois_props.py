@@ -31,6 +31,20 @@ def assign(obj, mat):
     return obj
 
 
+def join_named_meshes(prefix, final_name):
+    objects = [o for o in bpy.context.scene.objects if o.type == "MESH" and o.name.startswith(prefix)]
+    if len(objects) < 2:
+        if objects:
+            objects[0].name = final_name
+        return
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in objects:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = objects[0]
+    bpy.ops.object.join()
+    bpy.context.object.name = final_name
+
+
 def export_selected(filename):
     bpy.ops.object.select_all(action="DESELECT")
     for obj in bpy.context.scene.objects:
@@ -120,6 +134,10 @@ def make_palm():
         rachis = bpy.data.objects.new("Palm_Rachis", curve)
         bpy.context.collection.objects.link(rachis)
         assign(rachis, leaf_light)
+        bpy.ops.object.select_all(action="DESELECT")
+        rachis.select_set(True)
+        bpy.context.view_layer.objects.active = rachis
+        bpy.ops.object.convert(target="MESH")
 
         for side_sign in (-1, 1):
             for j in range(2, 19):
@@ -141,6 +159,11 @@ def make_palm():
                 leaf_mesh.materials.append(leaf_dark if (j + frond) % 3 else leaf_light)
                 leaf_obj = bpy.data.objects.new("Palm_Leaflet", leaf_mesh)
                 bpy.context.collection.objects.link(leaf_obj)
+
+    # Fusionner les centaines de folioles en un seul mesh pour limiter les draw calls.
+    join_named_meshes("Palm_Leaflet", "Palm_Leaves_Merged")
+    join_named_meshes("Trunk_Growth_Ring", "Palm_Rings_Merged")
+    join_named_meshes("Palm_Rachis", "Palm_Rachis_Merged")
 
     # Petit cœur de couronne.
     bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=8, radius=0.34, location=(0, 0, 6.35))
