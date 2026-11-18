@@ -252,6 +252,13 @@ func _load_environment() -> void:
 			var indices := Geometry2D.triangulate_polygon(points)
 			if indices.is_empty():
 				continue
+			var relief_center := Vector2.ZERO
+			var relief_radius := 1.0
+			for point in points:
+				relief_center += point
+			relief_center /= float(points.size())
+			for point in points:
+				relief_radius = maxf(relief_radius, point.distance_to(relief_center))
 			if kind in ["vegetation", "green_space"]:
 				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
 			surface.set_color(_environment_color(kind))
@@ -259,9 +266,23 @@ func _load_environment() -> void:
 				var p0 := points[indices[i]]
 				var p1 := points[indices[i + 1]]
 				var p2 := points[indices[i + 2]]
-				surface.add_vertex(Vector3(p0.x, 0.012, p0.y))
-				surface.add_vertex(Vector3(p1.x, 0.012, p1.y))
-				surface.add_vertex(Vector3(p2.x, 0.012, p2.y))
+				# Les îlots verts sont légèrement bombés, comme des plates-bandes
+				# paysagères de la promenade. Les bords restent bas pour raccorder
+				# les cheminements sans marche abrupte.
+				var center := (p0 + p1 + p2) / 3.0
+				var h0 := _landscape_relief_height(p0, relief_center, relief_radius, kind)
+				var h1 := _landscape_relief_height(p1, relief_center, relief_radius, kind)
+				var h2 := _landscape_relief_height(p2, relief_center, relief_radius, kind)
+				var hc := _landscape_relief_height(center, relief_center, relief_radius, kind)
+				surface.add_vertex(Vector3(p0.x, h0, p0.y))
+				surface.add_vertex(Vector3(p1.x, h1, p1.y))
+				surface.add_vertex(Vector3(center.x, hc, center.y))
+				surface.add_vertex(Vector3(p1.x, h1, p1.y))
+				surface.add_vertex(Vector3(p2.x, h2, p2.y))
+				surface.add_vertex(Vector3(center.x, hc, center.y))
+				surface.add_vertex(Vector3(p2.x, h2, p2.y))
+				surface.add_vertex(Vector3(p0.x, h0, p0.y))
+				surface.add_vertex(Vector3(center.x, hc, center.y))
 			added = true
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
@@ -287,6 +308,15 @@ func _load_environment() -> void:
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Environment_%03d" % batch_index)
 	_commit_tree_instances(tree_positions)
+
+
+func _landscape_relief_height(point: Vector2, center: Vector2, radius: float, kind: String) -> float:
+	# Relief doux : pelouses principales jusqu'à +0,65 m, végétation secondaire
+	# jusqu'à +0,38 m. Ce sont des bosses paysagères, pas des collines artificielles.
+	var max_height := 0.65 if kind == "green_space" else 0.38
+	var normalized_distance := clampf(point.distance_to(center) / maxf(radius, 1.0), 0.0, 1.0)
+	var mound := pow(1.0 - normalized_distance, 1.45)
+	return 0.035 + max_height * mound
 
 
 func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: Array[Vector3]) -> void:
@@ -330,7 +360,15 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 				break
 		if has_nearby_tree:
 			continue
-		output.append(Vector3(candidate.x, 0.0, candidate.y))
+		var center := Vector2.ZERO
+		for point in points:
+			center += point
+		center /= float(points.size())
+		var radius := 1.0
+		for point in points:
+			radius = maxf(radius, point.distance_to(center))
+		var tree_ground_y := _landscape_relief_height(candidate, center, radius, "green_space")
+		output.append(Vector3(candidate.x, tree_ground_y, candidate.y))
 		added += 1
 
 
