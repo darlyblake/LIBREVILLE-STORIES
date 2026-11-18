@@ -42,15 +42,18 @@ Le relevé géographique déjà documenté dans le dossier d'implantation GPS si
 
 ## Première passe de relief paysager intégrée
 
-Le script `game/scripts/world_map.gd` applique maintenant un relief léger aux polygones OSM de type `green_space` et `vegetation` :
+Le script `game/scripts/world_map.gd` applique un relief léger aux polygones OSM de type `green_space` et `vegetation` :
 
 - les espaces verts principaux montent progressivement jusqu'à environ 0,65 m ;
 - les zones de végétation secondaire montent jusqu'à environ 0,38 m ;
 - les bords restent proches du niveau du terrain pour créer une transition douce ;
+- une ondulation déterministe de faible amplitude casse l'aspect parfaitement régulier des bosses ;
 - les arbres générés dans ces polygones reçoivent la même hauteur de sol ;
 - une collision trimesh dédiée permet au joueur de marcher sur ces surfaces surélevées.
 
-Ces valeurs sont des hauteurs de mise en scène provisoires, et non un relevé altimétrique de la Baie des Rois. Cette première passe ajoute du modelé aux îlots verts déjà présents dans les données OSM ; elle ne prétend pas encore reconstituer les pentes exactes du terrain naturel, les niveaux du dallage, ni le profil du rivage. Le contrôle dans Godot reste nécessaire pour vérifier les raccords, les normales et le déplacement du joueur.
+Une erreur de calcul du centroïde des polygones a également été corrigée : le centre est désormais calculé après l'accumulation de tous les sommets, ce qui évite de décaler artificiellement les bosses vers le dernier sommet du contour.
+
+Ces valeurs sont des hauteurs de mise en scène provisoires, et non un relevé altimétrique de la Baie des Rois. Cette passe améliore les îlots verts déjà présents dans les données OSM ; elle ne constitue pas encore un modèle altimétrique continu du terrain naturel, des niveaux du dallage ou du profil du rivage. Les chemins et les bâtiments restent à leur niveau actuel. Le contrôle dans Godot reste nécessaire pour vérifier les raccords, les normales et le déplacement du joueur.
 
 ## Architecture prévue des scripts
 
