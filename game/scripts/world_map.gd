@@ -20,6 +20,7 @@ var _poi_count := 0
 var _environment_count := 0
 var _neighbourhood_count := 0
 var _locality_count := 0
+var _grass_generator: GrassGenerator
 var _environment_material: StandardMaterial3D
 var _road_labels := 0
 var _road_material: StandardMaterial3D
@@ -40,7 +41,11 @@ func _ready() -> void:
 	_road_material.uv1_scale = Vector3(1.0, 1.0, 1.0)
 	_environment_material = _make_material(Color.WHITE)
 	_environment_material.vertex_color_use_as_albedo = true
+	_grass_generator = GrassGenerator.new()
+	_grass_generator.name = "Procedural_Real_Grass"
+	add_child(_grass_generator)
 	_load_environment()
+	_grass_generator.build()
 	_load_neighbourhoods()
 	_load_localities()
 	_building_material = _make_material(Color(0.76, 0.68, 0.56))
@@ -265,6 +270,10 @@ func _load_environment() -> void:
 				for point in points:
 					relief_radius = maxf(relief_radius, point.distance_to(relief_center))
 				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions, kind)
+				# Vraies touffes 3D uniquement sur les surfaces herbeuses cartographiées.
+				var is_grass_area := str(props.get("landuse", "")) == "grass" or kind == "green_space" or str(props.get("leisure", "")) in ["garden", "park"]
+				if is_grass_area and _grass_generator != null:
+					_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind)
 			surface.set_color(_environment_color(kind))
 			if has_landscape_relief:
 				relief_collision_surface.set_color(_environment_color(kind))
