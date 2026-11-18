@@ -325,7 +325,6 @@ func _make_foliage_cluster(clumps: Array[Dictionary]) -> ArrayMesh:
 	# Une couronne tropicale est composée de plusieurs masses de feuilles,
 	# pas d'une sphère unique. Les petits volumes se chevauchent pour casser
 	# la silhouette artificielle tout en restant dans un seul mesh instancié.
-	var combined := ArrayMesh.new()
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var sphere := SphereMesh.new()
@@ -338,10 +337,9 @@ func _make_foliage_cluster(clumps: Array[Dictionary]) -> ArrayMesh:
 		surface.append_from(sphere, 0, mesh_transform)
 	surface.generate_normals()
 	var generated := surface.commit()
-	if generated != null:
-		for surface_index in range(generated.get_surface_count()):
-			combined.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, generated.surface_get_arrays(surface_index))
-	return combined
+	if generated == null:
+		return ArrayMesh.new()
+	return generated
 
 
 func _commit_tree_instances(positions: Array[Vector3]) -> void:
