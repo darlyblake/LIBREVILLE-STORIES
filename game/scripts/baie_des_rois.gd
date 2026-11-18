@@ -239,8 +239,8 @@ func _build_pavilions() -> void:
 
 	# Implantation GPS : quatre kiosques par rangée sur l'axe mesuré de 101,07 m.
 	# Les centres sont répartis régulièrement, en gardant une marge aux extrémités.
-	# Les deux rangées sont reculées de 4,5 m vers l'extérieur pour dégager
-	# davantage le passage central. Vérifier les limites de trottoir dans Godot.
+	# La rangée A est reculée de 6,5 m et la rangée B de 4,5 m.
+	# Le calcul utilise le gabarit routier du jeu ; vérifier les limites réelles dans Godot.
 	# Les deux ouvertures se font face sur le passage client central.
 	const PROGRESS_VALUES: Array[float] = [0.08, 0.36, 0.64, 0.92]
 	# Les façades commerciales sont orientées vers le passage central.
@@ -272,7 +272,7 @@ func _build_pavilions() -> void:
 			kiosk_b.scale = Vector3.ONE
 			root.add_child(kiosk_b)
 
-	print("LIBREVILLE STORIES | %d kiosques GPS instanciés : 4 type A + 4 type B | recul extérieur %.1f m" % [root.get_child_count(), BaieDesRoisSurvey.ROW_OUTWARD_SETBACK_METERS])
+	print("LIBREVILLE STORIES | %d kiosques GPS instanciés : recul A %.1f m / B %.1f m" % [root.get_child_count(), BaieDesRoisSurvey.ROW_A_OUTWARD_SETBACK_METERS, BaieDesRoisSurvey.ROW_B_OUTWARD_SETBACK_METERS])
 
 
 func _build_baie_street_props() -> void:
