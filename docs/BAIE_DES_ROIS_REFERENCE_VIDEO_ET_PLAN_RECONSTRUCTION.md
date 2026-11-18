@@ -40,6 +40,18 @@ Le relevé géographique déjà documenté dans le dossier d'implantation GPS si
 - Les chemins OSM sont rendus avec le système routier générique. La promenade de la vidéo demande un matériau et un traitement de dalles plus adaptés, sans transformer toutes les routes de la ville.
 - Les anciens générateurs décoratifs dans baie_des_rois.gd ne constituent pas une base topographique fiable. Ne pas réactiver leurs grands rectangles ou leurs plantations arbitraires.
 
+## Première passe de relief paysager intégrée
+
+Le script `game/scripts/world_map.gd` applique maintenant un relief léger aux polygones OSM de type `green_space` et `vegetation` :
+
+- les espaces verts principaux montent progressivement jusqu'à environ 0,65 m ;
+- les zones de végétation secondaire montent jusqu'à environ 0,38 m ;
+- les bords restent proches du niveau du terrain pour créer une transition douce ;
+- les arbres générés dans ces polygones reçoivent la même hauteur de sol ;
+- une collision trimesh dédiée permet au joueur de marcher sur ces surfaces surélevées.
+
+Ces valeurs sont des hauteurs de mise en scène provisoires, et non un relevé altimétrique de la Baie des Rois. Cette première passe ajoute du modelé aux îlots verts déjà présents dans les données OSM ; elle ne prétend pas encore reconstituer les pentes exactes du terrain naturel, les niveaux du dallage, ni le profil du rivage. Le contrôle dans Godot reste nécessaire pour vérifier les raccords, les normales et le déplacement du joueur.
+
 ## Architecture prévue des scripts
 
 Les éléments seront générés en modules indépendants, avec une racine de scène commune à la zone. Les géométries seront regroupées et les matériaux réutilisés pour rester compatibles avec la cible graphique modeste du projet.
