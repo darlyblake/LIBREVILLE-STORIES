@@ -101,7 +101,19 @@ def segment_distance(a, b, c, d) -> float:
     def orient(p, q, r):
         return (q[0]-p[0])*(r[1]-p[1]) - (q[1]-p[1])*(r[0]-p[0])
     o1, o2, o3, o4 = orient(a,b,c), orient(a,b,d), orient(c,d,a), orient(c,d,b)
-    if o1 * o2 <= 0 and o3 * o4 <= 0:
+    eps = 1e-9
+    def on_segment(p, q, r):
+        return (min(p[0], r[0])-eps <= q[0] <= max(p[0], r[0])+eps
+                and min(p[1], r[1])-eps <= q[1] <= max(p[1], r[1])+eps)
+    proper_cross = ((o1 > eps and o2 < -eps or o1 < -eps and o2 > eps)
+                    and (o3 > eps and o4 < -eps or o3 < -eps and o4 > eps))
+    touching = (
+        (abs(o1) <= eps and on_segment(a, c, b))
+        or (abs(o2) <= eps and on_segment(a, d, b))
+        or (abs(o3) <= eps and on_segment(c, a, d))
+        or (abs(o4) <= eps and on_segment(c, b, d))
+    )
+    if proper_cross or touching:
         return 0.0
     return min(point_segment_distance(a,c,d), point_segment_distance(b,c,d),
                point_segment_distance(c,a,b), point_segment_distance(d,a,b))
