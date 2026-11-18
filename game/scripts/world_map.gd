@@ -262,7 +262,7 @@ func _load_environment() -> void:
 				relief_center /= float(points.size())
 				for point in points:
 					relief_radius = maxf(relief_radius, point.distance_to(relief_center))
-				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
+				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions, kind)
 			surface.set_color(_environment_color(kind))
 			if has_landscape_relief:
 				relief_collision_surface.set_color(_environment_color(kind))
@@ -339,7 +339,7 @@ func _landscape_relief_height(point: Vector2, center: Vector2, radius: float, ki
 	return 0.035 + max_height * mound
 
 
-func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: Array[Vector3]) -> void:
+func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: Array[Vector3], kind: String) -> void:
 	if points.size() < 3 or output.size() >= 1200:
 		return
 	var min_x := points[0].x
@@ -359,6 +359,13 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 	if area < 90.0:
 		return
 	var desired := mini(clampi(int(area / 260.0), 1, 12), 1200 - output.size())
+	var center := Vector2.ZERO
+	for point in points:
+		center += point
+	center /= float(points.size())
+	var radius := 1.0
+	for point in points:
+		radius = maxf(radius, point.distance_to(center))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = abs(osm_id) + 73421
 	var added := 0
@@ -380,14 +387,7 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 				break
 		if has_nearby_tree:
 			continue
-		var center := Vector2.ZERO
-		for point in points:
-			center += point
-		center /= float(points.size())
-		var radius := 1.0
-		for point in points:
-			radius = maxf(radius, point.distance_to(center))
-		var tree_ground_y := _landscape_relief_height(candidate, center, radius, "green_space")
+		var tree_ground_y := _landscape_relief_height(candidate, center, radius, kind)
 		output.append(Vector3(candidate.x, tree_ground_y, candidate.y))
 		added += 1
 
