@@ -64,6 +64,20 @@ Ces surfaces sont déjà triangulées et affichées par `world_map.gd`. La grand
 
 **Limite des données :** le fichier `roads.geojson` est présent dans le dépôt, mais son contenu n'a pas pu être lu via l'interface GitHub utilisée pour cette inspection. Je ne peux donc pas en déduire ici le bord exact de la chaussée, des trottoirs ou du dallage. Aucun mesh de promenade ne doit être posé à partir d'une largeur supposée.
 
+## Extraction locale des routes et trottoirs
+
+Le GeoJSON des routes est trop volumineux pour être inspecté directement depuis l'interface GitHub. Un outil de diagnostic local a donc été ajouté : `tools/python/analyze_baie_des_rois_roads.py`.
+
+Depuis la racine du dépôt, exécuter :
+
+```powershell
+python tools/python/analyze_baie_des_rois_roads.py
+```
+
+Le script lit `data/osm/roads.geojson`, reprend la conversion GPS de `world_map.gd` et les règles de largeur/trottoirs du moteur, puis écrit `data/analysis/baie_des_rois_roads_report.json`. Il affiche aussi les axes routiers les plus proches des deux rangées.
+
+Le rapport sert à identifier les routes candidates et les largeurs de trottoir actuellement générées par le jeu. **Ce n'est pas un relevé topographique** : les largeurs OSM absentes sont des valeurs de représentation du jeu, et les limites de bordure restent estimatives. Le dallage spécifique de la promenade ne sera créé qu'après examen de ce relevé.
+
 ## État actuel du code à surveiller
 
 - `game/scripts/baie_des_rois.gd` instancie actuellement quatre kiosques par rangée, soit huit au total, aux progressions `[0.08, 0.36, 0.64, 0.92]`.
