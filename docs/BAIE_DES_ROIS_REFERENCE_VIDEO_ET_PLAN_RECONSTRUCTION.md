@@ -1,5 +1,13 @@
 # Reconstruction de la première partie de la Baie des Rois — référence vidéo
 
+## Herbe 3D procédurale
+
+Un générateur dédié `game/scripts/grass_generator.gd` instancie de petites touffes d'herbe géométriques sur les parcelles identifiées comme herbeuses dans `environment.geojson`. Chaque touffe contient trois brins triangulés croisés, avec variation de hauteur, largeur, orientation et teinte. Les touffes sont regroupées dans un seul `MultiMeshInstance3D` afin de limiter les appels de rendu.
+
+Le placement est déterministe à partir de l'identifiant OSM. La densité est plafonnée à 3 200 touffes au total et à 900 par parcelle. Les surfaces explicitement pavées, en béton ou en asphalte sont exclues. Le niveau des touffes suit le relief calculé des parcelles vertes.
+
+Cette première version utilise une géométrie simple et légère, adaptée au renderer GL Compatibility et à la cible GT 730. Elle ne constitue pas encore une simulation botanique détaillée : pas de vent animé ni de textures de brins photographiques. Le rendu doit être contrôlé dans Godot avant d'ajuster densité et hauteur.
+
 ## Périmètre
 
 La vidéo aérienne fournie le 18 novembre 2026 devient la référence visuelle principale pour la reconstruction de la première partie de la Baie des Rois. Le périmètre s'arrête à l'extrémité de la promenade visible avant la zone du pont. La partie située au niveau du pont est explicitement hors périmètre pour cette étape.
