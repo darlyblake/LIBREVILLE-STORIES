@@ -224,37 +224,50 @@ func _build_lawns() -> void:
 
 
 func _build_pavilions() -> void:
-	const MODEL_PATH := "res://assets/models/baie_des_rois/kiosque_baie_des_rois.glb"
-	if not ResourceLoader.exists(MODEL_PATH):
-		push_error("Modèle de kiosque absent : " + MODEL_PATH)
-		return
-	var kiosk_scene := load(MODEL_PATH) as PackedScene
-	if kiosk_scene == null:
-		push_error("Le GLB du kiosque n'est pas disponible comme PackedScene.")
+	const TYPE_A_PATH := "res://assets/models/baie_des_rois/kiosque_baie_des_rois.glb"
+	const TYPE_B_PATH := "res://assets/models/baie_des_rois/kiosque_baie_des_rois_type_b.glb"
+	if not ResourceLoader.exists(TYPE_A_PATH) or not ResourceLoader.exists(TYPE_B_PATH):
+		push_error("Les deux modèles de kiosques sont requis. Générer les fichiers GLB A et B avec les scripts Blender.")
 		return
 
-	# On conserve les coordonnées relatives des anciens repères de kiosques :
-	# le modèle remplace leur géométrie provisoire au lieu d'être posé ailleurs.
-	var spots: Array[Vector3] = [
-		Vector3(-10, 0, -18), Vector3(10, 0, 28), Vector3(-18, 0, 38),
-		Vector3(16, 0, -48), Vector3(4, 0, 58), Vector3(-22, 0, -68),
-		Vector3(8, 0, -5),
-	]
+	var type_a := load(TYPE_A_PATH) as PackedScene
+	var type_b := load(TYPE_B_PATH) as PackedScene
+	if type_a == null or type_b == null:
+		push_error("Impossible de charger les deux modèles GLB de la Baie des Rois.")
+		return
+
+	# Implantation GPS : quatre kiosques par rangée sur l'axe mesuré de 101,07 m.
+	# Les centres sont répartis régulièrement, en gardant une marge aux extrémités.
+	# Rangée A et rangée B sont séparées d'environ 8,51 m ; les façades
+	# sont tournées vers le passage central.
+	const PROGRESS_VALUES: Array[float] = [0.08, 0.36, 0.64, 0.92]
+	const ROW_A_YAW := deg_to_rad(-175.1308)
+	const ROW_B_YAW := deg_to_rad(4.8692)
+
 	var root := Node3D.new()
-	root.name = "Kiosques3D"
+	root.name = "Kiosques3D_GPS"
 	add_child(root)
-	for i in range(spots.size()):
-		var kiosk := kiosk_scene.instantiate() as Node3D
-		if kiosk == null:
-			push_warning("Impossible d'instancier le kiosque numéro %d." % (i + 1))
-			continue
-		kiosk.name = "Kiosque_BaieDesRois_%02d" % (i + 1)
-		kiosk.position = ANCHOR + spots[i]
-		kiosk.rotation.y = 0.0
-		kiosk.scale = Vector3.ONE
-		root.add_child(kiosk)
-	print("LIBREVILLE STORIES | %d kiosques GLB instanciés sur les anciens emplacements de référence" % root.get_child_count())
 
+	for i in range(PROGRESS_VALUES.size()):
+		var progress: float = PROGRESS_VALUES[i]
+
+		var kiosk_a := type_a.instantiate() as Node3D
+		if kiosk_a != null:
+			kiosk_a.name = "Kiosque_TypeA_RangeeA_%02d" % (i + 1)
+			kiosk_a.position = BaieDesRoisSurvey.row_a_position(progress)
+			kiosk_a.rotation.y = ROW_A_YAW
+			kiosk_a.scale = Vector3.ONE
+			root.add_child(kiosk_a)
+
+		var kiosk_b := type_b.instantiate() as Node3D
+		if kiosk_b != null:
+			kiosk_b.name = "Kiosque_TypeB_RangeeB_%02d" % (i + 1)
+			kiosk_b.position = BaieDesRoisSurvey.row_b_position(progress)
+			kiosk_b.rotation.y = ROW_B_YAW
+			kiosk_b.scale = Vector3.ONE
+			root.add_child(kiosk_b)
+
+	print("LIBREVILLE STORIES | %d kiosques GPS instanciés : 4 type A + 4 type B" % root.get_child_count())
 
 func _build_amphitheater() -> void:
 	var root := Node3D.new()
