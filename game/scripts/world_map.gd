@@ -313,12 +313,25 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 	rng.seed = abs(osm_id) + 73421
 	var added := 0
 	var attempts := 0
-	while added < desired and attempts < desired * 18:
+	const MIN_TREE_SPACING := 5.5
+	var min_spacing_squared := MIN_TREE_SPACING * MIN_TREE_SPACING
+	# Évite les grappes de troncs presque superposés produites par le tirage
+	# aléatoire indépendant, y compris entre deux espaces verts voisins.
+	while added < desired and attempts < desired * 36:
 		attempts += 1
 		var candidate := Vector2(rng.randf_range(min_x, max_x), rng.randf_range(min_y, max_y))
-		if Geometry2D.is_point_in_polygon(candidate, points):
-			output.append(Vector3(candidate.x, 0.0, candidate.y))
-			added += 1
+		if not Geometry2D.is_point_in_polygon(candidate, points):
+			continue
+		var has_nearby_tree := false
+		for existing_position in output:
+			var existing := Vector2(existing_position.x, existing_position.z)
+			if candidate.distance_squared_to(existing) < min_spacing_squared:
+				has_nearby_tree = true
+				break
+		if has_nearby_tree:
+			continue
+		output.append(Vector3(candidate.x, 0.0, candidate.y))
+		added += 1
 
 
 func _make_foliage_cluster(clumps: Array[Dictionary]) -> ArrayMesh:
