@@ -253,39 +253,44 @@ func _load_environment() -> void:
 			var indices := Geometry2D.triangulate_polygon(points)
 			if indices.is_empty():
 				continue
+			var has_landscape_relief := kind in ["vegetation", "green_space"]
 			var relief_center := Vector2.ZERO
 			var relief_radius := 1.0
-			for point in points:
-				relief_center += point
-			relief_center /= float(points.size())
-			for point in points:
-				relief_radius = maxf(relief_radius, point.distance_to(relief_center))
-			if kind in ["vegetation", "green_space"]:
+			if has_landscape_relief:
+				for point in points:
+					relief_center += point
+				relief_center /= float(points.size())
+				for point in points:
+					relief_radius = maxf(relief_radius, point.distance_to(relief_center))
 				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
 			surface.set_color(_environment_color(kind))
-			relief_collision_surface.set_color(_environment_color(kind))
+			if has_landscape_relief:
+				relief_collision_surface.set_color(_environment_color(kind))
 			for i in range(0, indices.size(), 3):
 				var p0 := points[indices[i]]
 				var p1 := points[indices[i + 1]]
 				var p2 := points[indices[i + 2]]
-				# Les îlots verts sont légèrement bombés, comme des plates-bandes
-				# paysagères de la promenade. Les bords restent bas pour raccorder
-				# les cheminements sans marche abrupte.
-				var center := (p0 + p1 + p2) / 3.0
-				var h0 := _landscape_relief_height(p0, relief_center, relief_radius, kind)
-				var h1 := _landscape_relief_height(p1, relief_center, relief_radius, kind)
-				var h2 := _landscape_relief_height(p2, relief_center, relief_radius, kind)
-				var hc := _landscape_relief_height(center, relief_center, relief_radius, kind)
-				for target_surface in [surface, relief_collision_surface]:
-					target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
-					target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
-					target_surface.add_vertex(Vector3(center.x, hc, center.y))
-					target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
-					target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
-					target_surface.add_vertex(Vector3(center.x, hc, center.y))
-					target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
-					target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
-					target_surface.add_vertex(Vector3(center.x, hc, center.y))
+				if has_landscape_relief:
+					# Petites bosses de pelouse avec pente douce jusqu'au niveau du chemin.
+					var center := (p0 + p1 + p2) / 3.0
+					var h0 := _landscape_relief_height(p0, relief_center, relief_radius, kind)
+					var h1 := _landscape_relief_height(p1, relief_center, relief_radius, kind)
+					var h2 := _landscape_relief_height(p2, relief_center, relief_radius, kind)
+					var hc := _landscape_relief_height(center, relief_center, relief_radius, kind)
+					for target_surface in [surface, relief_collision_surface]:
+						target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
+						target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
+						target_surface.add_vertex(Vector3(center.x, hc, center.y))
+						target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
+						target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
+						target_surface.add_vertex(Vector3(center.x, hc, center.y))
+						target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
+						target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
+						target_surface.add_vertex(Vector3(center.x, hc, center.y))
+				else:
+					surface.add_vertex(Vector3(p0.x, 0.012, p0.y))
+					surface.add_vertex(Vector3(p1.x, 0.012, p1.y))
+					surface.add_vertex(Vector3(p2.x, 0.012, p2.y))
 			added = true
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
