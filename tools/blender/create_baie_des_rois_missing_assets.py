@@ -144,18 +144,18 @@ def create_playground():
     # Compact rubber safety pad is an asset base, not a site placement.
     box("Dalle_souple_aire_jeux", (0, 0, 0.06), (10.0, 8.0, 0.12), rubber, 0.12)
     # Double swing frame with A-legs, top beam, chains and two seats.
-    for x in (-3.7, 0.0):
-        for y in (-2.5, 2.5):
-            beam("Montant_portique_balançoire", (x, y, 0.18),
-                 (x+0.95, y, 3.45), 0.085, red)
-    beam("Barre_haute_balançoire", (-3.7, -2.5, 3.45),
-         (0.95, -2.5, 3.45), 0.095, yellow)
-    beam("Barre_haute_balançoire_arriere", (-3.7, 2.5, 3.45),
-         (0.95, 2.5, 3.45), 0.095, yellow)
+    # Deux portiques en A se rejoignent sur une barre longitudinale.
+    for top_x in (-3.7, 0.95):
+        for side in (-1, 1):
+            foot = (top_x + side*0.72, side*1.35, 0.18)
+            head = (top_x, 0.0, 3.45)
+            beam("Jambe_portique_A", foot, head, 0.085, red)
+    beam("Barre_haute_balançoire", (-3.7, 0.0, 3.45),
+         (0.95, 0.0, 3.45), 0.095, yellow)
     for sx in (-2.65, -0.15):
         for side in (-1, 1):
-            beam("Chaine_balançoire", (sx, side*2.5, 3.35),
-                 (sx, side*2.5, 1.45), 0.025, metal, 8)
+            beam("Chaine_balançoire", (sx, side*0.20, 3.30),
+                 (sx, side*0.20, 1.45), 0.025, metal, 8)
         box("Siege_balançoire", (sx, 0, 1.38), (0.62, 0.42, 0.12), blue, 0.04)
     # Small slide: ladder, platform, side guards and sloped chute.
     for x in (1.55, 2.45):
