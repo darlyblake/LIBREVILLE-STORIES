@@ -1,4 +1,5 @@
 extends Node3D
+class_name GrassGenerator
 ## Générateur d'herbe 3D légère pour les parcelles herbeuses OSM.
 ## Les touffes sont de vrais petits rubans triangulés, regroupés dans un MultiMesh
 ## pour limiter les draw calls sur les configurations modestes.
