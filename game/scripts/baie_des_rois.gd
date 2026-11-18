@@ -241,8 +241,8 @@ func _build_pavilions() -> void:
 	# Rangée A et rangée B sont séparées d'environ 8,51 m ; les façades
 	# sont tournées vers le passage central.
 	const PROGRESS_VALUES: Array[float] = [0.08, 0.36, 0.64, 0.92]
-	const ROW_A_YAW := deg_to_rad(-175.1308)
-	const ROW_B_YAW := deg_to_rad(4.8692)
+	const ROW_A_YAW := -3.0567
+	const ROW_B_YAW := 0.0850
 
 	var root := Node3D.new()
 	root.name = "Kiosques3D_GPS"
