@@ -16,11 +16,12 @@ const ROW_DIRECTION := Vector3(-0.9963910, 0.0, 0.0848819)
 # certifiée de la chaussée. Le point P3 est légèrement décalé le long de l'axe.
 const ROW_B_OFFSET := Vector3(0.7222, 0.0, 8.4795)
 
-# Recul provisoire des deux rangées vers l'extérieur : 3 m chacune.
-# Cela conserve l'alignement longitudinal et élargit le passage central
-# d'environ 6 m au total, sans déplacer les kiosques le long de la rangée.
+# Recul provisoire des deux rangées vers l'extérieur : 4,5 m chacune.
+# Le recul précédent de 3 m ne suffisait pas visuellement selon le retour
+# du projet. On ajoute 1,5 m par rangée sans changer l'axe longitudinal.
+# À valider dans Godot : la limite exacte des trottoirs n'est pas encore levée.
 const ROW_B_NORMAL := Vector3(0.08486, 0.0, 0.99639)
-const ROW_OUTWARD_SETBACK_METERS := 3.0
+const ROW_OUTWARD_SETBACK_METERS := 4.5
 
 const ROW_LENGTH_METERS := 101.0742
 const ROW_SPACING_ESTIMATE_METERS := 8.5102
