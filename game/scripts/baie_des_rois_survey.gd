@@ -27,13 +27,3 @@ static func row_a_position(progress: float, longitudinal_offset: float = 0.0) ->
 static func row_b_position(progress: float, longitudinal_offset: float = 0.0) -> Vector3:
 	return row_a_position(progress, longitudinal_offset) + ROW_B_OFFSET
 
-
-static func row_a_yaw() -> float:
-	# Le modèle actuel présente son comptoir sur l'axe local Y négatif.
-	# L'orientation finale doit encore être validée à partir des captures.
-	return atan2(ROW_DIRECTION.x, ROW_DIRECTION.z)
-
-
-static func row_b_yaw() -> float:
-	# Les façades de service doivent se faire face ; orientation opposée.
-	return row_a_yaw() + PI
