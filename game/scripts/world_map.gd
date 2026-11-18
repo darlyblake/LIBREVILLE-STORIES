@@ -229,6 +229,7 @@ func _load_environment() -> void:
 		push_warning("environment.geojson absent : littoral, eau et espaces verts non chargés.")
 		return
 	var surface := _new_surface(_environment_material)
+	var relief_collision_surface := _new_surface(_environment_material)
 	var tree_positions: Array[Vector3] = []
 	var batch_count := 0
 	var batch_index := 0
@@ -262,6 +263,7 @@ func _load_environment() -> void:
 			if kind in ["vegetation", "green_space"]:
 				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions)
 			surface.set_color(_environment_color(kind))
+			relief_collision_surface.set_color(_environment_color(kind))
 			for i in range(0, indices.size(), 3):
 				var p0 := points[indices[i]]
 				var p1 := points[indices[i + 1]]
@@ -274,15 +276,16 @@ func _load_environment() -> void:
 				var h1 := _landscape_relief_height(p1, relief_center, relief_radius, kind)
 				var h2 := _landscape_relief_height(p2, relief_center, relief_radius, kind)
 				var hc := _landscape_relief_height(center, relief_center, relief_radius, kind)
-				surface.add_vertex(Vector3(p0.x, h0, p0.y))
-				surface.add_vertex(Vector3(p1.x, h1, p1.y))
-				surface.add_vertex(Vector3(center.x, hc, center.y))
-				surface.add_vertex(Vector3(p1.x, h1, p1.y))
-				surface.add_vertex(Vector3(p2.x, h2, p2.y))
-				surface.add_vertex(Vector3(center.x, hc, center.y))
-				surface.add_vertex(Vector3(p2.x, h2, p2.y))
-				surface.add_vertex(Vector3(p0.x, h0, p0.y))
-				surface.add_vertex(Vector3(center.x, hc, center.y))
+				for target_surface in [surface, relief_collision_surface]:
+					target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
+					target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
+					target_surface.add_vertex(Vector3(center.x, hc, center.y))
+					target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
+					target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
+					target_surface.add_vertex(Vector3(center.x, hc, center.y))
+					target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
+					target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
+					target_surface.add_vertex(Vector3(center.x, hc, center.y))
 			added = true
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
@@ -307,6 +310,18 @@ func _load_environment() -> void:
 			surface = _new_surface(_environment_material)
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Environment_%03d" % batch_index)
+	# Les pelouses en relief ont leur propre collision pour que le joueur
+	# marche réellement sur les bosses au lieu de rester sous leur surface.
+	var relief_mesh := relief_collision_surface.commit()
+	if relief_mesh != null and relief_mesh.get_surface_count() > 0:
+		var relief_body := StaticBody3D.new()
+		relief_body.name = "OSM_Landscape_Relief_Collision"
+		relief_body.collision_layer = 1
+		relief_body.collision_mask = 1
+		var relief_shape := CollisionShape3D.new()
+		relief_shape.shape = relief_mesh.create_trimesh_shape()
+		relief_body.add_child(relief_shape)
+		add_child(relief_body)
 	_commit_tree_instances(tree_positions)
 
 
