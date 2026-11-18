@@ -35,7 +35,7 @@ La conversion reprend exactement les constantes du projet : `CENTER_LAT = 0.400`
 - P3 est à environ **8,77 m** de P1.
 - En projetant P3 perpendiculairement à l'axe P1–P2, l'écartement indicatif entre les axes des rangées est d'environ **8,51 m**.
 - Cette valeur est une estimation issue du point P3, pas une mesure certifiée de la largeur de la chaussée.
-- Le helper `game/scripts/baie_des_rois_survey.gd` applique actuellement un recul provisoire de 3 m vers l'extérieur à chaque rangée. Ce recul n'est pas encore validé visuellement.
+- Le helper `game/scripts/baie_des_rois_survey.gd` applique maintenant un recul provisoire de **4,5 m** vers l'extérieur à chaque rangée (contre 3 m auparavant), soit 1,5 m de plus par rangée. Ce recul répond au retour indiquant que les kiosques restent trop proches de la chaussée, mais il n'est pas encore validé visuellement par rapport aux limites exactes des trottoirs.
 
 ## Premiers constats issus du GeoJSON environnemental
 
@@ -51,6 +51,7 @@ Le fichier `data/osm/environment.geojson` a été examiné autour des coordonné
 
 - `game/scripts/baie_des_rois.gd` instancie actuellement quatre kiosques par rangée, soit huit au total, aux progressions `[0.08, 0.36, 0.64, 0.92]`.
 - Les rotations de façade ont été inversées pour essayer d'orienter les ouvertures vers le passage central. Cette orientation reste à confirmer visuellement dans Godot.
+- Le recul extérieur des kiosques est passé à 4,5 m par rangée. Le journal de démarrage affiche maintenant cette valeur.
 - Le mobilier est actuellement placé par décalages fixes : palmiers à 7,2 m, lampadaires à 5,7 m et bancs à 6 m des axes de rangée. Ces valeurs sont provisoires et ne prouvent pas que les objets sont hors de la chaussée ou du trottoir.
 - Les anciens générateurs de promenade, d'eau, de pelouse et de mobilier dans `baie_des_rois.gd` sont des placeholders historiques. Ils ne doivent pas être réactivés sans reconstruction géométrique adaptée.
 
@@ -76,4 +77,4 @@ Le fichier `data/osm/environment.geojson` a été examiné autour des coordonné
 
 ## Prochaine étape technique
 
-Reconstituer une première section de promenade autour des deux rangées à partir des coordonnées GPS et des contours OSM, sans déplacer arbitrairement les kiosques ni poser de mobilier dans le passage. Le contrôle visuel dans Godot reste indispensable avant de considérer les positions comme validées.
+Contrôler le nouveau recul de 4,5 m dans Godot, puis délimiter une première section de promenade autour des deux rangées à partir des coordonnées GPS et des contours OSM, sans poser de mobilier dans le passage. Le contrôle visuel dans Godot reste indispensable avant de considérer les positions comme validées.
