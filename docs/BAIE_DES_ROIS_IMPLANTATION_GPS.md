@@ -42,6 +42,10 @@ Cette dernière valeur est une estimation géométrique issue du point P3, pas u
 5. Déterminer l'orientation de la façade de service à partir des captures et de l'axe de la voie. Le modèle GLB actuel a sa façade de service sur son axe local Y négatif ; cette orientation doit être vérifiée dans Godot avant de multiplier les instances.
 6. Ne pas réactiver les anciens générateurs de promenade, d'eau, de pelouse ou de mobilier : ils sont des placeholders et ne constituent pas une implantation validée.
 
+## Helper Godot ajouté
+
+Le script `game/scripts/baie_des_rois_survey.gd` expose maintenant les deux extrémités GPS de la rangée A, son vecteur directeur, le décalage perpendiculaire indicatif vers la rangée B et deux fonctions de calcul paramétrique `row_a_position(progress)` et `row_b_position(progress)`. Il s'agit d'un repère de construction : il ne crée pas encore de kiosques dans la scène. L'orientation des façades reste volontairement non codée tant que les captures n'ont pas été examinées.
+
 ## État
 
 Les points GPS fournissent maintenant un premier axe mesurable et un écartement indicatif entre rangées. L'implantation n'est **pas encore validée en jeu** : il faut encore lire visuellement les trois captures, confirmer P3, identifier les deux familles de kiosques, puis faire un contrôle dans Godot.
