@@ -44,3 +44,28 @@ git push origin main
 ```
 
 Godot ne pourra instancier les huit kiosques que lorsque les deux fichiers GLB seront présents dans le projet.
+
+
+## Nouveaux éléments de mobilier — 18 novembre 2026
+
+Le script `tools/blender/create_baie_des_rois_props.py` génère trois assets GLB distincts :
+
+- `palmier_baie_des_rois.glb` : palmier tropical avec tronc fuselé, anneaux de croissance et palmes séparées en folioles. Les folioles et les anneaux sont fusionnés en meshes pour limiter les appels de rendu.
+- `banc_baie_des_rois.glb` : banc bois/métal de 1,85 m avec assise et dossier.
+- `lampadaire_baie_des_rois.glb` : candélabre LED de 5,6 m avec bras et diffuseur.
+
+Génération sous Windows / Blender 5.3 :
+
+```powershell
+& "C:\\Program Files\\Blender Foundation\\Blender 5.3\\blender.exe" --background --python tools\\blender\\create_baie_des_rois_props.py
+```
+
+Les fichiers sont exportés dans `assets/models/baie_des_rois/`. Après génération, vérifier les silhouettes et les dimensions dans Blender, puis les ajouter explicitement avec Git :
+
+```powershell
+git add assets/models/baie_des_rois/palmier_baie_des_rois.glb assets/models/baie_des_rois/banc_baie_des_rois.glb assets/models/baie_des_rois/lampadaire_baie_des_rois.glb
+git commit -m "Add Baie des Rois tropical props"
+git push origin main
+```
+
+**Important :** cette étape crée les modèles, mais ne les implante pas encore dans la scène. Leur placement doit respecter les limites réelles de la chaussée, des trottoirs et des bâtiments visibles sur les captures 7, 8 et 9. Ne pas semer les arbres ou les bancs au hasard sur les trottoirs. La route existante reste issue de `data/osm/roads.geojson` et est construite par `game/scripts/world_map.gd`.
