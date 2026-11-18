@@ -120,3 +120,20 @@ Les noms ci-dessus sont une architecture cible, pas encore des fichiers créés.
 ## Prochaine étape
 
 Examiner et exploiter les géométries locales déjà présentes dans environment.geojson et roads.geojson, puis définir le polygone de terre/eau et le tracé exact de la promenade dans le repère du jeu. Ce travail de carte doit précéder la génération des pavillons, de la végétation et du mobilier.
+
+## Pavillons de restauration à toiture verte
+
+Le générateur Blender `tools/blender/create_baie_des_rois_restaurants.py` produit trois variantes GLB (compacte, standard et grande) de pavillons de restauration : charpente bois, toiture métallique verte à deux pans avec nervures, gouttières, comptoir de service, arrière-cuisine, claustras, tables, chaises, suspensions et jardinières.
+
+Exécution depuis la racine du dépôt sous Windows :
+
+```powershell
+& "C:\Program Files\Blender Foundation\Blender 5.3\blender.exe" --background --python tools/blender/create_baie_des_rois_restaurants.py
+```
+
+Fichiers générés dans `assets/models/baie_des_rois/` :
+- `restaurant_pavillon_baie_des_rois_compact.glb`
+- `restaurant_pavillon_baie_des_rois.glb`
+- `restaurant_pavillon_baie_des_rois_large.glb`
+
+Ces modèles sont des assets, pas encore des bâtiments implantés dans la scène. Leur remplacement devra reprendre les centres, orientations et empreintes des anciens composants OSM identifiés dans `buildings.geojson`. Aucun nouvel emplacement GPS n'est introduit par ce générateur.
