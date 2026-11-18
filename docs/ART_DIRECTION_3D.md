@@ -69,3 +69,10 @@ Cette étape améliore la silhouette générale, mais ne constitue pas encore un
 botanique fidèle : les espèces de palmiers, cocotiers et arbres ornementaux doivent être
 modélisées séparément à partir de références photographiques locales. Les emplacements restent
 déduits des zones vertes OSM et doivent être contrôlés en jeu.
+
+
+## Répartition des arbres — correction du 18 novembre 2026
+
+Le placement aléatoire dans les polygones verts applique maintenant une distance minimale de 5,5 m entre les troncs générés. Cette règle réduit les superpositions et les amas visuellement artificiels, y compris lorsque plusieurs polygones verts sont voisins. Le nombre d'arbres reste plafonné globalement à 1 200 et la densité dépend toujours de la surface OSM.
+
+Cette correction améliore la répartition, mais ne remplace pas une implantation botanique manuelle ni la validation des limites réelles des parcs. Le résultat doit être contrôlé dans Godot avant de considérer la végétation comme validée.
