@@ -1140,7 +1140,9 @@ func _road_color(kind: String, props: Dictionary = {}) -> Color:
 func _road_width(kind: String, props: Dictionary = {}) -> float:
 	# Utilise la largeur réelle ou le nombre de voies OSM quand ils existent.
 	# Largeurs inspirées de Libreville : Boulevard Triomphal / Bord de mer ≈ 4 voies.
-	var tagged_width := str(props.get("width", "")).replace("m", "").strip_edges().to_float()
+	# Le parseur commun gère aussi les largeurs exprimées en pieds (ft / ')
+	# et les décimales avec virgule, au lieu de les interpréter comme des mètres.
+	var tagged_width := _parse_osm_height(str(props.get("width", "")))
 	if tagged_width >= 1.5 and tagged_width <= 40.0:
 		return tagged_width
 	var lanes := str(props.get("lanes", "")).to_int()
