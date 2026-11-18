@@ -1,0 +1,88 @@
+# Reconstruction de la première partie de la Baie des Rois — référence vidéo
+
+## Périmètre
+
+La vidéo aérienne fournie le 18 novembre 2026 devient la référence visuelle principale pour la reconstruction de la première partie de la Baie des Rois. Le périmètre s'arrête à l'extrémité de la promenade visible avant la zone du pont. La partie située au niveau du pont est explicitement hors périmètre pour cette étape.
+
+Ordre de travail obligatoire :
+1. Finaliser la carte et la géométrie du site (sol, littoral, mer, promenade et espaces verts).
+2. Ajouter les éléments architecturaux et paysagers par scripts de génération dédiés.
+3. Contrôler l'implantation et les collisions dans Godot avant d'étendre la zone.
+
+## Observations directement visibles dans la vidéo
+
+La vidéo montre une vue aérienne oblique et progressive de la promenade.
+
+- Une grande surface d'eau bleu foncé borde directement le cheminement piéton.
+- La promenade est constituée d'un dallage clair gris à beige, visiblement découpé en grandes dalles rectangulaires. Elle suit le contour du rivage et s'élargit localement.
+- De larges îlots de pelouse occupent le côté intérieur de la promenade. Leurs contours sont géométriques et séparés par des cheminements pavés.
+- Plusieurs pavillons/kiosques en bois brun-orangé sont implantés dans les espaces verts. Plusieurs ont une toiture à deux pans de couleur vert foncé, d'aspect tôle.
+- Un autre pavillon possède une couverture claire de type chaume ou fibres végétales.
+- Des palmiers sont plantés de façon espacée dans les pelouses, avec quelques plantations plus petites.
+- Des bancs, des lampadaires et du mobilier urbain ponctuent les cheminements.
+- Une aire de jeux colorée rouge et jaune apparaît dans un îlot vert.
+- À l'extrémité visible de la promenade, le rivage comporte une avancée ou bordure rocheuse/enrochement.
+- Des bâtiments et aménagements urbains apparaissent au-delà de l'eau et à l'arrière-plan, mais leur détail n'est pas assez lisible pour être modélisé à partir de cette seule vidéo.
+
+Ces observations décrivent ce qui est visible ; elles ne donnent pas les dimensions métriques exactes des dalles, pelouses, pavillons ou équipements.
+
+## Position de la mer dans le repère du jeu
+
+Dans la vidéo, l'eau se trouve à droite du cheminement dans le cadrage aérien. Cette indication droite/gauche dépend de l'orientation de la caméra et ne doit pas être convertie directement en axe X ou Z du monde.
+
+Le relevé géographique déjà documenté dans le dossier d'implantation GPS situe la ligne OSM way/443854943 (natural=coastline) à environ 29 à 38 m des repères GPS des kiosques, du côté +Z du monde. Cette donnée cartographique constitue actuellement le repère spatial à utiliser pour localiser l'eau. La ligne OSM est une référence de littoral, pas la limite exacte du dallage.
+
+## État technique existant à corriger ou compléter
+
+- world_map.gd crée actuellement un grand plan d'eau générique de 16 km × 11 km, centré approximativement en (-2600, 100). Il n'épouse pas le contour local du rivage.
+- Le traitement OSM de coastline crée actuellement une bande de rendu de largeur fixe ; ce n'est pas une véritable surface d'eau découpée selon le rivage.
+- Les surfaces de végétation OSM sont déjà triangulées. Les contours existants doivent être conservés lorsqu'ils correspondent aux îlots visibles.
+- Les chemins OSM sont rendus avec le système routier générique. La promenade de la vidéo demande un matériau et un traitement de dalles plus adaptés, sans transformer toutes les routes de la ville.
+- Les anciens générateurs décoratifs dans baie_des_rois.gd ne constituent pas une base topographique fiable. Ne pas réactiver leurs grands rectangles ou leurs plantations arbitraires.
+
+## Architecture prévue des scripts
+
+Les éléments seront générés en modules indépendants, avec une racine de scène commune à la zone. Les géométries seront regroupées et les matériaux réutilisés pour rester compatibles avec la cible graphique modeste du projet.
+
+| Module prévu | Responsabilité |
+|---|---|
+| baie_des_rois_site.gd | Orchestration de la zone, chargement des modules et ordre de génération |
+| baie_des_rois_shoreline.gd | Lecture des données géographiques, délimitation du rivage et raccord terre/eau |
+| baie_des_rois_ocean.gd | Surface de mer locale, teinte, reflets et animation légère à faible coût |
+| baie_des_rois_promenade.gd | Dallage clair, grandes dalles, bordures et raccords de cheminements |
+| baie_des_rois_landscape.gd | Pelouses suivant les polygones existants, terre nue et transitions de sol |
+| baie_des_rois_vegetation.gd | Palmiers et végétation basse, implantés dans les espaces verts |
+| baie_des_rois_pavilions.gd | Pavillons en bois, kiosques et toitures métalliques vert foncé |
+| baie_des_rois_furniture.gd | Bancs, lampadaires et petits équipements |
+| baie_des_rois_playground.gd | Aire de jeux visible dans la référence |
+| baie_des_rois_coastal_edge.gd | Enrochements, bordures et garde-corps là où ils sont réellement visibles |
+
+Les noms ci-dessus sont une architecture cible, pas encore des fichiers créés. Les dimensions et positions des objets ne seront pas inventées : elles seront déduites des géométries OSM/GPS disponibles, des proportions observables dans la vidéo et des points de contrôle déjà fournis.
+
+## Règles de réalisation
+
+1. Ne pas déplacer les kiosques GPS sans raison géométrique documentée.
+2. Garder le passage central des kiosques libre et les façades commerciales tournées vers les clients.
+3. Construire la mer à partir du littoral local, pas d'un plan d'eau qui recouvre indistinctement terre et mer.
+4. Faire suivre au dallage la forme réelle de la promenade et ses élargissements.
+5. Conserver les contours des îlots de pelouse existants ; compléter seulement les surfaces manquantes.
+6. Ne pas planter de palmiers sur le dallage, les chemins ou les zones de circulation.
+7. Construire les pavillons avec des matériaux bois et des toitures vert foncé en tôle, conformément aux modèles visibles.
+8. Reproduire le pavillon à couverture végétale comme un type distinct, sans transformer tous les kiosques en bâtiments identiques.
+9. Ajouter l'aire de jeux et le mobilier uniquement dans les espaces où la vidéo les montre.
+10. Optimiser les meshes, matériaux et instances ; éviter les milliers d'objets individuels et les ombres coûteuses.
+11. Ne pas commencer la zone du pont avant validation complète de cette première partie.
+
+## Critères de validation de cette étape
+
+- La mer est du bon côté du rivage et sa surface épouse le littoral local.
+- La promenade est une bande pavée continue, avec des dalles lisibles et des raccords propres.
+- Les pelouses ont des contours crédibles et restent séparées des cheminements.
+- Les kiosques et pavillons sont dans les espaces prévus, hors chaussée et hors trottoir.
+- Les palmiers, bancs, lampadaires et jeux ne bloquent pas les cheminements.
+- La vue aérienne générale rappelle la disposition de la vidéo avant tout travail de détail.
+- La scène reste fluide sur la configuration minimale ciblée du projet.
+
+## Prochaine étape
+
+Examiner et exploiter les géométries locales déjà présentes dans environment.geojson et roads.geojson, puis définir le polygone de terre/eau et le tracé exact de la promenade dans le repère du jeu. Ce travail de carte doit précéder la génération des pavillons, de la végétation et du mobilier.
