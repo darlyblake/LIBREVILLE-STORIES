@@ -109,3 +109,28 @@ Le rapport sert à identifier les routes candidates et les largeurs de trottoir 
 ## Prochaine étape technique
 
 Contrôler le nouveau recul de 4,5 m dans Godot, puis délimiter une première section de promenade autour des deux rangées à partir des coordonnées GPS et des contours OSM, sans poser de mobilier dans le passage. Le contrôle visuel dans Godot reste indispensable avant de considérer les positions comme validées.
+
+
+## Résultats de l'analyse locale des axes routiers (18 novembre 2026)
+
+Le script a été exécuté sur le fichier local `data/osm/roads.geojson`. Il a trouvé **21 entités routières/piétonnes** à moins de 65 m des rangées GPS. Les résultats les plus importants sont :
+
+| Entité | Type OSM | Rangée la plus proche | Distance entre axes |
+|---|---|---:|---:|
+| Promenade zone nord | footway | A | 0,00 m |
+| `way/1070652022` à `way/1070652026` | footway | B | 0,00 m |
+| `way/1085115438` | footway | B | 0,00 m |
+| `way/708322894` | secondary | A | 1,84 m |
+| `way/1070652021` | footway | B | 6,69 m |
+| `way/1070652027` | footway | A | 8,12 m |
+| `way/1070652020` | footway | B | 14,19 m |
+| Promenade zone nord | path | B | 15,57 m |
+
+### Interprétation et conséquence pour l'implantation
+
+- Les distances de **0,00 m** indiquent que les axes GPS de référence des rangées se superposent à des axes de chemins OSM. Cela ne prouve pas que les kiosques doivent occuper le chemin : cela montre au contraire que les coordonnées de rangée et les cheminements cartographiés doivent être distingués avant de figer les positions.
+- La route secondaire `way/708322894` est très proche de la rangée A : son axe est à **1,84 m**. Le jeu lui attribue une largeur de 9 m et le mode de trottoirs `both`, mais ces valeurs sont des règles de rendu/fallback du jeu, pas des mesures de terrain. On ne peut donc pas en déduire la limite réelle de la chaussée.
+- Les axes des chemins OSM sont des lignes centrales. La largeur de 1,8 m affichée par le script est également la largeur par défaut utilisée par le jeu pour un `footway` ou un `path`, pas une largeur relevée sur place.
+- Le rapport complet local contient les coordonnées X/Z des lignes candidates. Il faut examiner ces géométries pour déterminer de quel côté des rangées se trouvent les chemins, puis confronter cela aux références photographiques et aux captures du dépôt.
+
+**Décision technique : ne pas augmenter encore le recul de 4,5 m et ne pas construire les dalles sur la base des seules distances d'axes.** La prochaine correction doit être calculée à partir des géométries complètes du rapport `data/analysis/baie_des_rois_roads_report.json`, notamment les lignes `Promenade zone nord`, `way/1070652022` à `way/1070652026` et `way/708322894`. Le rapport local n'est pas encore intégré au dépôt ; il doit être partagé ou analysé depuis la machine qui possède le GeoJSON complet.
