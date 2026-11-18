@@ -35,7 +35,7 @@ La conversion reprend exactement les constantes du projet : `CENTER_LAT = 0.400`
 - P3 est à environ **8,77 m** de P1.
 - En projetant P3 perpendiculairement à l'axe P1–P2, l'écartement indicatif entre les axes des rangées est d'environ **8,51 m**.
 - Cette valeur est une estimation issue du point P3, pas une mesure certifiée de la largeur de la chaussée.
-- Le helper `game/scripts/baie_des_rois_survey.gd` applique maintenant un recul provisoire de **4,5 m** vers l'extérieur à chaque rangée (contre 3 m auparavant), soit 1,5 m de plus par rangée. Ce recul répond au retour indiquant que les kiosques restent trop proches de la chaussée, mais il n'est pas encore validé visuellement par rapport aux limites exactes des trottoirs.
+- Après analyse du rapport routier local, le helper applique désormais des reculs provisoires différenciés : **6,5 m pour la rangée A** (côté route secondaire) et **4,5 m pour la rangée B**. Le calcul tient compte du gabarit actuellement utilisé par le jeu (chaussée 9 m, trottoir 1,55 m et bordure 0,22 m de chaque côté) et de la profondeur de 3,6 m des kiosques. Ces valeurs de largeur sont des hypothèses de rendu, pas des mesures de terrain ; le contrôle visuel dans Godot reste obligatoire.
 
 ## Premiers constats issus du GeoJSON environnemental
 
@@ -82,7 +82,7 @@ Le rapport sert à identifier les routes candidates et les largeurs de trottoir 
 
 - `game/scripts/baie_des_rois.gd` instancie actuellement quatre kiosques par rangée, soit huit au total, aux progressions `[0.08, 0.36, 0.64, 0.92]`.
 - Les rotations de façade ont été inversées pour essayer d'orienter les ouvertures vers le passage central. Cette orientation reste à confirmer visuellement dans Godot.
-- Le recul extérieur des kiosques est passé à 4,5 m par rangée. Le journal de démarrage affiche maintenant cette valeur.
+- Les reculs extérieurs provisoires sont différenciés : 6,5 m pour la rangée A et 4,5 m pour la rangée B. Le journal de démarrage affiche les deux valeurs.
 - Le mobilier est actuellement placé par décalages fixes : palmiers à 7,2 m, lampadaires à 5,7 m et bancs à 6 m des axes de rangée. Ces valeurs sont provisoires et ne prouvent pas que les objets sont hors de la chaussée ou du trottoir.
 - Les anciens générateurs de promenade, d'eau, de pelouse et de mobilier dans `baie_des_rois.gd` sont des placeholders historiques. Ils ne doivent pas être réactivés sans reconstruction géométrique adaptée.
 
@@ -134,3 +134,18 @@ Le script a été exécuté sur le fichier local `data/osm/roads.geojson`. Il a 
 - Le rapport complet local contient les coordonnées X/Z des lignes candidates. Il faut examiner ces géométries pour déterminer de quel côté des rangées se trouvent les chemins, puis confronter cela aux références photographiques et aux captures du dépôt.
 
 **Décision technique : ne pas augmenter encore le recul de 4,5 m et ne pas construire les dalles sur la base des seules distances d'axes.** La prochaine correction doit être calculée à partir des géométries complètes du rapport `data/analysis/baie_des_rois_roads_report.json`, notamment les lignes `Promenade zone nord`, `way/1070652022` à `way/1070652026` et `way/708322894`. Le rapport local n'est pas encore intégré au dépôt ; il doit être partagé ou analysé depuis la machine qui possède le GeoJSON complet.
+
+
+### Vérification géométrique du gabarit routier au droit de la rangée A
+
+Le rapport détaillé fourni depuis la machine locale confirme trois lignes utiles :
+
+- `way/1070652019`, « Promenade zone nord » (`footway`) : axe à 0,00 m de la rangée A.
+- `way/708322894` (`secondary`) : axe à 1,84 m de la rangée A. Le modèle du jeu lui applique une chaussée de 9 m, des trottoirs de 1,55 m et des bordures de 0,22 m de chaque côté.
+- `way/709255549`, autre « Promenade zone nord » (`path`) : axe à 15,57 m de la rangée B.
+
+Avec le gabarit théorique du jeu, le bord extérieur chaussée + trottoir + bordure se trouve à 6,27 m de l'axe de la route secondaire. Le centre de la rangée A, après un recul de 4,5 m à l'opposé de la route, se trouverait à 6,34 m de cet axe. Pour un kiosque de 3,6 m de profondeur, son bord le plus proche de la route serait encore à environ 4,54 m de l'axe routier : le trottoir théorique pourrait donc empiéter d'environ 1,73 m sur son emprise. Un recul de 6,5 m place ce bord à environ 6,54 m de l'axe routier, soit une marge théorique d'environ 0,27 m au-delà du gabarit trottoir/bordure.
+
+La rangée B est du côté opposé à la route secondaire. Avec son recul conservé à 4,5 m, son bord le plus proche de cette route est à environ 9,37 m de l'axe routier, au-delà du gabarit théorique de 6,27 m.
+
+**Décision provisoire appliquée au code :** recul A = 6,5 m ; recul B = 4,5 m. Cela évite de déplacer inutilement la rangée B et limite l'élargissement du passage client. Ce calcul reste fondé sur les largeurs de rendu du jeu ; il ne remplace pas une mesure de terrain ni le contrôle visuel dans Godot.
