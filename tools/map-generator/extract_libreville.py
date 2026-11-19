@@ -762,7 +762,7 @@ def main():
             args.south, args.west, args.north, args.east
         ],
         "grid": f"{args.grid}x{args.grid}",
-        "source_mode": "Geofabrik Gabon PBF (fallback)" if used_geofabrik_fallback else "Overpass API",
+        "source_mode": "Geofabrik Gabon PBF" if used_geofabrik_fallback else "Overpass API",
         "tiles": tile_report,
         "extracted_at_utc": datetime.now(timezone.utc).isoformat(),
         "files": {},
