@@ -1,0 +1,49 @@
+name: Generate extended Libreville terrain
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/map-generator/generate_extended_dem.py"
+      - ".github/workflows/generate-extended-terrain.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-dem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install raster tools
+        run: python -m pip install --upgrade pip numpy rasterio
+      - name: Generate extended DEM
+        run: python tools/map-generator/generate_extended_dem.py
+      - name: Validate output dimensions
+        run: |
+          python - <<'PY'
+          import json, os
+          with open("libreville_dem_extended.json", encoding="utf-8") as f:
+              m=json.load(f)
+          expected=int(m["rows"])*int(m["columns"])*4
+          actual=os.path.getsize("libreville_dem_extended_f32.bin")
+          assert actual == expected, (actual, expected)
+          assert m["valid_source_cells"] > 0
+          print(f"DEM OK: {m['columns']} x {m['rows']} ({actual} bytes)")
+          PY
+      - name: Upload terrain files
+        uses: actions/upload-artifact@v4
+        with:
+          name: libreville-terrain-etendu-srtm1
+          path: |
+            libreville_dem_extended.json
+            libreville_dem_extended_f32.bin
+          if-no-files-found: error
+          retention-days: 30
