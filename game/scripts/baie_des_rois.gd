@@ -12,6 +12,7 @@ func _ready() -> void:
 	name = "BaieDesRois"
 	_build_pavilions()
 	_build_baie_street_props()
+	_conform_baie_objects_to_terrain()
 	print("LIBREVILLE STORIES | Baie des Rois : kiosques et mobilier 3D chargés")
 
 
@@ -222,6 +223,25 @@ func _build_lawns() -> void:
 		var size: Vector3 = patches[i]
 		var offset: Vector3 = patches[i + 1]
 		_add_box(root, size, ANCHOR + offset + Vector3(0, 0.04, 0), grass, "Lawn_%d" % (i / 2))
+
+
+func _conform_baie_objects_to_terrain() -> void:
+	var world_map := get_parent().get_node_or_null("WorldMap")
+	if world_map == null or not world_map.has_method("terrain_height_at_world"):
+		push_warning("DEM non disponible pour ajuster les objets de la Baie des Rois.")
+		return
+	# Chaque modèle autonome est décalé selon l'altitude de son point d'ancrage.
+	# On ne touche pas aux transformations internes des GLB.
+	for container in get_children():
+		if not container is Node3D:
+			continue
+		for asset_root in container.get_children():
+			if not asset_root is Node3D:
+				continue
+			var local_position: Vector3 = asset_root.position
+			local_position.y += float(world_map.call("terrain_height_at_world", local_position.x, local_position.z))
+			asset_root.position = local_position
+	print("LIBREVILLE STORIES | objets de la Baie des Rois ajustés au relief SRTM")
 
 
 func _build_pavilions() -> void:
