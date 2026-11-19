@@ -473,63 +473,62 @@ func _load_environment() -> void:
 			var rings: Array = geometry.get("coordinates", [])
 			if rings.is_empty() or rings[0].size() < 4:
 				continue
-			var points := PackedVector2Array()
+			var original_points := PackedVector2Array()
 			for coordinate in rings[0]:
 				var p := _geo_to_world(coordinate)
-				points.append(Vector2(p.x, p.z))
-			if points.size() > 1 and points[0].distance_squared_to(points[points.size() - 1]) < 0.0001:
-				points.remove_at(points.size() - 1)
-			if points.size() < 3:
-				continue
-			var indices := Geometry2D.triangulate_polygon(points)
-			if indices.is_empty():
+				original_points.append(Vector2(p.x, p.z))
+			if original_points.size() > 1 and original_points[0].distance_squared_to(original_points[original_points.size() - 1]) < 0.0001:
+				original_points.remove_at(original_points.size() - 1)
+			if original_points.size() < 3:
 				continue
 			var has_landscape_relief := kind in ["vegetation", "green_space"]
-			var relief_center := Vector2.ZERO
-			var relief_radius := 1.0
+			var render_polygons: Array[PackedVector2Array] = [original_points]
+			# Découpe réellement les parcs/îlots verts autour de chaque chaussée.
+			# Écarter seulement les brins d'herbe ne suffisait pas : le grand polygone
+			# vert continuait à passer sous les routes et à créer des mélanges visuels.
 			if has_landscape_relief:
-				# Calcul du centroïde après accumulation de tous les sommets.
-				# La division dans la boucle déformait le centre vers le dernier point.
-				for point in points:
-					relief_center += point
-				relief_center /= float(points.size())
-				for point in points:
-					relief_radius = maxf(relief_radius, point.distance_to(relief_center))
-				_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions, kind)
-				# Vraies touffes 3D uniquement sur les surfaces herbeuses cartographiées.
-				var mapped_surface := str(props.get("surface", ""))
-				var is_grass_area := str(props.get("landuse", "")) == "grass" or (kind == "green_space" and mapped_surface not in ["concrete", "paved", "asphalt"]) or str(props.get("leisure", "")) == "garden"
-				if is_grass_area and _grass_generator != null:
-					_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind, Callable(self, "_terrain_height_at_world"), Callable(self, "_is_near_road"))
-			surface.set_color(_environment_color(kind))
-			if has_landscape_relief:
-				relief_collision_surface.set_color(_environment_color(kind))
-			for i in range(0, indices.size(), 3):
-				var p0 := points[indices[i]]
-				var p1 := points[indices[i + 1]]
-				var p2 := points[indices[i + 2]]
+				render_polygons = _clip_polygon_away_from_roads(original_points, 0.65)
+			var polygon_added := false
+			for points in render_polygons:
+				if points.size() < 3:
+					continue
+				var indices := Geometry2D.triangulate_polygon(points)
+				if indices.is_empty():
+					continue
+				var relief_center := Vector2.ZERO
+				var relief_radius := 1.0
 				if has_landscape_relief:
-					# Petites bosses de pelouse avec pente douce jusqu'au niveau du chemin.
-					var center := (p0 + p1 + p2) / 3.0
-					var h0 := _landscape_relief_height(p0, relief_center, relief_radius, kind)
-					var h1 := _landscape_relief_height(p1, relief_center, relief_radius, kind)
-					var h2 := _landscape_relief_height(p2, relief_center, relief_radius, kind)
-					var hc := _landscape_relief_height(center, relief_center, relief_radius, kind)
-					for target_surface in [surface, relief_collision_surface]:
-						target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
-						target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
-						target_surface.add_vertex(Vector3(center.x, hc, center.y))
-						target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
-						target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
-						target_surface.add_vertex(Vector3(center.x, hc, center.y))
-						target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
-						target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
-						target_surface.add_vertex(Vector3(center.x, hc, center.y))
-				else:
-					surface.add_vertex(Vector3(p0.x, _terrain_height_at_world(p0.x, p0.y) + 0.025, p0.y))
-					surface.add_vertex(Vector3(p1.x, _terrain_height_at_world(p1.x, p1.y) + 0.025, p1.y))
-					surface.add_vertex(Vector3(p2.x, _terrain_height_at_world(p2.x, p2.y) + 0.025, p2.y))
-			added = true
+					for point in points:
+						relief_center += point
+					relief_center /= float(points.size())
+					for point in points:
+						relief_radius = maxf(relief_radius, point.distance_to(relief_center))
+					_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions, kind)
+					var mapped_surface := str(props.get("surface", ""))
+					var is_grass_area := str(props.get("landuse", "")) == "grass" or (kind == "green_space" and mapped_surface not in ["concrete", "paved", "asphalt"]) or str(props.get("leisure", "")) == "garden"
+					if is_grass_area and _grass_generator != null:
+						_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind, Callable(self, "_terrain_height_at_world"), Callable(self, "_is_near_road"))
+				surface.set_color(_environment_color(kind))
+				if has_landscape_relief:
+					relief_collision_surface.set_color(_environment_color(kind))
+				for i in range(0, indices.size(), 3):
+					var p0 := points[indices[i]]
+					var p1 := points[indices[i + 1]]
+					var p2 := points[indices[i + 2]]
+					if has_landscape_relief:
+						var h0 := _terrain_height_at_world(p0.x, p0.y) + 0.008
+						var h1 := _terrain_height_at_world(p1.x, p1.y) + 0.008
+						var h2 := _terrain_height_at_world(p2.x, p2.y) + 0.008
+						for target_surface in [surface, relief_collision_surface]:
+							target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
+							target_surface.add_vertex(Vector3(p1.x, h1, p1.y))
+							target_surface.add_vertex(Vector3(p2.x, h2, p2.y))
+					else:
+						surface.add_vertex(Vector3(p0.x, _terrain_height_at_world(p0.x, p0.y) + 0.025, p0.y))
+						surface.add_vertex(Vector3(p1.x, _terrain_height_at_world(p1.x, p1.y) + 0.025, p1.y))
+						surface.add_vertex(Vector3(p2.x, _terrain_height_at_world(p2.x, p2.y) + 0.025, p2.y))
+				polygon_added = true
+			added = polygon_added
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
 			var width := 14.0 if kind == "coastline" else (5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6))
@@ -917,6 +916,62 @@ func _make_sidewalk_texture() -> Texture2D:
 			image.set_pixel(x, y, Color(0.62 * grain, 0.61 * grain, 0.57 * grain, 1.0))
 	image.generate_mipmaps()
 	return ImageTexture.create_from_image(image)
+
+
+func _clip_polygon_away_from_roads(subject: PackedVector2Array, extra_margin: float = 0.0) -> Array[PackedVector2Array]:
+	var pieces: Array[PackedVector2Array] = [subject]
+	if subject.size() < 3 or _road_clearance_grid.is_empty():
+		return pieces
+	const cell_size := 128.0
+	var min_x := subject[0].x
+	var max_x := subject[0].x
+	var min_z := subject[0].y
+	var max_z := subject[0].y
+	for point in subject:
+		min_x = minf(min_x, point.x)
+		max_x = maxf(max_x, point.x)
+		min_z = minf(min_z, point.y)
+		max_z = maxf(max_z, point.y)
+	var candidates: Array = []
+	var seen: Dictionary = {}
+	for cx in range(int(floor(min_x / cell_size)) - 1, int(floor(max_x / cell_size)) + 2):
+		for cz in range(int(floor(min_z / cell_size)) - 1, int(floor(max_z / cell_size)) + 2):
+			for segment in _road_clearance_grid.get(Vector2i(cx, cz), []):
+				var key := str(segment.a) + "|" + str(segment.b)
+				if seen.has(key):
+					continue
+				seen[key] = true
+				var a: Vector2 = segment.a
+				var b: Vector2 = segment.b
+				if maxf(a.x, b.x) < min_x - 32.0 or minf(a.x, b.x) > max_x + 32.0 or maxf(a.y, b.y) < min_z - 32.0 or minf(a.y, b.y) > max_z + 32.0:
+					continue
+				candidates.append(segment)
+	# OSM segments are clipped one by one; only the local 128 m grid is searched.
+	for segment in candidates:
+		if pieces.is_empty():
+			break
+		var a: Vector2 = segment.a
+		var b: Vector2 = segment.b
+		var direction := (b - a).normalized()
+		if direction.length_squared() < 0.0001:
+			continue
+		var normal := Vector2(-direction.y, direction.x)
+		var radius := float(segment.radius) + extra_margin
+		var cap := 0.35
+		var corridor := PackedVector2Array([
+			a - direction * cap + normal * radius,
+			b + direction * cap + normal * radius,
+			b + direction * cap - normal * radius,
+			a - direction * cap - normal * radius
+		])
+		var next_pieces: Array[PackedVector2Array] = []
+		for piece in pieces:
+			var clipped := Geometry2D.clip_polygons(piece, corridor)
+			for result_piece in clipped:
+				if result_piece.size() >= 3:
+					next_pieces.append(result_piece)
+		pieces = next_pieces
+	return pieces
 
 
 func _load_roads() -> void:
@@ -1319,8 +1374,9 @@ func _road_sidewalk_mode(props: Dictionary, road_kind: String) -> String:
 		return "right"
 	if general in ["yes", "both"]:
 		return "both"
-	# Axes structurants + rues résidentielles : trottoirs de représentation (style GTA / Libreville).
-	if road_kind in ["trunk", "primary", "secondary", "tertiary", "residential"]:
+	# Ne pas inventer de trottoirs sur chaque rue : sans tag OSM, seuls
+	# les grands axes reçoivent un aménagement représentatif.
+	if road_kind in ["trunk", "primary", "secondary"]:
 		return "both"
 	return "none"
 
