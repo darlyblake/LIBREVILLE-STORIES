@@ -1608,13 +1608,15 @@ func get_locality_destinations() -> Array[Dictionary]:
 		# Le point OSM doit rester dans son propre secteur ; sinon, utiliser son centroïde.
 		if not polygon.is_empty() and not _point_in_polygon(point, polygon):
 			point = _polygon_centroid(polygon)
-		# Le plan de jeu mesure 12 km ; on garde une marge de sécurité de 100 m.
-		if absf(point.x) > 5900.0 or absf(point.y) > 5900.0:
-			continue
+		# Avec le DEM étendu, les limites du relief remplacent l'ancienne
+		# boîte fixe de 12 km qui excluait les quartiers périphériques.
 		if _dem_loaded:
 			if point.x < _dem_x_min or point.x > _dem_x_min + float(_dem_columns - 1) * _dem_spacing:
 				continue
 			if point.y < _dem_z_min or point.y > _dem_z_min + float(_dem_rows - 1) * _dem_spacing:
+				continue
+		else:
+			if absf(point.x) > 5900.0 or absf(point.y) > 5900.0:
 				continue
 		var ground_y := _terrain_height_at_world(point.x, point.y)
 		destinations.append({
