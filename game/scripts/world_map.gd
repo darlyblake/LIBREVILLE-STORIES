@@ -628,6 +628,9 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 				break
 		if has_nearby_tree:
 			continue
+		# Aucun arbre ne doit apparaître sur une chaussée ou un trottoir.
+		if _is_near_road(candidate, 2.0):
+			continue
 		var tree_ground_y := _terrain_height_at_world(candidate.x, candidate.y)
 		output.append(Vector3(candidate.x, tree_ground_y, candidate.y))
 		added += 1
