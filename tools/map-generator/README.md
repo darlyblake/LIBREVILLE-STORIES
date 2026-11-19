@@ -134,7 +134,7 @@ Contrôles effectués sur l'artefact généré :
 
 Le commit de données est `002027fb6b3abc2995a0d2f1d941a6ff5c05543a`.
 
-**État d'intégration :** le jeu sait désormais charger le DEM étendu automatiquement, tout en gardant l'ancien DEM comme secours. Les couches routes, bâtiments, environnement, POI et localités sont en cours d'extraction dans `data/osm/extended/`. Elles ne seront utilisées qu'après validation du workflow. Les quartiers historiques restent actifs et les limites d'arrondissements ne sont pas remplacées ni inventées.
+**État d'intégration :** le jeu sait désormais charger le DEM étendu automatiquement, tout en gardant l'ancien DEM comme secours. Les couches routes, bâtiments, environnement, POI et localités sont enregistrées dans `data/osm/extended/` et le chargeur Godot les privilégie automatiquement. Le panneau de téléportation suit maintenant les limites du DEM chargé au lieu de l'ancienne boîte fixe de 12 km, ce qui permet de proposer les localités périphériques contenues dans le nouveau relief. Les 72 quartiers historiques restent actifs ; les limites d'arrondissements ne sont pas remplacées ni inventées.
 
 
 
