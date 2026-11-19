@@ -44,7 +44,10 @@ var _dem_loaded := false
 
 func _ready() -> void:
 	_load_real_terrain()
-	_disable_flat_ground()
+	if _dem_loaded:
+		_disable_flat_ground()
+	else:
+		push_warning("DEM indisponible : le sol plat et sa collision restent actifs pour éviter la chute du joueur.")
 	_apply_ground_surface()
 	_add_ocean_plane()
 	_road_material = _make_material(Color.WHITE)
@@ -271,7 +274,40 @@ func _build_terrain_chunks() -> void:
 			body.add_child(shape)
 			add_child(body)
 			chunk_index += 1
+	_create_terrain_boundary_walls()
 	print("LIBREVILLE STORIES | terrain et collisions SRTM générés : %d blocs" % chunk_index)
+
+
+func _create_terrain_boundary_walls() -> void:
+	# Le DEM couvre une zone finie : des murs invisibles empêchent le joueur
+	# de quitter la surface collidable et de tomber dans le vide.
+	var x_max := _dem_x_min + float(_dem_columns - 1) * _dem_spacing
+	var z_max := _dem_z_min + float(_dem_rows - 1) * _dem_spacing
+	var width := x_max - _dem_x_min
+	var depth := z_max - _dem_z_min
+	var center_x := (_dem_x_min + x_max) * 0.5
+	var center_z := (_dem_z_min + z_max) * 0.5
+	var wall_height := 220.0
+	var wall_center_y := 70.0
+	var wall_thickness := 4.0
+	var walls: Array[Dictionary] = [
+		{"name": "TerrainBoundary_West", "size": Vector3(wall_thickness, wall_height, depth + wall_thickness * 2.0), "position": Vector3(_dem_x_min - wall_thickness * 0.5, wall_center_y, center_z)},
+		{"name": "TerrainBoundary_East", "size": Vector3(wall_thickness, wall_height, depth + wall_thickness * 2.0), "position": Vector3(x_max + wall_thickness * 0.5, wall_center_y, center_z)},
+		{"name": "TerrainBoundary_North", "size": Vector3(width, wall_height, wall_thickness), "position": Vector3(center_x, wall_center_y, _dem_z_min - wall_thickness * 0.5)},
+		{"name": "TerrainBoundary_South", "size":": Vector3(width, wall_height, wall_thickness), "position": Vector3(center_x, wall_center_y, z_max + wall_thickness * 0.5)}
+	]
+	for wall_data in walls:
+		var body := StaticBody3D.new()
+		body.name = str(wall_data.name)
+		body.collision_layer = 1
+		body.collision_mask = 1
+		var shape_node := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = wall_data.size
+		shape_node.shape = box
+		body.add_child(shape_node)
+		body.position = wall_data.position
+		add_child(body)
 
 
 func _terrain_color(height: float) -> Color:
