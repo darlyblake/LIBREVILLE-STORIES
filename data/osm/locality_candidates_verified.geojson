@@ -1,0 +1,156 @@
+{
+  "type": "FeatureCollection",
+  "name": "libreville_verified_locality_candidates",
+  "metadata": {
+    "source": "OpenStreetMap via Mapcarta place pages; names cross-checked against the 2025 arrondissement reference register",
+    "attribution": "© OpenStreetMap contributors",
+    "license": "ODbL 1.0",
+    "current_dem_bbox_south_west_north_east": [
+      0.354461,
+      9.399461,
+      0.445539,
+      9.495539
+    ],
+    "note": "Points vérifiés comme localités OSM, mais à utiliser comme graines de repérage uniquement. Aucun polygone n'est créé. Les six points sont hors du DEM actuel; l'emprise terrain doit être étendue avant intégration au monde jouable. Ondogo reste sans arrondissement attribué car les références distinguent Ondogo 1 GR et Ondogo 2."
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "node/13091960621",
+      "properties": {
+        "osm_id": 13091960621,
+        "osm_type": "node",
+        "name": "Aéroport",
+        "place": "suburb",
+        "source": "OpenStreetMap",
+        "source_page": "https://mapcarta.com/fr/N13091960621",
+        "suggested_arrondissement": "1er arrondissement",
+        "assignment_status": "reference_2025",
+        "inside_current_dem": false,
+        "integration_status": "candidate_only_no_polygon_no_teleport"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.41006,
+          0.4615
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "node/1832438148",
+      "properties": {
+        "osm_id": 1832438148,
+        "osm_type": "node",
+        "name": "Okala",
+        "place": "suburb",
+        "source": "OpenStreetMap",
+        "source_page": "https://mapcarta.com/fr/N1832438148",
+        "suggested_arrondissement": "1er arrondissement",
+        "assignment_status": "reference_2025",
+        "inside_current_dem": false,
+        "integration_status": "candidate_only_no_polygon_no_teleport"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.40942,
+          0.48692
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "node/1827771026",
+      "properties": {
+        "osm_id": 1827771026,
+        "osm_type": "node",
+        "name": "Alibandeng",
+        "place": "suburb",
+        "source": "OpenStreetMap",
+        "source_page": "https://mapcarta.com/fr/34754116",
+        "suggested_arrondissement": "1er arrondissement",
+        "assignment_status": "reference_2025",
+        "inside_current_dem": false,
+        "integration_status": "candidate_only_no_polygon_no_teleport"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.42752,
+          0.4559
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "node/4916222183",
+      "properties": {
+        "osm_id": 4916222183,
+        "osm_type": "node",
+        "name": "Mikolongo",
+        "place": "suburb",
+        "source": "OpenStreetMap",
+        "source_page": "https://mapcarta.com/fr/N4916222183",
+        "suggested_arrondissement": "1er arrondissement",
+        "assignment_status": "reference_2025",
+        "inside_current_dem": false,
+        "integration_status": "candidate_only_no_polygon_no_teleport"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.42065,
+          0.47656
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "node/1827907507",
+      "properties": {
+        "osm_id": 1827907507,
+        "osm_type": "node",
+        "name": "Tahiti",
+        "place": "suburb",
+        "source": "OpenStreetMap",
+        "source_page": "https://mapcarta.com/N1827907507",
+        "suggested_arrondissement": "1er arrondissement",
+        "assignment_status": "reference_2025",
+        "inside_current_dem": false,
+        "integration_status": "candidate_only_no_polygon_no_teleport"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.41337,
+          0.44848
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "node/1827771068",
+      "properties": {
+        "osm_id": 1827771068,
+        "osm_type": "node",
+        "name": "Ondogo",
+        "place": "suburb",
+        "source": "OpenStreetMap",
+        "source_page": "https://mapcarta.com/fr/N1827771068",
+        "suggested_arrondissement": null,
+        "assignment_status": "ambiguous_1er_ou_6e",
+        "inside_current_dem": false,
+        "integration_status": "candidate_only_no_polygon_no_teleport"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.46449,
+          0.44693
+        ]
+      }
+    }
+  ]
+}
