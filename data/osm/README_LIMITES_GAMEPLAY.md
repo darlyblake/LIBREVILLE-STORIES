@@ -86,3 +86,16 @@ Les prochains ajouts géométriques doivent suivre cet ordre :
 5. recalculer les cellules et les six regroupements, puis contrôler la couverture dans QGIS.
 
 Ne pas ajouter de destination de téléportation pour un nom qui n'a pas encore de point géographique fiable et un polygone valide.
+
+## Affichage QGIS — couleurs des arrondissements
+
+Le fichier `arrondissements.qml` fournit un style catégorisé QGIS basé sur le champ `name`. Il différencie les six arrondissements avec six couleurs et des contours foncés. Le GeoJSON contient aussi les champs `couleur`, `couleur_contour` et `opacite` pour conserver cette indication dans les données.
+
+Pour appliquer le style dans QGIS :
+1. charger `arrondissements.geojson` ;
+2. clic droit sur la couche > **Propriétés** > **Symbologie** ;
+3. utiliser le bouton **Style** en bas de la fenêtre > **Charger un style…** ;
+4. sélectionner `arrondissements.qml`.
+
+Les 72 cellules déjà présentes restent réparties entre les six arrondissements selon leurs attributs actuels. Les noms de quartiers encore absents du jeu sont référencés dans `REFERENTIEL_QUARTIERS_2025.json`, mais ne deviennent pas automatiquement des polygones : leur position doit d'abord être retrouvée et vérifiée. Le 6e arrondissement ne compte actuellement que 3 cellules géographiques ; sa couverture reste donc incomplète.
+
