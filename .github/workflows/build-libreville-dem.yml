@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install terrain dependencies
-        run: python -m pip install --upgrade pip elevation rasterio numpy
+        run: python -m pip install --upgrade pip 'elevation==1.1.2' rasterio numpy
       - name: Download and prepare SRTM1 for Libreville
         run: python tools/terrain/build_libreville_dem.py
       - name: Upload elevation grid
