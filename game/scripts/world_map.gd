@@ -33,6 +33,7 @@ var _roof_material: StandardMaterial3D
 var _facade_detail_material: StandardMaterial3D
 var _locality_points: Array[Dictionary] = []
 var _road_clearance_segments: Array[Dictionary] = []
+var _road_clearance_grid: Dictionary = {}
 var _location_hud: Label
 var _location_refresh := 0.0
 var _dem_heights := PackedFloat32Array()
@@ -1130,6 +1131,7 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 
 func _load_road_clearance_data() -> void:
 	_road_clearance_segments.clear()
+	_road_clearance_grid.clear()
 	var data := _read_geojson("res://data/osm/roads.geojson")
 	for feature in data.get("features", []):
 		var geometry: Dictionary = feature.get("geometry", {})
@@ -1149,20 +1151,40 @@ func _load_road_clearance_data() -> void:
 			for i in range(line.size() - 1):
 				var a := _geo_to_world(line[i])
 				var b := _geo_to_world(line[i + 1])
-				_road_clearance_segments.append({
+				var segment := {
 					"a": Vector2(a.x, a.z),
 					"b": Vector2(b.x, b.z),
 					"radius": width * 0.5 + sidewalk_extra
-				})
+				}
+				_road_clearance_segments.append(segment)
+				# Index spatial de 128 m : les vérifications d'herbe ne parcourent
+				# que les routes proches au lieu de rescanner tout le réseau OSM.
+				const cell_size := 128.0
+				var min_cell_x := int(floor(minf(a.x, b.x) / cell_size))
+				var max_cell_x := int(floor(maxf(a.x, b.x) / cell_size))
+				var min_cell_z := int(floor(minf(a.z, b.z) / cell_size))
+				var max_cell_z := int(floor(maxf(a.z, b.z) / cell_size))
+				for cell_x in range(min_cell_x, max_cell_x + 1):
+					for cell_z in range(min_cell_z, max_cell_z + 1):
+						var cell_key := Vector2i(cell_x, cell_z)
+						if not _road_clearance_grid.has(cell_key):
+							_road_clearance_grid[cell_key] = []
+						_road_clearance_grid[cell_key].append(segment)
 
 
 func _is_near_road(point: Vector2, extra_margin: float = 0.0) -> bool:
-	for segment in _road_clearance_segments:
-		var a: Vector2 = segment.a
-		var b: Vector2 = segment.b
-		var nearest := Geometry2D.get_closest_point_to_segment(point, a, b)
-		if point.distance_squared_to(nearest) <= pow(float(segment.radius) + extra_margin, 2.0):
-			return true
+	const cell_size := 128.0
+	var cell_x := int(floor(point.x / cell_size))
+	var cell_z := int(floor(point.y / cell_size))
+	for offset_x in range(-1, 2):
+		for offset_z in range(-1, 2):
+			var nearby_segments: Array = _road_clearance_grid.get(Vector2i(cell_x + offset_x, cell_z + offset_z), [])
+			for segment in nearby_segments:
+				var a: Vector2 = segment.a
+				var b: Vector2 = segment.b
+				var nearest := Geometry2D.get_closest_point_to_segment(point, a, b)
+				if point.distance_squared_to(nearest) <= pow(float(segment.radius) + extra_margin, 2.0):
+					return true
 	return false
 
 
