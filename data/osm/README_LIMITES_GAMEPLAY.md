@@ -41,6 +41,12 @@
 - L'enveloppe extérieure est basée sur l'enveloppe des points OSM et doit encore être comparée au littoral, aux bâtiments et à la zone réellement jouable.
 - Le rendu des polygones doit être vérifié dans QGIS puis dans Godot. La géométrie n'a pas encore été déclarée validée visuellement ou en jeu.
 
+## Téléportation
+
+Le moteur associe chaque point OSM à son polygone de quartier via `osm_id`. Avant de proposer une destination, il vérifie que le point se trouve dans son secteur ; si ce n'est pas le cas, il utilise le centroïde du polygone. Les destinations hors de la marge de sécurité de la carte ou hors de l'emprise du modèle numérique de terrain sont écartées. Le téléporteur convertit ensuite la position locale de `WorldMap` en position globale du joueur et affiche aussi l'arrondissement associé.
+
+Le calcul des données confirme que les 72 points de localité utilisés sont à l'intérieur de l'emprise actuelle du modèle de terrain. Le déplacement réel du personnage doit toutefois être contrôlé dans Godot.
+
 ## Champs importants
 
 `arrondissement_id`, `arrondissement`, `boundary_status`, `official_boundary`, `confidence`, `boundary_type`, `road_aligned_shared_edges` et `source` permettent d'identifier le secteur, sa méthode de génération et son niveau de certitude.
