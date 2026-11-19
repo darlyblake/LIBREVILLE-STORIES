@@ -46,10 +46,12 @@ func _ready() -> void:
 
 	for destination in destinations:
 		var btn := Button.new()
-		btn.text = str(destination.name)
-		btn.custom_minimum_size = Vector2(195, 30)
+		var destination_name := str(destination.get("name", "Quartier"))
+		var arrondissement := str(destination.get("arrondissement", ""))
+		btn.text = destination_name if arrondissement.is_empty() else "%s  ·  %s" % [destination_name, arrondissement]
+		btn.custom_minimum_size = Vector2(195, 34)
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.pressed.connect(_on_teleport.bind(destination.position))
+		btn.pressed.connect(_on_teleport.bind(world_map, destination.position))
 		list.add_child(btn)
 
 	if destinations.is_empty():
@@ -58,11 +60,14 @@ func _ready() -> void:
 		list.add_child(empty_label)
 
 
-func _on_teleport(world_pos: Vector3) -> void:
+func _on_teleport(world_map: Node3D, local_position: Vector3) -> void:
 	var player := get_tree().current_scene.get_node_or_null("Player") as CharacterBody3D
 	if player == null:
 		push_warning("Téléport : joueur introuvable")
 		return
-	player.global_position = world_pos
+	# Les destinations sont exprimées dans le repère de WorldMap, pas en coordonnées globales.
+	var target_position := world_map.to_global(local_position)
+	player.global_position = target_position
 	player.velocity = Vector3.ZERO
-	print("LIBREVILLE STORIES | téléporté vers ", world_pos)
+	player.reset_physics_interpolation()
+	print("LIBREVILLE STORIES | téléport sûr vers ", target_position)
