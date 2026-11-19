@@ -58,3 +58,35 @@ Ces descriptions aident à vérifier les rattachements, mais ne constituent pas 
 La génération 3D est réalisée par `game/scripts/world_map.gd`. Le script construit des meshes groupés à partir des GeoJSON.
 
 Source et attribution des données OSM : © OpenStreetMap contributors — ODbL 1.0.
+
+## Génération du nouveau terrain régional
+
+Le générateur séparé `generate_extended_dem.py` construit une grille SRTM1 d'environ 30 m couvrant l'emprise de travail 0,300–0,500° N et 9,370–9,550° E. Cette emprise est volontairement régionale : elle permet d'englober les nouveaux points du nord et de l'est, mais elle ne représente pas une limite administrative officielle et peut inclure des zones voisines.
+
+### Génération automatique
+
+Le workflow GitHub Actions `.github/workflows/generate-extended-terrain.yml` démarre lorsqu'on modifie le générateur sur `main`. Il télécharge la tuile SRTM1 `N00E009`, crée les deux fichiers, vérifie leur taille, puis publie une archive d'artefact nommée `libreville-terrain-etendu-srtm1`.
+
+Pour récupérer les fichiers :
+1. ouvrir l'onglet **Actions** du dépôt ;
+2. ouvrir l'exécution **Generate extended Libreville terrain** ;
+3. attendre que le travail **generate-dem** soit terminé avec succès ;
+4. télécharger l'artefact **libreville-terrain-etendu-srtm1**.
+
+Les fichiers produits sont :
+- `libreville_dem_extended.json`
+- `libreville_dem_extended_f32.bin`
+
+### Génération locale (facultative)
+
+Installer les dépendances puis lancer depuis la racine du dépôt :
+
+```bash
+python3 -m pip install numpy rasterio
+python3 tools/map-generator/generate_extended_dem.py
+```
+
+### Important avant intégration au jeu
+
+Le DEM étendu est produit sous des noms distincts. Il ne remplace pas `libreville_dem.json` ni `libreville_dem_f32.bin`, et le jeu continue donc d'utiliser le terrain actuel tant que l'intégration n'est pas faite. Il faudra ensuite vérifier le repère local, le placement du joueur, les collisions, les limites invisibles et la cohérence des couches OSM dans Godot. La nouvelle emprise ne doit pas être présentée comme une extension officielle de la commune.
+
