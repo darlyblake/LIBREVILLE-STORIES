@@ -957,6 +957,28 @@ func _load_roads() -> void:
 			for endpoint in [line[0], line[line.size() - 1]]:
 				var key := _road_junction_key(endpoint)
 				junction_counts[key] = int(junction_counts.get(key, 0)) + 1
+	# Raccords compacts aux intersections : les rubans de routes ne laissent pas de trous.
+	var patched_junctions: Dictionary = {}
+	for feature in data.get("features", []):
+		var junction_geometry: Dictionary = feature.get("geometry", {})
+		var junction_lines: Array = []
+		match str(junction_geometry.get("type", "")):
+			"LineString":
+				junction_lines.append(junction_geometry.get("coordinates", []))
+			"MultiLineString":
+				junction_lines = junction_geometry.get("coordinates", [])
+		for junction_line in junction_lines:
+			if junction_line.size() < 2:
+				continue
+			for endpoint in [junction_line[0], junction_line[junction_line.size() - 1]]:
+				var key := _road_junction_key(endpoint)
+				if int(junction_counts.get(key, 0)) < 3 or patched_junctions.has(key):
+					continue
+				var props: Dictionary = feature.get("properties", {})
+				var junction_width := _road_width(str(props.get("highway", "residential")), props)
+				surface.set_color(Color(0.31, 0.32, 0.32))
+				_add_junction_patch(surface, _geo_to_world(endpoint), maxf(2.2, junction_width * 0.50))
+				patched_junctions[key] = true
 	var batch_count := 0
 	var batch_index := 0
 	var road_features: Array = data.get("features", []).duplicate()
