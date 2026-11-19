@@ -1,0 +1,37 @@
+name: Build Libreville elevation data
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-dem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+      - name: Install GDAL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gdal-bin
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install terrain dependencies
+        run: python -m pip install --upgrade pip elevation rasterio numpy
+      - name: Download and prepare SRTM1 for Libreville
+        run: python tools/terrain/build_libreville_dem.py
+      - name: Upload elevation grid
+        uses: actions/upload-artifact@v4
+        with:
+          name: libreville-srtm1-dem
+          path: |
+            data/terrain/libreville_dem_f32.bin
+            data/terrain/libreville_dem.json
+            data/terrain/libreville_srtm1_source.tif
+          if-no-files-found: error
+          retention-days: 30
