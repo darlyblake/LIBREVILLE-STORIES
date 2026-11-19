@@ -161,7 +161,7 @@ func _load_real_terrain() -> void:
 		push_warning("Impossible de lire les métadonnées du DEM.")
 		return
 	var parsed: Variant = JSON.parse_string(meta_file.get_as_text())
-	if not parsed is Dictionary:
+	if not (parsed is Dictionary):
 		push_warning("Métadonnées DEM invalides.")
 		return
 	var meta: Dictionary = parsed
@@ -1795,7 +1795,7 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 				center + tangent * half_width + Vector3.UP * half_height + offset,
 				center - tangent * half_width + Vector3.UP * half_height + offset)
 			if floors >= 2 and building_kind in ["apartments", "residential", "house", "commercial", "office"] and (window_index + abs(osm_id)) % 4 == 0 and floor_index > 0:
-				_add_facade_balcony(surface, center, tangent, normal, half_width, center_y - half_height - 0.06)
+				_add_facade_balcony(surface, center, tangent, normal, half_width, base_y + center_y - half_height - 0.06)
 			# Appui de fenêtre discret, collé à la façade.
 			surface.set_color(Color(0.70, 0.68, 0.62))
 			var sill_center := center - Vector3.UP * (half_height + 0.05)
