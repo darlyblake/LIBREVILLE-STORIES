@@ -96,6 +96,28 @@ Le parseur Godot a réussi le contrôle automatisé après ces changements. Cela
 
 La nouvelle emprise ne doit pas être présentée comme une extension officielle de la commune.
 
+## Résultat de l'extraction OSM régionale (19 novembre 2026)
+
+Le workflow `Extract extended Libreville OSM layers` a terminé avec succès. Les six couches GeoJSON sont enregistrées dans `data/osm/extended/`, sans remplacer les fichiers historiques.
+
+| Couche | Objets |
+|---|---:|
+| Routes | 8 323 |
+| Bâtiments | 113 421 |
+| Environnement (eau, littoral, végétation) | 403 |
+| Localités nommées | 107 |
+| Points d'intérêt | 3 276 |
+| Polygones de quartiers | 1 |
+
+Les nombres sont des comptes par couche, pas un décompte d'objets uniques. Source : extrait PBF Gabon de Geofabrik, données OpenStreetMap sous ODbL 1.0. Emprise : 0,300–0,500° N et 9,370–9,550° E.
+
+**Limite importante :** les 107 localités sont des points nommés, pas des contours. Le fichier des quartiers ne contient qu'un seul polygone nommé (« Première Cité »). Il ne remplace donc pas les 72 secteurs historiques. Les attributions d'arrondissement et les limites administratives restent inchangées.
+
+Les contrôles automatiques ont vérifié les six FeatureCollections, l'emprise déclarée et les seuils minimaux de routes et bâtiments. Le parseur Godot a également réussi après la mise en place du chargement prioritaire du DEM étendu et des couches détaillées. Le rendu visuel, les collisions et les téléportations doivent encore être vérifiés dans Godot.
+
+Commit des couches OSM : `2f00cf0513d8d66c4eb388b054b47696a22e13e8`.
+Artefact téléchargeable : [libreville-osm-extended](https://github.com/darlyblake/LIBREVILLE-STORIES/actions/runs/44529983008/artifacts/14533209409).
+
 ## Résultat du DEM régional généré (19 novembre 2026)
 
 La génération GitHub Actions a réussi et les fichiers sont maintenant enregistrés à la racine du dépôt :
