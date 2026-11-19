@@ -10,6 +10,10 @@ const BUILDINGS_PER_MESH := 1200
 const ROADS_PER_MESH := 700
 const MAX_ROAD_LABELS := 250
 const MAX_POI_LABELS := 450
+const DEM_META_PATH := "res://libreville_dem.json"
+const DEM_BINARY_PATH := "res://libreville_dem_f32.bin"
+const TERRAIN_CHUNK_CELLS := 32
+const TERRAIN_VERTICAL_EXAGGERATION := 1.0
 
 @export var show_roads := true
 @export var show_buildings := true
@@ -30,8 +34,17 @@ var _facade_detail_material: StandardMaterial3D
 var _locality_points: Array[Dictionary] = []
 var _location_hud: Label
 var _location_refresh := 0.0
+var _dem_heights := PackedFloat32Array()
+var _dem_rows := 0
+var _dem_columns := 0
+var _dem_spacing := 30.0
+var _dem_x_min := 0.0
+var _dem_z_min := 0.0
+var _dem_loaded := false
 
 func _ready() -> void:
+	_load_real_terrain()
+	_disable_flat_ground()
 	_apply_ground_surface()
 	_add_ocean_plane()
 	_road_material = _make_material(Color.WHITE)
@@ -64,6 +77,7 @@ func _ready() -> void:
 	if show_buildings:
 		_load_buildings()
 	_load_pois()
+	_position_player_on_terrain()
 	_create_location_hud()
 	print("LIBREVILLE STORIES | routes: %d | bâtiments: %d | lieux identifiables: %d | éléments environnementaux: %d" % [_road_count, _building_count, _poi_count, _environment_count])
 
@@ -126,6 +140,145 @@ func _update_location_hud() -> void:
 	else:
 		location_line = "Hors des localités nommées OSM"
 	_location_hud.text = "%s\n%.4f  ·  %.4f" % [location_line, latitude, longitude]
+
+func _disable_flat_ground() -> void:
+	# Le grand plan horizontal de main.tscn masquerait le relief réel et
+	# conserverait une collision plane sous les zones en contrebas.
+	var ground := get_parent().get_node_or_null("Ground") as StaticBody3D
+	if ground != null:
+		ground.visible = false
+		var collision := ground.get_node_or_null("CollisionShape3D") as CollisionShape3D
+		if collision != null:
+			collision.disabled = true
+
+
+func _load_real_terrain() -> void:
+	if not FileAccess.file_exists(DEM_META_PATH) or not FileAccess.file_exists(DEM_BINARY_PATH):
+		push_warning("DEM Libreville absent : terrain plat de secours conservé.")
+		return
+	var meta_file := FileAccess.open(DEM_META_PATH, FileAccess.READ)
+	if meta_file == null:
+		push_warning("Impossible de lire les métadonnées du DEM.")
+		return
+	var parsed: Variant = JSON.parse_string(meta_file.get_as_text())
+	if not parsed is Dictionary:
+		push_warning("Métadonnées DEM invalides.")
+		return
+	var meta: Dictionary = parsed
+	_dem_rows = int(meta.get("rows", 0))
+	_dem_columns = int(meta.get("columns", 0))
+	_dem_spacing = float(meta.get("spacing_m", 30.0))
+	_dem_x_min = float(meta.get("x_min", 0.0))
+	_dem_z_min = float(meta.get("z_min", 0.0))
+	if _dem_rows < 2 or _dem_columns < 2 or _dem_spacing <= 0.0:
+		push_warning("Dimensions DEM invalides.")
+		return
+	var binary := FileAccess.open(DEM_BINARY_PATH, FileAccess.READ)
+	if binary == null:
+		push_warning("Impossible d'ouvrir la grille binaire DEM.")
+		return
+	var expected_bytes := _dem_rows * _dem_columns * 4
+	if binary.get_length() != expected_bytes:
+		push_warning("Taille DEM incorrecte : %d octets attendus, %d reçus." % [expected_bytes, binary.get_length()])
+		return
+	var bytes := binary.get_buffer(expected_bytes)
+	_dem_heights.resize(_dem_rows * _dem_columns)
+	for i in range(_dem_heights.size()):
+		_dem_heights[i] = bytes.decode_float(i * 4) * TERRAIN_VERTICAL_EXAGGERATION
+	_dem_loaded = true
+	_build_terrain_chunks()
+	print("LIBREVILLE STORIES | relief SRTM chargé : %d x %d cellules, pas %.0f m" % [_dem_columns, _dem_rows, _dem_spacing])
+
+
+func _terrain_height_at_world(x: float, z: float) -> float:
+	if not _dem_loaded:
+		return 0.0
+	var grid_x := clampf((x - _dem_x_min) / _dem_spacing, 0.0, float(_dem_columns - 1))
+	var grid_z := clampf((z - _dem_z_min) / _dem_spacing, 0.0, float(_dem_rows - 1))
+	var x0 := int(floor(grid_x))
+	var z0 := int(floor(grid_z))
+	var x1 := mini(x0 + 1, _dem_columns - 1)
+	var z1 := mini(z0 + 1, _dem_rows - 1)
+	var tx := grid_x - float(x0)
+	var tz := grid_z - float(z0)
+	var h00 := _dem_heights[z0 * _dem_columns + x0]
+	var h10 := _dem_heights[z0 * _dem_columns + x1]
+	var h01 := _dem_heights[z1 * _dem_columns + x0]
+	var h11 := _dem_heights[z1 * _dem_columns + x1]
+	return lerpf(lerpf(h00, h10, tx), lerpf(h01, h11, tx), tz)
+
+
+func _build_terrain_chunks() -> void:
+	var terrain_material := StandardMaterial3D.new()
+	terrain_material.vertex_color_use_as_albedo = true
+	terrain_material.roughness = 1.0
+	terrain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var chunk_index := 0
+	for row_start in range(0, _dem_rows - 1, TERRAIN_CHUNK_CELLS):
+		for col_start in range(0, _dem_columns - 1, TERRAIN_CHUNK_CELLS):
+			var row_end := mini(row_start + TERRAIN_CHUNK_CELLS, _dem_rows - 1)
+			var col_end := mini(col_start + TERRAIN_CHUNK_CELLS, _dem_columns - 1)
+			var surface := SurfaceTool.new()
+			surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+			surface.set_material(terrain_material)
+			for row in range(row_start, row_end):
+				for col in range(col_start, col_end):
+					var x0 := _dem_x_min + float(col) * _dem_spacing
+					var x1 := x0 + _dem_spacing
+					var z0 := _dem_z_min + float(row) * _dem_spacing
+					var z1 := z0 + _dem_spacing
+					var h00 := _dem_heights[row * _dem_columns + col]
+					var h10 := _dem_heights[row * _dem_columns + col + 1]
+					var h01 := _dem_heights[(row + 1) * _dem_columns + col]
+					var h11 := _dem_heights[(row + 1) * _dem_columns + col + 1]
+					var c00 := _terrain_color(h00)
+					var c10 := _terrain_color(h10)
+					var c01 := _terrain_color(h01)
+					var c11 := _terrain_color(h11)
+					# Ordre des sommets orienté vers le haut (normale +Y).
+					surface.set_color(c00); surface.add_vertex(Vector3(x0, h00, z0))
+					surface.set_color(c01); surface.add_vertex(Vector3(x0, h01, z1))
+					surface.set_color(c11); surface.add_vertex(Vector3(x1, h11, z1))
+					surface.set_color(c00); surface.add_vertex(Vector3(x0, h00, z0))
+					surface.set_color(c11); surface.add_vertex(Vector3(x1, h11, z1))
+					surface.set_color(c10); surface.add_vertex(Vector3(x1, h10, z0))
+			surface.generate_normals()
+			var mesh := surface.commit()
+			if mesh == null:
+				continue
+			var chunk := MeshInstance3D.new()
+			chunk.name = "SRTM_Terrain_%03d" % chunk_index
+			chunk.mesh = mesh
+			chunk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			chunk.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+			add_child(chunk)
+			var body := StaticBody3D.new()
+			body.name = "SRTM_Collision_%03d" % chunk_index
+			body.collision_layer = 1
+			body.collision_mask = 1
+			var shape := CollisionShape3D.new()
+			shape.shape = mesh.create_trimesh_shape()
+			body.add_child(shape)
+			add_child(body)
+			chunk_index += 1
+	print("LIBREVILLE STORIES | terrain et collisions SRTM générés : %d blocs" % chunk_index)
+
+
+func _terrain_color(height: float) -> Color:
+	if height < 1.0:
+		return Color(0.66, 0.62, 0.48)
+	if height < 15.0:
+		return Color(0.34, 0.43, 0.30)
+	if height < 45.0:
+		return Color(0.29, 0.39, 0.27)
+	return Color(0.35, 0.39, 0.29)
+
+
+func _position_player_on_terrain() -> void:
+	var player := get_parent().get_node_or_null("Player") as CharacterBody3D
+	if player != null and _dem_loaded:
+		player.position.y = _terrain_height_at_world(player.position.x, player.position.z) + 2.0
+
 
 func _apply_ground_surface() -> void:
 	# Le grand plan de sol uni donne un aspect artificiel. Une texture légère
@@ -274,7 +427,7 @@ func _load_environment() -> void:
 				var mapped_surface := str(props.get("surface", ""))
 				var is_grass_area := str(props.get("landuse", "")) == "grass" or (kind == "green_space" and mapped_surface not in ["concrete", "paved", "asphalt"]) or str(props.get("leisure", "")) == "garden"
 				if is_grass_area and _grass_generator != null:
-					_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind)
+					_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind, Callable(self, "_terrain_height_at_world"))
 			surface.set_color(_environment_color(kind))
 			if has_landscape_relief:
 				relief_collision_surface.set_color(_environment_color(kind))
@@ -300,9 +453,9 @@ func _load_environment() -> void:
 						target_surface.add_vertex(Vector3(p0.x, h0, p0.y))
 						target_surface.add_vertex(Vector3(center.x, hc, center.y))
 				else:
-					surface.add_vertex(Vector3(p0.x, 0.012, p0.y))
-					surface.add_vertex(Vector3(p1.x, 0.012, p1.y))
-					surface.add_vertex(Vector3(p2.x, 0.012, p2.y))
+					surface.add_vertex(Vector3(p0.x, _terrain_height_at_world(p0.x, p0.y) + 0.025, p0.y))
+					surface.add_vertex(Vector3(p1.x, _terrain_height_at_world(p1.x, p1.y) + 0.025, p1.y))
+					surface.add_vertex(Vector3(p2.x, _terrain_height_at_world(p2.x, p2.y) + 0.025, p2.y))
 			added = true
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
@@ -352,7 +505,7 @@ func _landscape_relief_height(point: Vector2, center: Vector2, radius: float, ki
 	var broad_undulation := sin(point.x * 0.075 + center.y * 0.031) * cos(point.y * 0.082 - center.x * 0.027)
 	var fine_undulation := sin(point.x * 0.19 + point.y * 0.13) * 0.35
 	var surface_variation := (broad_undulation * 0.045 + fine_undulation * 0.018) * mound
-	return maxf(0.012, 0.035 + max_height * mound + surface_variation)
+	return _terrain_height_at_world(point.x, point.y) + 0.035
 
 
 func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: Array[Vector3], kind: String) -> void:
@@ -403,7 +556,7 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 				break
 		if has_nearby_tree:
 			continue
-		var tree_ground_y := _landscape_relief_height(candidate, center, radius, kind)
+		var tree_ground_y := _terrain_height_at_world(candidate.x, candidate.y)
 		output.append(Vector3(candidate.x, tree_ground_y, candidate.y))
 		added += 1
 
@@ -1025,8 +1178,13 @@ func _load_buildings() -> void:
 			if indices.is_empty():
 				continue
 			var facade_col := _building_color(building_kind, osm_id, props)
+			var building_center := Vector2.ZERO
+			for footprint_point in points:
+				building_center += footprint_point
+			building_center /= float(points.size())
+			var building_base_y := _terrain_height_at_world(building_center.x, building_center.y)
 			surface.set_color(facade_col)
-			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props, facade_col)
+			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props, facade_col, building_base_y)
 			added = true
 		if added:
 			_building_count += 1
@@ -1190,7 +1348,7 @@ func _geo_to_world(coordinate: Array) -> Vector3:
 	var lat := float(coordinate[1])
 	var x := (lon - CENTER_LON) * METERS_PER_DEG_LAT * cos(deg_to_rad(CENTER_LAT))
 	var z := -(lat - CENTER_LAT) * METERS_PER_DEG_LAT
-	return Vector3(x, 0.0, z)
+	return Vector3(x, _terrain_height_at_world(x, z), z)
 
 func _road_color(kind: String, props: Dictionary = {}) -> Color:
 	# Palette asphalte plus propre / GTA, teintée par la texture procédurale.
@@ -1486,7 +1644,7 @@ func _add_uv_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: V
 func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		points: PackedVector2Array, indices: PackedInt32Array, height: float,
 		roof_tint: Color, building_kind: String, osm_id: int, props: Dictionary = {},
-		facade_color: Color = Color(0.76, 0.68, 0.56)) -> void:
+		facade_color: Color = Color(0.76, 0.68, 0.56), base_y: float = 0.0) -> void:
 	var longest_edge_index := 0
 	var longest_edge_length := 0.0
 	var signed_area := 0.0
@@ -1509,41 +1667,41 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		# Mur principal (du haut de la plinthe jusqu'au toit).
 		walls.set_color(facade_color)
 		_add_uv_quad(walls,
-			Vector3(a.x, plinth_h, a.y), Vector3(b.x, plinth_h, b.y),
-			Vector3(b.x, height, b.y), Vector3(a.x, height, a.y),
+			Vector3(a.x, base_y + plinth_h, a.y), Vector3(b.x, base_y + plinth_h, b.y),
+			Vector3(b.x, base_y + height, b.y), Vector3(a.x, base_y + height, a.y),
 			Vector2(0.0, 0.0), Vector2(uv_length, 0.0),
 			Vector2(uv_length, uv_height), Vector2(0.0, uv_height))
 		# Plinthe légèrement plus sombre.
 		walls.set_color(Color(0.52, 0.49, 0.44))
 		_add_uv_quad(walls,
-			Vector3(a.x, 0.0, a.y), Vector3(b.x, 0.0, b.y),
-			Vector3(b.x, plinth_h, b.y), Vector3(a.x, plinth_h, a.y),
+			Vector3(a.x, base_y, a.y), Vector3(b.x, base_y, b.y),
+			Vector3(b.x, base_y + plinth_h, b.y), Vector3(a.x, base_y + plinth_h, a.y),
 			Vector2(0.0, 0.0), Vector2(uv_length * 0.2, 0.0),
 			Vector2(uv_length * 0.2, 0.15), Vector2(0.0, 0.15))
 		var edge_direction := Vector3((b.x - a.x) / maxf(edge_length, 0.001), 0.0, (b.y - a.y) / maxf(edge_length, 0.001))
 		var outward_normal := Vector3(edge_direction.z, 0.0, -edge_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
-		_add_facade_windows(details, a, b, height, building_kind, osm_id, outward_normal)
+		_add_facade_windows(details, a, b, height, building_kind, osm_id, outward_normal, base_y)
 	if longest_edge_length >= 2.8 and building_kind not in ["garage", "shed", "roof", "carport"]:
 		var door_a := points[longest_edge_index]
 		var door_b := points[(longest_edge_index + 1) % points.size()]
 		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
 		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
-		_add_facade_door(details, door_a, door_b, door_normal)
+		_add_facade_door(details, door_a, door_b, door_normal, base_y)
 	roofs.set_color(roof_tint)
 	var roof_style := _roof_style(building_kind, osm_id, props)
 	var pitched_roof := false
 	if _should_use_pitched_roof(building_kind, props, points.size()):
-		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style)
+		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style, base_y)
 	if not pitched_roof:
 		for i in range(0, indices.size(), 3):
 			var p0 := points[indices[i]]
 			var p1 := points[indices[i + 1]]
 			var p2 := points[indices[i + 2]]
-			_add_roof_uv_triangle(roofs, Vector3(p0.x, height + 0.04, p0.y),
-				Vector3(p1.x, height + 0.04, p1.y), Vector3(p2.x, height + 0.04, p2.y), roof_style)
+			_add_roof_uv_triangle(roofs, Vector3(p0.x, base_y + height + 0.04, p0.y),
+				Vector3(p1.x, base_y + height + 0.04, p1.y), Vector3(p2.x, base_y + height + 0.04, p2.y), roof_style)
 
 
-func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int) -> bool:
+func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, base_y: float = 0.0) -> bool:
 	# Première géométrie à deux pans, réservée aux empreintes quadrilatérales
 	# convexes et allongées. Les formes complexes gardent un toit plat.
 	var longest_index := 0
@@ -1573,7 +1731,7 @@ func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_he
 	var p1 := points[(longest_index + 1) % 4]
 	var p2 := points[(longest_index + 2) % 4]
 	var p3 := points[(longest_index + 3) % 4]
-	var roof_y := wall_height + 0.035
+	var roof_y := base_y + wall_height + 0.035
 	var ridge_y := roof_y + clampf(shortest_side * 0.30, 0.75, 1.9)
 	var a := Vector3(p0.x, roof_y, p0.y)
 	var b := Vector3(p1.x, roof_y, p1.y)
@@ -1595,7 +1753,7 @@ func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_he
 
 
 func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
-		height: float, building_kind: String, osm_id: int, normal: Vector3) -> void:
+		height: float, building_kind: String, osm_id: int, normal: Vector3, base_y: float = 0.0) -> void:
 	if building_kind in ["garage", "shed", "roof", "carport", "warehouse", "industrial"]:
 		return
 	var edge := b - a
@@ -1615,7 +1773,7 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 			continue
 		for window_index in range(window_count):
 			var center_distance := (float(window_index) + 0.5) * spacing
-			var center := Vector3(a.x, 0.0, a.y) + tangent * center_distance + Vector3.UP * center_y
+			var center := Vector3(a.x, base_y, a.y) + tangent * center_distance + Vector3.UP * center_y
 			var half_width := window_width * 0.5
 			var half_height := window_height * 0.5
 			# Offset très léger pour coller la fenêtre à la façade (évite le flottement).
@@ -1676,14 +1834,14 @@ func _add_facade_balcony(surface: SurfaceTool, center: Vector3, tangent: Vector3
 		Vector3(front_right.x, rail_top, front_right.z),
 		Vector3(back_right.x, rail_top, back_right.z))
 
-func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3) -> void:
+func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3, base_y: float = 0.0) -> void:
 	var edge := b - a
 	var edge_length := edge.length()
 	if edge_length < 2.8:
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
 	# Porte ancrée au sol (y ≈ 1.05 = centre d'une porte de 2,1 m).
-	var center := Vector3(a.x, 1.05, a.y) + tangent * (edge_length * 0.5)
+	var center := Vector3(a.x, base_y + 1.05, a.y) + tangent * (edge_length * 0.5)
 	var half_width := 0.44
 	var half_height := 1.05
 	surface.set_color(Color(0.30, 0.22, 0.16))
