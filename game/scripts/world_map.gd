@@ -190,6 +190,10 @@ func _load_real_terrain() -> void:
 	print("LIBREVILLE STORIES | relief SRTM chargé : %d x %d cellules, pas %.0f m" % [_dem_columns, _dem_rows, _dem_spacing])
 
 
+func terrain_height_at_world(x: float, z: float) -> float:
+	return _terrain_height_at_world(x, z)
+
+
 func _terrain_height_at_world(x: float, z: float) -> float:
 	if not _dem_loaded:
 		return 0.0
@@ -236,12 +240,18 @@ func _build_terrain_chunks() -> void:
 					var c01 := _terrain_color(h01)
 					var c11 := _terrain_color(h11)
 					# Ordre des sommets orienté vers le haut (normale +Y).
-					surface.set_color(c00); surface.add_vertex(Vector3(x0, h00, z0))
-					surface.set_color(c01); surface.add_vertex(Vector3(x0, h01, z1))
-					surface.set_color(c11); surface.add_vertex(Vector3(x1, h11, z1))
-					surface.set_color(c00); surface.add_vertex(Vector3(x0, h00, z0))
-					surface.set_color(c11); surface.add_vertex(Vector3(x1, h11, z1))
-					surface.set_color(c10); surface.add_vertex(Vector3(x1, h10, z0))
+					surface.set_color(c00)
+					surface.add_vertex(Vector3(x0, h00, z0))
+					surface.set_color(c01)
+					surface.add_vertex(Vector3(x0, h01, z1))
+					surface.set_color(c11)
+					surface.add_vertex(Vector3(x1, h11, z1))
+					surface.set_color(c00)
+					surface.add_vertex(Vector3(x0, h00, z0))
+					surface.set_color(c11)
+					surface.add_vertex(Vector3(x1, h11, z1))
+					surface.set_color(c10)
+					surface.add_vertex(Vector3(x1, h10, z0))
 			surface.generate_normals()
 			var mesh := surface.commit()
 			if mesh == null:
