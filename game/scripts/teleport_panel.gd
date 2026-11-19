@@ -26,7 +26,7 @@ func _ready() -> void:
 	title.add_theme_color_override("font_color", Color(0.92, 0.96, 1.0))
 	vbox.add_child(title)
 
-	var world_map := get_tree().current_scene.get_node_or_null("WorldMap")
+	var world_map := get_tree().current_scene.get_node_or_null("WorldMap") as Node3D
 	if world_map == null or not world_map.has_method("get_locality_destinations"):
 		var warning := Label.new()
 		warning.text = "Données des quartiers indisponibles"
