@@ -33,6 +33,8 @@ Ces noms définissent le périmètre de travail. La zone technique actuelle est 
 - [x] Liste de contrôle de finalisation de la carte : [docs/MAP_COMPLETION_CHECKLIST.md](docs/MAP_COMPLETION_CHECKLIST.md)
 - [x] Validation Godot 4.3 sous OpenGL Compatibility (Mesa/llvmpipe) : scène chargée et 4 503 routes + 49 359 bâtiments générés
 - [x] Première découpe de gameplay intégrée : 72 secteurs de quartiers et 6 regroupements d'arrondissement ; 13 frontières communes alignées sur des routes OSM et 2 sur des éléments naturels
+- [x] Référentiel des quartiers confronté à la loi n°020/2025 du 27 juin 2025 ; huit rattachements corrigés et registre des noms manquants créé dans `data/osm/REFERENTIEL_QUARTIERS_2025.json`
+- [ ] Compléter les points et polygones des quartiers cités par le référentiel 2025 mais absents des 72 secteurs OSM actuels ; les listes officielles ne constituent pas des géométries SIG
 - [x] Téléporteurs contrôlés par les polygones de gameplay : exclusion du repère « Libreville », vérification de l'appartenance au quartier, marge de sécurité dans la carte et conversion du repère local vers le repère global
 - [ ] Vérification visuelle des contours dans QGIS et Godot sur le PC cible ; les limites restent provisoires et non officielles
 - [ ] Test de déplacement/atterrissage après téléportation et mesure des performances dans Godot sur le PC cible
