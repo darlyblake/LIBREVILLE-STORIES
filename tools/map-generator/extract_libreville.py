@@ -507,15 +507,27 @@ def extract_from_geofabrik_pbf(south, west, north, east):
         url = "https://download.geofabrik.de/africa/gabon-latest.osm.pbf"
         print("Téléchargement du PBF Gabon depuis Geofabrik…", flush=True)
         request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(request, timeout=180) as response, temp_path.open("wb") as output:
-            while True:
-                chunk = response.read(1024 * 1024)
-                if not chunk:
-                    break
-                output.write(chunk)
-        if temp_path.stat().st_size < 1_000_000:
-            raise RuntimeError("Fichier PBF Geofabrik incomplet ou trop petit.")
-        temp_path.replace(pbf_path)
+        download_errors = []
+        for attempt in range(1, 4):
+            try:
+                with urllib.request.urlopen(request, timeout=180) as response, temp_path.open("wb") as output:
+                    while True:
+                        chunk = response.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        output.write(chunk)
+                if temp_path.stat().st_size < 1_000_000:
+                    raise RuntimeError("Fichier PBF Geofabrik incomplet ou trop petit.")
+                temp_path.replace(pbf_path)
+                break
+            except Exception as exc:
+                download_errors.append(f"essai {attempt}: {type(exc).__name__}: {exc}")
+                temp_path.unlink(missing_ok=True)
+                if attempt < 3:
+                    print(f"Téléchargement Geofabrik échoué, nouvel essai {attempt + 1}/3…", flush=True)
+                    time.sleep(10 * attempt)
+        if not pbf_path.exists():
+            raise RuntimeError("Impossible de télécharger le PBF Geofabrik : " + " | ".join(download_errors))
 
     class LibrevilleHandler(osmium.SimpleHandler):
         def __init__(self):
