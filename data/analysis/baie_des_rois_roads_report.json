@@ -1,0 +1,1029 @@
+{
+  "source": "data\\osm\\roads.geojson",
+  "coordinate_conversion": "same constants and X/Z convention as game/scripts/world_map.gd",
+  "warning": "OSM centre lines and game-sidewalk widths are estimates, not a surveyed curb edge.",
+  "rows": {
+    "A": [
+      [
+        -1833.43,
+        -437.01
+      ],
+      [
+        -1934.14,
+        -428.43
+      ]
+    ],
+    "B": [
+      [
+        -1834.81,
+        -428.35
+      ],
+      [
+        -1933.41,
+        -419.95
+      ]
+    ]
+  },
+  "road_features_within_65m_of_kiosk_rows": [
+    {
+      "osm_id": "way/1070652019",
+      "name": "Promenade zone nord",
+      "highway": "footway",
+      "surface": "paved",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 1,
+      "distance_centerline_to_row_m": 0.0,
+      "nearest_road_vertex_world_xz": [
+        -1931.77,
+        -424.52
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1931.77,
+            -424.52
+          ],
+          [
+            -1937.61,
+            -452.06
+          ],
+          [
+            -1945.76,
+            -492.33
+          ],
+          [
+            -1948.83,
+            -509.76
+          ],
+          [
+            -1951.18,
+            -523.11
+          ],
+          [
+            -1952.37,
+            -538.19
+          ],
+          [
+            -1953.45,
+            -557.5
+          ],
+          [
+            -1954.81,
+            -606.84
+          ],
+          [
+            -1954.05,
+            -634.48
+          ],
+          [
+            -1953.45,
+            -667.02
+          ],
+          [
+            -1951.55,
+            -692.76
+          ],
+          [
+            -1950.74,
+            -700.96
+          ],
+          [
+            -1949.88,
+            -712.44
+          ],
+          [
+            -1946.96,
+            -735.38
+          ],
+          [
+            -1939.39,
+            -781.18
+          ],
+          [
+            -1936.73,
+            -794.54
+          ],
+          [
+            -1931.4,
+            -814.55
+          ],
+          [
+            -1929.42,
+            -822.45
+          ],
+          [
+            -1924.69,
+            -840.5
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652022",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 0.0,
+      "nearest_road_vertex_world_xz": [
+        -1931.77,
+        -424.52
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1931.77,
+            -424.52
+          ],
+          [
+            -1931.1,
+            -413.1
+          ],
+          [
+            -1930.98,
+            -410.96
+          ],
+          [
+            -1928.93,
+            -392.1
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652023",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 0.0,
+      "nearest_road_vertex_world_xz": [
+        -1906.19,
+        -416.65
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1906.84,
+            -428.24
+          ],
+          [
+            -1906.19,
+            -416.65
+          ],
+          [
+            -1906.05,
+            -414.39
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652024",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 0.0,
+      "nearest_road_vertex_world_xz": [
+        -1853.04,
+        -432.66
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1853.04,
+            -432.66
+          ],
+          [
+            -1853.24,
+            -419.31
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652025",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 0.0,
+      "nearest_road_vertex_world_xz": [
+        -1921.39,
+        -426.13
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1921.39,
+            -426.13
+          ],
+          [
+            -1920.91,
+            -414.67
+          ],
+          [
+            -1920.81,
+            -412.4
+          ],
+          [
+            -1919.15,
+            -393.88
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652026",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 0.0,
+      "nearest_road_vertex_world_xz": [
+        -1881.01,
+        -419.78
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1880.79,
+            -431.12
+          ],
+          [
+            -1881.01,
+            -419.78
+          ],
+          [
+            -1881.05,
+            -417.58
+          ],
+          [
+            -1879.14,
+            -399.98
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1085115438",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 0.0,
+      "nearest_road_vertex_world_xz": [
+        -1853.24,
+        -419.31
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1826.51,
+            -432.77
+          ],
+          [
+            -1853.24,
+            -419.31
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/708322894",
+      "name": "",
+      "highway": "secondary",
+      "surface": "",
+      "width_m_used_by_game": 9.0,
+      "sidewalk_mode_used_by_game": "both",
+      "sidewalk_width_m_each_side": 1.55,
+      "curb_width_m_each_side": 0.22,
+      "nearest_kiosk_row": 1,
+      "distance_centerline_to_row_m": 1.84,
+      "nearest_road_vertex_world_xz": [
+        -1880.79,
+        -431.12
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1980.46,
+            -399.26
+          ],
+          [
+            -1979.09,
+            -404.55
+          ],
+          [
+            -1976.74,
+            -409.62
+          ],
+          [
+            -1971.59,
+            -413.77
+          ],
+          [
+            -1948.99,
+            -419.87
+          ],
+          [
+            -1931.77,
+            -424.52
+          ],
+          [
+            -1921.39,
+            -426.13
+          ],
+          [
+            -1906.84,
+            -428.24
+          ],
+          [
+            -1893.26,
+            -429.76
+          ],
+          [
+            -1880.79,
+            -431.12
+          ],
+          [
+            -1865.93,
+            -432.07
+          ],
+          [
+            -1853.04,
+            -432.66
+          ],
+          [
+            -1826.51,
+            -432.77
+          ],
+          [
+            -1814.14,
+            -432.47
+          ],
+          [
+            -1800.3,
+            -431.94
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652021",
+      "name": "",
+      "highway": "footway",
+      "surface": "paved",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 6.69,
+      "nearest_road_vertex_world_xz": [
+        -1891.65,
+        -416.79
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1944.12,
+            -409.25
+          ],
+          [
+            -1930.98,
+            -410.96
+          ],
+          [
+            -1928.35,
+            -411.31
+          ],
+          [
+            -1920.81,
+            -412.4
+          ],
+          [
+            -1906.05,
+            -414.39
+          ],
+          [
+            -1891.65,
+            -416.79
+          ],
+          [
+            -1881.05,
+            -417.58
+          ],
+          [
+            -1877.93,
+            -417.82
+          ],
+          [
+            -1862.84,
+            -418.85
+          ],
+          [
+            -1853.24,
+            -419.31
+          ],
+          [
+            -1826.45,
+            -419.39
+          ],
+          [
+            -1813.45,
+            -419.2
+          ],
+          [
+            -1797.38,
+            -418.06
+          ],
+          [
+            -1789.1,
+            -417.48
+          ],
+          [
+            -1774.02,
+            -415.35
+          ],
+          [
+            -1757.54,
+            -413.02
+          ],
+          [
+            -1747.67,
+            -410.98
+          ],
+          [
+            -1734.22,
+            -408.22
+          ],
+          [
+            -1722.22,
+            -406.16
+          ],
+          [
+            -1703.01,
+            -399.98
+          ],
+          [
+            -1696.42,
+            -399.46
+          ],
+          [
+            -1695.81,
+            -401.83
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652027",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 1,
+      "distance_centerline_to_row_m": 8.12,
+      "nearest_road_vertex_world_xz": [
+        -1826.51,
+        -432.77
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1826.51,
+            -432.77
+          ],
+          [
+            -1826.45,
+            -419.39
+          ],
+          [
+            -1827.04,
+            -401.82
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652020",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 14.19,
+      "nearest_road_vertex_world_xz": [
+        -1944.12,
+        -409.25
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1948.99,
+            -419.87
+          ],
+          [
+            -1944.12,
+            -409.25
+          ],
+          [
+            -1938.99,
+            -390.18
+          ],
+          [
+            -1928.93,
+            -392.1
+          ],
+          [
+            -1919.15,
+            -393.88
+          ],
+          [
+            -1904.45,
+            -396.46
+          ],
+          [
+            -1885.44,
+            -399.41
+          ],
+          [
+            -1879.14,
+            -399.98
+          ],
+          [
+            -1861.82,
+            -401.7
+          ],
+          [
+            -1846.16,
+            -402.28
+          ],
+          [
+            -1827.04,
+            -401.82
+          ],
+          [
+            -1815.5,
+            -401.85
+          ],
+          [
+            -1799.73,
+            -401.02
+          ],
+          [
+            -1781.21,
+            -398.27
+          ],
+          [
+            -1776.38,
+            -397.42
+          ],
+          [
+            -1757.89,
+            -394.15
+          ],
+          [
+            -1726.56,
+            -386.85
+          ],
+          [
+            -1722.22,
+            -406.16
+          ],
+          [
+            -1720.31,
+            -414.92
+          ],
+          [
+            -1719.61,
+            -418.14
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/709255549",
+      "name": "Promenade zone nord",
+      "highway": "path",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 15.57,
+      "nearest_road_vertex_world_xz": [
+        -1948.99,
+        -419.87
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1948.99,
+            -419.87
+          ],
+          [
+            -1952.95,
+            -436.12
+          ],
+          [
+            -1958.71,
+            -459.45
+          ],
+          [
+            -1963.55,
+            -487.56
+          ],
+          [
+            -1966.33,
+            -507.53
+          ],
+          [
+            -1967.97,
+            -519.34
+          ],
+          [
+            -1969.58,
+            -536.33
+          ],
+          [
+            -1970.67,
+            -547.82
+          ],
+          [
+            -1972.13,
+            -585.42
+          ],
+          [
+            -1972.48,
+            -601.11
+          ],
+          [
+            -1970.33,
+            -657.13
+          ],
+          [
+            -1967.27,
+            -693.23
+          ],
+          [
+            -1965.33,
+            -713.63
+          ],
+          [
+            -1963.65,
+            -724.89
+          ],
+          [
+            -1959.36,
+            -756.19
+          ],
+          [
+            -1954.59,
+            -782.35
+          ],
+          [
+            -1951.43,
+            -796.19
+          ],
+          [
+            -1946.63,
+            -818.2
+          ],
+          [
+            -1943.54,
+            -832.61
+          ],
+          [
+            -1941.54,
+            -840.41
+          ],
+          [
+            -1937.66,
+            -854.82
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1126676121",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 27.3,
+      "nearest_road_vertex_world_xz": [
+        -1879.0,
+        -397.18
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1879.0,
+            -397.18
+          ],
+          [
+            -1872.71,
+            -330.95
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1085115440",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 30.29,
+      "nearest_road_vertex_world_xz": [
+        -1938.99,
+        -390.18
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1938.99,
+            -390.18
+          ],
+          [
+            -1956.03,
+            -385.82
+          ],
+          [
+            -1970.19,
+            -381.15
+          ],
+          [
+            -1982.88,
+            -376.58
+          ],
+          [
+            -2000.41,
+            -370.29
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1126676120",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 33.22,
+      "nearest_road_vertex_world_xz": [
+        -1938.59,
+        -387.14
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1938.59,
+            -387.14
+          ],
+          [
+            -1921.17,
+            -318.51
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/708322893",
+      "name": "",
+      "highway": "secondary",
+      "surface": "",
+      "width_m_used_by_game": 9.0,
+      "sidewalk_mode_used_by_game": "both",
+      "sidewalk_width_m_each_side": 1.55,
+      "curb_width_m_each_side": 0.22,
+      "nearest_kiosk_row": 1,
+      "distance_centerline_to_row_m": 33.4,
+      "nearest_road_vertex_world_xz": [
+        -1800.3,
+        -431.94
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1800.3,
+            -431.94
+          ],
+          [
+            -1791.02,
+            -560.17
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/708322895",
+      "name": "",
+      "highway": "secondary",
+      "surface": "",
+      "width_m_used_by_game": 9.0,
+      "sidewalk_mode_used_by_game": "both",
+      "sidewalk_width_m_each_side": 1.55,
+      "curb_width_m_each_side": 0.22,
+      "nearest_kiosk_row": 1,
+      "distance_centerline_to_row_m": 33.51,
+      "nearest_road_vertex_world_xz": [
+        -1800.3,
+        -431.94
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1800.3,
+            -431.94
+          ],
+          [
+            -1796.43,
+            -431.53
+          ],
+          [
+            -1771.74,
+            -428.89
+          ],
+          [
+            -1744.51,
+            -423.86
+          ],
+          [
+            -1719.61,
+            -418.14
+          ],
+          [
+            -1698.88,
+            -413.0
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1126676122",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 35.39,
+      "nearest_road_vertex_world_xz": [
+        -1815.16,
+        -398.92
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1815.16,
+            -398.92
+          ],
+          [
+            -1819.2,
+            -335.0
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652028",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 1,
+      "distance_centerline_to_row_m": 37.4,
+      "nearest_road_vertex_world_xz": [
+        -1796.43,
+        -431.53
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1796.43,
+            -431.53
+          ],
+          [
+            -1797.38,
+            -418.06
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1085115439",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 1,
+      "distance_centerline_to_row_m": 37.4,
+      "nearest_road_vertex_world_xz": [
+        -1796.43,
+        -431.53
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1796.43,
+            -431.53
+          ],
+          [
+            -1774.02,
+            -415.35
+          ]
+        ]
+      ]
+    },
+    {
+      "osm_id": "way/1070652029",
+      "name": "",
+      "highway": "footway",
+      "surface": "",
+      "width_m_used_by_game": 1.8,
+      "sidewalk_mode_used_by_game": "none",
+      "sidewalk_width_m_each_side": 0,
+      "curb_width_m_each_side": 0,
+      "nearest_kiosk_row": 2,
+      "distance_centerline_to_row_m": 62.11,
+      "nearest_road_vertex_world_xz": [
+        -1774.02,
+        -415.35
+      ],
+      "world_lines_xz": [
+        [
+          [
+            -1771.74,
+            -428.89
+          ],
+          [
+            -1774.02,
+            -415.35
+          ],
+          [
+            -1776.38,
+            -397.42
+          ]
+        ]
+      ]
+    }
+  ]
+}
