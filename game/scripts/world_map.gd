@@ -441,7 +441,8 @@ func _read_geojson(path: String) -> Dictionary:
 	# lorsqu'elle existe ; conserver les quartiers historiques en secours.
 	var filename := path.get_file()
 	var extended_path := "res://data/osm/extended/" + filename
-	var selected_path := extended_path if FileAccess.file_exists(extended_path) else path
+	var use_extended_layer := filename != "neighbourhoods.geojson" and FileAccess.file_exists(extended_path)
+	var selected_path := extended_path if use_extended_layer else path
 	if not FileAccess.file_exists(selected_path):
 		return {}
 	var file := FileAccess.open(selected_path, FileAccess.READ)
