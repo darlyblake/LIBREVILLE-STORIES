@@ -34,8 +34,10 @@ Cette liste suit uniquement les éléments vérifiés dans le dépôt et les val
 - [ ] Affiner les typologies architecturales locales à partir de photos/références vérifiables ; ne pas uniformiser toutes les constructions.
 
 ## 3. Relief, mer et environnement
-- [ ] Intégrer un modèle d'élévation adapté et vérifier son système de coordonnées, sa couverture et sa résolution.
-- [ ] Distinguer relief du sol et hauteur des bâtiments ; un DSM ne doit pas être pris pour un terrain nu.
+- [ ] Télécharger et contrôler le DEM SRTM1 d'environ 30 m sur toute l'emprise Libreville (script ajouté : `tools/terrain/build_libreville_dem.py`; les fichiers de données ne sont pas encore générés).
+- [ ] Intégrer le raster d'altitude dans Godot et construire le terrain maillé avec collision sur toute l'emprise.
+- [ ] Recaler routes, trottoirs, bâtiments, végétation et objets sur l'altitude du terrain ; vérifier les raccords et les dénivelés.
+- [ ] Distinguer relief du sol et hauteur des bâtiments ; SRTM/Copernicus sont des modèles de surface et ne remplacent pas un relevé topographique du sol nu.
 - [x] Première représentation visuelle du tracé côtier OSM par une bande littorale couleur sable ; validation Godot 4.3 réussie sur `main` (ce n'est pas encore une surface mer/terre).
 - [ ] Construire une surface mer/terre fiable à partir d'une géométrie côtière cohérente ; les lignes de côte seules ne suffisent pas.
 - [ ] Ajouter plages, mangroves, rivières et zones humides lorsque les données sont vérifiées.
@@ -107,7 +109,7 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 ### Végétation et sources géographiques
 - [x] Première variation déterministe des arbres instanciés : hauteur, largeur, orientation, teinte du tronc et couleur du feuillage ; reste une représentation low-poly simplifiée.
 - [x] Ajouter trois silhouettes low-poly instanciées (couronne ronde, étalée et verticale) avec variation déterministe ; ce sont des profils visuels génériques, pas encore des espèces botaniques identifiées.
-- [ ] Télécharger et intégrer un extrait Copernicus DEM GLO-30 couvrant Libreville, puis vérifier le système de coordonnées, l'altitude et la continuité aux bords.
+- [ ] Comparer le DEM SRTM1 généré avec Copernicus GLO-30 et contrôler les altitudes, les trous et la continuité aux bords.
 - [ ] Obtenir l'accès et les conditions de réutilisation des orthophotographies/plans auprès de l'Institut National de Cartographie du Gabon.
 - [ ] Préparer un extrait ESA WorldCover 2021 local pour différencier végétation, zones bâties, eau et mangroves ; conserver l'attribution CC BY 4.0.
 
