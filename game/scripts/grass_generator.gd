@@ -14,7 +14,7 @@ var _colors: Array[Color] = []
 var _built := false
 
 
-func add_patch(points: PackedVector2Array, osm_id: int, relief_center: Vector2, relief_radius: float, kind: String, ground_sampler: Callable = Callable()) -> void:
+func add_patch(points: PackedVector2Array, osm_id: int, relief_center: Vector2, relief_radius: float, kind: String, ground_sampler: Callable = Callable(), road_exclusion: Callable = Callable()) -> void:
 	if _built or points.size() < 3 or _transforms.size() >= MAX_GRASS_CLUMPS:
 		return
 
@@ -53,6 +53,8 @@ func add_patch(points: PackedVector2Array, osm_id: int, relief_center: Vector2, 
 		var candidate := Vector2(rng.randf_range(min_x, max_x), rng.randf_range(min_z, max_z))
 		if not Geometry2D.is_point_in_polygon(candidate, points):
 			continue
+		if road_exclusion.is_valid() and bool(road_exclusion.call(candidate, 1.8)):
+			continue
 
 		var crowded := false
 		for previous in patch_positions:
@@ -69,7 +71,7 @@ func add_patch(points: PackedVector2Array, osm_id: int, relief_center: Vector2, 
 		var yaw := rng.randf_range(0.0, TAU)
 		var scale := Vector3(width, height / 0.36, width)
 		var basis := Basis(Vector3.UP, yaw).scaled(scale)
-		_transforms.append(Transform3D(basis, Vector3(candidate.x, ground_y + 0.045, candidate.y)))
+		_transforms.append(Transform3D(basis, Vector3(candidate.x, ground_y + 0.008, candidate.y)))
 		_colors.append(_grass_palette_color(rng))
 		added += 1
 
