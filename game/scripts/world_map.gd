@@ -32,6 +32,8 @@ var _building_material: StandardMaterial3D
 var _roof_material: StandardMaterial3D
 var _facade_detail_material: StandardMaterial3D
 var _locality_points: Array[Dictionary] = []
+var _neighbourhood_polygons: Dictionary = {}
+var _neighbourhood_arrondissements: Dictionary = {}
 var _road_clearance_segments: Array[Dictionary] = []
 var _road_clearance_grid: Dictionary = {}
 var _location_hud: Label
@@ -800,6 +802,16 @@ func _load_neighbourhoods() -> void:
 		var rings: Array = geometry.get("coordinates", [])
 		if rings.is_empty():
 			continue
+		var props: Dictionary = feature.get("properties", {})
+		var osm_id := int(props.get("osm_id", 0))
+		# Conserve le contour du quartier pour vérifier les destinations de téléportation.
+		if osm_id > 0 and rings[0].size() >= 4:
+			var polygon := PackedVector2Array()
+			for coordinate in rings[0]:
+				var world_point := _geo_to_world(coordinate)
+				polygon.append(Vector2(world_point.x, world_point.z))
+			_neighbourhood_polygons[osm_id] = polygon
+			_neighbourhood_arrondissements[osm_id] = str(props.get("arrondissement", ""))
 		var added := false
 		# Tracer aussi les anneaux intérieurs des multipolygones (îlots/exclusions).
 		for coords in rings:
@@ -825,6 +837,41 @@ func _load_neighbourhoods() -> void:
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Neighbourhood_Boundaries_%03d" % batch_index)
 	print("LIBREVILLE STORIES | limites locales OSM : %d" % _neighbourhood_count)
+
+
+func _point_in_polygon(point: Vector2, polygon: PackedVector2Array) -> bool:
+	if polygon.size() < 4:
+		return false
+	var inside := false
+	var previous := polygon.size() - 1
+	for current in range(polygon.size()):
+		var a := polygon[current]
+		var b := polygon[previous]
+		if (a.y > point.y) != (b.y > point.y):
+			var crossing_x := (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x
+			if point.x < crossing_x:
+				inside = not inside
+		previous = current
+	return inside
+
+
+func _polygon_centroid(polygon: PackedVector2Array) -> Vector2:
+	var twice_area := 0.0
+	var centroid_x := 0.0
+	var centroid_y := 0.0
+	for index in range(polygon.size() - 1):
+		var a := polygon[index]
+		var b := polygon[index + 1]
+		var cross := a.x * b.y - b.x * a.y
+		twice_area += cross
+		centroid_x += (a.x + b.x) * cross
+		centroid_y += (a.y + b.y) * cross
+	if absf(twice_area) < 0.001:
+		var average := Vector2.ZERO
+		for point in polygon:
+			average += point
+		return average / maxf(1.0, float(polygon.size()))
+	return Vector2(centroid_x / (3.0 * twice_area), centroid_y / (3.0 * twice_area))
 
 
 func _find_asphalt_map(file_stem: String) -> Texture2D:
@@ -1523,7 +1570,17 @@ func _load_localities() -> void:
 		if label_text.is_empty() or coordinates.size() < 2:
 			continue
 		var world_position := _geo_to_world(coordinates)
-		_locality_points.append({"name": label_text, "position": Vector2(world_position.x, world_position.z)})
+		var place_kind := str(props.get("place", ""))
+		# Le repère de ville « Libreville » n'est pas une destination de quartier.
+		if place_kind != "city":
+			var osm_id := int(props.get("osm_id", 0))
+			_locality_points.append({
+				"name": label_text,
+				"osm_id": osm_id,
+				"place": place_kind,
+				"arrondissement": str(_neighbourhood_arrondissements.get(osm_id, "")),
+				"position": Vector2(world_position.x, world_position.z)
+			})
 		_add_map_label(label_text, world_position + Vector3.UP * 0.65, Color(1.0, 0.84, 0.48), 600.0)
 		_locality_count += 1
 	print("LIBREVILLE STORIES | noms de quartiers/localités OSM : %d" % _locality_count)
@@ -1533,6 +1590,14 @@ func get_locality_destinations() -> Array[Dictionary]:
 	var destinations: Array[Dictionary] = []
 	for locality in _locality_points:
 		var point: Vector2 = locality.position
+		var osm_id := int(locality.get("osm_id", 0))
+		var polygon: PackedVector2Array = _neighbourhood_polygons.get(osm_id, PackedVector2Array())
+		# Le point OSM doit rester dans son propre secteur ; sinon, utiliser son centroïde.
+		if not polygon.is_empty() and not _point_in_polygon(point, polygon):
+			point = _polygon_centroid(polygon)
+		# Le plan de jeu mesure 12 km ; on garde une marge de sécurité de 100 m.
+		if absf(point.x) > 5900.0 or absf(point.y) > 5900.0:
+			continue
 		if _dem_loaded:
 			if point.x < _dem_x_min or point.x > _dem_x_min + float(_dem_columns - 1) * _dem_spacing:
 				continue
@@ -1541,7 +1606,9 @@ func get_locality_destinations() -> Array[Dictionary]:
 		var ground_y := _terrain_height_at_world(point.x, point.y)
 		destinations.append({
 			"name": str(locality.name),
-			"position": Vector3(point.x, ground_y + 1.8, point.y)
+			"arrondissement": str(locality.get("arrondissement", "")),
+			"osm_id": osm_id,
+			"position": Vector3(point.x, ground_y + 2.2, point.y)
 		})
 	return destinations
 
