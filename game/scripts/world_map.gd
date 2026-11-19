@@ -10,8 +10,10 @@ const BUILDINGS_PER_MESH := 1200
 const ROADS_PER_MESH := 700
 const MAX_ROAD_LABELS := 250
 const MAX_POI_LABELS := 450
-const DEM_META_PATH := "res://libreville_dem.json"
-const DEM_BINARY_PATH := "res://libreville_dem_f32.bin"
+const DEM_META_EXTENDED_PATH := "res://libreville_dem_extended.json"
+const DEM_BINARY_EXTENDED_PATH := "res://libreville_dem_extended_f32.bin"
+const DEM_META_FALLBACK_PATH := "res://libreville_dem.json"
+const DEM_BINARY_FALLBACK_PATH := "res://libreville_dem_f32.bin"
 const TERRAIN_CHUNK_CELLS := 32
 const TERRAIN_VERTICAL_EXAGGERATION := 1.0
 
@@ -178,10 +180,15 @@ func _disable_flat_ground() -> void:
 
 
 func _load_real_terrain() -> void:
-	if not FileAccess.file_exists(DEM_META_PATH) or not FileAccess.file_exists(DEM_BINARY_PATH):
+	# Le DEM régional étendu est prioritaire. L'ancien relief reste disponible
+	# comme secours tant que les nouveaux fichiers ne sont pas présents ensemble.
+	var use_extended_dem := FileAccess.file_exists(DEM_META_EXTENDED_PATH) and FileAccess.file_exists(DEM_BINARY_EXTENDED_PATH)
+	var meta_path := DEM_META_EXTENDED_PATH if use_extended_dem else DEM_META_FALLBACK_PATH
+	var binary_path := DEM_BINARY_EXTENDED_PATH if use_extended_dem else DEM_BINARY_FALLBACK_PATH
+	if not FileAccess.file_exists(meta_path) or not FileAccess.file_exists(binary_path):
 		push_warning("DEM Libreville absent : terrain plat de secours conservé.")
 		return
-	var meta_file := FileAccess.open(DEM_META_PATH, FileAccess.READ)
+	var meta_file := FileAccess.open(meta_path, FileAccess.READ)
 	if meta_file == null:
 		push_warning("Impossible de lire les métadonnées du DEM.")
 		return
@@ -198,7 +205,7 @@ func _load_real_terrain() -> void:
 	if _dem_rows < 2 or _dem_columns < 2 or _dem_spacing <= 0.0:
 		push_warning("Dimensions DEM invalides.")
 		return
-	var binary := FileAccess.open(DEM_BINARY_PATH, FileAccess.READ)
+	var binary := FileAccess.open(binary_path, FileAccess.READ)
 	if binary == null:
 		push_warning("Impossible d'ouvrir la grille binaire DEM.")
 		return
@@ -212,7 +219,7 @@ func _load_real_terrain() -> void:
 		_dem_heights[i] = bytes.decode_float(i * 4) * TERRAIN_VERTICAL_EXAGGERATION
 	_dem_loaded = true
 	_build_terrain_chunks()
-	print("LIBREVILLE STORIES | relief SRTM chargé : %d x %d cellules, pas %.0f m" % [_dem_columns, _dem_rows, _dem_spacing])
+	print("LIBREVILLE STORIES | relief SRTM chargé (%s) : %d x %d cellules, pas %.0f m" % ["étendu" if use_extended_dem else "secours", _dem_columns, _dem_rows, _dem_spacing])
 
 
 func terrain_height_at_world(x: float, z: float) -> float:
@@ -430,9 +437,14 @@ func _make_material(color: Color) -> StandardMaterial3D:
 	return material
 
 func _read_geojson(path: String) -> Dictionary:
-	if not FileAccess.file_exists(path):
+	# Pour les couches de détail, préférer la nouvelle extraction régionale
+	# lorsqu'elle existe ; conserver les quartiers historiques en secours.
+	var filename := path.get_file()
+	var extended_path := "res://data/osm/extended/" + filename
+	var selected_path := extended_path if FileAccess.file_exists(extended_path) else path
+	if not FileAccess.file_exists(selected_path):
 		return {}
-	var file := FileAccess.open(path, FileAccess.READ)
+	var file := FileAccess.open(selected_path, FileAccess.READ)
 	if file == null:
 		return {}
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
