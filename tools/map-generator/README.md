@@ -86,9 +86,15 @@ python3 -m pip install numpy rasterio
 python3 tools/map-generator/generate_extended_dem.py
 ```
 
-### Important avant intégration au jeu
+### Intégration progressive dans Godot
 
-Le DEM étendu est produit sous des noms distincts. Il ne remplace pas `libreville_dem.json` ni `libreville_dem_f32.bin`, et le jeu continue donc d'utiliser le terrain actuel tant que l'intégration n'est pas faite. Il faudra ensuite vérifier le repère local, le placement du joueur, les collisions, les limites invisibles et la cohérence des couches OSM dans Godot. La nouvelle emprise ne doit pas être présentée comme une extension officielle de la commune.
+Le script `game/scripts/world_map.gd` charge maintenant automatiquement le DEM étendu lorsqu'il trouve ensemble `libreville_dem_extended.json` et `libreville_dem_extended_f32.bin`. Si l'un des deux fichiers manque, il conserve l'ancien DEM. Le repère local reste centré sur 0,400° N / 9,4475° E, conformément aux métadonnées du nouveau relief.
+
+Pour les couches OSM, le chargeur privilégie `data/osm/extended/` lorsqu'un fichier étendu existe, avec repli vers `data/osm/` pour les fichiers absents. Exception volontaire : `neighbourhoods.geojson` continue d'utiliser les quartiers historiques tant que les nouveaux polygones n'ont pas été vérifiés. Les données des six arrondissements ne sont pas remplacées.
+
+Le parseur Godot a réussi le contrôle automatisé après ces changements. Cela confirme la syntaxe et l'import du projet, pas encore le rendu visuel, les collisions en jeu ni le fonctionnement du téléporteur. Ces contrôles nécessitent un lancement réel dans Godot.
+
+La nouvelle emprise ne doit pas être présentée comme une extension officielle de la commune.
 
 ## Résultat du DEM régional généré (19 novembre 2026)
 
@@ -106,5 +112,5 @@ Contrôles effectués sur l'artefact généré :
 
 Le commit de données est `002027fb6b3abc2995a0d2f1d941a6ff5c05543a`.
 
-**État d'intégration :** le nouveau DEM est généré, contrôlé et versionné, mais le jeu utilise encore l'ancien DEM. Les couches routes, bâtiments, végétation, POI et localités doivent être extraites dans la même emprise élargie, puis contrôlées ensemble. Les polygones de quartiers et les limites d'arrondissements ne doivent pas être inventés à partir du seul relief.
+**État d'intégration :** le jeu sait désormais charger le DEM étendu automatiquement, tout en gardant l'ancien DEM comme secours. Les couches routes, bâtiments, environnement, POI et localités sont en cours d'extraction dans `data/osm/extended/`. Elles ne seront utilisées qu'après validation du workflow. Les quartiers historiques restent actifs et les limites d'arrondissements ne sont pas remplacées ni inventées.
 
