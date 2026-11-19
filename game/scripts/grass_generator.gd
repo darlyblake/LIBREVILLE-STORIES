@@ -14,7 +14,7 @@ var _colors: Array[Color] = []
 var _built := false
 
 
-func add_patch(points: PackedVector2Array, osm_id: int, relief_center: Vector2, relief_radius: float, kind: String) -> void:
+func add_patch(points: PackedVector2Array, osm_id: int, relief_center: Vector2, relief_radius: float, kind: String, ground_sampler: Callable = Callable()) -> void:
 	if _built or points.size() < 3 or _transforms.size() >= MAX_GRASS_CLUMPS:
 		return
 
@@ -63,13 +63,13 @@ func add_patch(points: PackedVector2Array, osm_id: int, relief_center: Vector2, 
 			continue
 
 		patch_positions.append(candidate)
-		var ground_y := _relief_height(candidate, relief_center, relief_radius, kind)
+		var ground_y := float(ground_sampler.call(candidate.x, candidate.y)) if ground_sampler.is_valid() else _relief_height(candidate, relief_center, relief_radius, kind)
 		var height := rng.randf_range(0.24, 0.48)
 		var width := rng.randf_range(0.72, 1.24)
 		var yaw := rng.randf_range(0.0, TAU)
 		var scale := Vector3(width, height / 0.36, width)
 		var basis := Basis(Vector3.UP, yaw).scaled(scale)
-		_transforms.append(Transform3D(basis, Vector3(candidate.x, ground_y + 0.008, candidate.y)))
+		_transforms.append(Transform3D(basis, Vector3(candidate.x, ground_y + 0.045, candidate.y)))
 		_colors.append(_grass_palette_color(rng))
 		added += 1
 
