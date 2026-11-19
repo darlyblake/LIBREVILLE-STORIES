@@ -182,3 +182,13 @@ La carte pourra être considérée comme prête pour la phase de jeu lorsque l'e
 - [ ] Valider le rendu et les performances dans Godot 4.3 sur la GT 730 2 Go.
 
 **Important :** le blockout précédent est volontairement neutralisé. Cela retire les éléments faux, mais ne signifie pas que la Baie des Rois est déjà reconstruite. La prochaine version visuelle doit venir de modèles et de données géographiques vérifiés, pas de nouveaux rectangles ou cubes générés au hasard.
+
+
+## Intégration DEM SRTM — 19 novembre 2026
+
+- Les fichiers de grille sont actuellement à la racine du dépôt : `libreville_dem.json`, `libreville_dem_f32.bin` et `libreville_srtm1_source.tif`.
+- `game/scripts/world_map.gd` charge les métadonnées et la grille float32, vérifie la taille binaire, interpole les altitudes par bilinéaire et génère le terrain en blocs de 32 × 32 cellules avec collision trimesh.
+- Le sol plat de `main.tscn` est masqué et sa collision désactivée lorsque la scène de carte démarre.
+- Routes, trottoirs, éléments environnementaux, arbres, herbe et bases des bâtiments utilisent désormais l'altitude SRTM. Les objets autonomes de la Baie des Rois sont décalés à leur altitude d'ancrage.
+- Résolution source préparée : environ 30 m. Le relief ne représente pas les bordures, trottoirs ou micro-pentes ; les bâtiments utilisent une altitude moyenne à l'empreinte.
+- **À faire sur le poste Godot** : lancer le projet, contrôler les raccords de terrain, l'orientation des normales, les collisions, les zones côtières et les performances sur la GT 730. Aucun test du moteur Godot n'a été exécuté dans l'environnement de développement de l'assistant.
