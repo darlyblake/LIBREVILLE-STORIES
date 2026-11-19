@@ -650,6 +650,7 @@ def main():
     parser.add_argument("--east", type=float, default=DEFAULT_BBOX[3])
     parser.add_argument("--timeout", type=int, default=45)
     parser.add_argument("--grid", type=int, default=GRID)
+    parser.add_argument("--source", choices=("overpass", "geofabrik"), default="overpass")
     args = parser.parse_args()
 
     if not (args.south < args.north and args.west < args.east):
@@ -669,6 +670,8 @@ def main():
 
     used_geofabrik_fallback = False
     try:
+        if args.source == "geofabrik":
+            raise RuntimeError("Source Geofabrik demandée directement.")
         for index, (row, col, south, west, north, east) in enumerate(tiles, 1):
             cache_file = CACHE / f"grid{args.grid}_v6_tile_{row}_{col}.json"
             data = load_cached_tile(cache_file)
@@ -723,17 +726,12 @@ def main():
     
     
     except Exception as extraction_error:
-        # Si une partie des secteurs est déjà disponible, préserver le cache partiel
-        # et laisser le prochain lancement reprendre uniquement les secteurs manquants.
-        # Un PBF national téléchargé dans la même exécution ne doit pas remplacer
-        # silencieusement ce travail partiel, surtout si le réseau est indisponible.
-        if 0 < len(tile_report) < len(tiles):
-            raise RuntimeError(
-                f"Extraction interrompue après {len(tile_report)}/{len(tiles)} secteurs. "
-                "Les secteurs réussis sont conservés dans le cache ; relancer le workflow "
-                "reprendra au premier secteur manquant. Aucun GeoJSON partiel ne sera publié."
-            ) from extraction_error
-        print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
+        # Geofabrik couvre toute l'emprise en une seule lecture PBF.
+        # Il remplace donc sans perte les secteurs Overpass partiels en cas d'échec.
+        if args.source == "geofabrik":
+            print("Source Geofabrik sélectionnée directement.", flush=True)
+        else:
+            print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
         used_geofabrik_fallback = True
         elements_from_pbf, nodes_from_pbf, relations_from_pbf = extract_from_geofabrik_pbf(
             args.south, args.west, args.north, args.east
