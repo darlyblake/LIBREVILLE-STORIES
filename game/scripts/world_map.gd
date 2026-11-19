@@ -32,6 +32,7 @@ var _building_material: StandardMaterial3D
 var _roof_material: StandardMaterial3D
 var _facade_detail_material: StandardMaterial3D
 var _locality_points: Array[Dictionary] = []
+var _road_clearance_segments: Array[Dictionary] = []
 var _location_hud: Label
 var _location_refresh := 0.0
 var _dem_heights := PackedFloat32Array()
@@ -74,6 +75,7 @@ func _ready() -> void:
 	_road_material.uv1_scale = Vector3(1.0, 1.0, 1.0)
 	_environment_material = _make_material(Color.WHITE)
 	_environment_material.vertex_color_use_as_albedo = true
+	_load_road_clearance_data()
 	_grass_generator = GrassGenerator.new()
 	_grass_generator.name = "Procedural_Real_Grass"
 	add_child(_grass_generator)
@@ -497,7 +499,7 @@ func _load_environment() -> void:
 				var mapped_surface := str(props.get("surface", ""))
 				var is_grass_area := str(props.get("landuse", "")) == "grass" or (kind == "green_space" and mapped_surface not in ["concrete", "paved", "asphalt"]) or str(props.get("leisure", "")) == "garden"
 				if is_grass_area and _grass_generator != null:
-					_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind, Callable(self, "_terrain_height_at_world"))
+					_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind, Callable(self, "_terrain_height_at_world"), Callable(self, "_is_near_road"))
 			surface.set_color(_environment_color(kind))
 			if has_landscape_relief:
 				relief_collision_surface.set_color(_environment_color(kind))
@@ -575,7 +577,7 @@ func _landscape_relief_height(point: Vector2, center: Vector2, radius: float, ki
 	var broad_undulation := sin(point.x * 0.075 + center.y * 0.031) * cos(point.y * 0.082 - center.x * 0.027)
 	var fine_undulation := sin(point.x * 0.19 + point.y * 0.13) * 0.35
 	var surface_variation := (broad_undulation * 0.045 + fine_undulation * 0.018) * mound
-	return _terrain_height_at_world(point.x, point.y) + 0.035
+	return _terrain_height_at_world(point.x, point.y) + 0.006
 
 
 func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: Array[Vector3], kind: String) -> void:
@@ -937,43 +939,21 @@ func _load_roads() -> void:
 	var crosswalk_surface := _new_surface(crosswalk_material)
 	var junction_counts: Dictionary = {}
 	for feature in data.get("features", []):
-		var junction_geometry: Dictionary = feature.get("geometry", {})
-		var junction_lines: Array = []
-		match str(junction_geometry.get("type", "")):
+		var geometry: Dictionary = feature.get("geometry", {})
+		var lines: Array = []
+		match str(geometry.get("type", "")):
 			"LineString":
-				junction_lines.append(junction_geometry.get("coordinates", []))
+				lines.append(geometry.get("coordinates", []))
 			"MultiLineString":
-				junction_lines = junction_geometry.get("coordinates", [])
-		for junction_line in junction_lines:
-			if junction_line.size() < 2:
+				lines = geometry.get("coordinates", [])
+			_:
 				continue
-			for endpoint in [junction_line[0], junction_line[junction_line.size() - 1]]:
+		for line in lines:
+			if line.size() < 2:
+				continue
+			for endpoint in [line[0], line[line.size() - 1]]:
 				var key := _road_junction_key(endpoint)
 				junction_counts[key] = int(junction_counts.get(key, 0)) + 1
-	# Petits raccords circulaires aux nœuds OSM partagés : évite les trous
-	# visibles entre plusieurs rubans de chaussée aux carrefours.
-	surface.set_color(Color(0.27, 0.29, 0.29))
-	var patched_junctions: Dictionary = {}
-	for feature in data.get("features", []):
-		var junction_geometry: Dictionary = feature.get("geometry", {})
-		var junction_lines: Array = []
-		match str(junction_geometry.get("type", "")):
-			"LineString":
-				junction_lines.append(junction_geometry.get("coordinates", []))
-			"MultiLineString":
-				junction_lines = junction_geometry.get("coordinates", [])
-		for junction_line in junction_lines:
-			if junction_line.size() < 2:
-				continue
-			for endpoint in [junction_line[0], junction_line[junction_line.size() - 1]]:
-				var key := _road_junction_key(endpoint)
-				if int(junction_counts.get(key, 0)) < 3 or patched_junctions.has(key):
-					continue
-				var props: Dictionary = feature.get("properties", {})
-				var width := _road_width(str(props.get("highway", "residential")), props)
-				var center := _geo_to_world(endpoint)
-				_add_junction_patch(surface, center, maxf(3.0, width * 0.72))
-				patched_junctions[key] = true
 	var batch_count := 0
 	var batch_index := 0
 	var road_features: Array = data.get("features", []).duplicate()
@@ -989,20 +969,17 @@ func _load_roads() -> void:
 			_:
 				continue
 		var props: Dictionary = feature.get("properties", {})
-		if _road_labels < MAX_ROAD_LABELS and str(props.get("name", "")).strip_edges() != "":
-			var label_coords: Array = []
-			for candidate_line in lines:
-				if candidate_line.size() >= 2:
-					label_coords = candidate_line
-					break
-			if not label_coords.is_empty():
-				var midpoint: Array = label_coords[int(label_coords.size() / 2)]
-				_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 0.55, Color(0.92, 0.95, 1.0), 280.0)
-				_road_labels += 1
 		var road_kind := str(props.get("highway", "residential"))
 		var width := _road_width(road_kind, props)
 		var sidewalk_mode := _road_sidewalk_mode(props, road_kind)
 		var has_center_marking := _road_has_center_marking(props, road_kind)
+		if _road_labels < MAX_ROAD_LABELS and str(props.get("name", "")).strip_edges() != "":
+			for candidate_line in lines:
+				if candidate_line.size() >= 2:
+					var midpoint: Array = candidate_line[int(candidate_line.size() / 2)]
+					_add_map_label(str(props.get("name")), _geo_to_world(midpoint) + Vector3.UP * 0.55, Color(0.92, 0.95, 1.0), 280.0)
+					_road_labels += 1
+					break
 		surface.set_color(_road_color(road_kind, props))
 		marking_surface.set_color(Color(0.96, 0.96, 0.90))
 		sidewalk_surface.set_color(Color(0.78, 0.76, 0.70))
@@ -1011,70 +988,69 @@ func _load_roads() -> void:
 		for coords in lines:
 			if coords.size() < 2:
 				continue
-			var supports_crosswalk := road_kind in ["primary", "secondary", "tertiary", "trunk"]
-			if supports_crosswalk and coords.size() >= 2:
-				var first_direction := _geo_to_world(coords[1]) - _geo_to_world(coords[0])
-				var last_direction := _geo_to_world(coords[coords.size() - 2]) - _geo_to_world(coords[coords.size() - 1])
-				if int(junction_counts.get(_road_junction_key(coords[0]), 0)) >= 3 and first_direction.length() > 0.1:
-					_add_crosswalk(crosswalk_surface, _geo_to_world(coords[0]), Vector2(first_direction.x, first_direction.z).normalized(), width)
-				if int(junction_counts.get(_road_junction_key(coords[coords.size() - 1]), 0)) >= 3 and last_direction.length() > 0.1:
-					_add_crosswalk(crosswalk_surface, _geo_to_world(coords[coords.size() - 1]), Vector2(last_direction.x, last_direction.z).normalized(), width)
-			for i in range(coords.size() - 1):
-				var a := _geo_to_world(coords[i])
-				var b := _geo_to_world(coords[i + 1])
-				var direction := Vector2(b.x - a.x, b.z - a.z)
-				var seg_len := direction.length()
+			var centerline: Array[Vector3] = []
+			for coordinate in coords:
+				var point := _geo_to_world(coordinate)
+				if centerline.is_empty() or centerline[centerline.size() - 1].distance_to(point) > 0.05:
+					centerline.append(point)
+			if centerline.size() < 2:
+				continue
+			var left_edge := _offset_road_polyline(centerline, width * 0.5)
+			var right_edge := _offset_road_polyline(centerline, -width * 0.5)
+			var left_curb := _offset_road_polyline(centerline, width * 0.5 + 0.22)
+			var right_curb := _offset_road_polyline(centerline, -width * 0.5 - 0.22)
+			var left_walk := _offset_road_polyline(centerline, width * 0.5 + 0.22 + 1.55)
+			var right_walk := _offset_road_polyline(centerline, -width * 0.5 - 0.22 - 1.55)
+			for i in range(centerline.size() - 1):
+				var a := centerline[i]
+				var b := centerline[i + 1]
+				var seg_len := Vector2(b.x - a.x, b.z - a.z).length()
 				if seg_len < 0.08:
 					continue
-				var dir_n := direction / seg_len
-				# Vecteur perpendiculaire unitaire (pas pré-multiplié).
-				var perp := Vector3(-dir_n.y, 0.0, dir_n.x)
-				var half := width * 0.5
 				var y_road := 0.022
-				# Chaussée avec UV pour la texture d'asphalte.
 				_add_road_quad(surface,
-					a + perp * half + Vector3.UP * y_road,
-					a - perp * half + Vector3.UP * y_road,
-					b - perp * half + Vector3.UP * y_road,
-					b + perp * half + Vector3.UP * y_road,
+					left_edge[i] + Vector3.UP * y_road,
+					right_edge[i] + Vector3.UP * y_road,
+					right_edge[i + 1] + Vector3.UP * y_road,
+					left_edge[i + 1] + Vector3.UP * y_road,
 					seg_len, width)
 				if has_center_marking:
 					_add_road_center_dashes(marking_surface, a, b)
-					# Bandes de rive blanches discrètes sur les grands axes.
 					if road_kind in ["trunk", "primary", "motorway"]:
-						_add_road_edge_line(marking_surface, a, b, perp, half - 0.18)
-				if sidewalk_mode != "none":
-					var sw := 1.55  # largeur trottoir (m)
-					var curb_w := 0.22
-					var y_sw := 0.055
-					var y_curb := 0.048
-					if sidewalk_mode in ["both", "left"]:
-						# Bordure / caniveau
-						_add_quad(curb_surface,
-							a + perp * half + Vector3.UP * y_curb,
-							a + perp * (half + curb_w) + Vector3.UP * y_curb,
-							b + perp * (half + curb_w) + Vector3.UP * y_curb,
-							b + perp * half + Vector3.UP * y_curb)
-						# Trottoir
-						_add_sidewalk_quad(sidewalk_surface,
-							a + perp * (half + curb_w) + Vector3.UP * y_sw,
-							a + perp * (half + curb_w + sw) + Vector3.UP * y_sw,
-							b + perp * (half + curb_w + sw) + Vector3.UP * y_sw,
-							b + perp * (half + curb_w) + Vector3.UP * y_sw,
-							seg_len, sw)
-					if sidewalk_mode in ["both", "right"]:
-						_add_quad(curb_surface,
-							a - perp * half + Vector3.UP * y_curb,
-							a - perp * (half + curb_w) + Vector3.UP * y_curb,
-							b - perp * (half + curb_w) + Vector3.UP * y_curb,
-							b - perp * half + Vector3.UP * y_curb)
-						_add_sidewalk_quad(sidewalk_surface,
-							a - perp * (half + curb_w) + Vector3.UP * y_sw,
-							a - perp * (half + curb_w + sw) + Vector3.UP * y_sw,
-							b - perp * (half + curb_w + sw) + Vector3.UP * y_sw,
-							b - perp * (half + curb_w) + Vector3.UP * y_sw,
-							seg_len, sw)
-				added = true
+						var direction := Vector2(b.x - a.x, b.z - a.z).normalized()
+						var perp := Vector3(-direction.y, 0.0, direction.x)
+						_add_road_edge_line(marking_surface, a, b, perp, width * 0.5 - 0.18)
+				if sidewalk_mode in ["both", "left"]:
+					_add_sidewalk_quad(curb_surface,
+						left_edge[i] + Vector3.UP * 0.048,
+						left_curb[i] + Vector3.UP * 0.048,
+						left_curb[i + 1] + Vector3.UP * 0.048,
+						left_edge[i + 1] + Vector3.UP * 0.048,
+						seg_len, 0.22)
+					_add_sidewalk_quad(sidewalk_surface,
+						left_curb[i] + Vector3.UP * 0.055,
+						left_walk[i] + Vector3.UP * 0.055,
+						left_walk[i + 1] + Vector3.UP * 0.055,
+						left_curb[i + 1] + Vector3.UP * 0.055,
+						seg_len, 1.55)
+				if sidewalk_mode in ["both", "right"]:
+					_add_sidewalk_quad(curb_surface,
+						right_edge[i] + Vector3.UP * 0.048,
+						right_curb[i] + Vector3.UP * 0.048,
+						right_curb[i + 1] + Vector3.UP * 0.048,
+						right_edge[i + 1] + Vector3.UP * 0.048,
+						seg_len, 0.22)
+					_add_sidewalk_quad(sidewalk_surface,
+						right_curb[i] + Vector3.UP * 0.055,
+						right_walk[i] + Vector3.UP * 0.055,
+						right_walk[i + 1] + Vector3.UP * 0.055,
+						right_curb[i + 1] + Vector3.UP * 0.055,
+						seg_len, 1.55)
+				if i == 0 and road_kind in ["primary", "secondary", "tertiary", "trunk"] and int(junction_counts.get(_road_junction_key(coords[0]), 0)) >= 3:
+					_add_crosswalk(crosswalk_surface, a, Vector2(b.x - a.x, b.z - a.z).normalized(), width)
+				if i == centerline.size() - 2 and road_kind in ["primary", "secondary", "tertiary", "trunk"] and int(junction_counts.get(_road_junction_key(coords[coords.size() - 1]), 0)) >= 3:
+					_add_crosswalk(crosswalk_surface, b, Vector2(a.x - b.x, a.z - b.z).normalized(), width)
+			added = true
 		if added:
 			_road_count += 1
 			batch_count += 1
@@ -1097,6 +1073,72 @@ func _load_roads() -> void:
 		_commit_surface(curb_surface, "OSM_Curbs_%03d" % batch_index)
 		_commit_surface(marking_surface, "OSM_Road_Markings_%03d" % batch_index)
 		_commit_surface(crosswalk_surface, "OSM_Crosswalks_%03d" % batch_index)
+
+
+func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vector3]:
+	var result: Array[Vector3] = []
+	if points.size() < 2:
+		return result
+	for i in range(points.size()):
+		var previous_direction: Vector2
+		var next_direction: Vector2
+		if i == 0:
+			next_direction = Vector2(points[1].x - points[0].x, points[1].z - points[0].z).normalized()
+			previous_direction = next_direction
+		elif i == points.size() - 1:
+			previous_direction = Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).normalized()
+			next_direction = previous_direction
+		else:
+			previous_direction = Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).normalized()
+			next_direction = Vector2(points[i + 1].x - points[i].x, points[i + 1].z - points[i].z).normalized()
+		var previous_normal := Vector2(-previous_direction.y, previous_direction.x)
+		var next_normal := Vector2(-next_direction.y, next_direction.x)
+		var miter := (previous_normal + next_normal).normalized()
+		if miter.length_squared() < 0.001:
+			miter = next_normal
+		var denominator := maxf(absf(miter.dot(next_normal)), 0.35)
+		var miter_length := clampf(offset / denominator, -absf(offset) * 2.2, absf(offset) * 2.2)
+		var displaced := Vector2(points[i].x, points[i].z) + miter * miter_length
+		result.append(Vector3(displaced.x, points[i].y, displaced.y))
+	return result
+
+
+func _load_road_clearance_data() -> void:
+	_road_clearance_segments.clear()
+	var data := _read_geojson("res://data/osm/roads.geojson")
+	for feature in data.get("features", []):
+		var geometry: Dictionary = feature.get("geometry", {})
+		var props: Dictionary = feature.get("properties", {})
+		var kind := str(props.get("highway", "residential"))
+		var width := _road_width(kind, props)
+		var sidewalk_extra := 1.8 if _road_sidewalk_mode(props, kind) != "none" else 0.0
+		var lines: Array = []
+		match str(geometry.get("type", "")):
+			"LineString":
+				lines.append(geometry.get("coordinates", []))
+			"MultiLineString":
+				lines = geometry.get("coordinates", [])
+			_:
+				continue
+		for line in lines:
+			for i in range(line.size() - 1):
+				var a := _geo_to_world(line[i])
+				var b := _geo_to_world(line[i + 1])
+				_road_clearance_segments.append({
+					"a": Vector2(a.x, a.z),
+					"b": Vector2(b.x, b.z),
+					"radius": width * 0.5 + sidewalk_extra
+				})
+
+
+func _is_near_road(point: Vector2, extra_margin: float = 0.0) -> bool:
+	for segment in _road_clearance_segments:
+		var a: Vector2 = segment.a
+		var b: Vector2 = segment.b
+		var nearest := Geometry2D.get_closest_point_to_segment(point, a, b)
+		if point.distance_squared_to(nearest) <= pow(float(segment.radius) + extra_margin, 2.0):
+			return true
+	return false
 
 
 func _road_junction_key(coordinate: Array) -> String:
@@ -1358,6 +1400,23 @@ func _load_localities() -> void:
 		_add_map_label(label_text, world_position + Vector3.UP * 0.65, Color(1.0, 0.84, 0.48), 600.0)
 		_locality_count += 1
 	print("LIBREVILLE STORIES | noms de quartiers/localités OSM : %d" % _locality_count)
+
+
+func get_locality_destinations() -> Array[Dictionary]:
+	var destinations: Array[Dictionary] = []
+	for locality in _locality_points:
+		var point: Vector2 = locality.position
+		if _dem_loaded:
+			if point.x < _dem_x_min or point.x > _dem_x_min + float(_dem_columns - 1) * _dem_spacing:
+				continue
+			if point.y < _dem_z_min or point.y > _dem_z_min + float(_dem_rows - 1) * _dem_spacing:
+				continue
+		var ground_y := _terrain_height_at_world(point.x, point.y)
+		destinations.append({
+			"name": str(locality.name),
+			"position": Vector3(point.x, ground_y + 1.8, point.y)
+		})
+	return destinations
 
 
 func _compare_locality_features(a: Dictionary, b: Dictionary) -> bool:
