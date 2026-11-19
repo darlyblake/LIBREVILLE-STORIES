@@ -113,7 +113,7 @@ Les nombres sont des comptes par couche, pas un décompte d'objets uniques. Sour
 
 **Limite importante :** les 107 localités sont des points nommés, pas des contours. Le fichier des quartiers ne contient qu'un seul polygone nommé (« Première Cité »). Il ne remplace donc pas les 72 secteurs historiques. Les attributions d'arrondissement et les limites administratives restent inchangées.
 
-Les contrôles automatiques ont vérifié les six FeatureCollections, l'emprise déclarée et les seuils minimaux de routes et bâtiments. Le parseur Godot a également réussi après la mise en place du chargement prioritaire du DEM étendu et des couches détaillées. Le rendu visuel, les collisions et les téléportations doivent encore être vérifiés dans Godot.
+Les contrôles automatiques ont vérifié les six FeatureCollections, l'emprise déclarée et les seuils minimaux de routes et bâtiments. Une seconde validation Shapely a contrôlé les géométries : **0 géométrie invalide, 0 vide, 0 hors emprise, 0 sans géométrie et 0 type inattendu** sur les six couches. Les types relevés sont cohérents (routes en lignes, bâtiments en polygones, localités et POI en points). Le parseur Godot a également réussi après la mise en place du chargement prioritaire du DEM étendu et des couches détaillées. Le rendu visuel, les collisions et les téléportations doivent encore être vérifiés dans Godot.
 
 Commit des couches OSM : `2f00cf0513d8d66c4eb388b054b47696a22e13e8`.
 Artefact téléchargeable : [libreville-osm-extended](https://github.com/darlyblake/LIBREVILLE-STORIES/actions/runs/44529983008/artifacts/14533209409).
@@ -136,3 +136,6 @@ Le commit de données est `002027fb6b3abc2995a0d2f1d941a6ff5c05543a`.
 
 **État d'intégration :** le jeu sait désormais charger le DEM étendu automatiquement, tout en gardant l'ancien DEM comme secours. Les couches routes, bâtiments, environnement, POI et localités sont en cours d'extraction dans `data/osm/extended/`. Elles ne seront utilisées qu'après validation du workflow. Les quartiers historiques restent actifs et les limites d'arrondissements ne sont pas remplacées ni inventées.
 
+
+
+Script de contrôle géométrique : `tools/map-generator/validate_extended_osm.py`. Workflow : [Validate extended Libreville OSM geometry](https://github.com/darlyblake/LIBREVILLE-STORIES/actions/runs/44530713314).
