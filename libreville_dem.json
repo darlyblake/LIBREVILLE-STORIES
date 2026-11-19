@@ -1,0 +1,22 @@
+{
+  "source": "NASA/NGA SRTM 1 arc-second (SRTM1), via elevation 1.1.2",
+  "license_note": "Respecter les conditions et l'attribution de la source SRTM utilisée.",
+  "source_bbox_south_west_north_east": [
+    0.35446101329500534,
+    9.39946100015996,
+    0.44553898670499464,
+    9.49553899984004
+  ],
+  "center_lat": 0.4,
+  "center_lon": 9.4475,
+  "rows": 338,
+  "columns": 357,
+  "spacing_m": 30.0,
+  "x_min": -5347.571142480872,
+  "z_min": -5069.4000000000015,
+  "min_elevation_m": -9.275452613830566,
+  "max_elevation_m": 122.48904418945312,
+  "valid_source_cells": 120666,
+  "nodata_cells_set_to_zero": 0,
+  "encoding": "row-major little-endian float32; row 0 = north; columns increase east"
+}
