@@ -2,15 +2,26 @@
 
 ## Fichiers générés
 
-- `neighbourhoods.geojson` : 72 cellules de quartiers/secteurs jouables.
-- `arrondissements.geojson` : 6 secteurs d'arrondissement, construits par agrégation des cellules précédentes.
-- `localities.geojson` : données OSM d'origine conservées comme points de référence.
+- `neighbourhoods.geojson` : 72 polygones de secteurs jouables.
+- `arrondissements.geojson` : 6 regroupements de secteurs de gameplay.
+- `localities.geojson` : points OSM d'origine, conservés comme repères et destinations.
 
-## Méthode
+## Méthode actuelle
 
-Les cellules sont générées par partition de Voronoï à partir des points `place` présents dans `localities.geojson`. Elles couvrent l'enveloppe convexe des localités recensées, légèrement élargie pour éviter des cellules trop serrées autour des points extérieurs.
+1. Les 72 points de localité OSM (le point général « Libreville » est exclu) servent de centres de secteurs.
+2. Une partition de Voronoï est calculée en coordonnées métriques locales, puis convertie en WGS84 / EPSG:4326.
+3. Les frontières partagées entre deux cellules sont comparées aux routes OSM, aux cours d'eau et aux lignes de côte.
+4. Lorsqu'une ligne OSM est suffisamment proche, parallèle et couvre une longueur compatible, le bord commun est déformé pour suivre son tracé. Les deux quartiers voisins utilisent exactement la même ligne corrigée.
+5. Les six regroupements d'arrondissement conservent la correspondance des quartiers définie dans les propriétés des fichiers.
 
-Chaque cellule reçoit un arrondissement de gameplay à partir d'une correspondance géographique et documentaire des noms. Les six polygones d'arrondissement sont ensuite constitués par agrégation des cellules qui leur sont affectées. Ainsi, aucun secteur recensé ne reste sans arrondissement et les limites des arrondissements correspondent exactement à la somme des secteurs de quartier.
+## Résultat du dernier ajustement
+
+- 72 cellules de quartiers/secteurs.
+- 6 regroupements d'arrondissement.
+- 187 frontières communes analysées.
+- 13 frontières alignées sur des routes OSM.
+- 2 frontières alignées sur des éléments naturels OSM (cours d'eau / côte).
+- Les autres frontières restent des séparations procédurales, faute de route ou de ligne naturelle suffisamment proche et compatible.
 
 ## Correspondance des secteurs de gameplay
 
@@ -21,15 +32,19 @@ Chaque cellule reçoit un arrondissement de gameplay à partir d'une corresponda
 - **5e arrondissement** : Lalala-Dakar, Lalala-Droite, Lalala-Gauche, Mindoube 1, Institut des Sports, Smag, I.A.I-Golf, Ozangué, Beau-Séjour, Cité Damas, Plein-ciel, Mindoubé 2, RIO, PK5, Bassin du PK5.
 - **6e arrondissement** : Sibang, Terre-Nouvelle, Cité de la Caisse, Nzeng Ayong, Cité des Ambassadeurs.
 
-## Règles importantes
+## Règles et limites connues
 
-- Ces limites sont des **limites de gameplay**, pas des limites administratives officielles.
-- Le point OSM « Libreville » est un repère de ville et n'est pas traité comme un quartier.
-- Les deux variantes « Atong Abe » et « Atong-Abe » sont conservées car elles ont deux points OSM ; elles sont signalées comme alias dans les propriétés.
-- Des lieux comme Baie des Rois, Institut des Sports, Zone Industrielle d'Oloumi, Centre-Ville et RIO sont conservés comme secteurs jouables, même s'ils ne sont pas tous des quartiers administratifs.
-- Les cellules ne suivent pas encore les routes, les rivières, le littoral, les bâtiments ou les espaces verts. L'étape suivante sera de déformer/recouper ces cellules avec ces éléments pour obtenir des limites plus naturelles et améliorer les téléporteurs.
-- Ne pas afficher ces polygones comme une vérité administrative dans l'interface du jeu.
+- Ce sont des **limites de gameplay**, pas des limites administratives officielles.
+- Les lieux particuliers (Baie des Rois, Institut des Sports, Zone Industrielle d'Oloumi, Centre-Ville, RIO, etc.) restent des secteurs jouables même s'ils ne sont pas tous des quartiers administratifs.
+- Les variantes OSM « Atong Abe » et « Atong-Abe » sont conservées comme deux points distincts ; elles partagent une indication d'alias dans les propriétés.
+- Les limites non appuyées par une route ou un élément naturel restent provisoires.
+- L'enveloppe extérieure est basée sur l'enveloppe des points OSM et doit encore être comparée au littoral, aux bâtiments et à la zone réellement jouable.
+- Le rendu des polygones doit être vérifié dans QGIS puis dans Godot. La géométrie n'a pas encore été déclarée validée visuellement ou en jeu.
 
-## Contrôle
+## Champs importants
 
-Les fichiers sont en GeoJSON / EPSG:4326. Ils peuvent être ouverts directement dans QGIS. Les champs `arrondissement_id`, `arrondissement`, `boundary_status`, `official_boundary`, `confidence` et `source` permettent de filtrer et d'identifier les contours générés.
+`arrondissement_id`, `arrondissement`, `boundary_status`, `official_boundary`, `confidence`, `boundary_type`, `road_aligned_shared_edges` et `source` permettent d'identifier le secteur, sa méthode de génération et son niveau de certitude.
+
+## Attribution
+
+Les données de base proviennent d'OpenStreetMap : © OpenStreetMap contributors, ODbL 1.0.
