@@ -233,10 +233,10 @@ func _conform_baie_objects_to_terrain() -> void:
 	# Chaque modèle autonome est décalé selon l'altitude de son point d'ancrage.
 	# On ne touche pas aux transformations internes des GLB.
 	for container in get_children():
-		if not container is Node3D:
+		if not (container is Node3D):
 			continue
 		for asset_root in container.get_children():
-			if not asset_root is Node3D:
+			if not (asset_root is Node3D):
 				continue
 			var local_position: Vector3 = asset_root.position
 			local_position.y += float(world_map.call("terrain_height_at_world", local_position.x, local_position.z))
