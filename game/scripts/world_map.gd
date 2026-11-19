@@ -1082,6 +1082,13 @@ func _load_roads() -> void:
 			var right_curb := _offset_road_polyline(centerline, -width * 0.5 - 0.22)
 			var left_walk := _offset_road_polyline(centerline, width * 0.5 + 0.22 + 1.55)
 			var right_walk := _offset_road_polyline(centerline, -width * 0.5 - 0.22 - 1.55)
+			# Petits raccords triangulés aux changements de direction : ils ferment
+			# les coins extérieurs qui restent visibles entre deux segments OSM.
+			for join_index in range(1, centerline.size() - 1):
+				var incoming := Vector2(centerline[join_index].x - centerline[join_index - 1].x, centerline[join_index].z - centerline[join_index - 1].z).normalized()
+				var outgoing := Vector2(centerline[join_index + 1].x - centerline[join_index].x, centerline[join_index + 1].z - centerline[join_index].z).normalized()
+				if incoming.dot(outgoing) < 0.995:
+					_add_road_round_join(surface, centerline[join_index], width * 0.5)
 			for i in range(centerline.size() - 1):
 				var a := centerline[i]
 				var b := centerline[i + 1]
@@ -1258,6 +1265,23 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 		# Inverser l'ordre pour orienter les faces vers le haut (normale +Y).
 		surface.add_vertex(Vector3(center.x + cos(b) * radius, y, center.z + sin(b) * radius))
 		surface.add_vertex(Vector3(center.x + cos(a) * radius, y, center.z + sin(a) * radius))
+
+
+func _add_road_round_join(surface: SurfaceTool, center: Vector3, radius: float) -> void:
+	const segments := 10
+	var y := center.y + 0.022
+	for i in range(segments):
+		var angle_a := TAU * float(i) / float(segments)
+		var angle_b := TAU * float(i + 1) / float(segments)
+		var p0 := Vector3(center.x, y, center.z)
+		var p1 := Vector3(center.x + cos(angle_b) * radius, y, center.z + sin(angle_b) * radius)
+		var p2 := Vector3(center.x + cos(angle_a) * radius, y, center.z + sin(angle_a) * radius)
+		surface.set_uv(Vector2(p0.x / 4.0, p0.z / 4.0))
+		surface.add_vertex(p0)
+		surface.set_uv(Vector2(p1.x / 4.0, p1.z / 4.0))
+		surface.add_vertex(p1)
+		surface.set_uv(Vector2(p2.x / 4.0, p2.z / 4.0))
+		surface.add_vertex(p2)
 
 
 func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float) -> void:
