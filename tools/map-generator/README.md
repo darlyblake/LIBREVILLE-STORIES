@@ -90,3 +90,21 @@ python3 tools/map-generator/generate_extended_dem.py
 
 Le DEM étendu est produit sous des noms distincts. Il ne remplace pas `libreville_dem.json` ni `libreville_dem_f32.bin`, et le jeu continue donc d'utiliser le terrain actuel tant que l'intégration n'est pas faite. Il faudra ensuite vérifier le repère local, le placement du joueur, les collisions, les limites invisibles et la cohérence des couches OSM dans Godot. La nouvelle emprise ne doit pas être présentée comme une extension officielle de la commune.
 
+## Résultat du DEM régional généré (19 novembre 2026)
+
+La génération GitHub Actions a réussi et les fichiers sont maintenant enregistrés à la racine du dépôt :
+- `libreville_dem_extended.json`
+- `libreville_dem_extended_f32.bin`
+
+Contrôles effectués sur l'artefact généré :
+- grille : **668 colonnes × 743 lignes** ;
+- pas annoncé : **30 m** ;
+- binaire : **1 985 296 octets**, soit exactement 668 × 743 × 4 ;
+- altitudes observées : **-10,45 m à 120,28 m** ;
+- aucune cellule NoData dans la grille finale ;
+- plage d'altitudes cohérente avec le relief connu de la zone.
+
+Le commit de données est `002027fb6b3abc2995a0d2f1d941a6ff5c05543a`.
+
+**État d'intégration :** le nouveau DEM est généré, contrôlé et versionné, mais le jeu utilise encore l'ancien DEM. Les couches routes, bâtiments, végétation, POI et localités doivent être extraites dans la même emprise élargie, puis contrôlées ensemble. Les polygones de quartiers et les limites d'arrondissements ne doivent pas être inventés à partir du seul relief.
+
