@@ -53,7 +53,12 @@ func _ready() -> void:
 	_road_material = _make_material(Color.WHITE)
 	_road_material.vertex_color_use_as_albedo = true
 	_road_material.albedo_texture = _make_asphalt_texture()
-	_road_material.roughness = 0.88
+	_road_material.normal_enabled = true
+	_road_material.normal_texture = _make_asphalt_normal_texture()
+	_road_material.normal_scale = 0.32
+	_road_material.roughness = 0.94
+	_road_material.metallic = 0.0
+	_road_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_road_material.uv1_scale = Vector3(1.0, 1.0, 1.0)
 	_environment_material = _make_material(Color.WHITE)
 	_environment_material.vertex_color_use_as_albedo = true
@@ -806,20 +811,51 @@ func _load_neighbourhoods() -> void:
 
 
 func _make_asphalt_texture() -> Texture2D:
-	# Asphalte procédural type GTA : grain sombre + micro-variation.
-	var image := Image.create(128, 128, false, Image.FORMAT_RGBA8)
+	# Bitume haute définition procédural : variations larges, grain fin et granulats.
+	# La texture est répétée tous les 4 m par _add_road_quad pour garder une échelle crédible.
+	const SIZE := 512
+	var broad_noise := FastNoiseLite.new()
+	broad_noise.seed = 20261117
+	broad_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	broad_noise.frequency = 0.018
+	broad_noise.fractal_octaves = 3
+	broad_noise.fractal_gain = 0.48
+	var grain_noise := FastNoiseLite.new()
+	grain_noise.seed = 20261118
+	grain_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	grain_noise.frequency = 0.19
+	var image := Image.create(SIZE, SIZE, false, Image.FORMAT_RGBA8)
 	var rng := RandomNumberGenerator.new()
-	rng.seed = 20261117
-	for y in range(128):
-		for x in range(128):
-			var n := rng.randf()
-			var base := 0.22 + n * 0.08
-			# Légères stries longitudinales (usure / bitume).
-			var streak := 0.03 if (x + y * 3) % 17 == 0 else 0.0
-			var shade := clampf(base + streak + ((x * 7 + y * 11) % 5) * 0.008, 0.14, 0.38)
-			image.set_pixel(x, y, Color(shade, shade * 1.01, shade * 0.98, 1.0))
+	rng.seed = 20261119
+	for y in range(SIZE):
+		for x in range(SIZE):
+			var broad := broad_noise.get_noise_2d(float(x), float(y))
+			var grain := grain_noise.get_noise_2d(float(x), float(y))
+			var aggregate := rng.randf_range(-0.045, 0.045)
+			# Petites traces irrégulières, sans motif de grille visible.
+			var fleck := 0.035 if rng.randf() > 0.992 else 0.0
+			var shade := clampf(0.205 + broad * 0.045 + grain * 0.025 + aggregate + fleck, 0.105, 0.34)
+			image.set_pixel(x, y, Color(shade * 1.015, shade * 1.01, shade * 0.99, 1.0))
 	image.generate_mipmaps()
 	return ImageTexture.create_from_image(image)
+
+
+func _make_asphalt_normal_texture() -> Texture2D:
+	# Relief microscopique du granulat pour casser l'aspect d'un simple aplat.
+	const SIZE := 512
+	var noise := FastNoiseLite.new()
+	noise.seed = 20261120
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.frequency = 0.24
+	noise.fractal_octaves = 2
+	var heightmap := Image.create(SIZE, SIZE, false, Image.FORMAT_RF)
+	for y in range(SIZE):
+		for x in range(SIZE):
+			var h := 0.5 + noise.get_noise_2d(float(x), float(y)) * 0.22
+			heightmap.set_pixel(x, y, Color(h, h, h, 1.0))
+	heightmap.bump_map_to_normal_map(3.0)
+	heightmap.generate_mipmaps()
+	return ImageTexture.create_from_image(heightmap)
 
 
 func _make_sidewalk_texture() -> Texture2D:
