@@ -1,0 +1,29 @@
+name: Validate extended Libreville OSM geometry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/osm/extended/**"
+      - "tools/map-generator/validate_extended_osm.py"
+      - ".github/workflows/validate-extended-osm.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-osm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install geometry dependency
+        run: python -m pip install --upgrade pip shapely
+      - name: Validate OSM geometries
+        run: python tools/map-generator/validate_extended_osm.py
