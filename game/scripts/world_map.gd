@@ -52,13 +52,25 @@ func _ready() -> void:
 	_add_ocean_plane()
 	_road_material = _make_material(Color.WHITE)
 	_road_material.vertex_color_use_as_albedo = true
-	_road_material.albedo_texture = _make_asphalt_texture()
+	# Utilise les cartes 4K du pack téléchargé lorsqu'elles sont présentes.
+	# En leur absence, conserve le matériau procédural de secours.
+	var asphalt_albedo := _find_asphalt_map("asphalt_02_diff_4k")
+	var asphalt_roughness := _find_asphalt_map("asphalt_02_rough_4k")
+	var asphalt_normal := _find_asphalt_map("asphalt_02_nor_gl_4k")
+	_road_material.albedo_texture = asphalt_albedo if asphalt_albedo != null else _make_asphalt_texture()
 	_road_material.normal_enabled = true
-	_road_material.normal_texture = _make_asphalt_normal_texture()
+	_road_material.normal_texture = asphalt_normal if asphalt_normal != null else _make_asphalt_normal_texture()
 	_road_material.normal_scale = 0.32
 	_road_material.roughness = 0.94
+	_road_material.roughness_texture = asphalt_roughness
 	_road_material.metallic = 0.0
 	_road_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	if asphalt_albedo != null:
+		print("LIBREVILLE STORIES | carte albedo asphalt 4K chargée")
+	if asphalt_roughness != null:
+		print("LIBREVILLE STORIES | carte roughness asphalt 4K chargée")
+	if asphalt_normal != null:
+		print("LIBREVILLE STORIES | carte normal OpenGL asphalt 4K chargée")
 	_road_material.uv1_scale = Vector3(1.0, 1.0, 1.0)
 	_environment_material = _make_material(Color.WHITE)
 	_environment_material.vertex_color_use_as_albedo = true
@@ -808,6 +820,34 @@ func _load_neighbourhoods() -> void:
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Neighbourhood_Boundaries_%03d" % batch_index)
 	print("LIBREVILLE STORIES | limites locales OSM : %d" % _neighbourhood_count)
+
+
+func _find_asphalt_map(file_stem: String) -> Texture2D:
+	# Le pack est conservé dans son dossier d'origine pour préserver ses fichiers liés.
+	# Les extensions PNG/JPG/WEBP sont détectées automatiquement.
+	var texture_dir := "res://asphalt_02_4k.gltf/textures"
+	var dir := DirAccess.open(texture_dir)
+	if dir == null:
+		push_warning("Dossier de textures asphalt introuvable : " + texture_dir)
+		return null
+	var extensions := ["png", "jpg", "jpeg", "webp", "tga", "bmp"]
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		if not dir.current_is_dir():
+			var lower := entry.to_lower()
+			for extension in extensions:
+				if lower == (file_stem + "." + extension):
+					var resource_path := texture_dir.path_join(entry)
+					var loaded := load(resource_path) as Texture2D
+					dir.list_dir_end()
+					if loaded == null:
+						push_warning("Impossible de charger la carte asphalt : " + resource_path)
+					return loaded
+		entry = dir.get_next()
+	dir.list_dir_end()
+	push_warning("Carte asphalt absente : " + file_stem)
+	return null
 
 
 func _make_asphalt_texture() -> Texture2D:
