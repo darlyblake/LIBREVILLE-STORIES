@@ -270,7 +270,14 @@ func _build_terrain_chunks() -> void:
 			body.collision_layer = 1
 			body.collision_mask = 1
 			var shape := CollisionShape3D.new()
-			shape.shape = mesh.create_trimesh_shape()
+			var terrain_collision := mesh.create_trimesh_shape() as ConcavePolygonShape3D
+			if terrain_collision == null:
+				push_error("Collision SRTM impossible pour le bloc %d." % chunk_index)
+				continue
+			# Le relief doit être solide même si l'ordre des faces du mesh
+			# varie selon les triangles ou les versions du moteur.
+			terrain_collision.backface_collision = true
+			shape.shape = terrain_collision
 			body.add_child(shape)
 			add_child(body)
 			chunk_index += 1
