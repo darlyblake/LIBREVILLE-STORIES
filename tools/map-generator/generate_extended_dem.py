@@ -55,20 +55,23 @@ def main() -> None:
         hgt_path = Path(temp) / "N00E009.hgt"
         print("Téléchargement de la tuile SRTM1 N00E009…", flush=True)
         download_tile(hgt_path)
-        with rasterio.open(hgt_path, driver="SRTM") as source:
-            destination = np.full((rows, columns), NODATA, dtype=np.float32)
-            reproject(
-                source=rasterio.band(source, 1),
-                destination=destination,
-                src_transform=source.transform,
-                src_crs=source.crs,
-                src_nodata=source.nodata if source.nodata is not None else NODATA,
-                dst_transform=transform,
-                dst_crs="EPSG:4326",
-                dst_nodata=NODATA,
-                resampling=Resampling.bilinear,
-                num_threads=2,
-            )
+        # HGT SRTM : échantillons int16 big-endian, 3601 x 3601,
+        # tuile N00E009 = longitude 9..10 E et latitude 0..1 N.
+        source_grid = np.fromfile(hgt_path, dtype=">i2").reshape((3601, 3601))
+        source_transform = from_origin(9.0, 1.0, 1.0 / 3600.0, 1.0 / 3600.0)
+        destination = np.full((rows, columns), NODATA, dtype=np.float32)
+        reproject(
+            source=source_grid,
+            destination=destination,
+            src_transform=source_transform,
+            src_crs="EPSG:4326",
+            src_nodata=-32768,
+            dst_transform=transform,
+            dst_crs="EPSG:4326",
+            dst_nodata=NODATA,
+            resampling=Resampling.bilinear,
+            num_threads=2,
+        )
 
     valid = np.isfinite(destination) & (destination != NODATA)
     valid_count = int(valid.sum())
