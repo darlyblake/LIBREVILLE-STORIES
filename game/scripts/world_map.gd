@@ -294,7 +294,7 @@ func _create_terrain_boundary_walls() -> void:
 		{"name": "TerrainBoundary_West", "size": Vector3(wall_thickness, wall_height, depth + wall_thickness * 2.0), "position": Vector3(_dem_x_min - wall_thickness * 0.5, wall_center_y, center_z)},
 		{"name": "TerrainBoundary_East", "size": Vector3(wall_thickness, wall_height, depth + wall_thickness * 2.0), "position": Vector3(x_max + wall_thickness * 0.5, wall_center_y, center_z)},
 		{"name": "TerrainBoundary_North", "size": Vector3(width, wall_height, wall_thickness), "position": Vector3(center_x, wall_center_y, _dem_z_min - wall_thickness * 0.5)},
-		{"name": "TerrainBoundary_South", "size":": Vector3(width, wall_height, wall_thickness), "position": Vector3(center_x, wall_center_y, z_max + wall_thickness * 0.5)}
+		{"name": "TerrainBoundary_South", "size": Vector3(width, wall_height, wall_thickness), "position": Vector3(center_x, wall_center_y, z_max + wall_thickness * 0.5)}
 	]
 	for wall_data in walls:
 		var body := StaticBody3D.new()
