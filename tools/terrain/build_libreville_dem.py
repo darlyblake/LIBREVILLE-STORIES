@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Télécharge et prépare un DEM SRTM1 (≈30 m) pour toute l'emprise Libreville.
 
-Prérequis : Python 3.10+, GDAL, rasterio, numpy et le paquet Python elevation.
-Installation : python -m pip install elevation rasterio numpy
-Le paquet elevation utilise les tuiles SRTM publiques et GDAL pour le découpage.
+Prérequis : Python 3.10+, GDAL, rasterio, numpy et elevation==1.1.2.
+Installation : python -m pip install elevation==1.1.2 rasterio numpy
+Le choix du produit est une option globale de eio : elle doit précéder « clip ».
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ TARGET_SPACING_M = 30.0
 
 def main() -> int:
     if shutil.which("eio") is None:
-        print("Commande eio absente. Installez : python -m pip install elevation", file=sys.stderr)
+        print("Commande eio absente. Installez : python -m pip install elevation==1.1.2", file=sys.stderr)
         return 2
     report = json.loads(REPORT.read_text(encoding="utf-8"))
     south, west, north, east = report["bbox_south_west_north_east"]
@@ -49,9 +49,9 @@ def main() -> int:
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     command = [
-        "eio", "clip", "-o", str(SOURCE_TIF),
+        "eio", "--product", "SRTM1", "clip",
+        "-o", str(SOURCE_TIF),
         "--bounds", str(west), str(south), str(east), str(north),
-        "--product", "SRTM1",
     ]
     print("Téléchargement/découpage SRTM1 :", " ".join(command))
     subprocess.run(command, check=True)
@@ -76,9 +76,9 @@ def main() -> int:
             resampling=Resampling.bilinear,
         )
 
-    # SRTM ne fournit pas de bathymétrie : les cellules sans donnée (mer) sont
-    # ramenées au niveau 0 m. Les trous terrestres résiduels sont interpolés
-    # avec le pixel valide le plus proche, afin de ne pas créer de trous mesh.
+    # SRTM ne fournit pas de bathymétrie : les cellules sans donnée sont
+    # mises à 0 m. Elles seront contrôlées à partir des métadonnées avant
+    # leur intégration dans Godot (la mer et les trous terrestres sont distincts).
     valid = np.isfinite(target)
     if not valid.any():
         raise RuntimeError("Le DEM téléchargé ne contient aucune altitude valide.")
@@ -92,7 +92,7 @@ def main() -> int:
     z_min = (CENTER_LAT - north) * METERS_PER_DEG_LAT
     target.tofile(RAW_FILE)
     metadata = {
-        "source": "NASA/NGA SRTM 1 arc-second (SRTM1), via elevation",
+        "source": "NASA/NGA SRTM 1 arc-second (SRTM1), via elevation 1.1.2",
         "license_note": "Respecter les conditions et l'attribution de la source SRTM utilisée.",
         "source_bbox_south_west_north_east": [south, west, north, east],
         "center_lat": CENTER_LAT,
