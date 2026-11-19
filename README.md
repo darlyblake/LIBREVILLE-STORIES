@@ -32,8 +32,10 @@ Ces noms définissent le périmètre de travail. La zone technique actuelle est 
 - [x] Première passe de détails de façades (fenêtres et portes stylisées) regroupés en meshes ; validation Godot CI en cours sur la PR dédiée
 - [x] Liste de contrôle de finalisation de la carte : [docs/MAP_COMPLETION_CHECKLIST.md](docs/MAP_COMPLETION_CHECKLIST.md)
 - [x] Validation Godot 4.3 sous OpenGL Compatibility (Mesa/llvmpipe) : scène chargée et 4 503 routes + 49 359 bâtiments générés
-- [ ] Vérifier l'extraction fraîche et le nombre réel de noms de localités ; les contours de quartiers restent à 0 dans le dernier rapport validé
-- [ ] Test d'ouverture et de performance dans Godot sur le PC cible
+- [x] Première découpe de gameplay intégrée : 72 secteurs de quartiers et 6 regroupements d'arrondissement ; 13 frontières communes alignées sur des routes OSM et 2 sur des éléments naturels
+- [x] Téléporteurs contrôlés par les polygones de gameplay : exclusion du repère « Libreville », vérification de l'appartenance au quartier, marge de sécurité dans la carte et conversion du repère local vers le repère global
+- [ ] Vérification visuelle des contours dans QGIS et Godot sur le PC cible ; les limites restent provisoires et non officielles
+- [ ] Test de déplacement/atterrissage après téléportation et mesure des performances dans Godot sur le PC cible
 - [ ] Relief (Copernicus GLO-30 candidat, DSM et non terrain nu), surface océan/mer, mobilier urbain et façades détaillées
 - [ ] Chargement par secteurs et optimisation avancée
 
