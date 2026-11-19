@@ -57,7 +57,7 @@ def main() -> None:
         download_tile(hgt_path)
         # HGT SRTM : échantillons int16 big-endian, 3601 x 3601,
         # tuile N00E009 = longitude 9..10 E et latitude 0..1 N.
-        source_grid = np.fromfile(hgt_path, dtype=">i2").reshape((3601, 3601))
+        source_grid = np.fromfile(hgt_path, dtype=">i2").reshape((3601, 3601)).astype(np.int16)
         source_transform = from_origin(9.0, 1.0, 1.0 / 3600.0, 1.0 / 3600.0)
         destination = np.full((rows, columns), NODATA, dtype=np.float32)
         reproject(
@@ -80,6 +80,12 @@ def main() -> None:
             f"Couverture SRTM insuffisante : {valid_count}/{rows * columns} cellules valides"
         )
     nodata_count = int((~valid).sum())
+    if float(destination[valid].min()) < -100.0 or float(destination[valid].max()) > 1000.0:
+        raise RuntimeError(
+            "Altitudes hors plage attendue pour Libreville : "
+            f"{float(destination[valid].min()):.1f} à {float(destination[valid].max()):.1f} m. "
+            "Vérifier l'endianness de la tuile HGT."
+        )
     destination[~valid] = 0.0
     destination = np.asarray(destination, dtype="<f4", order="C")
 
