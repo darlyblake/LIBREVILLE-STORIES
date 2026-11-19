@@ -804,7 +804,7 @@ func _load_neighbourhoods() -> void:
 			continue
 		var props: Dictionary = feature.get("properties", {})
 		var osm_id := int(props.get("osm_id", 0))
-		# Conserve le contour du quartier pour vérifier les destinations de téléportation.
+		# Conserve le contour en coordonnées locales WorldMap pour contrôler les destinations de téléportation.
 		if osm_id > 0 and rings[0].size() >= 4:
 			var polygon := PackedVector2Array()
 			for coordinate in rings[0]:
