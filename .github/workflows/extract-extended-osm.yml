@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "tools/map-generator/extract_libreville_extended.py"
+      - "tools/map-generator/extract_libreville.py"
       - ".github/workflows/extract-extended-osm.yml"
   workflow_dispatch:
 
@@ -31,7 +32,7 @@ jobs:
       - name: Extract extended OSM layers
         run: |
           python tools/map-generator/extract_libreville_extended.py \
-            --south 0.300 --west 9.370 --north 0.500 --east 9.550 --grid 4 --timeout 60
+            --south 0.300 --west 9.370 --north 0.500 --east 9.550 --grid 4 --timeout 60 --source geofabrik
       - name: Validate generated layers
         run: |
           python - <<'PY'
