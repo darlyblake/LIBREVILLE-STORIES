@@ -2712,8 +2712,6 @@ func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: St
 				var arm_end := center_2d + direction * reach
 				outline_points.append(arm_end + side)
 				outline_points.append(arm_end - side)
-		if point_index >= 0:
-			continue
 	if outline_points.size() < 6:
 		_add_junction_patch(surface, center, 3.0)
 		return
