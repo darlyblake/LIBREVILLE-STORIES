@@ -1940,12 +1940,33 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 		crosswalk_start = _junction_clearance(node_registry.get(keys[0], PackedFloat32Array()), part_index, true)
 		crosswalk_end = _junction_clearance(node_registry.get(keys[keys.size() - 1], PackedFloat32Array()), part_index, true)
 	var marking_surface: SurfaceTool = surfaces["marking"]
+	# Distance cumulée sur la géométrie d'origine : les marquages sont coupés
+	# avant les zones de conflit, au lieu de traverser le centre des carrefours.
+	var distance_along := PackedFloat32Array()
+	distance_along.resize(points.size())
+	distance_along[0] = 0.0
+	for distance_index in range(1, points.size()):
+		distance_along[distance_index] = distance_along[distance_index - 1] + Vector2(
+			points[distance_index].x - points[distance_index - 1].x,
+			points[distance_index].z - points[distance_index - 1].z
+		).length()
 	for i in range(last):
 		var a := points[i]
 		var b := points[i + 1]
 		var seg_len := Vector2(b.x - a.x, b.z - a.z).length()
 		if seg_len < 0.08:
 			continue
+		var mark_from := 0.0
+		var mark_to := seg_len
+		var segment_start := distance_along[i]
+		if crosswalk_start >= 0.0 and segment_start < crosswalk_start:
+			mark_from = maxf(mark_from, crosswalk_start - segment_start)
+		if crosswalk_end >= 0.0:
+			var distance_to_end := float(part.length) - segment_start
+			if distance_to_end < crosswalk_end:
+				mark_to = minf(mark_to, seg_len - (crosswalk_end - distance_to_end))
+		var marking_a := a.lerp(b, clampf(mark_from / seg_len, 0.0, 1.0))
+		var marking_b := a.lerp(b, clampf(mark_to / seg_len, 0.0, 1.0))
 		for k in range(strips):
 			var l0: Array[Vector3] = draped[k]
 			var l1: Array[Vector3] = draped[k + 1]
@@ -1957,13 +1978,13 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 			var edge_left: Array[Vector3] = draped[0]
 			var edge_right: Array[Vector3] = draped[strips]
 			_add_plain_quad(collision, edge_left[i], edge_right[i], edge_right[i + 1], edge_left[i + 1])
-		if has_lane_marking:
-			_add_road_lane_markings(marking_surface, a, b, width, lane_count, is_oneway, props)
+		if has_lane_marking and mark_to > mark_from + 0.25:
+			_add_road_lane_markings(marking_surface, marking_a, marking_b, width, lane_count, is_oneway, props)
 			if kind in ["trunk", "primary", "motorway"]:
-				var direction := Vector2(b.x - a.x, b.z - a.z).normalized()
+				var direction := Vector2(marking_b.x - marking_a.x, marking_b.z - marking_a.z).normalized()
 				var perp := Vector3(-direction.y, 0.0, direction.x)
-				_add_marking_quad(marking_surface, a + perp * (half - 0.18), b + perp * (half - 0.18), 0.06)
-				_add_marking_quad(marking_surface, a - perp * (half - 0.18), b - perp * (half - 0.18), 0.06)
+				_add_marking_quad(marking_surface, marking_a + perp * (half - 0.18), marking_b + perp * (half - 0.18), 0.06)
+				_add_marking_quad(marking_surface, marking_a - perp * (half - 0.18), marking_b - perp * (half - 0.18), 0.06)
 		if i == 0 and crosswalk_start >= 0.0:
 			_add_crosswalk(surfaces["crosswalk"], a, Vector2(b.x - a.x, b.z - a.z).normalized(), width, crosswalk_start + 1.9)
 		if i == last - 1 and crosswalk_end >= 0.0:
