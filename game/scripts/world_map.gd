@@ -166,8 +166,7 @@ func _ready() -> void:
 	_load_road_clearance_data()
 	await get_tree().process_frame
 	if _dem_loaded:
-		_build_terrain_chunks()
-		await get_tree().process_frame
+		await _build_terrain_chunks()
 	_grass_generator = GrassGenerator.new()
 	_grass_generator.name = "Procedural_Real_Grass"
 	add_child(_grass_generator)
@@ -399,6 +398,9 @@ func _build_terrain_chunks() -> void:
 			body.add_child(shape)
 			add_child(body)
 			chunk_index += 1
+			# Un bloc par frame : évite de figer l'interface pendant la création
+			# des centaines de maillages et de collisions du DEM régional.
+			await get_tree().process_frame
 	_create_terrain_boundary_walls()
 	print("LIBREVILLE STORIES | terrain SRTM évidé sous routes et trottoirs : %d blocs" % chunk_index)
 
@@ -451,7 +453,35 @@ func _position_player_on_terrain() -> void:
 		return
 	var player := get_parent().get_node_or_null("Player") as CharacterBody3D
 	if player != null:
-		player.position.y = _terrain_height_at_world(player.position.x, player.position.z) + 2.0
+		var spawn_x := player.position.x
+		var spawn_z := player.position.z
+		var spawn_height := _terrain_height_at_world(spawn_x, spawn_z)
+		# L'ancre historique de la Baie des Rois peut tomber côté mer selon
+		# la résolution du DEM. Chercher un point terrestre proche plutôt que
+		# laisser le joueur apparaître sous la surface océanique.
+		if spawn_height < 1.0:
+			var best_distance := INF
+			var best_position := Vector2(spawn_x, spawn_z)
+			var search_radius := 1200.0
+			for radius_step in range(1, 41):
+				var radius := float(radius_step) * 30.0
+				for angle_step in range(32):
+					var angle := TAU * float(angle_step) / 32.0
+					var candidate_x := spawn_x + cos(angle) * radius
+					var candidate_z := spawn_z + sin(angle) * radius
+					var candidate_height := _terrain_height_at_world(candidate_x, candidate_z)
+					var candidate_distance := Vector2(candidate_x - spawn_x, candidate_z - spawn_z).length_squared()
+					if candidate_height >= 1.0 and candidate_distance < best_distance:
+						best_distance = candidate_distance
+						best_position = Vector2(candidate_x, candidate_z)
+			if best_distance < INF:
+					spawn_x = best_position.x
+					spawn_z = best_position.y
+					spawn_height = _terrain_height_at_world(spawn_x, spawn_z)
+					print("LIBREVILLE STORIES | point de départ déplacé sur la terre ferme (%.0f m)." % sqrt(best_distance))
+			else:
+				push_warning("Aucun point terrestre proche du point de départ : vérifier l'emprise du DEM.")
+		player.position = Vector3(spawn_x, spawn_height + 2.0, spawn_z)
 	var vehicle := get_parent().get_node_or_null("Vehicle") as Node3D
 	if vehicle != null:
 		vehicle.position.y = _terrain_height_at_world(vehicle.position.x, vehicle.position.z) + 0.25
