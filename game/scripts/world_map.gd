@@ -1958,7 +1958,7 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 			var edge_right: Array[Vector3] = draped[strips]
 			_add_plain_quad(collision, edge_left[i], edge_right[i], edge_right[i + 1], edge_left[i + 1])
 		if has_lane_marking:
-			_add_road_lane_markings(marking_surface, a, b, width, lane_count, is_oneway)
+			_add_road_lane_markings(marking_surface, a, b, width, lane_count, is_oneway, props)
 			if kind in ["trunk", "primary", "motorway"]:
 				var direction := Vector2(b.x - a.x, b.z - a.z).normalized()
 				var perp := Vector3(-direction.y, 0.0, direction.x)
@@ -2674,25 +2674,41 @@ func _road_has_center_marking(props: Dictionary, road_kind: String) -> bool:
 	return _road_lane_count(props) >= 2 or road_kind in ["trunk", "primary", "secondary"]
 
 
-func _add_road_lane_markings(surface: SurfaceTool, a: Vector3, b: Vector3, width: float, lanes: int, oneway: bool) -> void:
+func _add_road_lane_markings(surface: SurfaceTool, a: Vector3, b: Vector3, width: float, lanes: int, oneway: bool, props: Dictionary) -> void:
 	var direction := Vector2(b.x - a.x, b.z - a.z).normalized()
 	if direction.length_squared() < 0.001:
 		return
 	var perpendicular := Vector3(-direction.y, 0.0, direction.x)
 	var half := width * 0.5
+	var forward := str(props.get("lanes:forward", "")).to_int()
+	var backward := str(props.get("lanes:backward", "")).to_int()
+	if forward > 0 and backward > 0 and not oneway:
+		# Répartition exacte des voies de chaque sens selon les tags directionnels OSM.
+		var total := forward + backward
+		var divider := -half + width * float(forward) / float(total)
+		_add_marking_quad(surface, a + perpendicular * (divider - 0.045), b + perpendicular * (divider - 0.045), 0.035)
+		_add_marking_quad(surface, a + perpendicular * (divider + 0.045), b + perpendicular * (divider + 0.045), 0.035)
+		for lane_index in range(1, forward):
+			var offset := -half + width * float(lane_index) / float(total)
+			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
+		for lane_index in range(1, backward):
+			var offset := divider + width * float(lane_index) / float(total)
+			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
+		return
 	var count := maxi(2, lanes)
 	if oneway:
-		# Une chaussée à sens unique ne reçoit pas de ligne centrale séparant les sens.
+		# Une chaussée à sens unique : séparations internes, sans fausse ligne centrale.
 		for lane_index in range(1, count):
 			var offset := -half + width * float(lane_index) / float(count)
 			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
-	elif count <= 2:
+	elif count <= 2 or count % 2 != 0:
+		# Pour un nombre impair sans détail directionnel, ne pas inventer la répartition.
 		_add_road_center_dashes(surface, a, b)
 	else:
-		# Ligne médiane continue et séparations pointillées des voies supplémentaires.
-		_add_marking_quad(surface, a + perpendicular * -0.07, b + perpendicular * -0.07, 0.045)
-		_add_marking_quad(surface, a + perpendicular * 0.07, b + perpendicular * 0.07, 0.045)
-		var lanes_each_side := int(floor(float(count) * 0.5))
+		# Double ligne centrale et séparations des voies supplémentaires de chaque côté.
+		_add_marking_quad(surface, a + perpendicular * -0.07, b + perpendicular * -0.07, 0.035)
+		_add_marking_quad(surface, a + perpendicular * 0.07, b + perpendicular * 0.07, 0.035)
+		var lanes_each_side := int(count / 2)
 		for lane_index in range(1, lanes_each_side):
 			var offset := width * float(lane_index) / float(count)
 			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
@@ -3131,16 +3147,12 @@ func _road_color(kind: String, props: Dictionary = {}) -> Color:
 			return Color(0.58, 0.58, 0.56)
 
 func _road_lane_count(props: Dictionary) -> int:
-	# Les voies directionnelles sont plus fiables que lanes quand elles existent.
+	# lanes:both_ways décrit une voie centrale partagée, pas le total des voies.
 	var forward := str(props.get("lanes:forward", "")).to_int()
 	var backward := str(props.get("lanes:backward", "")).to_int()
 	if forward > 0 or backward > 0:
 		return clampi(forward + backward, 1, 8)
-	var both_ways := str(props.get("lanes:both_ways", "")).to_int()
-	var total := str(props.get("lanes", "")).to_int()
-	if total <= 0:
-		total = both_ways
-	return clampi(total, 0, 8)
+	return clampi(str(props.get("lanes", "")).to_int(), 0, 8)
 
 
 func _road_is_oneway(props: Dictionary) -> bool:
