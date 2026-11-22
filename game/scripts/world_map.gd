@@ -1044,7 +1044,7 @@ func _make_coastal_rock_mesh() -> ArrayMesh:
 		for side in range(SIDES):
 			var angle := TAU * float(side) / float(SIDES) + phase
 			var irregularity := rng.randf_range(0.78, 1.22)
-			var radius := ring_radii[ring_index] * irregularity
+			var radius: float = float(ring_radii[ring_index]) * irregularity
 			var y_jitter := rng.randf_range(-0.055, 0.055) if ring_index > 0 and ring_index < 4 else 0.0
 			vertices.append(Vector3(cos(angle) * radius, ring_heights[ring_index] + y_jitter, sin(angle) * radius))
 			var shade := rng.randf_range(0.72, 1.0) * (1.0 - float(ring_index) * 0.045)
@@ -2194,9 +2194,6 @@ func _add_sidewalk_strip(surfaces: Dictionary, collision: SurfaceTool, run: Arra
 			var mid_outer := (outer[i] + outer[i + 1]) * 0.5
 			if _point_on_other_road(mid_curb.x, mid_curb.z, part_index) or _point_on_other_road(mid_outer.x, mid_outer.z, part_index):
 				continue
-			if first_built < 0:
-				first_built = i
-			last_built = i + 1
 			var e0 := Vector3(edge[i].x, edge_y[i], edge[i].z)
 			var e1 := Vector3(edge[i + 1].x, edge_y[i + 1], edge[i + 1].z)
 			var ct0 := Vector3(curb[i].x, top_y[i], curb[i].z)
