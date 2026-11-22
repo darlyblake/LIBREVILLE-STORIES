@@ -112,7 +112,7 @@ var _environment_count := 0
 var _neighbourhood_count := 0
 var _locality_count := 0
 var _grass_generator: GrassGenerator
-var _environment_material: StandardMaterial3D
+var _environment_material: Material
 var _road_labels := 0
 var _road_material: Material
 var _road_hit_grid: Dictionary = {}
@@ -150,8 +150,7 @@ func _ready() -> void:
 	_apply_ground_surface()
 	_add_ocean_plane()
 	_build_road_materials()
-	_environment_material = _make_material(Color.WHITE)
-	_environment_material.vertex_color_use_as_albedo = true
+	_environment_material = _make_environment_material()
 	# Le réseau routier doit être connu AVANT la génération du relief :
 	# le terrain SRTM est alors réellement évidé sous chaussées et trottoirs.
 	_load_road_clearance_data()
@@ -563,6 +562,65 @@ void fragment() {
 	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	ocean.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	add_child(ocean)
+
+
+func _make_environment_material() -> ShaderMaterial:
+	# Matériau commun aux surfaces OSM : les plages reçoivent un grain fin,
+	# des rides de sable et des zones minérales irrégulières sans multiplier
+	# les matériaux ni les draw calls.
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode cull_disabled, diffuse_burley, specular_schlick_ggx;
+
+varying vec3 world_position;
+varying vec4 surface_tint;
+
+float hash21(vec2 p) {
+	p = fract(p * vec2(123.34, 456.21));
+	p += dot(p, p + 45.32);
+	return fract(p.x * p.y);
+}
+
+float noise21(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = hash21(i);
+	float b = hash21(i + vec2(1.0, 0.0));
+	float c = hash21(i + vec2(0.0, 1.0));
+	float d = hash21(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+void vertex() {
+	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	surface_tint = COLOR;
+}
+
+void fragment() {
+	vec3 base = surface_tint.rgb;
+	float sand_mask = smoothstep(0.62, 0.78, base.r)
+		* smoothstep(0.52, 0.72, base.g)
+		* (1.0 - smoothstep(0.55, 0.72, base.b));
+	vec2 p = world_position.xz;
+	float broad = noise21(p * 0.075);
+	float medium = noise21(p * 0.62);
+	float grain = hash21(floor(p * 8.0));
+	float ripple = sin(p.x * 0.42 + sin(p.y * 0.17) * 1.8) * 0.5 + 0.5;
+	float sand_variation = 0.84 + broad * 0.18 + medium * 0.08;
+	sand_variation += (ripple - 0.5) * 0.045 + (grain - 0.5) * 0.055;
+	vec3 sand_color = base * sand_variation;
+	sand_color = mix(sand_color, sand_color * vec3(0.82, 0.78, 0.69), smoothstep(0.68, 0.92, broad) * 0.12);
+	vec3 other_color = base * (0.97 + broad * 0.06);
+	ALBEDO = mix(other_color, sand_color, sand_mask);
+	ROUGHNESS = mix(0.94, 0.88, sand_mask);
+	SPECULAR = 0.18;
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	return material
 
 
 func _make_material(color: Color) -> StandardMaterial3D:
