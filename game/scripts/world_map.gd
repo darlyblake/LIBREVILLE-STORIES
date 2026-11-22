@@ -2143,10 +2143,11 @@ func _add_sidewalk_strip(surfaces: Dictionary, collision: SurfaceTool, run: Arra
 			edge_y.append(ey)
 			top_y.append(maxf(ey + CURB_HEIGHT, maxf(cy, oy) + 0.07))
 			ground_y.append(oy)
-		var first_built := -1
-		var last_built := -1
-		# Première passe : repérer les extrémités réellement construites avant
-		# de générer les faces, afin que les rampes modifient aussi le mesh visible.
+		var built_segments := PackedByteArray()
+		built_segments.resize(count - 1)
+		# Première passe : repérer chaque portion réellement construite.
+		# Une route secondaire peut interrompre le trottoir plusieurs fois ;
+		# chaque portion doit donc avoir ses propres rampes et ses propres bouchons.
 		for scan_index in range(count - 1):
 			var scan_is_median := gaps[scan_index] > 0.0 and gaps[scan_index + 1] > 0.0
 			if scan_is_median and (gaps[scan_index] < 2.0 * CURB_WIDTH + 0.5 or gaps[scan_index + 1] < 2.0 * CURB_WIDTH + 0.5):
@@ -2155,24 +2156,34 @@ func _add_sidewalk_strip(surfaces: Dictionary, collision: SurfaceTool, run: Arra
 			var scan_outer := (outer[scan_index] + outer[scan_index + 1]) * 0.5
 			if _point_on_other_road(scan_curb.x, scan_curb.z, part_index) or _point_on_other_road(scan_outer.x, scan_outer.z, part_index):
 				continue
-			if first_built < 0:
-				first_built = scan_index
-			last_built = scan_index + 1
-		# Calcul de la rampe avant la création des sommets de bordure et de dalle.
-		if first_built >= 0 and last_built > first_built:
-			var distance_from_start := PackedFloat32Array()
+			built_segments[scan_index] = 1
+		# Chaque suite continue de segments reçoit une rampe à ses deux bouts.
+		var segment_cursor := 0
+		while segment_cursor < built_segments.size():
+			if built_segments[segment_cursor] == 0:
+				segment_cursor += 1
+				continue
+			var run_start := segment_cursor
+			while segment_cursor + 1 < built_segments.size() and built_segments[segment_cursor + 1] == 1:
+				segment_cursor += 1
+			var run_end := segment_cursor + 1
+			var distance_from_start := 0.0
+			for ramp_index in range(run_start + 1, run_end + 1):
+				distance_from_start += edge[ramp_index - 1].distance_to(edge[ramp_index])
+			var travelled_from_start := 0.0
 			var distance_to_end := PackedFloat32Array()
-			distance_from_start.resize(count)
-			distance_to_end.resize(count)
-			distance_from_start[first_built] = 0.0
-			for ramp_index in range(first_built + 1, last_built + 1):
-				distance_from_start[ramp_index] = distance_from_start[ramp_index - 1] + edge[ramp_index - 1].distance_to(edge[ramp_index])
-			distance_to_end[last_built] = 0.0
-			for ramp_index in range(last_built - 1, first_built - 1, -1):
-				distance_to_end[ramp_index] = distance_to_end[ramp_index + 1] + edge[ramp_index].distance_to(edge[ramp_index + 1])
-			for ramp_index in range(first_built, last_built + 1):
-				var ramp_factor := minf(minf(distance_from_start[ramp_index] / 1.5, distance_to_end[ramp_index] / 1.5), 1.0)
+			distance_to_end.resize(run_end - run_start + 1)
+			distance_to_end[run_end - run_start] = 0.0
+			for ramp_index in range(run_end - 1, run_start - 1, -1):
+				distance_to_end[ramp_index - run_start] = distance_to_end[ramp_index + 1 - run_start] + edge[ramp_index].distance_to(edge[ramp_index + 1])
+			for ramp_index in range(run_start, run_end + 1):
+				var from_start := travelled_from_start
+				var from_end := distance_to_end[ramp_index - run_start]
+				var ramp_factor := minf(minf(from_start / 1.5, from_end / 1.5), 1.0)
 				top_y[ramp_index] = edge_y[ramp_index] + (top_y[ramp_index] - edge_y[ramp_index]) * ramp_factor
+				if ramp_index < run_end:
+					travelled_from_start += edge[ramp_index].distance_to(edge[ramp_index + 1])
+			segment_cursor += 1
 		for i in range(count - 1):
 			var is_median := gaps[i] > 0.0 and gaps[i + 1] > 0.0
 			if is_median and (gaps[i] < 2.0 * CURB_WIDTH + 0.5 or gaps[i + 1] < 2.0 * CURB_WIDTH + 0.5):
@@ -2204,15 +2215,24 @@ func _add_sidewalk_strip(surfaces: Dictionary, collision: SurfaceTool, run: Arra
 				var dir := Vector2(run[i + 1].x - run[i].x, run[i + 1].z - run[i].z).normalized()
 				var outward := Vector3(-dir.y, 0.0, dir.x) * side_sign
 				_add_sidewalk_skirt(surfaces, collision, ot0, ot1, ground_y[i], ground_y[i + 1], outward)
-		# Bouts du trottoir fermés (pas de dalle creuse vue de côté).
-		for end_index in [first_built, last_built]:
-			if end_index < 0:
+		# Fermer chaque extrémité de dalle, y compris après une interruption
+		# causée par une entrée ou une chaussée transversale.
+		var cap_cursor := 0
+		while cap_cursor < built_segments.size():
+			if built_segments[cap_cursor] == 0:
+				cap_cursor += 1
 				continue
-			var top_edge := Vector3(edge[end_index].x, top_y[end_index], edge[end_index].z)
-			var top_outer := Vector3(outer[end_index].x, top_y[end_index], outer[end_index].z)
-			var base_outer := Vector3(outer[end_index].x, ground_y[end_index], outer[end_index].z)
-			var base_edge := Vector3(edge[end_index].x, edge_y[end_index], edge[end_index].z)
-			_add_plain_quad(curb_surface, top_edge, top_outer, base_outer, base_edge)
+			var cap_start := cap_cursor
+			while cap_cursor + 1 < built_segments.size() and built_segments[cap_cursor + 1] == 1:
+				cap_cursor += 1
+			var cap_end := cap_cursor + 1
+			for end_index in [cap_start, cap_end]:
+				var top_edge := Vector3(edge[end_index].x, top_y[end_index], edge[end_index].z)
+				var top_outer := Vector3(outer[end_index].x, top_y[end_index], outer[end_index].z)
+				var base_outer := Vector3(outer[end_index].x, ground_y[end_index], outer[end_index].z)
+				var base_edge := Vector3(edge[end_index].x, edge_y[end_index], edge[end_index].z)
+				_add_plain_quad(curb_surface, top_edge, top_outer, base_outer, base_edge)
+			cap_cursor += 1
 		# Lampadaires : décalés d'une demi-période entre les deux côtés ; une seule rive
 		# pour les petites rues ; un côté sur deux dans un terre-plein (pas de doublon).
 		if spacing > 0.0 and not (kind in ["residential", "unclassified"] and side_sign > 0.0):
