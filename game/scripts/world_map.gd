@@ -433,8 +433,8 @@ func _position_player_on_terrain() -> void:
 
 
 func _apply_ground_surface() -> void:
-	# Le grand plan de sol uni donne un aspect artificiel. Une texture légère
-	# de variation végétale/terre apporte de la lecture sans ajouter de géométrie.
+	# Mode contrôle des routes : sol neutre minéral, sans texture végétale.
+	# Les espaces verts OSM restent masqués jusqu'à la phase décoration.
 	var ground := get_parent().get_node_or_null("Ground/MeshInstance3D") as MeshInstance3D
 	if ground == null:
 		return
@@ -448,9 +448,9 @@ func _apply_ground_surface() -> void:
 	detail_noise.seed = 20261118
 	detail_noise.frequency = 0.12
 	var image := Image.create(256, 256, false, Image.FORMAT_RGBA8)
-	var base_grass := Color(0.25, 0.34, 0.27)
-	var dry_soil := Color(0.37, 0.34, 0.27)
-	var dense_grass := Color(0.18, 0.29, 0.21)
+	var base_grass := Color(0.27, 0.28, 0.28)
+	var dry_soil := Color(0.36, 0.35, 0.33)
+	var dense_grass := Color(0.23, 0.25, 0.25)
 	for y in range(256):
 		for x in range(256):
 			var broad := noise.get_noise_2d(float(x), float(y))
