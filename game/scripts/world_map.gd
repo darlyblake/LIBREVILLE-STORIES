@@ -754,7 +754,7 @@ func _build_coastal_details() -> void:
 	var foam_shader := Shader.new()
 	foam_shader.code = """
 shader_type spatial;
-render_mode unshaded, cull_disabled, blend_mix, depth_draw_alpha_prepass;
+render_mode unshaded, cull_disabled, blend_mix, depth_prepass_alpha;
 
 varying vec3 shore_world_pos;
 varying vec4 shore_tint;
