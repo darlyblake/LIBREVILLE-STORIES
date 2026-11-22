@@ -1914,7 +1914,7 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 		var node_key: String = keys[node_index]
 		var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
 		var entry_count := int(entries.size() / 3)
-		if entry_count >= 3 and not patched.has(node_key):
+		if _junction_arm_count(node_key, node_registry, all_parts) >= 3 and not patched.has(node_key):
 			patched[node_key] = true
 			var patch_radius := 2.2
 			for e in range(entry_count):
@@ -2696,6 +2696,27 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 		var o1 := _rp(center + d1 * radius, PATCH_LIFT)
 		_add_textured_tri(surface, c, i0, i1, ROAD_UV_METERS)
 		_add_textured_quad(surface, i0, o0, o1, i1, ROAD_UV_METERS)
+
+
+func _junction_arm_count(node_key: String, node_registry: Dictionary, all_parts: Array[Dictionary]) -> int:
+	# Une route traversant le nœud au milieu de sa LineString apporte deux bras,
+	# même si elle ne compte que comme une seule entrée dans le registre.
+	var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
+	var arm_count := 0
+	for entry_index in range(0, entries.size(), 3):
+		var part_index := int(entries[entry_index])
+		if part_index < 0 or part_index >= all_parts.size():
+			continue
+		var part: Dictionary = all_parts[part_index]
+		var keys: Array[String] = part.keys
+		for point_index in range(keys.size()):
+			if keys[point_index] != node_key:
+				continue
+			if point_index > 0:
+				arm_count += 1
+			if point_index + 1 < keys.size():
+				arm_count += 1
+	return arm_count
 
 
 func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: String,
