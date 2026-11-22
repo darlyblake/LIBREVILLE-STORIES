@@ -417,13 +417,15 @@ func _create_terrain_boundary_walls() -> void:
 
 
 func _terrain_color(height: float) -> Color:
+	# Palette minérale temporaire pour distinguer nettement les chaussées.
+	# Les couleurs végétales seront réintroduites pendant la décoration.
 	if height < 1.0:
-		return Color(0.66, 0.62, 0.48)
+		return Color(0.62, 0.57, 0.46)
 	if height < 15.0:
-		return Color(0.34, 0.43, 0.30)
+		return Color(0.43, 0.42, 0.39)
 	if height < 45.0:
-		return Color(0.29, 0.39, 0.27)
-	return Color(0.35, 0.39, 0.29)
+		return Color(0.39, 0.40, 0.39)
+	return Color(0.45, 0.44, 0.41)
 
 
 func _position_player_on_terrain() -> void:
