@@ -179,7 +179,7 @@ func _ready() -> void:
 	_grass_generator = GrassGenerator.new()
 	_grass_generator.name = "Procedural_Real_Grass"
 	add_child(_grass_generator)
-	_load_environment()
+	await _load_environment()
 	await get_tree().process_frame
 	_grass_generator.build()
 	await get_tree().process_frame
@@ -199,10 +199,10 @@ func _ready() -> void:
 	_facade_detail_material.vertex_color_use_as_albedo = true
 	_facade_detail_material.roughness = 0.85
 	if show_roads:
-		_load_roads()
+		await _load_roads()
 		await get_tree().process_frame
 	if show_buildings:
-		_load_buildings()
+		await _load_buildings()
 		await get_tree().process_frame
 	_load_pois()
 	_position_player_on_terrain()
@@ -801,6 +801,7 @@ func _load_environment() -> void:
 	var tree_positions: Array[Vector3] = []
 	var batch_count := 0
 	var batch_index := 0
+	var environment_index := 0
 	for feature in data.get("features", []):
 		var geometry: Dictionary = feature.get("geometry", {})
 		var props: Dictionary = feature.get("properties", {})
@@ -899,6 +900,9 @@ func _load_environment() -> void:
 		if added:
 			_environment_count += 1
 			batch_count += 1
+		environment_index += 1
+		if environment_index % 40 == 0:
+			await get_tree().process_frame
 		if batch_count >= 900:
 			_commit_surface(surface, "OSM_Environment_%03d" % batch_index)
 			batch_index += 1
@@ -1826,6 +1830,7 @@ func _load_roads() -> void:
 	# 1. Découpe en tronçons + registre des nœuds (carrefours, T, croisements).
 	var parts: Array[Dictionary] = []
 	var node_registry: Dictionary = {}
+	var road_feature_index := 0
 	for feature in features:
 		var geometry: Dictionary = feature.get("geometry", {})
 		var lines: Array = []
@@ -1891,6 +1896,9 @@ func _load_roads() -> void:
 				"class_lift": _road_class_lift(kind),
 				"oneway_sign": _road_oneway_sign(props),
 			})
+		road_feature_index += 1
+		if road_feature_index % 60 == 0:
+			await get_tree().process_frame
 	_build_road_hit_grid(parts)
 	# 2. Regroupement spatial : chaque lot de meshes couvre une zone compacte,
 	#    ce qui permet au moteur d'éliminer les zones hors champ.
@@ -1915,6 +1923,7 @@ func _load_roads() -> void:
 		_commit_road_surfaces(surfaces, collision, "%03d" % tile_counter)
 		_commit_lamps("%03d" % tile_counter)
 		tile_counter += 1
+		await get_tree().process_frame
 	_road_hit_grid.clear()
 	print("LIBREVILLE STORIES | VERSION v7 · décor vert OSM %s | réseau routier : %d tronçons, %d zones, %d lampadaires, %d ms" % ["ACTIVÉ" if render_green_areas else "MASQUÉ", parts.size(), tile_counter, _lamp_count, Time.get_ticks_msec() - started_ms])
 
@@ -3326,6 +3335,8 @@ func _load_buildings() -> void:
 			surface = _new_surface(_building_material)
 			roof_surface = _new_surface(_roof_material)
 			detail_surface = _new_surface(_facade_detail_material)
+		if index % 40 == 0:
+			await get_tree().process_frame
 	if batch_count > 0:
 		_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
 		_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
