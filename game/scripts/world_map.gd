@@ -2774,17 +2774,24 @@ func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: V
 	if road_width < 5.5:
 		return
 	var direction := Vector3(inward_direction.x, 0.0, inward_direction.y).normalized()
-	var side := Vector3(-direction.z, 0.0, direction.x) * (road_width * 0.42)
+	var side := Vector3(-direction.z, 0.0, direction.x) * (road_width * 0.46)
 	var center := junction + direction * distance
-	for stripe_index in range(6):
-		var offset := (float(stripe_index) - 2.5) * 0.72
-		var stripe_center := center + direction * offset
-		var along := direction * 0.22
-		_add_quad(surface,
-			_rp(stripe_center - along + side, MARKING_LIFT + 0.005),
-			_rp(stripe_center - along - side, MARKING_LIFT + 0.005),
-			_rp(stripe_center + along - side, MARKING_LIFT + 0.005),
-			_rp(stripe_center + along + side, MARKING_LIFT + 0.005))
+	# À Libreville, représenter le passage comme des éléments de béton,
+	# et non comme de simples bandes de peinture blanche.
+	# Les dalles sont légèrement surélevées, avec joints sombres et nuances minérales.
+	for slab_index in range(6):
+		var offset := (float(slab_index) - 2.5) * 0.78
+		var slab_center := center + direction * offset
+		var along := direction * 0.29
+		var lift := MARKING_LIFT + 0.035
+		var shade := 0.72 + float((slab_index * 3) % 4) * 0.025
+		var concrete := Color(shade * 0.99, shade, shade * 0.98, 1.0)
+		var a := _rp(slab_center - along + side, lift)
+		var b := _rp(slab_center - along - side, lift)
+		var c := _rp(slab_center + along - side, lift)
+		var d := _rp(slab_center + along + side, lift)
+		surface.set_color(concrete)
+		_add_quad(surface, a, b, c, d)
 
 
 func _road_has_center_marking(props: Dictionary, road_kind: String) -> bool:
