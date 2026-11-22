@@ -940,11 +940,7 @@ void fragment() {
 		var rock_material := StandardMaterial3D.new()
 		rock_material.vertex_color_use_as_albedo = true
 		rock_material.roughness = 0.96
-		var rock_mesh := SphereMesh.new()
-		rock_mesh.radius = 1.0
-		rock_mesh.height = 1.35
-		rock_mesh.radial_segments = 7
-		rock_mesh.rings = 3
+		var rock_mesh := _make_coastal_rock_mesh()
 		rock_mesh.material = rock_material
 		var multi := MultiMesh.new()
 		multi.transform_format = MultiMesh.TRANSFORM_3D
@@ -961,6 +957,59 @@ void fragment() {
 		rocks.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 		add_child(rocks)
 	print("LIBREVILLE STORIES | littoral : %d segments, %d rubans d'écume, %d rochers" % [_coastline_paths.size(), foam_count, rock_transforms.size()])
+
+
+func _make_coastal_rock_mesh() -> ArrayMesh:
+	# Une forme rocheuse facettée et asymétrique, partagée par toutes les
+	# instances MultiMesh : davantage de relief sans multiplier les draw calls.
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20261123
+	const SIDES := 9
+	var ring_heights := [0.0, 0.18, 0.48, 0.78, 1.0]
+	var ring_radii := [0.48, 0.78, 0.70, 0.46, 0.12]
+	var rings: Array[PackedVector3Array] = []
+	var ring_colors: Array[PackedColorArray] = []
+	var phase := rng.randf_range(0.0, TAU)
+	for ring_index in range(ring_heights.size()):
+		var vertices := PackedVector3Array()
+		var colors := PackedColorArray()
+		for side in range(SIDES):
+			var angle := TAU * float(side) / float(SIDES) + phase
+			var irregularity := rng.randf_range(0.78, 1.22)
+			var radius := ring_radii[ring_index] * irregularity
+			var y_jitter := rng.randf_range(-0.055, 0.055) if ring_index > 0 and ring_index < 4 else 0.0
+			vertices.append(Vector3(cos(angle) * radius, ring_heights[ring_index] + y_jitter, sin(angle) * radius))
+			var shade := rng.randf_range(0.72, 1.0) * (1.0 - float(ring_index) * 0.045)
+			colors.append(Color(0.58 * shade, 0.61 * shade, 0.60 * shade, 1.0))
+		rings.append(vertices)
+		ring_colors.append(colors)
+	for ring_index in range(rings.size() - 1):
+		for side in range(SIDES):
+			var next_side := (side + 1) % SIDES
+			var a := rings[ring_index][side]
+			var b := rings[ring_index][next_side]
+			var c := rings[ring_index + 1][next_side]
+			var d := rings[ring_index + 1][side]
+			var ca := ring_colors[ring_index][side]
+			var cb := ring_colors[ring_index][next_side]
+			var cc := ring_colors[ring_index + 1][next_side]
+			var cd := ring_colors[ring_index + 1][side]
+			surface.set_color(ca)
+			surface.add_vertex(a)
+			surface.set_color(cb)
+			surface.add_vertex(b)
+			surface.set_color(cc)
+			surface.add_vertex(c)
+			surface.set_color(ca)
+			surface.add_vertex(a)
+			surface.set_color(cc)
+			surface.add_vertex(c)
+			surface.set_color(cd)
+			surface.add_vertex(d)
+	surface.generate_normals()
+	return surface.commit()
 
 
 func _subdivide_ground_triangle(a: Vector2, b: Vector2, c: Vector2, max_edge: float, out: Array, depth: int = 0) -> void:
