@@ -928,6 +928,22 @@ void fragment() {
 				var shade := rng.randf_range(0.70, 1.0)
 				rock_colors.append(Color(shade * 0.58, shade * 0.60, shade * 0.59, 1.0))
 
+				# Petits galets mêlés aux blocs : ils densifient la ligne de
+				# contact avec l'eau sans créer une bordure rocheuse continue.
+				if rng.randf() < 0.72:
+					var pebble_xz := shoreline + land_normal * rng.randf_range(0.15, 1.15)
+					var pebble_height := rng.randf_range(0.16, 0.38)
+					var pebble_scale := rng.randf_range(0.22, 0.62)
+					var pebble_y := _terrain_height_at_world(pebble_xz.x, pebble_xz.y) - 0.035
+					var pebble_basis := Basis(
+						Vector3(pebble_scale * rng.randf_range(0.9, 1.5), 0.0, 0.0),
+						Vector3(0.0, pebble_height, 0.0),
+						Vector3(0.0, 0.0, pebble_scale * rng.randf_range(0.8, 1.4))
+					).rotated(Vector3.UP, rng.randf_range(0.0, TAU))
+					rock_transforms.append(Transform3D(pebble_basis, Vector3(pebble_xz.x, pebble_y, pebble_xz.y)))
+					var pebble_shade := rng.randf_range(0.58, 0.82)
+					rock_colors.append(Color(pebble_shade * 0.58, pebble_shade * 0.60, pebble_shade * 0.59, 1.0))
+
 	if foam_count > 0:
 		var foam_mesh := foam_surface.commit()
 		if foam_mesh != null and foam_mesh.get_surface_count() > 0:
