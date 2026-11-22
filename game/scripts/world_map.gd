@@ -1521,7 +1521,7 @@ func _build_road_materials() -> void:
 	sidewalk.roughness = 0.95
 	sidewalk.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	_road_materials["sidewalk"] = sidewalk
-	for key in ["curb", "skirt", "marking", "crosswalk", "median"]:
+	for key in ["curb", "skirt", "marking", "crosswalk", "median", "island"]:
 		var plain := _make_material(Color.WHITE)
 		plain.vertex_color_use_as_albedo = true
 		plain.roughness = 0.9 if (key == "curb" or key == "skirt" or key == "median") else 0.7
