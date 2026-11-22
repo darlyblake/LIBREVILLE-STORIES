@@ -507,15 +507,27 @@ def extract_from_geofabrik_pbf(south, west, north, east):
         url = "https://download.geofabrik.de/africa/gabon-latest.osm.pbf"
         print("Téléchargement du PBF Gabon depuis Geofabrik…", flush=True)
         request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(request, timeout=180) as response, temp_path.open("wb") as output:
-            while True:
-                chunk = response.read(1024 * 1024)
-                if not chunk:
-                    break
-                output.write(chunk)
-        if temp_path.stat().st_size < 1_000_000:
-            raise RuntimeError("Fichier PBF Geofabrik incomplet ou trop petit.")
-        temp_path.replace(pbf_path)
+        download_errors = []
+        for attempt in range(1, 4):
+            try:
+                with urllib.request.urlopen(request, timeout=180) as response, temp_path.open("wb") as output:
+                    while True:
+                        chunk = response.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        output.write(chunk)
+                if temp_path.stat().st_size < 1_000_000:
+                    raise RuntimeError("Fichier PBF Geofabrik incomplet ou trop petit.")
+                temp_path.replace(pbf_path)
+                break
+            except Exception as exc:
+                download_errors.append(f"essai {attempt}: {type(exc).__name__}: {exc}")
+                temp_path.unlink(missing_ok=True)
+                if attempt < 3:
+                    print(f"Téléchargement Geofabrik échoué, nouvel essai {attempt + 1}/3…", flush=True)
+                    time.sleep(10 * attempt)
+        if not pbf_path.exists():
+            raise RuntimeError("Impossible de télécharger le PBF Geofabrik : " + " | ".join(download_errors))
 
     class LibrevilleHandler(osmium.SimpleHandler):
         def __init__(self):
@@ -650,6 +662,7 @@ def main():
     parser.add_argument("--east", type=float, default=DEFAULT_BBOX[3])
     parser.add_argument("--timeout", type=int, default=45)
     parser.add_argument("--grid", type=int, default=GRID)
+    parser.add_argument("--source", choices=("overpass", "geofabrik"), default="overpass")
     args = parser.parse_args()
 
     if not (args.south < args.north and args.west < args.east):
@@ -669,6 +682,8 @@ def main():
 
     used_geofabrik_fallback = False
     try:
+        if args.source == "geofabrik":
+            raise RuntimeError("Source Geofabrik demandée directement.")
         for index, (row, col, south, west, north, east) in enumerate(tiles, 1):
             cache_file = CACHE / f"grid{args.grid}_v6_tile_{row}_{col}.json"
             data = load_cached_tile(cache_file)
@@ -723,17 +738,12 @@ def main():
     
     
     except Exception as extraction_error:
-        # Si une partie des secteurs est déjà disponible, préserver le cache partiel
-        # et laisser le prochain lancement reprendre uniquement les secteurs manquants.
-        # Un PBF national téléchargé dans la même exécution ne doit pas remplacer
-        # silencieusement ce travail partiel, surtout si le réseau est indisponible.
-        if 0 < len(tile_report) < len(tiles):
-            raise RuntimeError(
-                f"Extraction interrompue après {len(tile_report)}/{len(tiles)} secteurs. "
-                "Les secteurs réussis sont conservés dans le cache ; relancer le workflow "
-                "reprendra au premier secteur manquant. Aucun GeoJSON partiel ne sera publié."
-            ) from extraction_error
-        print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
+        # Geofabrik couvre toute l'emprise en une seule lecture PBF.
+        # Il remplace donc sans perte les secteurs Overpass partiels en cas d'échec.
+        if args.source == "geofabrik":
+            print("Source Geofabrik sélectionnée directement.", flush=True)
+        else:
+            print(f"Overpass indisponible ({extraction_error}). Bascule vers Geofabrik PBF.", flush=True)
         used_geofabrik_fallback = True
         elements_from_pbf, nodes_from_pbf, relations_from_pbf = extract_from_geofabrik_pbf(
             args.south, args.west, args.north, args.east
@@ -764,7 +774,7 @@ def main():
             args.south, args.west, args.north, args.east
         ],
         "grid": f"{args.grid}x{args.grid}",
-        "source_mode": "Geofabrik Gabon PBF (fallback)" if used_geofabrik_fallback else "Overpass API",
+        "source_mode": "Geofabrik Gabon PBF" if used_geofabrik_fallback else "Overpass API",
         "tiles": tile_report,
         "extracted_at_utc": datetime.now(timezone.utc).isoformat(),
         "files": {},

@@ -54,3 +54,48 @@ Le calcul des données confirme que les 72 points de localité utilisés sont à
 ## Attribution
 
 Les données de base proviennent d'OpenStreetMap : © OpenStreetMap contributors, ODbL 1.0.
+
+
+## Référentiel administratif consulté et corrections (2025)
+
+Le fichier `REFERENTIEL_QUARTIERS_2025.json` conserve les listes de quartiers citées dans la loi n°020/2025 du 27 juin 2025 (Journal officiel n°72 Ter). Cette loi répartit des sièges et énumère des quartiers par arrondissement ; elle ne fournit pas de géométries SIG ni des limites exactes. Les listes peuvent contenir des doublons ou des secteurs subdivisés par côté de route. Elles servent donc de référence de rattachement, pas de shapefile de limites.
+
+Référence publique :
+https://admin.cere-gabon.org/wp-content/uploads/2025/09/Loi-n%C2%B00202025-du-27-juin-2025-portant-repartition-des-sieges-1.pdf
+
+Corrections appliquées aux 72 cellules existantes :
+- Vallée Sainte-Marie : 2e arrondissement.
+- Montagne Sainte : 3e arrondissement.
+- Cité de la Caisse : 2e arrondissement.
+- Zone industrielle d'Oloumi : 5e arrondissement.
+- RIO et PK5 : 3e arrondissement.
+- Terre-Nouvelle : affectée au 3e pour le jeu, mais la source 2025 la cite aussi dans une liste du 5e ; attribution à contrôler sur la carte.
+- Bassin du PK5 : affectation gameplay provisoire au 3e.
+
+Les regroupements dans `arrondissements.geojson` ont été recalculés après ces corrections. Comptage actuel : 1er=13, 2e=13, 3e=18, 4e=12, 5e=13, 6e=3 cellules.
+
+## Couverture des noms de quartiers
+
+Le référentiel 2025 comporte encore de nombreux noms absents de nos 72 points OSM actuels. Le JSON donne, arrondissement par arrondissement, les noms qui ne sont pas encore présents dans `localities.geojson` ou `neighbourhoods.geojson`. Ils ne sont pas encore des polygones : aucun point ou contour n'a été inventé pour les représenter.
+
+Les prochains ajouts géométriques doivent suivre cet ordre :
+1. réextraire les points OSM nommés sur une emprise élargie, en particulier Aéroport, Okala/Alibandeng au nord et les secteurs PK9-PK12 à l'est ;
+2. intégrer les nouvelles localités OSM avec leur identifiant et leur source ;
+3. attribuer l'arrondissement selon la liste 2025 lorsque le nom et le côté de route sont non ambigus ;
+4. pour les noms absents des sources, affecter l'arrondissement voisin le plus cohérent et marquer `assignment_status=gameplay_inference` ;
+5. recalculer les cellules et les six regroupements, puis contrôler la couverture dans QGIS.
+
+Ne pas ajouter de destination de téléportation pour un nom qui n'a pas encore de point géographique fiable et un polygone valide.
+
+## Affichage QGIS — couleurs des arrondissements
+
+Le fichier `arrondissements.qml` fournit un style catégorisé QGIS basé sur le champ `name`. Il différencie les six arrondissements avec six couleurs et des contours foncés. Le GeoJSON contient aussi les champs `couleur`, `couleur_contour` et `opacite` pour conserver cette indication dans les données.
+
+Pour appliquer le style dans QGIS :
+1. charger `arrondissements.geojson` ;
+2. clic droit sur la couche > **Propriétés** > **Symbologie** ;
+3. utiliser le bouton **Style** en bas de la fenêtre > **Charger un style…** ;
+4. sélectionner `arrondissements.qml`.
+
+Les 72 cellules déjà présentes restent réparties entre les six arrondissements selon leurs attributs actuels. Les noms de quartiers encore absents du jeu sont référencés dans `REFERENTIEL_QUARTIERS_2025.json`, mais ne deviennent pas automatiquement des polygones : leur position doit d'abord être retrouvée et vérifiée. Le 6e arrondissement ne compte actuellement que 3 cellules géographiques ; sa couverture reste donc incomplète.
+

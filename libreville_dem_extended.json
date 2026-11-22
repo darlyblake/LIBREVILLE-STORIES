@@ -1,0 +1,33 @@
+{
+  "source": "NASA/NGA SRTM 1 arc-second (SRTM1), AWS elevation-tiles-prod mirror",
+  "source_tile": "N00E009.hgt",
+  "source_url": "https://elevation-tiles-prod.s3.amazonaws.com/skadi/N00/N00E009.hgt.gz",
+  "license_note": "Données d'altitude SRTM ; conserver l'attribution NASA/NGA et vérifier les conditions de redistribution.",
+  "region_note": "Emprise régionale de travail pour le jeu, pas une limite administrative officielle de Libreville.",
+  "requested_bbox_south_west_north_east": [
+    0.3,
+    9.37,
+    0.5,
+    9.55
+  ],
+  "actual_bbox_south_west_north_east": [
+    0.29976643909450235,
+    9.37,
+    0.5,
+    9.550025946573527
+  ],
+  "center_lat": 0.4,
+  "center_lon": 9.4475,
+  "rows": 743,
+  "columns": 668,
+  "spacing_m": 30.0,
+  "x_min": -8627.089758784716,
+  "z_min": -11131.999999999998,
+  "min_elevation_m": -10.44597339630127,
+  "max_elevation_m": 120.28043365478516,
+  "valid_source_cells": 496324,
+  "nodata_cells_set_to_zero": 0,
+  "encoding": "row-major little-endian float32; row 0 = north; columns increase east",
+  "generated_at_utc": "2026-11-19T12:37:56.796070+00:00",
+  "binary_file": "libreville_dem_extended_f32.bin"
+}
