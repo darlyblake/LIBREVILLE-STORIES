@@ -572,11 +572,10 @@ func _load_environment() -> void:
 			if has_landscape_relief and not render_green_areas:
 				continue
 			var render_polygons: Array[PackedVector2Array] = [original_points]
-			# Découpe réellement les parcs/îlots verts autour de chaque chaussée.
-			# Écarter seulement les brins d'herbe ne suffisait pas : le grand polygone
-			# vert continuait à passer sous les routes et à créer des mélanges visuels.
-			if has_landscape_relief:
-				render_polygons = _clip_polygon_away_from_roads(original_points, 1.0)
+			# Toute surface terrestre OSM doit respecter le corridor route + bordure + trottoir.
+			# Les plans d'eau sont conservés : ils ne doivent pas être découpés comme du terrain.
+			if not _is_water_environment_polygon(kind, props):
+				render_polygons = _clip_polygon_away_from_roads(original_points, 1.0 if has_landscape_relief else 0.65)
 			var polygon_added := false
 			for points in render_polygons:
 				if points.size() < 3:
@@ -1196,6 +1195,27 @@ func _make_sidewalk_texture() -> Texture2D:
 			image.set_pixel(x, y, Color(shade * 0.80, shade * 0.79, shade * 0.76, 1.0))
 	image.generate_mipmaps()
 	return ImageTexture.create_from_image(image)
+
+
+func _polygon_area_abs(points: PackedVector2Array) -> float:
+	if points.size() < 3:
+		return 0.0
+	var twice_area := 0.0
+	for i in range(points.size()):
+		var a := points[i]
+		var b := points[(i + 1) % points.size()]
+		twice_area += a.x * b.y - b.x * a.y
+	return absf(twice_area) * 0.5
+
+
+func _is_water_environment_polygon(kind: String, props: Dictionary) -> bool:
+	var normalized_kind := kind.to_lower()
+	var natural := str(props.get("natural", "")).to_lower()
+	var water := str(props.get("water", "")).to_lower()
+	var landuse := str(props.get("landuse", "")).to_lower()
+	return normalized_kind in ["water", "water_area", "lake", "river", "sea", "ocean", "lagoon", "reservoir"] \
+		or natural == "water" or water in ["lake", "river", "reservoir", "pond", "basin"] \
+		or landuse in ["reservoir", "basin"]
 
 
 func _clip_polygon_away_from_roads(subject: PackedVector2Array, extra_margin: float = 0.0) -> Array[PackedVector2Array]:
@@ -2400,18 +2420,27 @@ func _load_buildings() -> void:
 				points.remove_at(points.size() - 1)
 			if points.size() < 3:
 				continue
-			var indices := Geometry2D.triangulate_polygon(points)
-			if indices.is_empty():
-				continue
+			# L'empreinte est découpée avec la même zone de sécurité que les surfaces
+			# terrestres : chaussée + bordure + trottoir + marge anti-chevauchement.
+			var footprint_parts := _clip_polygon_away_from_roads(points, 0.65)
 			var facade_col := _building_color(building_kind, osm_id, props)
-			var building_center := Vector2.ZERO
-			for footprint_point in points:
-				building_center += footprint_point
-			building_center /= float(points.size())
-			var building_base_y := _terrain_height_at_world(building_center.x, building_center.y)
-			surface.set_color(facade_col)
-			_add_building(surface, roof_surface, detail_surface, points, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props, facade_col, building_base_y)
-			added = true
+			for footprint in footprint_parts:
+				if footprint.size() < 3:
+					continue
+				# Évite les fragments résiduels sans supprimer les petits bâtiments intacts.
+				if footprint_parts.size() > 1 and _polygon_area_abs(footprint) < 2.0:
+					continue
+				var indices := Geometry2D.triangulate_polygon(footprint)
+				if indices.is_empty():
+					continue
+				var building_center := Vector2.ZERO
+				for footprint_point in footprint:
+					building_center += footprint_point
+				building_center /= float(footprint.size())
+				var building_base_y := _terrain_height_at_world(building_center.x, buildinging_center.y)
+				surface.set_color(facade_col)
+				_add_building(surface, roof_surface, detail_surface, footprint, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props, facade_col, building_base_y)
+				added = true
 		if added:
 			_building_count += 1
 			batch_count += 1
