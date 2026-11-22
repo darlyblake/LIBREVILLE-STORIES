@@ -588,15 +588,14 @@ func _position_player_on_terrain() -> void:
 		player.position = Vector3(spawn_x, spawn_height + 2.0, spawn_z)
 	var vehicle := get_parent().get_node_or_null("Vehicle") as Node3D
 	if vehicle != null and player != null:
-		# La voiture doit suivre le déplacement de sécurité du point de départ,
-		# sans rester à son ancienne position qui peut être côté mer.
-		var vehicle_x := spawn_x + 6.0
-		var vehicle_z := spawn_z + 3.0
+		# La voiture suit le point de départ sécurisé au lieu de rester en mer.
+		var vehicle_x := player.position.x + 6.0
+		var vehicle_z := player.position.z + 3.0
 		var vehicle_ground := _terrain_height_at_world(vehicle_x, vehicle_z)
 		if vehicle_ground < 1.0:
-			vehicle_x = spawn_x
-			vehicle_z = spawn_z
-			vehicle_ground = spawn_height
+			vehicle_x = player.position.x
+			vehicle_z = player.position.z
+			vehicle_ground = _terrain_height_at_world(vehicle_x, vehicle_z)
 		vehicle.position = Vector3(vehicle_x, vehicle_ground + 0.65, vehicle_z)
 
 
