@@ -91,52 +91,92 @@ func _build_monument() -> void:
 	site.position = _geo_to_world(MONUMENT_LAT, MONUMENT_LON)
 	add_child(site)
 
-	# Esplanade et socle du bâtiment principal.
-	_box(site, "Esplanade_pierre", Vector3(92.0, 0.28, 58.0), Vector3(0, 0.12, 0), _paving)
-	_add_platform_collision(site, Vector3(92.0, 0.35, 58.0), Vector3(0, 0.17, 0))
-	_box(site, "Socle_arc", Vector3(34.0, 1.1, 19.0), Vector3(0, 0.68, 0), _white)
+	# Parvis principal : dalle claire, joints de dilatation et cheminement axial.
+	_box(site, "Parvis_pierre_naturelle", Vector3(112.0, 0.32, 74.0), Vector3(0, 0.16, 0), _paving)
+	_add_platform_collision(site, Vector3(112.0, 0.4, 74.0), Vector3(0, 0.2, 0))
+	for x in range(-50, 51, 10):
+		_box(site, "Joint_parvis_%d" % x, Vector3(0.045, 0.012, 72.0), Vector3(float(x), 0.33, 0), _dark)
+	_box(site, "Socle_batiment", Vector3(39.0, 0.9, 22.0), Vector3(0, 0.62, 0), _stone)
 
-	# Arc monumental : deux piles épaisses, une traverse haute et un vide central.
-	_box(site, "Pile_gauche", Vector3(5.0, 29.0, 7.0), Vector3(-11.0, 15.2, 0), _stone)
-	_box(site, "Pile_droite", Vector3(5.0, 29.0, 7.0), Vector3(11.0, 15.2, 0), _stone)
-	_box(site, "Linteau_superieur", Vector3(27.0, 5.0, 8.0), Vector3(0, 28.0, 0), _white)
-	_box(site, "Corniche_frontale", Vector3(29.0, 0.7, 8.8), Vector3(0, 30.5, 0), _gold)
-	_box(site, "Couronnement", Vector3(24.0, 1.0, 7.5), Vector3(0, 31.25, 0), _stone)
-	_box(site, "Plaque_memorielle", Vector3(7.0, 2.2, 0.28), Vector3(0, 3.4, 3.72), _gold)
-	_add_memorial_title(site)
+	# Bâtiment photographié : deux grands jambages habillés de panneaux,
+	# un large vide traversant et un couronnement rectangulaire vitré.
+	_box(site, "Jambage_gauche_principal", Vector3(8.0, 27.5, 17.0), Vector3(-14.2, 14.5, 0), _white)
+	_box(site, "Jambage_droit_principal", Vector3(8.0, 27.5, 17.0), Vector3(14.2, 14.5, 0), _white)
+	_box(site, "Couronnement_superieur", Vector3(36.0, 8.0, 18.0), Vector3(0, 25.0, 0), _white)
+	_box(site, "Bandeau_fenetre_haut", Vector3(25.5, 3.8, 0.34), Vector3(0, 27.0, 9.18), _glass)
+	_box(site, "Bandeau_fenetre_milieu", Vector3(25.5, 3.8, 0.34), Vector3(0, 20.5, 9.18), _glass)
+	_box(site, "Bandeau_sous_fenetre", Vector3(26.0, 0.35, 0.5), Vector3(0, 18.25, 9.0), _stone)
+	_box(site, "Bandeau_superieur_fenetre", Vector3(26.0, 0.35, 0.5), Vector3(0, 29.15, 9.0), _stone)
 
-	# Décrochements et nervures de façade qui donnent de la profondeur à l'arc.
+	# Menuiseries en aluminium : trames verticales et traverses des vitrages.
+	for row in range(2):
+		var window_y := 20.5 + float(row) * 6.5
+		for mullion in range(13):
+			var mx := -12.0 + float(mullion) * 2.0
+			_box(site, "Meneau_vitre_%d_%02d" % [row, mullion], Vector3(0.10, 3.7, 0.18), Vector3(mx, window_y, 9.42), _dark)
+		_box(site, "Traverse_vitre_%d" % row, Vector3(25.5, 0.10, 0.18), Vector3(0, window_y, 9.42), _dark)
+
+	# Façades latérales : joints de panneaux, fenêtres verticales et bandeaux.
 	for side in [-1.0, 1.0]:
-		for level in range(5):
-			var y := 5.0 + float(level) * 5.2
-			_box(site, "Nervure_%s_%02d" % [str(side), level], Vector3(0.38, 4.2, 7.35), Vector3(side * 8.4, y, 0), _white)
-		_box(site, "Panneau_pilier_%s" % str(side), Vector3(2.8, 17.0, 0.22), Vector3(side * 11.0, 15.0, -3.62), _gold)
+		for floor_index in range(1, 6):
+			var fy := 3.0 + float(floor_index) * 4.0
+			_box(site, "Joint_facade_%s_%d" % [str(side), floor_index], Vector3(0.035, 0.035, 16.8), Vector3(side * 18.24, fy, 0), _stone)
+		for window_index in range(3):
+			var wy := 8.0 + float(window_index) * 7.0
+			_box(site, "Fenetre_laterale_%s_%d" % [str(side), window_index], Vector3(0.20, 3.8, 5.0), Vector3(side * 18.28, wy, -2.0), _glass)
+			for frame_z in [-4.5, 0.5]:
+				_box(site, "Cadre_lateral_%s_%d_%s" % [str(side), window_index, str(frame_z)], Vector3(0.24, 4.0, 0.12), Vector3(side * 18.42, wy, frame_z), _dark)
 
-	# Ouverture centrale vitrée et bandeaux de niveaux du musée.
-	_box(site, "Fond_vitre_musee", Vector3(11.5, 18.0, 0.32), Vector3(0, 14.0, 3.48), _glass)
-	for level in range(1, 6):
-		_box(site, "Bandeau_musee_%d" % level, Vector3(12.0, 0.24, 0.5), Vector3(0, 5.0 + float(level) * 3.0, 3.25), _gold)
+	# Grande ouverture traversante au rez-de-chaussée et piliers intérieurs.
+	_box(site, "Plafond_passage", Vector3(20.0, 0.55, 16.0), Vector3(0, 8.2, 0), _stone)
+	for side in [-1.0, 1.0]:
+		_box(site, "Colonne_interieure_%s" % str(side), Vector3(1.2, 15.0, 1.2), Vector3(side * 8.6, 7.8, -4.0), _white)
+		_box(site, "Socle_colonne_%s" % str(side), Vector3(1.8, 0.7, 1.8), Vector3(side * 8.6, 0.7, -4.0), _stone)
+	# Vitrage du hall en retrait, pour garder la transparence du passage.
+	_box(site, "Hall_musee_vitre_arriere", Vector3(15.5, 7.0, 0.22), Vector3(0, 4.3, 7.7), _glass)
+	for mullion in range(8):
+		var gx := -7.0 + float(mullion) * 2.0
+		_box(site, "Meneau_hall_%02d" % mullion, Vector3(0.10, 6.8, 0.16), Vector3(gx, 4.3, 7.9), _dark)
 
-	# Élément vertical supérieur : silhouette emblématique visible de loin.
-	_box(site, "Tour_superieure", Vector3(5.2, 31.0, 5.2), Vector3(0, 46.0, 0), _stone)
-	_box(site, "Noyau_tour_vitre", Vector3(3.3, 25.0, 3.5), Vector3(0, 46.0, 2.72), _glass)
-	_box(site, "Aiguille_sommitale", Vector3(1.1, 5.0, 1.1), Vector3(0, 64.0, 0), _gold)
-	_box(site, "Plateforme_tour", Vector3(8.0, 0.8, 8.0), Vector3(0, 62.0, 0), _white)
+	# Inscription institutionnelle dorée, armoiries stylisées et plaque mémorielle.
+	_add_3d_text(site, "REPUBLIQUE GABONAISE", Vector3(0, 30.0, 9.55), 30, _gold)
+	_add_3d_text(site, "UNION - TRAVAIL - JUSTICE", Vector3(0, 28.8, 9.55), 21, _gold)
+	_add_3d_text(site, "LA CONCORDE", Vector3(0, 23.0, 9.58), 42, _gold)
+	for side in [-1.0, 1.0]:
+		_build_gabon_emblem(site, Vector3(side * 15.2, 29.0, 9.35))
+		_build_province_shield(site, Vector3(side * 14.2, 13.0, 8.62), int(side))
+	_box(site, "Stele_memorielle", Vector3(3.2, 5.2, 0.38), Vector3(0, 3.2, 8.65), _stone)
+	_add_3d_text(site, "GEORGES DAMAS ALEKA", Vector3(0, 4.0, 8.9), 15, _gold)
 
-	# Neuf pavillons bas, répartis de part et d'autre de l'axe de promenade.
+	# Structure verticale secondaire au-dessus du couronnement, sans déformer
+	# la silhouette du portail observée sur les photographies.
+	_box(site, "Couronne_technique", Vector3(18.0, 1.0, 12.0), Vector3(0, 29.7, 0), _stone)
+	for side in [-1.0, 1.0]:
+		_box(site, "Aileron_superieur_%s" % str(side), Vector3(1.0, 5.5, 12.0), Vector3(side * 8.2, 32.7, 0), _white)
+	_box(site, "Linteau_superieur_fin", Vector3(17.0, 1.0, 12.0), Vector3(0, 35.2, 0), _white)
+
+	# Huit pavillons d'exposition périphériques (le bâtiment central représente l'Estuaire).
 	var pavilion_positions: Array[Vector3] = [
-		Vector3(-34, 0, -20), Vector3(-22, 0, -20), Vector3(-10, 0, -20),
-		Vector3(10, 0, -20), Vector3(22, 0, -20), Vector3(34, 0, -20),
-		Vector3(-24, 0, 20), Vector3(0, 0, 20), Vector3(24, 0, 20)
+		Vector3(-43, 0, -25), Vector3(-29, 0, -25), Vector3(-15, 0, -25), Vector3(15, 0, -25),
+		Vector3(29, 0, -25), Vector3(43, 0, -25), Vector3(-22, 0, 25), Vector3(22, 0, 25)
 	]
 	for i in range(pavilion_positions.size()):
 		_build_pavilion(site, i + 1, pavilion_positions[i])
 
-	# Mâts et drapeaux gabonais stylisés à l'entrée.
+	# Allée cérémonielle, bassins peu profonds et éclairage de mise en valeur.
+	_box(site, "Axe_promenade", Vector3(8.0, 0.08, 62.0), Vector3(0, 0.36, -1.0), _white)
+	for side in [-1.0, 1.0]:
+		_box(site, "Bassin_reflet_%s" % str(side), Vector3(7.0, 0.16, 22.0), Vector3(side * 49.0, 0.40, 0), _glass)
+		for lamp_index in range(5):
+			var lz := -27.0 + float(lamp_index) * 13.5
+			_cylinder(site, "Mât_eclairage_%s_%d" % [str(side), lamp_index], 0.10, 5.0, Vector3(side * 53.0, 2.8, lz), _dark, 12)
+			_box(site, "Luminaire_%s_%d" % [str(side), lamp_index], Vector3(0.8, 0.22, 0.35), Vector3(side * 53.0, 5.4, lz), _gold)
+
+	# Drapeaux gabonais devant le monument.
 	for i in range(3):
-		var x := float(i - 1) * 3.0
-		_cylinder(site, "Mât_%d" % i, 0.09, 8.0, Vector3(x, 4.2, -27.0), _gold, 10)
-		_box(site, "Drapeau_%d" % i, Vector3(1.5, 0.85, 0.06), Vector3(x + 0.8, 6.7, -27.0), [ _mat(Color(0.0,0.48,0.22),0.8), _mat(Color(0.96,0.78,0.12),0.8), _mat(Color(0.10,0.28,0.68),0.8) ][i])
+		var flag_x := float(i - 1) * 4.0
+		_cylinder(site, "Mât_drapeau_%d" % i, 0.07, 9.0, Vector3(flag_x, 4.8, -35.0), _dark, 12)
+		_box(site, "Drapeau_%d" % i, Vector3(2.2, 1.25, 0.06), Vector3(flag_x + 1.1, 7.2, -35.0), _yellow)
 
 
 func _build_pavilion(parent: Node3D, number: int, center: Vector3) -> void:
@@ -144,11 +184,17 @@ func _build_pavilion(parent: Node3D, number: int, center: Vector3) -> void:
 	pavilion.name = "Pavillon_province_%02d" % number
 	pavilion.position = center
 	parent.add_child(pavilion)
-	_box(pavilion, "Volume_principal", Vector3(9.0, 4.8, 7.0), Vector3(0, 2.5, 0), _white)
-	_box(pavilion, "Socle", Vector3(9.6, 0.45, 7.6), Vector3(0, 0.25, 0), _stone)
-	_box(pavilion, "Toiture", Vector3(10.0, 0.55, 8.0), Vector3(0, 5.15, 0), _roof)
-	_box(pavilion, "Vitrine", Vector3(5.5, 2.6, 0.12), Vector3(0, 2.8, -3.56), _glass)
-	_box(pavilion, "Panneau_nom", Vector3(5.8, 0.65, 0.18), Vector3(0, 4.0, -3.68), _gold)
+	_box(pavilion, "Socle_granit", Vector3(10.5, 0.55, 8.5), Vector3(0, 0.28, 0), _stone)
+	_box(pavilion, "Volume_blanc", Vector3(9.8, 4.8, 7.8), Vector3(0, 2.85, 0), _white)
+	_box(pavilion, "Toiture_debordante", Vector3(10.8, 0.42, 8.8), Vector3(0, 5.45, 0), _dark)
+	_box(pavilion, "Bandeau_verre", Vector3(8.6, 2.0, 0.16), Vector3(0, 3.3, 3.98), _glass)
+	for mullion in range(7):
+		var px := -3.6 + float(mullion) * 1.2
+		_box(pavilion, "Meneau_pavillon_%02d" % mullion, Vector3(0.08, 1.9, 0.12), Vector3(px, 3.3, 4.08), _dark)
+	_box(pavilion, "Plaque_province", Vector3(5.6, 0.55, 0.18), Vector3(0, 4.65, 4.08), _gold)
+	_add_3d_text(pavilion, "PAVILLON %02d" % number, Vector3(0, 4.55, 4.22), 12, _white)
+	for side in [-1.0, 1.0]:
+		_box(pavilion, "Pilastre_%s" % str(side), Vector3(0.22, 4.2, 0.28), Vector3(side * 4.65, 2.8, 4.0), _stone)
 
 
 func _build_official_tribune() -> void:
@@ -157,45 +203,85 @@ func _build_official_tribune() -> void:
 	site.position = _geo_to_world(TRIBUNE_LAT, TRIBUNE_LON)
 	add_child(site)
 
-	# Plateforme allongée et gradins en trois niveaux.
-	_box(site, "Dalle_tribune", Vector3(72.0, 0.8, 25.0), Vector3(0, 0.4, 0), _dark)
-	_add_platform_collision(site, Vector3(72.0, 0.9, 25.0), Vector3(0, 0.45, 0))
-	for row in range(3):
-		var depth := 6.0 + float(row) * 5.2
-		var height := 1.2 + float(row) * 1.35
-		_box(site, "Gradin_%d" % row, Vector3(62.0, height, 5.5), Vector3(0, 0.8 + height * 0.5, -8.0 + float(row) * 5.0), _stone)
+	# Tribune monumentale jaune : gradins, allées rouges et assises vertes.
+	_box(site, "Plateforme_beton", Vector3(82.0, 0.9, 34.0), Vector3(0, 0.45, 0), _stone)
+	_add_platform_collision(site, Vector3(82.0, 1.0, 34.0), Vector3(0, 0.5, 0))
+	for row in range(10):
+		var rz := -13.0 + float(row) * 2.7
+		var ry := 1.0 + float(row) * 0.42
+		_box(site, "Marche_gradin_%02d" % row, Vector3(74.0, 0.42, 2.7), Vector3(0, ry, rz), _stone)
+		_box(site, "Assise_gradin_%02d" % row, Vector3(71.0, 0.32, 1.9), Vector3(0, ry + 0.36, rz - 0.18), _dark)
+	_box(site, "Alee_centrale_rouge", Vector3(4.2, 0.16, 28.0), Vector3(0, 1.2, 0), _gold)
+	_box(site, "Estrade_officielle", Vector3(32.0, 1.0, 7.0), Vector3(0, 5.3, 10.0), _white)
+	_box(site, "Face_estrade", Vector3(30.0, 1.2, 0.35), Vector3(0, 5.0, 13.55), _yellow)
+	_box(site, "Moquette_protocolaire", Vector3(25.0, 0.08, 8.0), Vector3(0, 5.85, 10.0), _gold)
 
-	# Estrade centrale réservée aux autorités.
-	_box(site, "Estrade_officielle", Vector3(25.0, 2.0, 5.0), Vector3(0, 3.1, 6.0), _white)
-	_box(site, "Façade_estrade", Vector3(21.0, 1.2, 0.25), Vector3(0, 2.4, 8.55), _gold)
-	for i in range(11):
-		var x := -27.0 + float(i) * 5.4
-		_cylinder(site, "Poteau_%02d" % i, 0.22, 9.0, Vector3(x, 5.0, 0), _white, 12)
+	# Façade arrière jaune avec panneaux verticaux et baies sombres.
+	_box(site, "Facade_arriere_jaune", Vector3(80.0, 12.0, 1.2), Vector3(0, 8.0, -16.0), _yellow)
+	for fin in range(41):
+		var fx := -39.0 + float(fin) * 1.95
+		_box(site, "Lame_facade_%02d" % fin, Vector3(0.22, 11.5, 0.34), Vector3(fx, 8.0, -15.25), _gold)
+	for window_index in range(8):
+		var wx := -32.0 + float(window_index) * 9.0
+		_box(site, "Baie_facade_%02d" % window_index, Vector3(5.8, 2.6, 0.16), Vector3(wx, 5.0, -15.25), _glass)
 
-	# Toiture couverte à profil ondulé/zigzag, caractéristique de la tribune.
-	_box(site, "Toit_support", Vector3(76.0, 0.7, 29.0), Vector3(0, 10.0, 0), _dark)
-	for segment in range(12):
-		var x := -35.0 + float(segment) * 6.35
-		var y := 10.7 + (1.15 if segment % 2 == 0 else 0.0)
-		var panel := _box(site, "Toit_zigzag_%02d" % segment, Vector3(6.5, 0.32, 29.5), Vector3(x, y, 0), _dark)
-		panel.rotation.z = deg_to_rad(4.5 if segment % 2 == 0 else -4.5)
-		# Nervures métalliques du toit, visibles depuis le boulevard.
-		_box(site, "Bord_toit_%02d" % segment, Vector3(0.16, 0.42, 29.2), Vector3(x + 3.1, y + 0.12, 0), _yellow)
-	for i in range(8):
-		var x := -28.0 + float(i) * 8.0
-		_box(site, "Bandeau_façade_%d" % i, Vector3(0.18, 1.1, 0.35), Vector3(x, 8.9, 14.5), _gold)
+	# Poteaux, poutres et charpente métallique apparente sous la couverture.
+	for i in range(17):
+		var px := -39.0 + float(i) * 4.875
+		_cylinder(site, "Poteau_acier_%02d" % i, 0.24, 12.0, Vector3(px, 6.6, -1.0), _dark, 16)
+		_box(site, "Console_poteau_%02d" % i, Vector3(0.7, 0.7, 1.0), Vector3(px, 11.5, -1.0), _yellow)
+	for beam in range(9):
+		var bz := -14.0 + float(beam) * 3.5
+		_box(site, "Poutre_transversale_%02d" % beam, Vector3(80.0, 0.34, 0.38), Vector3(0, 12.3, bz), _dark)
+	for brace in range(16):
+		var bx := -38.0 + float(brace) * 5.0
+		var beam := _box(site, "Contreventement_%02d" % brace, Vector3(0.22, 5.0, 0.22), Vector3(bx, 10.4, -1.0), _dark)
+		beam.rotation.z = deg_to_rad(24.0 if brace % 2 == 0 else -24.0)
 
-	# Façade supérieure jaune, rythmée par les lames verticales visibles sur les photos.
-	_box(site, "Facade_jaune_superieure", Vector3(74.0, 2.0, 0.65), Vector3(0, 8.55, -12.0), _yellow)
-	for fin in range(25):
-		var fin_x := -35.0 + float(fin) * 2.9
-		_box(site, "Panneau_vertical_jaune_%02d" % fin, Vector3(0.22, 2.2, 0.9), Vector3(fin_x, 8.55, -11.55), _gold)
-	_box(site, "Bandeau_arriere", Vector3(74.0, 0.35, 0.45), Vector3(0, 7.25, -12.1), _dark)
+	# Couverture à dents de scie : alternance de panneaux et bandeaux de rive.
+	_box(site, "Sous_face_toiture", Vector3(86.0, 0.55, 38.0), Vector3(0, 13.0, 0), _dark)
+	for segment in range(16):
+		var sx := -40.0 + float(segment) * 5.35
+		var sy := 13.65 + (0.95 if segment % 2 == 0 else 0.0)
+		var roof_panel := _box(site, "Panneau_toiture_%02d" % segment, Vector3(5.6, 0.38, 38.5), Vector3(sx, sy, 0), _yellow)
+		roof_panel.rotation.z = deg_to_rad(3.0 if segment % 2 == 0 else -3.0)
+		_box(site, "Nervure_toiture_%02d" % segment, Vector3(0.14, 0.5, 38.0), Vector3(sx + 2.7, sy + 0.18, 0), _dark)
+	# Bande tricolore discrète sous l'avant de la couverture.
+	for color_index in range(3):
+		var stripe_color: Color = [Color(0.0, 0.42, 0.20), Color(0.96, 0.76, 0.10), Color(0.10, 0.26, 0.62)][color_index]
+		var stripe_material := _mat(stripe_color, 0.72)
+		_box(site, "Bandeau_national_%d" % color_index, Vector3(86.0, 0.16, 0.38), Vector3(0, 12.65, 18.8 + float(color_index) * 0.42), stripe_material)
 
-	# Escaliers d'accès latéraux.
+	# Escaliers d'accès et rampes latérales.
 	for side in [-1.0, 1.0]:
-		for step in range(5):
-			_box(site, "Marche_%s_%d" % [str(side), step], Vector3(5.0, 0.28, 1.3), Vector3(side * 33.0, 0.5 + float(step) * 0.32, 10.0 - float(step) * 1.5), _white)
+		for step in range(8):
+			_box(site, "Marche_acces_%s_%d" % [str(side), step], Vector3(5.0, 0.24, 1.1), Vector3(side * 38.0, 1.0 + float(step) * 0.34, 13.0 - float(step) * 1.2), _stone)
+		_cylinder(site, "Main_courante_%s" % str(side), 0.07, 12.0, Vector3(side * 40.5, 3.2, 8.0), _dark, 10)
+
+
+func _add_3d_text(parent: Node3D, value: String, position: Vector3, font_size: int, material: Material) -> void:
+	var label := Label3D.new()
+	label.text = value
+	label.position = position
+	label.font_size = font_size
+	label.pixel_size = 0.008
+	label.modulate = Color.WHITE
+	label.outline_size = 4
+	label.outline_modulate = Color(0.12, 0.12, 0.12)
+	label.material_override = material
+	parent.add_child(label)
+
+
+func _build_gabon_emblem(parent: Node3D, position: Vector3) -> void:
+	_box(parent, "Support_armoiries", Vector3(1.5, 1.8, 0.22), position, _gold)
+	_box(parent, "Bande_armoiries_verte", Vector3(1.15, 0.42, 0.10), position + Vector3(0, 0.42, 0.16), _mat(Color(0.0, 0.42, 0.20), 0.72))
+	_box(parent, "Bande_armoiries_jaune", Vector3(1.15, 0.42, 0.10), position + Vector3(0, 0, 0.16), _mat(Color(0.96, 0.76, 0.10), 0.72))
+	_box(parent, "Bande_armoiries_bleue", Vector3(1.15, 0.42, 0.10), position + Vector3(0, -0.42, 0.16), _mat(Color(0.10, 0.26, 0.62), 0.72))
+
+
+func _build_province_shield(parent: Node3D, position: Vector3, side: int) -> void:
+	_box(parent, "Blason_province_%d" % side, Vector3(1.35, 1.65, 0.16), position, _gold)
+	_box(parent, "Couleur_blason_%d" % side, Vector3(0.95, 1.1, 0.10), position + Vector3(0, 0, 0.12), _mat(Color(0.10, 0.36, 0.25), 0.7))
 
 
 func _add_platform_collision(parent: Node3D, size: Vector3, position: Vector3) -> void:
