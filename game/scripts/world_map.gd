@@ -1007,7 +1007,9 @@ void fragment() {
 		var rock_material := ShaderMaterial.new()
 		rock_material.shader = rock_shader
 		var rock_mesh := _make_coastal_rock_mesh()
-		rock_mesh.material = rock_material
+		# ArrayMesh n'expose pas de propriété `material` : le matériau se définit par surface.
+		if rock_mesh.get_surface_count() > 0:
+			rock_mesh.surface_set_material(0, rock_material)
 		var multi := MultiMesh.new()
 		multi.transform_format = MultiMesh.TRANSFORM_3D
 		multi.use_colors = true
