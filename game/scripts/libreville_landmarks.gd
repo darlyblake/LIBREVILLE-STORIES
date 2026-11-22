@@ -151,6 +151,8 @@ func _build_monument() -> void:
 	# Les deux jambages portent l'arc elliptique extrudé, plutôt qu'un linteau cubique.
 	_box(site, "Jambage_gauche_arc", Vector3(8.0, 20.0, 17.0), Vector3(-14.0, 10.0, 0), _white)
 	_box(site, "Jambage_droit_arc", Vector3(8.0, 20.0, 17.0), Vector3(14.0, 10.0, 0), _white)
+	_add_platform_collision(site, Vector3(8.0, 20.0, 17.0), Vector3(-14.0, 10.0, 0))
+	_add_platform_collision(site, Vector3(8.0, 20.0, 17.0), Vector3(14.0, 10.0, 0))
 	_add_arch_band(site, 18.0, 10.0, 10.0, 7.0, 20.0, 17.0, 48, _white)
 
 	# Socles, joints de panneaux et encadrements minéraux des grands jambages.
@@ -163,6 +165,7 @@ func _build_monument() -> void:
 
 	# Musée et hall d'exposition placés en retrait : l'ouverture monumentale reste lisible.
 	_box(site, "Volume_musee_en_retrait", Vector3(19.0, 8.0, 12.0), Vector3(0, 4.2, -5.5), _stone)
+	_add_platform_collision(site, Vector3(19.0, 8.0, 12.0), Vector3(0, 4.2, -5.5))
 	_box(site, "Facade_vitree_musee", Vector3(17.0, 6.6, 0.20), Vector3(0, 4.2, 0.62), _glass)
 	for mullion in range(9):
 		var mx := -7.6 + float(mullion) * 1.9
@@ -251,6 +254,12 @@ func _add_arch_band(parent: Node3D, outer_radius_x: float, inner_radius_x: float
 	arch_instance.mesh = arch_mesh
 	arch_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	parent.add_child(arch_instance)
+	var arch_body := StaticBody3D.new()
+	arch_body.name = "Collision_arc_monumental"
+	var arch_collision := CollisionShape3D.new()
+	arch_collision.shape = arch_mesh.create_trimesh_shape()
+	arch_body.add_child(arch_collision)
+	parent.add_child(arch_body)
 
 
 func _add_arch_beam(parent: Node3D, node_name: String, start: Vector3, finish: Vector3, width: float, depth: float, material: Material) -> void:
