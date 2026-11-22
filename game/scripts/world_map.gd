@@ -2026,9 +2026,12 @@ func _junction_clearance(entries: PackedFloat32Array, part_index: int, self_is_e
 		return -1.0
 	var others := 0
 	var other_ends := 0
+	var self_half := 0.0
 	var other_half := 0.0
 	for e in range(count):
-		if int(entries[e * 3]) == part_index:
+		var entry_part := int(entries[e * 3])
+		if entry_part == part_index:
+			self_half = maxf(self_half, entries[e * 3 + 1])
 			continue
 		others += 1
 		other_half = maxf(other_half, entries[e * 3 + 1])
@@ -2038,7 +2041,9 @@ func _junction_clearance(entries: PackedFloat32Array, part_index: int, self_is_e
 		return -1.0
 	if others == 1 and self_is_end and other_ends == 1:
 		return -1.0
-	return other_half + JUNCTION_CLEARANCE
+	# Le dégagement doit couvrir la chaussée la plus large des deux voies :
+	# sinon un trottoir de grand axe peut commencer sous la chaussée secondaire.
+	return maxf(self_half, other_half) + JUNCTION_CLEARANCE
 
 
 func _road_part_cuts(part_index: int, keys: Array[String], points: Array[Vector3], node_registry: Dictionary) -> Array[Vector2]:
