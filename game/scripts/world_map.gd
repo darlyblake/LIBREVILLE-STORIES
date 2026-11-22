@@ -578,7 +578,7 @@ varying vec4 surface_tint;
 
 float hash21(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
-	p += dot(p, p + 45.32);
+	p += vec2(dot(p, p + vec2(45.32)));
 	return fract(p.x * p.y);
 }
 
@@ -829,13 +829,37 @@ void vertex() {
 	shore_tint = COLOR;
 }
 
+float hash21(vec2 p) {
+	p = fract(p * vec2(123.34, 456.21));
+	p += vec2(dot(p, p + vec2(45.32)));
+	return fract(p.x * p.y);
+}
+
+float noise21(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = hash21(i);
+	float b = hash21(i + vec2(1.0, 0.0));
+	float c = hash21(i + vec2(0.0, 1.0));
+	float d = hash21(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
 void fragment() {
-	float n1 = sin(shore_world_pos.x * 0.72 + shore_world_pos.z * 0.31 + TIME * 0.8);
-	float n2 = sin(shore_world_pos.x * 1.37 - shore_world_pos.z * 0.83 - TIME * 0.55);
-	float breakup = smoothstep(-0.35, 0.55, n1 * 0.58 + n2 * 0.42);
-	float pulse = 0.78 + 0.22 * sin(TIME * 1.7 + shore_world_pos.x * 0.11);
-	ALBEDO = mix(vec3(0.55, 0.72, 0.72), vec3(0.96, 0.99, 0.96), breakup);
-	ALPHA = shore_tint.a * breakup * pulse;
+	vec2 p = shore_world_pos.xz;
+	float broad = noise21(p * 0.12 + vec2(TIME * 0.035, -TIME * 0.021));
+	float middle = noise21(p * 0.48 + vec2(-TIME * 0.075, TIME * 0.052));
+	float fine = noise21(p * 2.4 + vec2(TIME * 0.13, TIME * 0.09));
+	float wave_a = sin(p.x * 0.72 + p.y * 0.31 + TIME * 0.8);
+	float wave_b = sin(p.x * 1.37 - p.y * 0.83 - TIME * 0.55);
+	float wave_pattern = wave_a * 0.34 + wave_b * 0.22 + (middle - 0.5) * 0.72;
+	float breakup = smoothstep(-0.24, 0.48, wave_pattern + (broad - 0.5) * 0.5);
+	float lace = smoothstep(0.24, 0.76, fine * 0.72 + middle * 0.28);
+	float foam_mask = breakup * mix(0.68, 1.0, lace);
+	float pulse = 0.82 + 0.18 * sin(TIME * 1.7 + p.x * 0.11);
+	ALBEDO = mix(vec3(0.52, 0.68, 0.69), vec3(0.96, 0.99, 0.97), lace);
+	ALPHA = shore_tint.a * foam_mask * pulse;
 }
 """
 	var foam_material := ShaderMaterial.new()
