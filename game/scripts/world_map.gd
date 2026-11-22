@@ -3160,11 +3160,11 @@ func _road_width(kind: String, props: Dictionary = {}) -> float:
 		return clampf(float(lanes) * 3.4 + 1.2, 3.5, 28.0)
 	match kind:
 		"motorway", "trunk":
-			return 16.0
+			return 8.0 if _road_is_oneway(props) else 16.0
 		"primary":
-			return 13.6 # gabarit de référence 2x2 ; chaussées séparées indépendantes
+			return 7.2 if _road_is_oneway(props) else 13.6 # 2x2 par défaut en double sens
 		"secondary":
-			return 9.2
+			return 4.8 if _road_is_oneway(props) else 9.2
 		"tertiary":
 			return 7.0
 		"residential", "unclassified":
