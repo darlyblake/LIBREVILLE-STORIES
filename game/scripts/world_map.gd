@@ -1942,6 +1942,7 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 	var marking_surface: SurfaceTool = surfaces["marking"]
 	# Distance cumulée sur la géométrie d'origine : les marquages sont coupés
 	# avant les zones de conflit, au lieu de traverser le centre des carrefours.
+	var junction_cuts := _road_part_cuts(part_index, keys, orig_points, node_registry)
 	var distance_along := PackedFloat32Array()
 	distance_along.resize(points.size())
 	distance_along[0] = 0.0
@@ -1959,6 +1960,17 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 		var mark_from := 0.0
 		var mark_to := seg_len
 		var segment_start := distance_along[i]
+		var segment_end := segment_start + seg_len
+		var internal_junction_overlap := false
+		for junction_cut in junction_cuts:
+			# Les extrémités sont coupées précisément ci-dessous ; pour un carrefour
+			# situé au milieu d'une géométrie, on supprime le segment qui le traverse.
+			if junction_cut.x > 0.05 and junction_cut.x < float(part.length) - 0.05:
+				if segment_start <= junction_cut.x + junction_cut.y and segment_end >= junction_cut.x - junction_cut.y:
+					internal_junction_overlap = true
+					break
+		if internal_junction_overlap:
+			mark_to = 0.0
 		if crosswalk_start >= 0.0 and segment_start < crosswalk_start:
 			mark_from = maxf(mark_from, crosswalk_start - segment_start)
 		if crosswalk_end >= 0.0:
