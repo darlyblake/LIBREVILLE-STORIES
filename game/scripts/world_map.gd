@@ -2629,19 +2629,31 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 	# ou presque. Elles produisent des directions nulles et pincent les décalages
 	# des bordures/trottoirs. Nettoyer uniquement le plan horizontal avant le calcul.
 	var clean_points: Array[Vector3] = []
+	var point_map := PackedInt32Array()
 	for point in points:
 		if clean_points.is_empty():
 			clean_points.append(point)
+			point_map.append(0)
 			continue
 		var previous_point := clean_points[clean_points.size() - 1]
 		var horizontal_distance := Vector2(point.x - previous_point.x, point.z - previous_point.z).length()
 		if horizontal_distance > 0.05:
 			clean_points.append(point)
-		elif point.y > previous_point.y:
+			point_map.append(clean_points.size() - 1)
+		else:
+			point_map.append(clean_points.size() - 1)
+			if point.y > previous_point.y:
 			# Conserver la hauteur la plus élevée en cas de doublon à altitude différente.
 			clean_points[clean_points.size() - 1] = Vector3(previous_point.x, point.y, previous_point.z)
 	if clean_points.size() < 2:
-		return result
+		# Conserver un sommet de sortie par sommet d'entrée : plusieurs consommateurs
+	# associent les points décalés aux altitudes et aux segments d'origine par index.
+	var clean_offsets := result
+	result = []
+	for point_index in range(points.size()):
+		var offset_point := clean_offsets[point_map[point_index]]
+		result.append(Vector3(offset_point.x, points[point_index].y, offset_point.z))
+	return result
 	for i in range(clean_points.size()):
 		var previous_direction: Vector2
 		var next_direction: Vector2
