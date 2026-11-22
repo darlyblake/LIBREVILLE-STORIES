@@ -357,6 +357,9 @@ func _build_terrain_chunks() -> void:
 	_terrain_stream_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_create_terrain_boundary_walls()
 	_update_terrain_stream(true)
+	# Sécuriser le sol sous le joueur avant de poursuivre le chargement des autres couches.
+	while _terrain_stream_building or not _terrain_stream_build_queue.is_empty():
+		await get_tree().process_frame
 	print("LIBREVILLE STORIES | streaming terrain actif : rayon %d bloc(s), blocs créés à la demande." % TERRAIN_STREAM_RADIUS)
 
 
