@@ -1931,7 +1931,9 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 		var outgoing := Vector2(points[join_index + 1].x - points[join_index].x, points[join_index + 1].z - points[join_index].z).normalized()
 		if incoming.dot(outgoing) < 0.97:
 			_add_road_round_join(road_surface, points[join_index], half)
-	var has_center_marking := _road_has_center_marking(props, kind) and surface_key == "asphalt"
+	var lane_count := _road_lane_count(props)
+	var is_oneway := _road_is_oneway(props)
+	var has_lane_marking := (lane_count >= 2 or kind in ["trunk", "primary", "secondary"]) and surface_key == "asphalt"
 	var crosswalk_start := -1.0
 	var crosswalk_end := -1.0
 	if kind in ["primary", "secondary", "tertiary", "trunk"]:
@@ -1955,8 +1957,8 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 			var edge_left: Array[Vector3] = draped[0]
 			var edge_right: Array[Vector3] = draped[strips]
 			_add_plain_quad(collision, edge_left[i], edge_right[i], edge_right[i + 1], edge_left[i + 1])
-		if has_center_marking:
-			_add_road_center_dashes(marking_surface, a, b)
+		if has_lane_marking:
+			_add_road_lane_markings(marking_surface, a, b, width, lane_count, is_oneway)
 			if kind in ["trunk", "primary", "motorway"]:
 				var direction := Vector2(b.x - a.x, b.z - a.z).normalized()
 				var perp := Vector3(-direction.y, 0.0, direction.x)
@@ -2669,12 +2671,46 @@ func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: V
 
 
 func _road_has_center_marking(props: Dictionary, road_kind: String) -> bool:
-	# Marquage de représentation : uniquement sur les axes structurants ou voies
-	# explicitement à plusieurs voies. Ce n'est pas un relevé des lignes peintes.
-	var lanes := str(props.get("lanes", "")).to_int()
-	if lanes >= 2:
-		return true
-	return road_kind in ["trunk", "primary", "secondary"]
+	return _road_lane_count(props) >= 2 or road_kind in ["trunk", "primary", "secondary"]
+
+
+func _add_road_lane_markings(surface: SurfaceTool, a: Vector3, b: Vector3, width: float, lanes: int, oneway: bool) -> void:
+	var direction := Vector2(b.x - a.x, b.z - a.z).normalized()
+	if direction.length_squared() < 0.001:
+		return
+	var perpendicular := Vector3(-direction.y, 0.0, direction.x)
+	var half := width * 0.5
+	var count := maxi(2, lanes)
+	if oneway:
+		# Une chaussée à sens unique ne reçoit pas de ligne centrale séparant les sens.
+		for lane_index in range(1, count):
+			var offset := -half + width * float(lane_index) / float(count)
+			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
+	elif count <= 2:
+		_add_road_center_dashes(surface, a, b)
+	else:
+		# Ligne médiane continue et séparations pointillées des voies supplémentaires.
+		_add_marking_quad(surface, a + perpendicular * -0.07, b + perpendicular * -0.07, 0.045)
+		_add_marking_quad(surface, a + perpendicular * 0.07, b + perpendicular * 0.07, 0.045)
+		var lanes_each_side := int(floor(float(count) * 0.5))
+		for lane_index in range(1, lanes_each_side):
+			var offset := width * float(lane_index) / float(count)
+			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
+			_add_road_dashes_offset(surface, a, b, perpendicular, -offset)
+
+
+func _add_road_dashes_offset(surface: SurfaceTool, a: Vector3, b: Vector3, perpendicular: Vector3, offset: float) -> void:
+	var delta := Vector3(b.x - a.x, 0.0, b.z - a.z)
+	var length := delta.length()
+	if length < 4.0:
+		return
+	var direction := delta / length
+	var distance := 0.8
+	while distance + 2.8 < length:
+		_add_marking_quad(surface,
+			a + perpendicular * offset + direction * distance,
+			a + perpendicular * offset + direction * (distance + 2.8), 0.055)
+		distance += 7.0
 
 
 func _add_road_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, length: float, width: float) -> void:
@@ -3094,24 +3130,41 @@ func _road_color(kind: String, props: Dictionary = {}) -> Color:
 		_:
 			return Color(0.58, 0.58, 0.56)
 
+func _road_lane_count(props: Dictionary) -> int:
+	# Les voies directionnelles sont plus fiables que lanes quand elles existent.
+	var forward := str(props.get("lanes:forward", "")).to_int()
+	var backward := str(props.get("lanes:backward", "")).to_int()
+	if forward > 0 or backward > 0:
+		return clampi(forward + backward, 1, 8)
+	var both_ways := str(props.get("lanes:both_ways", "")).to_int()
+	var total := str(props.get("lanes", "")).to_int()
+	if total <= 0:
+		total = both_ways
+	return clampi(total, 0, 8)
+
+
+func _road_is_oneway(props: Dictionary) -> bool:
+	var value := str(props.get("oneway", "")).to_lower()
+	return value in ["yes", "true", "1", "-1"]
+
+
 func _road_width(kind: String, props: Dictionary = {}) -> float:
-	# Utilise la largeur réelle ou le nombre de voies OSM quand ils existent.
-	# Largeurs inspirées de Libreville : Boulevard Triomphal / Bord de mer ≈ 4 voies.
-	# Le parseur commun gère aussi les largeurs exprimées en pieds (ft / ')
-	# et les décimales avec virgule, au lieu de les interpréter comme des mètres.
+	# Les voies OSM priment sur les largeurs manifestement incohérentes.
+	# Ex. Libreville : width=5 avec lanes=2 ne peut pas contenir deux voies.
+	var lanes := _road_lane_count(props)
 	var tagged_width := _parse_osm_height(str(props.get("width", "")))
 	if tagged_width >= 1.5 and tagged_width <= 40.0:
-		return tagged_width
-	var lanes := str(props.get("lanes", "")).to_int()
-	if lanes >= 1 and lanes <= 8:
+		if lanes == 0 or tagged_width >= float(lanes) * 2.65:
+			return tagged_width
+	if lanes >= 1:
 		return clampf(float(lanes) * 3.4 + 1.2, 3.5, 28.0)
 	match kind:
 		"motorway", "trunk":
-			return 16.0   # type autoroute / voie rapide
+			return 16.0
 		"primary":
-			return 12.5  # Boulevard Triomphal, Bd de l'Indépendance
+			return 13.6 # gabarit de référence 2x2 ; chaussées séparées indépendantes
 		"secondary":
-			return 9.0
+			return 9.2
 		"tertiary":
 			return 7.0
 		"residential", "unclassified":
