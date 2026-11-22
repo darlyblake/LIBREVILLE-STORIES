@@ -1,16 +1,14 @@
 extends Node3D
 ## Repères patrimoniaux du front de mer : monument Georges-Damas-Aleka et tribune officielle.
 ## Coordonnées monument issues d'OpenStreetMap/Mapcarta. La tribune est positionnée
-## en vis-à-vis à partir du plan de situation public ; son centroïde reste à affiner
-## avec un relevé cadastral ou une orthophoto géoréférencée.
+## Les deux centroïdes sont lus dans les objets cartographiques OpenStreetMap.
 
 const CENTER_LAT := 0.400
 const CENTER_LON := 9.4475
 const METERS_PER_DEG_LAT := 111320.0
 const MONUMENT_LAT := 0.3879
 const MONUMENT_LON := 9.44288
-# Position indicative de la tribune sur le côté opposé de l'esplanade.
-# Elle est volontairement isolée ici pour pouvoir être corrigée sans toucher au modèle.
+# Centroïde du toit de la tribune officielle (OSM way 1495944465).
 const TRIBUNE_LAT := 0.38831
 const TRIBUNE_LON := 9.44356
 
@@ -186,6 +184,13 @@ func _build_official_tribune() -> void:
 	for i in range(8):
 		var x := -28.0 + float(i) * 8.0
 		_box(site, "Bandeau_façade_%d" % i, Vector3(0.18, 1.1, 0.35), Vector3(x, 8.9, 14.5), _gold)
+
+	# Façade supérieure jaune, rythmée par les lames verticales visibles sur les photos.
+	_box(site, "Facade_jaune_superieure", Vector3(74.0, 2.0, 0.65), Vector3(0, 8.55, -12.0), _yellow)
+	for fin in range(25):
+		var fin_x := -35.0 + float(fin) * 2.9
+		_box(site, "Panneau_vertical_jaune_%02d" % fin, Vector3(0.22, 2.2, 0.9), Vector3(fin_x, 8.55, -11.55), _gold)
+	_box(site, "Bandeau_arriere", Vector3(74.0, 0.35, 0.45), Vector3(0, 7.25, -12.1), _dark)
 
 	# Escaliers d'accès latéraux.
 	for side in [-1.0, 1.0]:
