@@ -612,10 +612,16 @@ void fragment() {
 	sand_variation += (ripple - 0.5) * 0.045 + (grain - 0.5) * 0.055;
 	vec3 sand_color = base * sand_variation;
 	sand_color = mix(sand_color, sand_color * vec3(0.82, 0.78, 0.69), smoothstep(0.68, 0.92, broad) * 0.12);
+	// Humidité diffuse du sable près des zones basses : taches foncées,
+	// légèrement plus lisses, sans créer une bande artificielle uniforme.
+	float damp_noise = broad * 0.62 + medium * 0.38;
+	float damp_mask = smoothstep(0.58, 0.78, damp_noise) * sand_mask;
+	sand_color = mix(sand_color, sand_color * vec3(0.76, 0.79, 0.78), damp_mask * 0.34);
 	vec3 other_color = base * (0.97 + broad * 0.06);
 	ALBEDO = mix(other_color, sand_color, sand_mask);
-	ROUGHNESS = mix(0.94, 0.88, sand_mask);
-	SPECULAR = 0.18;
+	float sand_roughness = mix(0.94, 0.88, damp_mask);
+	ROUGHNESS = mix(0.94, sand_roughness, sand_mask);
+	SPECULAR = mix(0.18, 0.28, damp_mask);
 }
 """
 	var material := ShaderMaterial.new()
