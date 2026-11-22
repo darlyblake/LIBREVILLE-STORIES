@@ -4,9 +4,9 @@ class_name GrassGenerator
 ## Les touffes sont de vrais petits rubans triangulés, regroupés dans un MultiMesh
 ## pour limiter les draw calls sur les configurations modestes.
 
-const MAX_GRASS_CLUMPS := 600
+const MAX_GRASS_CLUMPS := 3200
 const MAX_CLUMPS_PER_PATCH := 900
-const DENSITY_PER_SQUARE_METER := 0.24
+const DENSITY_PER_SQUARE_METER := 0.72
 const MIN_BLADE_SPACING := 0.22
 
 var _transforms: Array[Transform3D] = []
