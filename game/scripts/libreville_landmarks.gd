@@ -12,14 +12,14 @@ const MONUMENT_LON := 9.44288
 const TRIBUNE_LAT := 0.38831
 const TRIBUNE_LON := 9.44356
 
-var _stone: StandardMaterial3D
-var _white: StandardMaterial3D
+var _stone: Material
+var _white: Material
 var _gold: StandardMaterial3D
-var _roof: StandardMaterial3D
+var _roof: Material
 var _glass: StandardMaterial3D
 var _dark: StandardMaterial3D
-var _paving: StandardMaterial3D
-var _yellow: StandardMaterial3D
+var _paving: Material
+var _yellow: Material
 
 func _ready() -> void:
 	_make_materials()
@@ -29,14 +29,64 @@ func _ready() -> void:
 
 
 func _make_materials() -> void:
-	_stone = _mat(Color(0.82, 0.79, 0.70), 0.88)
-	_white = _mat(Color(0.91, 0.90, 0.84), 0.82)
-	_gold = _mat(Color(0.73, 0.57, 0.27), 0.48, 0.28)
-	_roof = _mat(Color(0.78, 0.68, 0.43), 0.56, 0.18)
-	_glass = _mat(Color(0.12, 0.25, 0.31), 0.22, 0.35)
-	_dark = _mat(Color(0.16, 0.18, 0.18), 0.8)
-	_paving = _mat(Color(0.66, 0.63, 0.56), 0.95)
-	_yellow = _mat(Color(0.88, 0.62, 0.12), 0.62, 0.12)
+	# Surfaces procédurales PBR : variations minérales, grain fin et rugosité irrégulière.
+	_stone = _make_surface_shader(Color(0.48, 0.46, 0.42), 0.88, 0.34, 0.0)
+	_white = _make_surface_shader(Color(0.82, 0.82, 0.78), 0.72, 0.52, 0.0)
+	_gold = _mat(Color(0.73, 0.57, 0.27), 0.34, 0.62)
+	_roof = _make_surface_shader(Color(0.67, 0.62, 0.49), 0.52, 0.7, 0.22)
+	_glass = _mat(Color(0.055, 0.12, 0.16), 0.12, 0.72)
+	_glass.metallic_specular = 0.9
+	_glass.clearcoat_enabled = true
+	_glass.clearcoat = 0.8
+	_dark = _mat(Color(0.075, 0.085, 0.09), 0.62, 0.48)
+	_paving = _make_surface_shader(Color(0.58, 0.57, 0.53), 0.9, 0.22, 0.0)
+	_yellow = _make_surface_shader(Color(0.82, 0.55, 0.13), 0.48, 0.75, 0.28)
+
+
+func _make_surface_shader(base_color: Color, roughness: float, scale: float, metallic: float) -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode diffuse_burley, specular_schlick_ggx;
+uniform vec3 base_color : source_color = vec3(0.8, 0.8, 0.8);
+uniform float base_roughness = 0.8;
+uniform float texture_scale = 0.5;
+uniform float metalness = 0.0;
+varying vec3 world_position;
+float hash21(vec2 p) {
+	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+float noise21(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
+		mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+void vertex() {
+	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+}
+void fragment() {
+	vec2 p = world_position.xz * texture_scale;
+	float broad = noise21(p * 0.16);
+	float medium = noise21(p * 1.7);
+	float grain = noise21(p * 15.0);
+	float pores = noise21(p * 43.0);
+	float variation = (broad - 0.5) * 0.075 + (medium - 0.5) * 0.045 + (grain - 0.5) * 0.025;
+	float fine = smoothstep(0.25, 0.78, pores);
+	ALBEDO = base_color * (1.0 + variation - fine * 0.018);
+	ROUGHNESS = clamp(base_roughness + (grain - 0.5) * 0.12 + fine * 0.035, 0.22, 1.0);
+	METALLIC = metalness;
+	SPECULAR = 0.5;
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	material.set_shader_parameter("base_color", base_color)
+	material.set_shader_parameter("base_roughness", roughness)
+	material.set_shader_parameter("texture_scale", scale)
+	material.set_shader_parameter("metalness", metallic)
+	return material
 
 
 func _mat(color: Color, roughness: float, metallic: float = 0.0) -> StandardMaterial3D:
@@ -235,8 +285,8 @@ func _build_official_tribune() -> void:
 		_box(site, "Poutre_transversale_%02d" % beam, Vector3(80.0, 0.34, 0.38), Vector3(0, 12.3, bz), _dark)
 	for brace in range(16):
 		var bx := -38.0 + float(brace) * 5.0
-		var beam := _box(site, "Contreventement_%02d" % brace, Vector3(0.22, 5.0, 0.22), Vector3(bx, 10.4, -1.0), _dark)
-		beam.rotation.z = deg_to_rad(24.0 if brace % 2 == 0 else -24.0)
+		var brace_mesh := _box(site, "Contreventement_%02d" % brace, Vector3(0.22, 5.0, 0.22), Vector3(bx, 10.4, -1.0), _dark)
+		brace_mesh.rotation.z = deg_to_rad(24.0 if brace % 2 == 0 else -24.0)
 
 	# Couverture à dents de scie : alternance de panneaux et bandeaux de rive.
 	_box(site, "Sous_face_toiture", Vector3(86.0, 0.55, 38.0), Vector3(0, 13.0, 0), _dark)
