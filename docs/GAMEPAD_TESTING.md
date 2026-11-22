@@ -1,35 +1,37 @@
 # Test des manettes — Libreville Stories
 
-## Commandes actuellement prévues
+## Commandes à pied
 
 | Action | Clavier | Manette |
 |---|---|---|
-| Avancer / reculer | Z / W et S | Stick gauche vertical |
-| Gauche / droite | Q / A et D | Stick gauche horizontal |
-| Sauter | Espace | Bouton A (mappage Godot standard) |
-| Orienter la caméra | Souris | Stick droit |
-| Libérer/reprendre la souris | Échap / clic | À compléter |
+| Avancer / reculer | ZQSD / WASD | Stick gauche |
+| Sauter | Espace | A / Croix |
+| Caméra | Souris | Stick droit |
+| Entrer / sortir du véhicule | F | Y / Triangle |
 
-Les touches clavier dépendent de la disposition utilisée : le projet conserve les actions existantes du clavier et ajoute les événements de manette au démarrage.
+## Conduite du véhicule de test
+
+| Action | Manette | Clavier |
+|---|---|---|
+| Diriger | Stick gauche horizontal | A / D ou flèches |
+| Accélérer | RT | W / Flèche haut |
+| Freiner | LT | S / Flèche bas |
+| Entrer / sortir | Y / Triangle | F |
+
+Le véhicule de test est construit avec des primitives 3D afin de pouvoir vérifier immédiatement la conduite sans attendre le téléchargement d'un modèle GLB. Son visuel sera remplaçable par une voiture détaillée ultérieurement.
 
 ## Vérification sous Linux
 
 1. Brancher la manette avant de lancer le jeu.
-2. Dans un terminal, vérifier qu'Ubuntu la détecte avec `lsusb` (USB) ou les paramètres Bluetooth.
-3. Lancer le projet Godot depuis l'éditeur ou le terminal.
-4. Lire la console : le joueur doit afficher le nom et l'identifiant de la manette.
-5. Tester le stick gauche, la croix directionnelle, le bouton A et le stick droit.
-6. Débrancher puis rebrancher la manette pendant le jeu : les messages de connexion/déconnexion doivent apparaître.
-7. Refaire le test dans une session de jeu exportée, pas seulement dans l'éditeur.
+2. Vérifier qu'Ubuntu la détecte avec `lsusb` (USB) ou les paramètres Bluetooth.
+3. Lancer le projet Godot.
+4. Tester les sticks, RT, LT et Y/Triangle.
+5. Vérifier que le joueur peut entrer dans la voiture à proximité, conduire, freiner et en sortir.
+6. Refaire le test dans une session exportée, pas seulement dans l'éditeur.
 
-## Dépannage
+## Notes techniques
 
-- Si aucun périphérique n'est listé, vérifier la détection Linux avant d'accuser le jeu.
-- Si le périphérique est détecté mais que les boutons ne correspondent pas, relever le modèle exact : certains contrôleurs ont des dispositions différentes (XInput, DirectInput ou Bluetooth).
-- Ne pas considérer le support matériel comme validé tant qu'un test réel avec le modèle de manette utilisé n'a pas été effectué.
-
-## Limites connues
-
-- Les commandes de caméra du stick droit sont lues directement depuis le premier périphérique connecté.
-- Les icônes de boutons affichées à l'écran et la reconfiguration des touches ne sont pas encore implémentées.
-- La reconnexion et le mappage ont une validation automatisée du projet, mais nécessitent encore un test matériel.
+- Les gâchettes RT/LT sont lues comme axes analogiques Godot. Sur les manettes standard, leur valeur neutre est -1 et leur valeur pressée tend vers +1.
+- Le bouton Y est utilisé comme équivalent de Triangle sur les manettes PlayStation reconnues par Godot.
+- Les commandes doivent être validées avec la manette physique utilisée : les dispositions peuvent varier selon le pilote et le mode XInput/DirectInput.
+- Le véhicule est un prototype de conduite, pas encore une simulation automobile complète.
