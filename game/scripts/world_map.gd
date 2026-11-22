@@ -2753,6 +2753,33 @@ func _junction_arm_count(node_key: String, node_registry: Dictionary, all_parts:
 	return arm_count
 
 
+func _round_convex_road_outline(outline: PackedVector2Array, radius: float = 0.45) -> PackedVector2Array:
+	# Adoucit légèrement les angles du patch d'asphalte sans changer son emprise générale.
+	# Les segments intermédiaires évitent les pointes triangulaires aux raccordements.
+	var rounded := PackedVector2Array()
+	if outline.size() < 3:
+		return outline
+	for i in range(outline.size()):
+		var previous := outline[(i - 1 + outline.size()) % outline.size()]
+		var current := outline[i]
+		var next := outline[(i + 1) % outline.size()]
+		var incoming := previous - current
+		var outgoing := next - current
+		var trim := minf(radius, minf(incoming.length(), outgoing.length()) * 0.22)
+		if trim < 0.04:
+			rounded.append(current)
+			continue
+		var start := current + incoming.normalized() * trim
+		var finish := current + outgoing.normalized() * trim
+		for step in range(4):
+			var t := float(step) / 3.0
+			var one_minus_t := 1.0 - t
+			var point := start * (one_minus_t * one_minus_t) + current * (2.0 * one_minus_t * t) + finish * (t * t)
+			if rounded.is_empty() or rounded[rounded.size() - 1].distance_to(point) > 0.01:
+				rounded.append(point)
+	return rounded
+
+
 func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: String,
 		node_registry: Dictionary, all_parts: Array[Dictionary]) -> void:
 	# Empreinte calculée depuis les branches réellement connectées :
@@ -2794,14 +2821,15 @@ func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: St
 	if hull.size() < 3:
 		_add_junction_patch(surface, center, 3.0)
 		return
-	var indices := Geometry2D.triangulate_polygon(hull)
+	var rounded_hull := _round_convex_road_outline(hull)
+	var indices := Geometry2D.triangulate_polygon(rounded_hull)
 	if indices.is_empty():
 		_add_junction_patch(surface, center, 3.0)
 		return
 	for triangle_index in range(0, indices.size(), 3):
-		var a: Vector2 = hull[indices[triangle_index]]
-		var b: Vector2 = hull[indices[triangle_index + 1]]
-		var c: Vector2 = hull[indices[triangle_index + 2]]
+		var a: Vector2 = rounded_hull[indices[triangle_index]]
+		var b: Vector2 = rounded_hull[indices[triangle_index + 1]]
+		var c: Vector2 = rounded_hull[indices[triangle_index + 2]]
 		_add_textured_tri(surface,
 			_rp(Vector3(a.x, center.y, a.y), ROAD_LIFT + 0.06),
 			_rp(Vector3(b.x, center.y, b.y), ROAD_LIFT + 0.06),
