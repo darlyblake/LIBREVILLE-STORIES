@@ -16,6 +16,9 @@ const DEM_META_FALLBACK_PATH := "res://libreville_dem.json"
 const DEM_BINARY_FALLBACK_PATH := "res://libreville_dem_f32.bin"
 const TERRAIN_CHUNK_CELLS := 32
 const TERRAIN_VERTICAL_EXAGGERATION := 1.0
+const TERRAIN_STREAM_RADIUS := 1
+const TERRAIN_STREAM_UPDATE_SECONDS := 0.45
+const TERRAIN_STREAM_MAX_BUILDS_PER_UPDATE := 2
 
 @export var show_roads := true
 @export var show_buildings := true
@@ -138,6 +141,12 @@ var _dem_spacing := 30.0
 var _dem_x_min := 0.0
 var _dem_z_min := 0.0
 var _dem_loaded := false
+var _terrain_stream_chunks: Dictionary = {}
+var _terrain_stream_center := Vector2i(2147483647, 2147483647)
+var _terrain_stream_timer := 0.0
+var _terrain_stream_build_queue: Array[Vector2i] = []
+var _terrain_stream_building := false
+var _terrain_stream_material: StandardMaterial3D
 var _coastline_paths: Array[PackedVector2Array] = []
 var _beach_polygons: Array[PackedVector2Array] = []
 
@@ -203,10 +212,14 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_location_refresh += delta
-	if _location_refresh < 0.35:
-		return
-	_location_refresh = 0.0
-	_update_location_hud()
+	if _location_refresh >= 0.35:
+		_location_refresh = 0.0
+		_update_location_hud()
+	if _dem_loaded:
+		_terrain_stream_timer += delta
+		if _terrain_stream_timer >= TERRAIN_STREAM_UPDATE_SECONDS:
+			_terrain_stream_timer = 0.0
+			_update_terrain_stream()
 
 
 func _create_location_hud() -> void:
@@ -336,73 +349,132 @@ func _terrain_height_at_world(x: float, z: float) -> float:
 
 
 func _build_terrain_chunks() -> void:
-	var terrain_material := StandardMaterial3D.new()
-	terrain_material.vertex_color_use_as_albedo = true
-	terrain_material.roughness = 1.0
-	terrain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var chunk_index := 0
-	for row_start in range(0, _dem_rows - 1, TERRAIN_CHUNK_CELLS):
-		for col_start in range(0, _dem_columns - 1, TERRAIN_CHUNK_CELLS):
-			var row_end := mini(row_start + TERRAIN_CHUNK_CELLS, _dem_rows - 1)
-			var col_end := mini(col_start + TERRAIN_CHUNK_CELLS, _dem_columns - 1)
-			var surface := SurfaceTool.new()
-			surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-			surface.set_material(terrain_material)
-			for row in range(row_start, row_end):
-				for col in range(col_start, col_end):
-					var x0 := _dem_x_min + float(col) * _dem_spacing
-					var x1 := x0 + _dem_spacing
-					var z0 := _dem_z_min + float(row) * _dem_spacing
-					var z1 := z0 + _dem_spacing
-					# On découpe chaque cellule SRTM contre les corridors OSM.
-					# Cela retire le terrain lui-même sous la chaussée ET le trottoir ;
-					# masquer seulement les polygones OSM ne suffisait pas.
-					var cell := PackedVector2Array([
-						Vector2(x0, z0), Vector2(x0, z1),
-						Vector2(x1, z1), Vector2(x1, z0)
-					])
-					var terrain_pieces := _clip_polygon_away_from_roads(cell, 0.85)
-					for piece in terrain_pieces:
-						if piece.size() < 3:
-							continue
-						var indices := Geometry2D.triangulate_polygon(piece)
-						if indices.is_empty():
-							continue
-						for i in range(0, indices.size(), 3):
-							for vertex_index in range(3):
-								var point: Vector2 = piece[indices[i + vertex_index]]
-								var height := _terrain_height_at_world(point.x, point.y)
-								surface.set_color(_terrain_color(height))
-								surface.add_vertex(Vector3(point.x, height, point.y))
-			surface.generate_normals()
-			var mesh := surface.commit()
-			if mesh == null or mesh.get_surface_count() == 0:
-				continue
-			var chunk := MeshInstance3D.new()
-			chunk.name = "SRTM_Terrain_%03d" % chunk_index
-			chunk.mesh = mesh
-			chunk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			chunk.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
-			add_child(chunk)
-			var body := StaticBody3D.new()
-			body.name = "SRTM_Collision_%03d" % chunk_index
-			body.collision_layer = 1
-			body.collision_mask = 1
-			var shape := CollisionShape3D.new()
-			var terrain_collision := mesh.create_trimesh_shape() as ConcavePolygonShape3D
-			if terrain_collision == null:
-				push_error("Collision SRTM impossible pour le bloc %d." % chunk_index)
-				continue
-			terrain_collision.backface_collision = true
-			shape.shape = terrain_collision
-			body.add_child(shape)
-			add_child(body)
-			chunk_index += 1
-			# Un bloc par frame : évite de figer l'interface pendant la création
-			# des centaines de maillages et de collisions du DEM régional.
-			await get_tree().process_frame
+	# Le DEM complet reste en mémoire (grille compacte), mais seuls les blocs
+	# proches du joueur deviennent des meshes/collisions Godot.
+	_terrain_stream_material = StandardMaterial3D.new()
+	_terrain_stream_material.vertex_color_use_as_albedo = true
+	_terrain_stream_material.roughness = 1.0
+	_terrain_stream_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_create_terrain_boundary_walls()
-	print("LIBREVILLE STORIES | terrain SRTM évidé sous routes et trottoirs : %d blocs" % chunk_index)
+	_update_terrain_stream(true)
+	print("LIBREVILLE STORIES | streaming terrain actif : rayon %d bloc(s), blocs créés à la demande." % TERRAIN_STREAM_RADIUS)
+
+
+func _update_terrain_stream(force: bool = false) -> void:
+	var player := get_parent().get_node_or_null("Player") as Node3D
+	if player == null or _dem_rows < 2 or _dem_columns < 2:
+		return
+	var cell_world_size := float(TERRAIN_CHUNK_CELLS) * _dem_spacing
+	var center := Vector2i(
+		floori((player.global_position.x - _dem_x_min) / cell_world_size),
+		floori((player.global_position.z - _dem_z_min) / cell_world_size)
+	)
+	if not force and center == _terrain_stream_center:
+		return
+	_terrain_stream_center = center
+	var desired: Dictionary = {}
+	for dz in range(-TERRAIN_STREAM_RADIUS, TERRAIN_STREAM_RADIUS + 1):
+		for dx in range(-TERRAIN_STREAM_RADIUS, TERRAIN_STREAM_RADIUS + 1):
+			var key := Vector2i(center.x + dx, center.y + dz)
+			var max_chunk_x := ceili(float(_dem_columns - 1) / float(TERRAIN_CHUNK_CELLS)) - 1
+			var max_chunk_z := ceili(float(_dem_rows - 1) / float(TERRAIN_CHUNK_CELLS)) - 1
+			if key.x < 0 or key.y < 0 or key.x > max_chunk_x or key.y > max_chunk_z:
+				continue
+			desired[key] = true
+			if not _terrain_stream_chunks.has(key) and not _terrain_stream_build_queue.has(key):
+				_terrain_stream_build_queue.append(key)
+	# Décharger les blocs qui sont sortis de la zone utile.
+	for key in _terrain_stream_chunks.keys():
+		if not desired.has(key):
+			var chunk_nodes: Dictionary = _terrain_stream_chunks[key]
+			for node in chunk_nodes.values():
+				if is_instance_valid(node):
+					node.queue_free()
+			_terrain_stream_chunks.erase(key)
+	# Priorité aux blocs les plus proches du joueur.
+	_terrain_stream_build_queue.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		return Vector2(a - center).length_squared() < Vector2(b - center).length_squared()
+	)
+	if not _terrain_stream_building:
+		_build_terrain_stream_queue()
+
+
+func _build_terrain_stream_queue() -> void:
+	_terrain_stream_building = true
+	var built_this_frame := 0
+	while not _terrain_stream_build_queue.is_empty() and built_this_frame < TERRAIN_STREAM_MAX_BUILDS_PER_UPDATE:
+		var key: Vector2i = _terrain_stream_build_queue.pop_front()
+		if not _terrain_stream_chunks.has(key):
+			_build_terrain_chunk(key)
+			built_this_frame += 1
+		await get_tree().process_frame
+	_terrain_stream_building = false
+	# Continuer le traitement progressivement sans monopoliser une frame.
+	if not _terrain_stream_build_queue.is_empty():
+		_build_terrain_stream_queue()
+
+
+func _build_terrain_chunk(key: Vector2i) -> void:
+	var row_start := key.y * TERRAIN_CHUNK_CELLS
+	var col_start := key.x * TERRAIN_CHUNK_CELLS
+	var row_end := mini(row_start + TERRAIN_CHUNK_CELLS, _dem_rows - 1)
+	var col_end := mini(col_start + TERRAIN_CHUNK_CELLS, _dem_columns - 1)
+	if row_start >= row_end or col_start >= col_end:
+		return
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	surface.set_material(_terrain_stream_material)
+	for row in range(row_start, row_end):
+		for col in range(col_start, col_end):
+			var x0 := _dem_x_min + float(col) * _dem_spacing
+			var x1 := x0 + _dem_spacing
+			var z0 := _dem_z_min + float(row) * _dem_spacing
+			var z1 := z0 + _dem_spacing
+			var cell := PackedVector2Array([
+				Vector2(x0, z0), Vector2(x0, z1),
+				Vector2(x1, z1), Vector2(x1, z0)
+			])
+			var terrain_pieces := _clip_polygon_away_from_roads(cell, 0.85)
+			for piece in terrain_pieces:
+				if piece.size() < 3:
+					continue
+				var indices := Geometry2D.triangulate_polygon(piece)
+				if indices.is_empty():
+					continue
+				for i in range(0, indices.size(), 3):
+					for vertex_index in range(3):
+						var point: Vector2 = piece[indices[i + vertex_index]]
+					var height := _terrain_height_at_world(point.x, point.y)
+					surface.set_color(_terrain_color(height))
+					surface.add_vertex(Vector3(point.x, height, point.y))
+	surface.generate_normals()
+	var mesh := surface.commit()
+	if mesh == null or mesh.get_surface_count() == 0:
+		_terrain_stream_chunks[key] = {}
+		return
+	var chunk := MeshInstance3D.new()
+	chunk.name = "SRTM_Terrain_%d_%d" % [key.x, key.y]
+	chunk.mesh = mesh
+	chunk.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	chunk.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+	add_child(chunk)
+	var body := StaticBody3D.new()
+	body.name = "SRTM_Collision_%d_%d" % [key.x, key.y]
+	body.collision_layer = 1
+	body.collision_mask = 1
+	var shape := CollisionShape3D.new()
+	var terrain_collision := mesh.create_trimesh_shape() as ConcavePolygonShape3D
+	if terrain_collision == null:
+		chunk.queue_free()
+		body.queue_free()
+		push_error("Collision SRTM impossible pour le bloc %s." % str(key))
+		return
+	terrain_collision.backface_collision = true
+	shape.shape = terrain_collision
+	body.add_child(shape)
+	add_child(body)
+	_terrain_stream_chunks[key] = {"mesh": chunk, "collision": body}
+
 
 func _create_terrain_boundary_walls() -> void:
 	# Le DEM couvre une zone finie : des murs invisibles empêchent le joueur
