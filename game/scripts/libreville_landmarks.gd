@@ -303,12 +303,12 @@ func _build_official_tribune() -> void:
 	add_child(site)
 
 	# Tribune monumentale jaune : gradins, allées rouges et assises vertes.
-	_box(site, "Plateforme_beton", Vector3(82.0, 0.9, 34.0), Vector3(0, 0.45, 0), _stone)
-	_add_platform_collision(site, Vector3(82.0, 1.0, 34.0), Vector3(0, 0.5, 0))
+	_box(site, "Plateforme_beton", Vector3(82.0, 0.9, 38.0), Vector3(0, 0.45, 0), _stone)
+	_add_platform_collision(site, Vector3(82.0, 1.0, 38.0), Vector3(0, 0.5, 0))
 	var seat_transforms: Array[Transform3D] = []
 	var backrest_transforms: Array[Transform3D] = []
 	for row in range(10):
-		var rz := -13.0 + float(row) * 2.7
+		var rz := -13.0 + float(row) * 2.35
 		var ry := 1.0 + float(row) * 0.42
 		_box(site, "Marche_gradin_%02d" % row, Vector3(74.0, 0.42, 2.7), Vector3(0, ry, rz), _stone)
 		_add_platform_collision(site, Vector3(74.0, 0.42, 2.7), Vector3(0, ry, rz))
@@ -348,9 +348,10 @@ func _build_official_tribune() -> void:
 	site.add_child(backs)
 	var red_carpet := _mat(Color(0.48, 0.035, 0.045), 0.88)
 	_box(site, "Alee_centrale_moquette_rouge", Vector3(4.2, 0.16, 28.0), Vector3(0, 1.2, 0), red_carpet)
-	_box(site, "Estrade_officielle", Vector3(32.0, 1.0, 7.0), Vector3(0, 5.3, 10.0), _white)
-	_box(site, "Face_estrade", Vector3(30.0, 1.2, 0.35), Vector3(0, 5.0, 13.55), _yellow)
-	_box(site, "Moquette_protocolaire", Vector3(25.0, 0.08, 8.0), Vector3(0, 5.85, 10.0), _gold)
+	_box(site, "Estrade_officielle", Vector3(32.0, 1.0, 7.0), Vector3(0, 5.3, 14.0), _white)
+	_add_platform_collision(site, Vector3(32.0, 1.0, 7.0), Vector3(0, 5.3, 14.0))
+	_box(site, "Face_estrade", Vector3(30.0, 1.2, 0.35), Vector3(0, 5.0, 17.55), _yellow)
+	_box(site, "Moquette_protocolaire", Vector3(25.0, 0.08, 8.0), Vector3(0, 5.85, 14.0), _gold)
 
 	# Façade arrière jaune avec panneaux verticaux et baies sombres.
 	_box(site, "Facade_arriere_jaune", Vector3(80.0, 12.0, 1.2), Vector3(0, 8.0, -16.0), _yellow)
@@ -393,6 +394,7 @@ func _build_official_tribune() -> void:
 	for side in [-1.0, 1.0]:
 		for step in range(8):
 			_box(site, "Marche_acces_%s_%d" % [str(side), step], Vector3(5.0, 0.24, 1.1), Vector3(side * 38.0, 1.0 + float(step) * 0.34, 13.0 - float(step) * 1.2), _stone)
+			_add_platform_collision(site, Vector3(5.0, 0.24, 1.1), Vector3(side * 38.0, 1.0 + float(step) * 0.34, 13.0 - float(step) * 1.2))
 		_cylinder(site, "Main_courante_%s" % str(side), 0.07, 12.0, Vector3(side * 40.5, 3.2, 8.0), _dark, 10)
 
 
