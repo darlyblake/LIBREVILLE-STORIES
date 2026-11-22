@@ -447,9 +447,9 @@ func _build_terrain_chunk(key: Vector2i) -> void:
 				for i in range(0, indices.size(), 3):
 					for vertex_index in range(3):
 						var point: Vector2 = piece[indices[i + vertex_index]]
-					var height := _terrain_height_at_world(point.x, point.y)
-					surface.set_color(_terrain_color(height))
-					surface.add_vertex(Vector3(point.x, height, point.y))
+						var height: float = _terrain_height_at_world(point.x, point.y)
+						surface.set_color(_terrain_color(height))
+						surface.add_vertex(Vector3(point.x, height, point.y))
 	surface.generate_normals()
 	var mesh := surface.commit()
 	if mesh == null or mesh.get_surface_count() == 0:
