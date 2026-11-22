@@ -46,7 +46,7 @@ func _make_surface_shader(base_color: Color, roughness: float, scale: float, met
 	var shader := Shader.new()
 	shader.code = """
 shader_type spatial;
-render_mode diffuse_burley, specular_schlick_ggx;
+render_mode diffuse_burley, specular_schlick_ggx, cull_disabled;
 uniform vec3 base_color : source_color = vec3(0.8, 0.8, 0.8);
 uniform float base_roughness = 0.8;
 uniform float texture_scale = 0.5;
@@ -147,62 +147,45 @@ func _build_monument() -> void:
 		_box(site, "Joint_parvis_%d" % x, Vector3(0.045, 0.012, 72.0), Vector3(float(x), 0.33, 0), _dark)
 	_box(site, "Socle_batiment", Vector3(39.0, 0.9, 22.0), Vector3(0, 0.62, 0), _stone)
 
-	# Bâtiment photographié : deux grands jambages habillés de panneaux,
-	# un large vide traversant et un couronnement rectangulaire vitré.
-	_box(site, "Jambage_gauche_principal", Vector3(8.0, 27.5, 17.0), Vector3(-14.2, 14.5, 0), _white)
-	_box(site, "Jambage_droit_principal", Vector3(8.0, 27.5, 17.0), Vector3(14.2, 14.5, 0), _white)
-	_box(site, "Couronnement_superieur", Vector3(36.0, 8.0, 18.0), Vector3(0, 25.0, 0), _white)
-	_box(site, "Bandeau_fenetre_haut", Vector3(25.5, 3.8, 0.34), Vector3(0, 27.0, 9.18), _glass)
-	_box(site, "Bandeau_fenetre_milieu", Vector3(25.5, 3.8, 0.34), Vector3(0, 20.5, 9.18), _glass)
-	_box(site, "Bandeau_sous_fenetre", Vector3(26.0, 0.35, 0.5), Vector3(0, 18.25, 9.0), _stone)
-	_box(site, "Bandeau_superieur_fenetre", Vector3(26.0, 0.35, 0.5), Vector3(0, 29.15, 9.0), _stone)
+	# Arc monumental principal : 30 m de haut, véritable ouverture traversante.
+	# Les deux jambages portent l'arc elliptique extrudé, plutôt qu'un linteau cubique.
+	_box(site, "Jambage_gauche_arc", Vector3(8.0, 20.0, 17.0), Vector3(-14.0, 10.0, 0), _white)
+	_box(site, "Jambage_droit_arc", Vector3(8.0, 20.0, 17.0), Vector3(14.0, 10.0, 0), _white)
+	_add_arch_band(site, 18.0, 10.0, 10.0, 7.0, 20.0, 17.0, 48, _white)
 
-	# Menuiseries en aluminium : trames verticales et traverses des vitrages.
-	for row in range(2):
-		var window_y := 20.5 + float(row) * 6.5
-		for mullion in range(13):
-			var mx := -12.0 + float(mullion) * 2.0
-			_box(site, "Meneau_vitre_%d_%02d" % [row, mullion], Vector3(0.10, 3.7, 0.18), Vector3(mx, window_y, 9.42), _dark)
-		_box(site, "Traverse_vitre_%d" % row, Vector3(25.5, 0.10, 0.18), Vector3(0, window_y, 9.42), _dark)
-
-	# Façades latérales : joints de panneaux, fenêtres verticales et bandeaux.
+	# Socles, joints de panneaux et encadrements minéraux des grands jambages.
 	for side in [-1.0, 1.0]:
-		for floor_index in range(1, 6):
-			var fy := 3.0 + float(floor_index) * 4.0
-			_box(site, "Joint_facade_%s_%d" % [str(side), floor_index], Vector3(0.035, 0.035, 16.8), Vector3(side * 18.24, fy, 0), _stone)
-		for window_index in range(3):
-			var wy := 8.0 + float(window_index) * 7.0
-			_box(site, "Fenetre_laterale_%s_%d" % [str(side), window_index], Vector3(0.20, 3.8, 5.0), Vector3(side * 18.28, wy, -2.0), _glass)
-			for frame_z in [-4.5, 0.5]:
-				_box(site, "Cadre_lateral_%s_%d_%s" % [str(side), window_index, str(frame_z)], Vector3(0.24, 4.0, 0.12), Vector3(side * 18.42, wy, frame_z), _dark)
+		_box(site, "Socle_jambage_%s" % str(side), Vector3(8.6, 0.75, 18.0), Vector3(side * 14.0, 0.38, 0), _stone)
+		for groove in range(4):
+			var gx := side * 14.0 + (float(groove) - 1.5) * 1.72
+			_box(site, "Joint_vertical_arc_%s_%d" % [str(side), groove], Vector3(0.045, 18.5, 0.025), Vector3(gx, 10.0, 8.53), _stone)
+		_box(site, "Bandeau_base_arc_%s" % str(side), Vector3(8.1, 0.22, 17.2), Vector3(side * 14.0, 1.05, 0), _gold)
 
-	# Grande ouverture traversante au rez-de-chaussée et piliers intérieurs.
-	_box(site, "Plafond_passage", Vector3(20.0, 0.55, 16.0), Vector3(0, 8.2, 0), _stone)
-	for side in [-1.0, 1.0]:
-		_box(site, "Colonne_interieure_%s" % str(side), Vector3(1.2, 15.0, 1.2), Vector3(side * 8.6, 7.8, -4.0), _white)
-		_box(site, "Socle_colonne_%s" % str(side), Vector3(1.8, 0.7, 1.8), Vector3(side * 8.6, 0.7, -4.0), _stone)
-	# Vitrage du hall en retrait, pour garder la transparence du passage.
-	_box(site, "Hall_musee_vitre_arriere", Vector3(15.5, 7.0, 0.22), Vector3(0, 4.3, 7.7), _glass)
-	for mullion in range(8):
-		var gx := -7.0 + float(mullion) * 2.0
-		_box(site, "Meneau_hall_%02d" % mullion, Vector3(0.10, 6.8, 0.16), Vector3(gx, 4.3, 7.9), _dark)
+	# Musée et hall d'exposition placés en retrait : l'ouverture monumentale reste lisible.
+	_box(site, "Volume_musee_en_retrait", Vector3(19.0, 8.0, 12.0), Vector3(0, 4.2, -5.5), _stone)
+	_box(site, "Facade_vitree_musee", Vector3(17.0, 6.6, 0.20), Vector3(0, 4.2, 0.62), _glass)
+	for mullion in range(9):
+		var mx := -7.6 + float(mullion) * 1.9
+		_box(site, "Meneau_musee_%02d" % mullion, Vector3(0.10, 6.4, 0.16), Vector3(mx, 4.2, 0.78), _dark)
+	_box(site, "Auvent_musee", Vector3(21.0, 0.45, 13.5), Vector3(0, 8.45, -5.5), _white)
 
-	# Inscription institutionnelle dorée, armoiries stylisées et plaque mémorielle.
-	_add_3d_text(site, "REPUBLIQUE GABONAISE", Vector3(0, 30.0, 9.55), 30, _gold)
-	_add_3d_text(site, "UNION - TRAVAIL - JUSTICE", Vector3(0, 28.8, 9.55), 21, _gold)
-	_add_3d_text(site, "LA CONCORDE", Vector3(0, 23.0, 9.58), 42, _gold)
-	for side in [-1.0, 1.0]:
-		_build_gabon_emblem(site, Vector3(side * 15.2, 29.0, 9.35))
-		_build_province_shield(site, Vector3(side * 14.2, 13.0, 8.62), int(side))
-	_box(site, "Stele_memorielle", Vector3(3.2, 5.2, 0.38), Vector3(0, 3.2, 8.65), _stone)
-	_add_3d_text(site, "GEORGES DAMAS ALEKA", Vector3(0, 4.0, 8.9), 15, _gold)
+	# Structure supérieure sculpturale : deux montants courbes qui culminent à environ 47 m.
+	# Les traverses donnent une vraie lecture de charpente métallique, sans bloc plein.
+	var crest_left: Array[Vector3] = [Vector3(-8.0, 29.5, -0.2), Vector3(-7.0, 35.0, -0.2), Vector3(-4.2, 41.0, -0.2), Vector3(0.0, 47.0, -0.2)]
+	var crest_right: Array[Vector3] = [Vector3(8.0, 29.5, -0.2), Vector3(7.0, 35.0, -0.2), Vector3(4.2, 41.0, -0.2), Vector3(0.0, 47.0, -0.2)]
+	for segment in range(crest_left.size() - 1):
+		_add_arch_beam(site, "Aile_sculpturale_gauche_%d" % segment, crest_left[segment], crest_left[segment + 1], 1.0, 1.45, _gold)
+		_add_arch_beam(site, "Aile_sculpturale_droite_%d" % segment, crest_right[segment], crest_right[segment + 1], 1.0, 1.45, _gold)
+		_add_arch_beam(site, "Traverse_sculpturale_%d" % segment, crest_left[segment], crest_right[segment], 0.42, 1.15, _dark)
+	_add_arch_beam(site, "Liaison_sommet", crest_left[-1], crest_right[-1], 0.8, 1.6, _gold)
+	_box(site, "Socle_structure_superieure", Vector3(19.0, 0.65, 14.0), Vector3(0, 29.8, -0.2), _stone)
 
-	# Structure verticale secondaire au-dessus du couronnement, sans déformer
-	# la silhouette du portail observée sur les photographies.
-	_box(site, "Couronne_technique", Vector3(18.0, 1.0, 12.0), Vector3(0, 29.7, 0), _stone)
-	for side in [-1.0, 1.0]:
-		_box(site, "Aileron_superieur_%s" % str(side), Vector3(1.0, 5.5, 12.0), Vector3(side * 8.2, 32.7, 0), _white)
-	_box(site, "Linteau_superieur_fin", Vector3(17.0, 1.0, 12.0), Vector3(0, 35.2, 0), _white)
+	# Inscriptions patrimoniales sur les deux piliers et stèle au pied de l'arc.
+	_add_3d_text(site, "UNION - TRAVAIL - JUSTICE", Vector3(-14.0, 14.0, 8.72), 17, _gold)
+	_add_3d_text(site, "LA CONCORDE", Vector3(14.0, 14.0, 8.72), 20, _gold)
+	_box(site, "Stele_memorielle", Vector3(3.2, 4.6, 0.38), Vector3(0, 2.7, 9.0), _stone)
+	_add_3d_text(site, "GEORGES DAMAS ALEKA", Vector3(0, 3.2, 9.25), 15, _gold)
+	_add_3d_text(site, "MONUMENT DE LA CONCORDE", Vector3(0, 1.35, 9.25), 11, _white)
 
 	# Huit pavillons d'exposition périphériques (le bâtiment central représente l'Estuaire).
 	var pavilion_positions: Array[Vector3] = [
@@ -226,6 +209,62 @@ func _build_monument() -> void:
 		var flag_x := float(i - 1) * 4.0
 		_cylinder(site, "Mât_drapeau_%d" % i, 0.07, 9.0, Vector3(flag_x, 4.8, -35.0), _dark, 12)
 		_box(site, "Drapeau_%d" % i, Vector3(2.2, 1.25, 0.06), Vector3(flag_x + 1.1, 7.2, -35.0), _yellow)
+
+
+func _add_quad_to_surface(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
+	surface.add_vertex(a)
+	surface.add_vertex(b)
+	surface.add_vertex(c)
+	surface.add_vertex(a)
+	surface.add_vertex(c)
+	surface.add_vertex(d)
+
+
+func _add_arch_band(parent: Node3D, outer_radius_x: float, inner_radius_x: float, outer_rise: float, inner_rise: float, spring_height: float, depth: float, segments: int, material: Material) -> void:
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	surface.set_material(material)
+	var half_depth := depth * 0.5
+	for index in range(segments):
+		var angle_0 := PI - PI * float(index) / float(segments)
+		var angle_1 := PI - PI * float(index + 1) / float(segments)
+		var outer_0 := Vector3(outer_radius_x * cos(angle_0), spring_height + outer_rise * sin(angle_0), half_depth)
+		var outer_1 := Vector3(outer_radius_x * cos(angle_1), spring_height + outer_rise * sin(angle_1), half_depth)
+		var inner_0 := Vector3(inner_radius_x * cos(angle_0), spring_height + inner_rise * sin(angle_0), half_depth)
+		var inner_1 := Vector3(inner_radius_x * cos(angle_1), spring_height + inner_rise * sin(angle_1), half_depth)
+		var outer_0_back := Vector3(outer_0.x, outer_0.y, -half_depth)
+		var outer_1_back := Vector3(outer_1.x, outer_1.y, -half_depth)
+		var inner_0_back := Vector3(inner_0.x, inner_0.y, -half_depth)
+		var inner_1_back := Vector3(inner_1.x, inner_1.y, -half_depth)
+		_add_quad_to_surface(surface, outer_0, outer_1, inner_1, inner_0)
+		_add_quad_to_surface(surface, outer_1_back, outer_0_back, inner_0_back, inner_1_back)
+		_add_quad_to_surface(surface, outer_0_back, outer_0, outer_1, outer_1_back)
+		_add_quad_to_surface(surface, inner_1_back, inner_1, inner_0, inner_0_back)
+		if index == 0:
+			_add_quad_to_surface(surface, outer_0_back, outer_0, inner_0, inner_0_back)
+		if index == segments - 1:
+			_add_quad_to_surface(surface, outer_1, outer_1_back, inner_1_back, inner_1)
+	surface.generate_normals()
+	var arch_mesh := surface.commit()
+	var arch_instance := MeshInstance3D.new()
+	arch_instance.name = "Arc_elliptique_structurel"
+	arch_instance.mesh = arch_mesh
+	arch_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	parent.add_child(arch_instance)
+
+
+func _add_arch_beam(parent: Node3D, node_name: String, start: Vector3, finish: Vector3, width: float, depth: float, material: Material) -> void:
+	var delta := finish - start
+	var beam := MeshInstance3D.new()
+	beam.name = node_name
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(width, delta.length() + 0.12, depth)
+	beam.mesh = mesh
+	beam.position = (start + finish) * 0.5
+	beam.rotation.z = atan2(delta.y, delta.x) - PI * 0.5
+	beam.material_override = material
+	beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	parent.add_child(beam)
 
 
 func _build_pavilion(parent: Node3D, number: int, center: Vector3) -> void:
