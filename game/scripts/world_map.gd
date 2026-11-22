@@ -1788,7 +1788,7 @@ func _load_roads() -> void:
 		var collision := SurfaceTool.new()
 		collision.begin(Mesh.PRIMITIVE_TRIANGLES)
 		for part_index in tiles[tile_key]:
-			_build_road_part(parts[part_index], part_index, surfaces, collision, node_registry, patched)
+			_build_road_part(parts[part_index], part_index, surfaces, collision, node_registry, patched, parts)
 			_road_count += 1
 		_commit_road_surfaces(surfaces, collision, "%03d" % tile_counter)
 		_commit_lamps("%03d" % tile_counter)
@@ -1890,7 +1890,7 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 	add_child(body)
 
 
-func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, collision: SurfaceTool, node_registry: Dictionary, patched: Dictionary) -> void:
+func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, collision: SurfaceTool, node_registry: Dictionary, patched: Dictionary, all_parts: Array[Dictionary]) -> void:
 	var points: Array[Vector3] = part.points
 	var orig_points: Array[Vector3] = part.orig_points
 	var keys: Array[String] = part.keys
@@ -1919,7 +1919,7 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 			var patch_radius := 2.2
 			for e in range(entry_count):
 				patch_radius = maxf(patch_radius, entries[e * 3 + 1])
-			_add_junction_patch(road_surface, orig_points[node_index], minf(patch_radius, 9.0))
+			_add_intersection_patch(road_surface, orig_points[node_index], node_key, node_registry, all_parts)
 	# Chaussée : bandes longitudinales ~7 m, chaque sommet posé sur le relief exact.
 	var strips := maxi(2, ceili(width / 7.0))
 	var draped: Array = []
@@ -2676,6 +2676,64 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 		var o1 := _rp(center + d1 * radius, PATCH_LIFT)
 		_add_textured_tri(surface, c, i0, i1, ROAD_UV_METERS)
 		_add_textured_quad(surface, i0, o0, o1, i1, ROAD_UV_METERS)
+
+
+func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: String,
+		node_registry: Dictionary, all_parts: Array[Dictionary]) -> void:
+	# Empreinte calculée depuis les branches réellement connectées :
+	# un T produit une forme à trois bras, un croisement une forme à quatre bras.
+	# Cela évite le disque uniforme qui déborde sur les trottoirs aux carrefours étroits.
+	var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
+	var outline_points := PackedVector2Array()
+	var center_2d := Vector2(center.x, center.z)
+	for entry_index in range(0, entries.size(), 3):
+		var connected_part_index := int(entries[entry_index])
+		if connected_part_index < 0 or connected_part_index >= all_parts.size():
+			continue
+		var connected_part: Dictionary = all_parts[connected_part_index]
+		var connected_points: Array[Vector3] = connected_part.orig_points
+		var connected_keys: Array[String] = connected_part.keys
+		var half_width := float(connected_part.width) * 0.5
+		for point_index in range(connected_keys.size()):
+			if connected_keys[point_index] != node_key:
+				continue
+			var neighbours: Array[int] = []
+			if point_index > 0:
+				neighbours.append(point_index - 1)
+			if point_index + 1 < connected_points.size():
+				neighbours.append(point_index + 1)
+			for neighbour_index in neighbours:
+				var neighbour := connected_points[neighbour_index]
+				var direction := Vector2(neighbour.x - center.x, neighbour.z - center.z).normalized()
+				if direction.length_squared() < 0.001:
+					continue
+				var side := Vector2(-direction.y, direction.x) * half_width
+				var reach := maxf(half_width + 1.2, 3.0)
+				var arm_end := center_2d + direction * reach
+				outline_points.append(arm_end + side)
+				outline_points.append(arm_end - side)
+		if point_index >= 0:
+			continue
+	if outline_points.size() < 6:
+		_add_junction_patch(surface, center, 3.0)
+		return
+	var hull := Geometry2D.convex_hull(outline_points)
+	if hull.size() < 3:
+		_add_junction_patch(surface, center, 3.0)
+		return
+	var indices := Geometry2D.triangulate_polygon(hull)
+	if indices.is_empty():
+		_add_junction_patch(surface, center, 3.0)
+		return
+	for triangle_index in range(0, indices.size(), 3):
+		var a: Vector2 = hull[indices[triangle_index]]
+		var b: Vector2 = hull[indices[triangle_index + 1]]
+		var c: Vector2 = hull[indices[triangle_index + 2]]
+		_add_textured_tri(surface,
+			_rp(Vector3(a.x, center.y, a.y), ROAD_LIFT + 0.06),
+			_rp(Vector3(b.x, center.y, b.y), ROAD_LIFT + 0.06),
+			_rp(Vector3(c.x, center.y, c.y), ROAD_LIFT + 0.06),
+			ROAD_UV_METERS)
 
 
 func _add_roundabout_island(surface: SurfaceTool, road_points: Array[Vector3], road_half_width: float) -> void:
