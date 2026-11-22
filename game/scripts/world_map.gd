@@ -19,6 +19,8 @@ const TERRAIN_VERTICAL_EXAGGERATION := 1.0
 const TERRAIN_STREAM_RADIUS := 1
 const TERRAIN_STREAM_UPDATE_SECONDS := 0.45
 const TERRAIN_STREAM_MAX_BUILDS_PER_UPDATE := 2
+const INITIAL_DECOR_RADIUS_METERS := 1800.0
+const MAX_INITIAL_TREES := 220
 
 @export var show_roads := true
 @export var show_buildings := true
@@ -802,6 +804,10 @@ func _load_environment() -> void:
 	var surface := _new_surface(_environment_material)
 	var relief_collision_surface := _new_surface(_environment_material)
 	var tree_positions: Array[Vector3] = []
+	var player_node := get_parent().get_node_or_null("Player") as Node3D
+	var initial_player_position := Vector2.ZERO
+	if player_node != null:
+		initial_player_position = Vector2(player_node.global_position.x, player_node.global_position.z)
 	var batch_count := 0
 	var batch_index := 0
 	var environment_index := 0
@@ -847,10 +853,11 @@ func _load_environment() -> void:
 					relief_center /= float(points.size())
 					for point in points:
 						relief_radius = maxf(relief_radius, point.distance_to(relief_center))
-					_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions, kind)
+					if relief_center.distance_to(initial_player_position) <= INITIAL_DECOR_RADIUS_METERS:
+						_scatter_trees_in_polygon(points, int(props.get("osm_id", _environment_count)), tree_positions, kind)
 					var mapped_surface := str(props.get("surface", ""))
 					var is_grass_area := str(props.get("landuse", "")) == "grass" or (kind == "green_space" and mapped_surface not in ["concrete", "paved", "asphalt"]) or str(props.get("leisure", "")) == "garden"
-					if is_grass_area and _grass_generator != null:
+					if is_grass_area and _grass_generator != null and relief_center.distance_to(initial_player_position) <= INITIAL_DECOR_RADIUS_METERS:
 						_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind, Callable(self, "_terrain_height_at_world"), Callable(self, "_is_near_road"))
 				surface.set_color(_environment_color(kind))
 				if has_landscape_relief:
@@ -1015,6 +1022,9 @@ void fragment() {
 			var direction := segment / length
 			var perpendicular := Vector2(-direction.y, direction.x)
 			var midpoint := (a + b) * 0.5
+			var player_node := get_parent().get_node_or_null("Player") as Node3D
+			if player_node != null and midpoint.distance_to(Vector2(player_node.global_position.x, player_node.global_position.z)) > INITIAL_DECOR_RADIUS_METERS:
+				continue
 			var sample_left := midpoint + perpendicular * 10.0
 			var sample_right := midpoint - perpendicular * 10.0
 			var left_height := _terrain_height_at_world(sample_left.x, sample_left.y)
@@ -1243,7 +1253,7 @@ func _landscape_relief_height(point: Vector2, center: Vector2, radius: float, ki
 
 
 func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: Array[Vector3], kind: String) -> void:
-	if points.size() < 3 or output.size() >= 1200:
+	if points.size() < 3 or output.size() >= MAX_INITIAL_TREES:
 		return
 	var min_x := points[0].x
 	var max_x := points[0].x
@@ -1261,7 +1271,7 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 	var area := absf(twice_area) * 0.5
 	if area < 90.0:
 		return
-	var desired := mini(clampi(int(area / 260.0), 1, 12), 1200 - output.size())
+	var desired := mini(clampi(int(area / 260.0), 1, 12), MAX_INITIAL_TREES - output.size())
 	var center := Vector2.ZERO
 	for point in points:
 		center += point
@@ -1292,6 +1302,9 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 			continue
 		# Aucun arbre ne doit apparaître sur une chaussée ou un trottoir.
 		if _is_near_road(candidate, 2.0):
+			continue
+		var player_node := get_parent().get_node_or_null("Player") as Node3D
+		if player_node != null and Vector2(candidate.x, candidate.y).distance_to(Vector2(player_node.global_position.x, player_node.global_position.z)) > INITIAL_DECOR_RADIUS_METERS:
 			continue
 		var tree_ground_y := _terrain_height_at_world(candidate.x, candidate.y)
 		output.append(Vector3(candidate.x, tree_ground_y, candidate.y))
