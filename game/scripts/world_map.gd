@@ -1137,7 +1137,7 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 	for point in points:
 		center += point
 	center /= float(points.size())
-	var radius := 1.0
+	var radius: float = 1.0
 	for point in points:
 		radius = maxf(radius, point.distance_to(center))
 	var rng := RandomNumberGenerator.new()
@@ -1674,7 +1674,7 @@ func _clip_polygon_away_from_roads(subject: PackedVector2Array, extra_margin: fl
 		if direction.length_squared() < 0.0001:
 			continue
 		var normal := Vector2(-direction.y, direction.x)
-		var radius := float(segment.radius) + extra_margin
+		var radius: float = float(segment.radius) + extra_margin
 		var cap := 0.35
 		var corridor := PackedVector2Array([
 			a - direction * cap + normal * radius,
@@ -2053,7 +2053,7 @@ func _road_part_cuts(part_index: int, keys: Array[String], points: Array[Vector3
 	for i in range(keys.size()):
 		if i > 0:
 			distance += Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).length()
-		var radius := _junction_clearance(node_registry.get(keys[i], PackedFloat32Array()), part_index, i == 0 or i == last)
+		var radius: float = float(_junction_clearance(node_registry.get(keys[i], PackedFloat32Array()), part_index, i == 0 or i == last))
 		if radius >= 0.0:
 			cuts.append(Vector2(distance, radius))
 	return cuts
