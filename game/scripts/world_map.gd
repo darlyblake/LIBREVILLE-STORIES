@@ -1963,8 +1963,8 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 			mark_from = maxf(mark_from, crosswalk_start - segment_start)
 		if crosswalk_end >= 0.0:
 			var distance_to_end := float(part.length) - segment_start
-			if distance_to_end < crosswalk_end:
-				mark_to = minf(mark_to, seg_len - (crosswalk_end - distance_to_end))
+			if distance_to_end - seg_len < crosswalk_end:
+				mark_to = minf(mark_to, distance_to_end - crosswalk_end)
 		var marking_a := a.lerp(b, clampf(mark_from / seg_len, 0.0, 1.0))
 		var marking_b := a.lerp(b, clampf(mark_to / seg_len, 0.0, 1.0))
 		for k in range(strips):
