@@ -10,6 +10,7 @@ const MONUMENT_LON := 9.44288
 # Centroïde du toit de la tribune officielle (OSM way 1495944465).
 const TRIBUNE_LAT := 0.38831
 const TRIBUNE_LON := 9.44356
+const PAVILION_PROVINCES := ["HAUT-OGOOUE", "MOYEN-OGOOUE", "NGOUNIE", "NYANGA", "OGOOUE-IVINDO", "OGOOUE-LOLO", "OGOOUE-MARITIME", "WOLEU-NTEM"]
 
 var _stone: Material
 var _white: Material
@@ -289,7 +290,7 @@ func _build_pavilion(parent: Node3D, number: int, center: Vector3) -> void:
 		var px := -3.6 + float(mullion) * 1.2
 		_box(pavilion, "Meneau_pavillon_%02d" % mullion, Vector3(0.08, 1.9, 0.12), Vector3(px, 3.3, 4.08), _dark)
 	_box(pavilion, "Plaque_province", Vector3(5.6, 0.55, 0.18), Vector3(0, 4.65, 4.08), _gold)
-	_add_3d_text(pavilion, "PAVILLON %02d" % number, Vector3(0, 4.55, 4.22), 12, _white)
+	_add_3d_text(pavilion, PAVILION_PROVINCES[number - 1], Vector3(0, 4.55, 4.22), 10, _white)
 	for side in [-1.0, 1.0]:
 		_box(pavilion, "Pilastre_%s" % str(side), Vector3(0.22, 4.2, 0.28), Vector3(side * 4.65, 2.8, 4.0), _stone)
 
@@ -303,12 +304,46 @@ func _build_official_tribune() -> void:
 	# Tribune monumentale jaune : gradins, allées rouges et assises vertes.
 	_box(site, "Plateforme_beton", Vector3(82.0, 0.9, 34.0), Vector3(0, 0.45, 0), _stone)
 	_add_platform_collision(site, Vector3(82.0, 1.0, 34.0), Vector3(0, 0.5, 0))
+	var seat_transforms: Array[Transform3D] = []
+	var backrest_transforms: Array[Transform3D] = []
 	for row in range(10):
 		var rz := -13.0 + float(row) * 2.7
 		var ry := 1.0 + float(row) * 0.42
 		_box(site, "Marche_gradin_%02d" % row, Vector3(74.0, 0.42, 2.7), Vector3(0, ry, rz), _stone)
-		_box(site, "Assise_gradin_%02d" % row, Vector3(71.0, 0.32, 1.9), Vector3(0, ry + 0.36, rz - 0.18), _dark)
-	_box(site, "Alee_centrale_rouge", Vector3(4.2, 0.16, 28.0), Vector3(0, 1.2, 0), _gold)
+		for seat_index in range(20):
+			var seat_x := -35.0 + float(seat_index) * 3.7
+			seat_transforms.append(Transform3D(Basis.IDENTITY, Vector3(seat_x, ry + 0.68, rz - 0.18)))
+			backrest_transforms.append(Transform3D(Basis.IDENTITY, Vector3(seat_x, ry + 0.94, rz + 0.20)))
+	var seat_mesh := BoxMesh.new()
+	seat_mesh.size = Vector3(3.35, 0.24, 0.88)
+	seat_mesh.material = _dark
+	var seat_multi := MultiMesh.new()
+	seat_multi.transform_format = MultiMesh.TRANSFORM_3D
+	seat_multi.mesh = seat_mesh
+	seat_multi.instance_count = seat_transforms.size()
+	for seat_index in range(seat_transforms.size()):
+		seat_multi.set_instance_transform(seat_index, seat_transforms[seat_index])
+	var seats := MultiMeshInstance3D.new()
+	seats.name = "Sieges_individuels_tribune"
+	seats.multimesh = seat_multi
+	seats.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	site.add_child(seats)
+	var back_mesh := BoxMesh.new()
+	back_mesh.size = Vector3(3.35, 0.55, 0.16)
+	back_mesh.material = _dark
+	var back_multi := MultiMesh.new()
+	back_multi.transform_format = MultiMesh.TRANSFORM_3D
+	back_multi.mesh = back_mesh
+	back_multi.instance_count = backrest_transforms.size()
+	for seat_index in range(backrest_transforms.size()):
+		back_multi.set_instance_transform(seat_index, backrest_transforms[seat_index])
+	var backs := MultiMeshInstance3D.new()
+	backs.name = "Dossiers_sieges_tribune"
+	backs.multimesh = back_multi
+	backs.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	site.add_child(backs)
+	var red_carpet := _mat(Color(0.48, 0.035, 0.045), 0.88)
+	_box(site, "Alee_centrale_moquette_rouge", Vector3(4.2, 0.16, 28.0), Vector3(0, 1.2, 0), red_carpet)
 	_box(site, "Estrade_officielle", Vector3(32.0, 1.0, 7.0), Vector3(0, 5.3, 10.0), _white)
 	_box(site, "Face_estrade", Vector3(30.0, 1.2, 0.35), Vector3(0, 5.0, 13.55), _yellow)
 	_box(site, "Moquette_protocolaire", Vector3(25.0, 0.08, 8.0), Vector3(0, 5.85, 10.0), _gold)
