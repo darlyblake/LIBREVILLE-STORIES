@@ -182,22 +182,24 @@ func _apply_display_mode() -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 
 func _start_game() -> void:
-	_save_and_back()
-	var world := WORLD_SCENE.instantiate()
-	var world_map := world.get_node_or_null("WorldMap")
-	if world_map != null:
-		world_map.set("show_buildings", _buildings.button_pressed)
-		world_map.set("render_green_areas", _vegetation.button_pressed)
-		world_map.set("load_extra_road_textures", _extra_textures.button_pressed)
-	var sun := world.get_node_or_null("DirectionalLight3D") as DirectionalLight3D
-	if sun != null:
-		sun.shadow_enabled = _shadows.button_pressed
-	_menu_box.visible = false
-	_settings_box.visible = false
-	_status.text = "Chargement du monde de Libreville…"
+	var config := ConfigFile.new()
+	config.set_value("graphics", "quality", _quality.selected)
+	config.set_value("graphics", "shadows", _shadows.button_pressed)
+	config.set_value("graphics", "buildings", _buildings.button_pressed)
+	config.set_value("graphics", "vegetation", _vegetation.button_pressed)
+	config.set_value("graphics", "extra_textures", _extra_textures.button_pressed)
+	config.set_value("display", "fullscreen", _fullscreen.button_pressed)
+	var error := config.save(SETTINGS_PATH)
+	if error != OK:
+		_status.text = "Impossible d'enregistrer les réglages (code %d)." % error
+		return
+	_apply_display_mode()
+	_status.text = "Préparation du monde…"
 	await get_tree().process_frame
-	add_child(world)
-	_status.text = ""
+	# Remplace réellement le menu : il ne doit jamais rester au-dessus du monde.
+	var change_error := get_tree().change_scene_to_packed(WORLD_SCENE)
+	if change_error != OK:
+		_status.text = "Impossible de démarrer le monde (code %d)." % change_error
 
 func _quit_game() -> void:
 	get_tree().quit()
