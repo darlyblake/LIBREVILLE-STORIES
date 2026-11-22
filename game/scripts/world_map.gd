@@ -1904,10 +1904,10 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 	var last := points.size() - 1
 	_set_uv_origin(points[0])
 	road_surface.set_color(part.tint)
-	# Raccords aux carrefours (une seule fois par nœud).
-	for end_slot in range(2):
-		var end_index := 0 if end_slot == 0 else last
-		var node_key: String = keys[0] if end_slot == 0 else keys[keys.size() - 1]
+	# Raccords aux carrefours : les nœuds OSM peuvent être aux extrémités
+	# ou au milieu d'une LineString. On traite donc tous les nœuds d'origine.
+	for node_index in range(keys.size()):
+		var node_key: String = keys[node_index]
 		var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
 		var entry_count := int(entries.size() / 3)
 		if entry_count >= 3 and not patched.has(node_key):
@@ -1915,7 +1915,7 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 			var patch_radius := 2.2
 			for e in range(entry_count):
 				patch_radius = maxf(patch_radius, entries[e * 3 + 1])
-			_add_junction_patch(road_surface, points[end_index], minf(patch_radius, 9.0))
+			_add_junction_patch(road_surface, orig_points[node_index], minf(patch_radius, 9.0))
 	# Chaussée : bandes longitudinales ~7 m, chaque sommet posé sur le relief exact.
 	var strips := maxi(2, ceili(width / 7.0))
 	var draped: Array = []
