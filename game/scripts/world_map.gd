@@ -1044,7 +1044,7 @@ func _make_coastal_rock_mesh() -> ArrayMesh:
 		for side in range(SIDES):
 			var angle := TAU * float(side) / float(SIDES) + phase
 			var irregularity := rng.randf_range(0.78, 1.22)
-			var radius := ring_radii[ring_index] * irregularity
+			var radius: float = float(ring_radii[ring_index]) * irregularity
 			var y_jitter := rng.randf_range(-0.055, 0.055) if ring_index > 0 and ring_index < 4 else 0.0
 			vertices.append(Vector3(cos(angle) * radius, ring_heights[ring_index] + y_jitter, sin(angle) * radius))
 			var shade := rng.randf_range(0.72, 1.0) * (1.0 - float(ring_index) * 0.045)
