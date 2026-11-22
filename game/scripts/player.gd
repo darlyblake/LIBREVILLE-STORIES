@@ -14,9 +14,9 @@ extends CharacterBody3D
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera_pitch: float = -0.18
 var _vehicle: VehicleController
+var _jump_was_pressed := false
 
 func _ready() -> void:
-	_register_gamepad_inputs()
 	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
 		Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	_log_connected_gamepads()
@@ -29,37 +29,9 @@ func _log_connected_gamepads() -> void:
 func _on_joy_connection_changed(device: int, connected: bool) -> void:
 	print("LIBREVILLE STORIES | manette %s (ID %d)" % ["connectée" if connected else "déconnectée", device])
 	if connected:
-		_register_gamepad_inputs()
+		_jump_was_pressed = false
 
-func _register_gamepad_inputs() -> void:
-	_add_joy_axis("move_left", JOY_AXIS_LEFT_X, -1.0)
-	_add_joy_axis("move_right", JOY_AXIS_LEFT_X, 1.0)
-	_add_joy_axis("move_forward", JOY_AXIS_LEFT_Y, -1.0)
-	_add_joy_axis("move_back", JOY_AXIS_LEFT_Y, 1.0)
-	_add_joy_button("move_forward", JOY_BUTTON_DPAD_UP)
-	_add_joy_button("move_back", JOY_BUTTON_DPAD_DOWN)
-	_add_joy_button("move_left", JOY_BUTTON_DPAD_LEFT)
-	_add_joy_button("move_right", JOY_BUTTON_DPAD_RIGHT)
-	_add_joy_button("jump", JOY_BUTTON_A)
-
-func _add_joy_axis(action: StringName, axis: int, direction: float) -> void:
-	var event := InputEventJoypadMotion.new()
-	event.axis = axis
-	event.axis_value = direction
-	if not InputMap.has_action(action):
-		InputMap.add_action(action, 0.2)
-	if not InputMap.action_has_event(action, event):
-		InputMap.action_add_event(action, event)
-
-func _add_joy_button(action: StringName, button: int) -> void:
-	var event := InputEventJoypadButton.new()
-	event.button_index = button
-	if not InputMap.has_action(action):
-		InputMap.add_action(action, 0.2)
-	if not InputMap.action_has_event(action, event):
-		InputMap.action_add_event(action, event)
-
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		camera_pitch = clampf(camera_pitch - event.relative.y * mouse_sensitivity, -0.85, 0.35)
@@ -68,26 +40,37 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if event is InputEventMouseButton and event.pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if event is InputEventKey and event.pressed and event.keycode == KEY_F:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F:
 		_toggle_vehicle()
 	if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_Y:
 		_toggle_vehicle()
 
 func _physics_process(delta: float) -> void:
+	_update_gamepad_camera(delta)
 	if _vehicle != null:
 		global_position = _vehicle.global_position + Vector3.UP * 1.5
 		velocity = Vector3.ZERO
-		_update_gamepad_camera(delta)
 		return
-	_update_gamepad_camera(delta)
-	if not is_on_floor():
-		velocity.y -= gravity * delta
-	elif Input.is_action_just_pressed("jump"):
-		velocity.y = jump_velocity
+
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	var devices := Input.get_connected_joypads()
+	var jump_pressed := Input.is_action_just_pressed("jump")
+	if not devices.is_empty():
+		var device := devices[0]
+		input_vector = _read_gamepad_move(device)
+		var jump_now := Input.is_joy_button_pressed(device, JOY_BUTTON_A)
+		jump_pressed = jump_now and not _jump_was_pressed
+		_jump_was_pressed = jump_now
+	else:
+		_jump_was_pressed = false
+
 	var move_direction := (transform.basis * Vector3(input_vector.x, 0.0, input_vector.y)).normalized()
 	var sprinting := Input.is_key_pressed(KEY_SHIFT) or Input.is_action_pressed("ui_select")
 	var current_speed := sprint_speed if sprinting else move_speed
+	if not is_on_floor():
+		velocity.y -= gravity * delta
+	elif jump_pressed:
+		velocity.y = jump_velocity
 	if move_direction.length() > 0.001:
 		velocity.x = move_direction.x * current_speed
 		velocity.z = move_direction.z * current_speed
@@ -95,6 +78,25 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, current_speed * 5.0 * delta)
 		velocity.z = move_toward(velocity.z, 0.0, current_speed * 5.0 * delta)
 	move_and_slide()
+
+func _read_gamepad_move(device: int) -> Vector2:
+	var value := Vector2(
+		Input.get_joy_axis(device, JOY_AXIS_LEFT_X),
+		Input.get_joy_axis(device, JOY_AXIS_LEFT_Y)
+	)
+	if value.length() < gamepad_deadzone:
+		value = Vector2.ZERO
+	else:
+		value = value.normalized() * clampf((value.length() - gamepad_deadzone) / (1.0 - gamepad_deadzone), 0.0, 1.0)
+	if Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_LEFT):
+		value.x = -1.0
+	elif Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_RIGHT):
+		value.x = 1.0
+	if Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_UP):
+		value.y = -1.0
+	elif Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_DOWN):
+		value.y = 1.0
+	return value
 
 func _toggle_vehicle() -> void:
 	if _vehicle != null:
