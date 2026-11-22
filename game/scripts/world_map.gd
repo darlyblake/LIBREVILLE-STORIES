@@ -749,12 +749,39 @@ func _build_coastal_details() -> void:
 	if _coastline_paths.is_empty():
 		return
 
-	var foam_material := StandardMaterial3D.new()
-	foam_material.albedo_color = Color(0.88, 0.94, 0.93, 0.72)
-	foam_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	foam_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	foam_material.vertex_color_use_as_albedo = true
-	foam_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# L'écume suit exactement les trois vagues principales de l'océan.
+	# Le bruit animé casse le ruban uniforme en nappes et langues irrégulières.
+	var foam_shader := Shader.new()
+	foam_shader.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled, blend_mix, depth_draw_alpha_prepass;
+
+varying vec3 shore_world_pos;
+varying vec4 shore_tint;
+
+void vertex() {
+	vec3 p = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	float t = TIME;
+	float a1 = dot(p.xz, normalize(vec2(0.82, 0.57))) * 0.030 + t * 0.72;
+	float a2 = dot(p.xz, normalize(vec2(-0.34, 0.94))) * 0.052 - t * 0.91;
+	float a3 = dot(p.xz, normalize(vec2(0.98, -0.18))) * 0.091 + t * 1.18;
+	float wave = sin(a1) * 0.34 + sin(a2) * 0.13 + sin(a3) * 0.045;
+	VERTEX.y = -0.12 + wave + 0.035;
+	shore_world_pos = p;
+	shore_tint = COLOR;
+}
+
+void fragment() {
+	float n1 = sin(shore_world_pos.x * 0.72 + shore_world_pos.z * 0.31 + TIME * 0.8);
+	float n2 = sin(shore_world_pos.x * 1.37 - shore_world_pos.z * 0.83 - TIME * 0.55);
+	float breakup = smoothstep(-0.35, 0.55, n1 * 0.58 + n2 * 0.42);
+	float pulse = 0.78 + 0.22 * sin(TIME * 1.7 + shore_world_pos.x * 0.11);
+	ALBEDO = mix(vec3(0.55, 0.72, 0.72), vec3(0.96, 0.99, 0.96), breakup);
+	ALPHA = shore_tint.a * breakup * pulse;
+}
+"""
+	var foam_material := ShaderMaterial.new()
+	foam_material.shader = foam_shader
 	var foam_surface := _new_surface(foam_material)
 	var foam_count := 0
 	var rock_transforms: Array[Transform3D] = []
