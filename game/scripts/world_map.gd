@@ -151,6 +151,15 @@ var _coastline_paths: Array[PackedVector2Array] = []
 var _beach_polygons: Array[PackedVector2Array] = []
 
 func _ready() -> void:
+	# Le monde est construit progressivement : empêcher le joueur et le véhicule
+	# de simuler leur gravité avant que le relief et ses collisions soient prêts.
+	var player_during_setup := get_parent().get_node_or_null("Player") as CharacterBody3D
+	if player_during_setup != null:
+		player_during_setup.set_physics_process(false)
+	var vehicle_during_setup := get_parent().get_node_or_null("Vehicle") as CharacterBody3D
+	if vehicle_during_setup != null:
+		vehicle_during_setup.set_physics_process(false)
+
 	# Lire le profil avant de construire le monde 3D.
 	var graphics_config := ConfigFile.new()
 	if graphics_config.load("user://graphics_settings.cfg") == OK:
@@ -163,6 +172,9 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_load_real_terrain()
 	if _dem_loaded:
+		# Choisir la position terrestre AVANT de calculer les blocs initiaux :
+		# sinon le terrain peut être construit autour de l'ancien point de spawn.
+		_position_player_on_terrain()
 		_disable_flat_ground()
 	else:
 		push_warning("DEM indisponible : le sol plat et sa collision restent actifs pour éviter la chute du joueur.")
@@ -205,7 +217,18 @@ func _ready() -> void:
 		await _load_buildings()
 		await get_tree().process_frame
 	_load_pois()
-	_position_player_on_terrain()
+	# Recalculer les blocs autour du point de départ définitif et attendre leurs
+	# collisions avant de rendre le contrôle au joueur.
+	if _dem_loaded:
+		_update_terrain_stream(true)
+		while _terrain_stream_building or not _terrain_stream_build_queue.is_empty():
+			await get_tree().process_frame
+	var player_ready := get_parent().get_node_or_null("Player") as CharacterBody3D
+	if player_ready != null:
+		player_ready.set_physics_process(true)
+	var vehicle_ready := get_parent().get_node_or_null("Vehicle") as CharacterBody3D
+	if vehicle_ready != null:
+		vehicle_ready.set_physics_process(true)
 	_create_location_hud()
 	print("LIBREVILLE STORIES | routes: %d | bâtiments: %d | lieux identifiables: %d | éléments environnementaux: %d" % [_road_count, _building_count, _poi_count, _environment_count])
 
@@ -332,6 +355,12 @@ func terrain_height_at_world(x: float, z: float) -> float:
 
 func _terrain_height_at_world(x: float, z: float) -> float:
 	if not _dem_loaded:
+		return 0.0
+	# Ne jamais rabattre une coordonnée hors DEM sur son bord : cela donnait
+	# une fausse altitude et pouvait faire apparaître le joueur dans l'océan.
+	var x_max := _dem_x_min + float(_dem_columns - 1) * _dem_spacing
+	var z_max := _dem_z_min + float(_dem_rows - 1) * _dem_spacing
+	if x < _dem_x_min or x > x_max or z < _dem_z_min or z > z_max:
 		return 0.0
 	var grid_x := clampf((x - _dem_x_min) / _dem_spacing, 0.0, float(_dem_columns - 1))
 	var grid_z := clampf((z - _dem_z_min) / _dem_spacing, 0.0, float(_dem_rows - 1))
@@ -558,8 +587,17 @@ func _position_player_on_terrain() -> void:
 				push_warning("Aucun point terrestre proche du point de départ : vérifier l'emprise du DEM.")
 		player.position = Vector3(spawn_x, spawn_height + 2.0, spawn_z)
 	var vehicle := get_parent().get_node_or_null("Vehicle") as Node3D
-	if vehicle != null:
-		vehicle.position.y = _terrain_height_at_world(vehicle.position.x, vehicle.position.z) + 0.25
+	if vehicle != null and player != null:
+		# La voiture doit suivre le déplacement de sécurité du point de départ,
+		# sans rester à son ancienne position qui peut être côté mer.
+		var vehicle_x := spawn_x + 6.0
+		var vehicle_z := spawn_z + 3.0
+		var vehicle_ground := _terrain_height_at_world(vehicle_x, vehicle_z)
+		if vehicle_ground < 1.0:
+			vehicle_x = spawn_x
+			vehicle_z = spawn_z
+			vehicle_ground = spawn_height
+		vehicle.position = Vector3(vehicle_x, vehicle_ground + 0.65, vehicle_z)
 
 
 func _apply_ground_surface() -> void:
