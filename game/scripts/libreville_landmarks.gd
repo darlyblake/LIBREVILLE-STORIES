@@ -160,7 +160,7 @@ func _build_monument() -> void:
 	for side in [-1.0, 1.0]:
 		_box(site, "Socle_jambage_%s" % str(side), Vector3(8.6, 0.75, 18.0), Vector3(side * 14.0, 0.38, 0), _stone)
 		for groove in range(4):
-			var gx := side * 14.0 + (float(groove) - 1.5) * 1.72
+			var gx: float = float(side) * 14.0 + (float(groove) - 1.5) * 1.72
 			_box(site, "Joint_vertical_arc_%s_%d" % [str(side), groove], Vector3(0.045, 18.5, 0.025), Vector3(gx, 10.0, 8.53), _stone)
 		_box(site, "Bandeau_base_arc_%s" % str(side), Vector3(8.1, 0.22, 17.2), Vector3(side * 14.0, 1.05, 0), _gold)
 
