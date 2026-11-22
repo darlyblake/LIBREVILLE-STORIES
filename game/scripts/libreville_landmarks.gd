@@ -1,7 +1,6 @@
 extends Node3D
 ## Repères patrimoniaux du front de mer : monument Georges-Damas-Aleka et tribune officielle.
-## Coordonnées monument issues d'OpenStreetMap/Mapcarta. La tribune est positionnée
-## Les deux centroïdes sont lus dans les objets cartographiques OpenStreetMap.
+## Les deux ouvrages sont positionnés à partir de leurs références cartographiques OpenStreetMap.
 
 const CENTER_LAT := 0.400
 const CENTER_LON := 9.4475
