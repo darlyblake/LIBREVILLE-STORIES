@@ -138,6 +138,8 @@ var _dem_spacing := 30.0
 var _dem_x_min := 0.0
 var _dem_z_min := 0.0
 var _dem_loaded := false
+var _coastline_paths: Array[PackedVector2Array] = []
+var _beach_polygons: Array[PackedVector2Array] = []
 
 func _ready() -> void:
 	_load_real_terrain()
@@ -528,6 +530,11 @@ void fragment() {
 	float broad = sin(water_world_pos.x * 0.006 + TIME * 0.18)
 		* cos(water_world_pos.z * 0.008 - TIME * 0.15);
 	float fine = sin(water_world_pos.x * 0.041 + water_world_pos.z * 0.027 + TIME * 0.8);
+	float ripple_a = water_world_pos.x * 0.19 + water_world_pos.z * 0.11 + TIME * 1.55;
+	float ripple_b = water_world_pos.x * -0.13 + water_world_pos.z * 0.23 - TIME * 1.12;
+	float ripple_c = water_world_pos.x * 0.31 + water_world_pos.z * -0.08 + TIME * 2.05;
+	float ripple_dx = cos(ripple_a) * 0.19 * 0.075 + cos(ripple_b) * -0.13 * 0.045 + cos(ripple_c) * 0.31 * 0.018;
+	float ripple_dz = cos(ripple_a) * 0.11 * 0.075 + cos(ripple_b) * 0.23 * 0.045 + cos(ripple_c) * -0.08 * 0.018;
 	float crest = smoothstep(0.28, 0.48, wave_height + fine * 0.035);
 
 	vec3 deep_water = vec3(0.012, 0.105, 0.175);
@@ -535,8 +542,10 @@ void fragment() {
 	vec3 sunlit_water = vec3(0.075, 0.36, 0.42);
 	vec3 water_color = mix(deep_water, mid_water, 0.45 + broad * 0.18);
 	water_color = mix(water_color, sunlit_water, crest * 0.12);
+	water_color *= 0.96 + 0.045 * sin(water_world_pos.x * 0.013 + water_world_pos.z * 0.009 + TIME * 0.22);
 
-	vec3 n = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(water_normal, 0.0)).xyz);
+	vec3 detailed_normal = normalize(water_normal + vec3(-ripple_dx, 0.0, -ripple_dz));
+	vec3 n = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(detailed_normal, 0.0)).xyz);
 	float fresnel = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 4.0);
 	vec3 sun_direction = normalize(vec3(-0.35, 0.82, 0.44));
 	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 48.0);
@@ -625,6 +634,8 @@ func _load_environment() -> void:
 				original_points.remove_at(original_points.size() - 1)
 			if original_points.size() < 3:
 				continue
+			if kind == "natural_surface" and (str(props.get("natural", "")).to_lower() in ["beach", "sand"] or str(props.get("surface", "")).to_lower() == "sand"):
+				_beach_polygons.append(original_points)
 			var has_landscape_relief := kind in ["vegetation", "green_space"]
 			if has_landscape_relief and not render_green_areas:
 				continue
@@ -681,17 +692,26 @@ func _load_environment() -> void:
 			added = polygon_added
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
-			var width := 14.0 if kind == "coastline" else (5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6))
-			surface.set_color(_environment_color(kind))
-			for i in range(coords.size() - 1):
-				var a := _geo_to_world(coords[i])
-				var b := _geo_to_world(coords[i + 1])
-				var direction := Vector2(b.x - a.x, b.z - a.z)
-				if direction.length_squared() < 0.01:
-					continue
-				var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
-				_add_quad(surface, a + side + Vector3.UP * 0.014, a - side + Vector3.UP * 0.014, b - side + Vector3.UP * 0.014, b + side + Vector3.UP * 0.014)
-				added = true
+			if kind == "coastline":
+				var coast_path := PackedVector2Array()
+				for coordinate in coords:
+					var coast_point := _geo_to_world(coordinate)
+					coast_path.append(Vector2(coast_point.x, coast_point.z))
+				if coast_path.size() >= 2:
+					_coastline_paths.append(coast_path)
+					added = true
+			else:
+				var width := 5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6)
+				surface.set_color(_environment_color(kind))
+				for i in range(coords.size() - 1):
+					var a := _geo_to_world(coords[i])
+					var b := _geo_to_world(coords[i + 1])
+					var direction := Vector2(b.x - a.x, b.z - a.z)
+					if direction.length_squared() < 0.01:
+						continue
+					var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
+					_add_quad(surface, a + side + Vector3.UP * 0.014, a - side + Vector3.UP * 0.014, b - side + Vector3.UP * 0.014, b + side + Vector3.UP * 0.014)
+					added = true
 		if added:
 			_environment_count += 1
 			batch_count += 1
@@ -714,7 +734,118 @@ func _load_environment() -> void:
 		relief_shape.shape = relief_mesh.create_trimesh_shape()
 		relief_body.add_child(relief_shape)
 		add_child(relief_body)
+	_build_coastal_details()
 	_commit_tree_instances(tree_positions)
+
+
+func _is_inside_beach(point: Vector2) -> bool:
+	for beach in _beach_polygons:
+		if Geometry2D.is_point_in_polygon(point, beach):
+			return true
+	return false
+
+
+func _build_coastal_details() -> void:
+	if _coastline_paths.is_empty():
+		return
+
+	var foam_material := StandardMaterial3D.new()
+	foam_material.albedo_color = Color(0.88, 0.94, 0.93, 0.72)
+	foam_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	foam_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	foam_material.vertex_color_use_as_albedo = true
+	foam_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var foam_surface := _new_surface(foam_material)
+	var foam_count := 0
+	var rock_transforms: Array[Transform3D] = []
+	var rock_colors: Array[Color] = []
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20261122
+
+	for coast_path in _coastline_paths:
+		for i in range(coast_path.size() - 1):
+			var a := coast_path[i]
+			var b := coast_path[i + 1]
+			var segment := b - a
+			var length := segment.length()
+			if length < 1.5:
+				continue
+			var direction := segment / length
+			var perpendicular := Vector2(-direction.y, direction.x)
+			var midpoint := (a + b) * 0.5
+			var sample_left := midpoint + perpendicular * 10.0
+			var sample_right := midpoint - perpendicular * 10.0
+			var left_height := _terrain_height_at_world(sample_left.x, sample_left.y)
+			var right_height := _terrain_height_at_world(sample_right.x, sample_right.y)
+			var land_normal := perpendicular if left_height >= right_height else -perpendicular
+			var sea_normal := -land_normal
+			var sandy := _is_inside_beach(midpoint + land_normal * 5.0) or _is_inside_beach(midpoint + land_normal * 12.0)
+
+			var foam_a_inner := a + sea_normal * 0.35
+			var foam_a_outer := a + sea_normal * 3.2
+			var foam_b_inner := b + sea_normal * 0.35
+			var foam_b_outer := b + sea_normal * 3.2
+			var foam_alpha := rng.randf_range(0.28, 0.68)
+			foam_surface.set_color(Color(0.88, 0.95, 0.94, foam_alpha))
+			foam_surface.add_vertex(Vector3(foam_a_inner.x, 0.055, foam_a_inner.y))
+			foam_surface.add_vertex(Vector3(foam_b_inner.x, 0.055, foam_b_inner.y))
+			foam_surface.add_vertex(Vector3(foam_b_outer.x, 0.055, foam_b_outer.y))
+			foam_surface.add_vertex(Vector3(foam_a_inner.x, 0.055, foam_a_inner.y))
+			foam_surface.add_vertex(Vector3(foam_b_outer.x, 0.055, foam_b_outer.y))
+			foam_surface.add_vertex(Vector3(foam_a_outer.x, 0.055, foam_a_outer.y))
+			foam_count += 1
+
+			if sandy:
+				continue
+			var rock_steps := maxi(1, int(ceil(length / 9.0)))
+			for rock_index in range(rock_steps):
+				var t := (float(rock_index) + rng.randf_range(0.2, 0.8)) / float(rock_steps)
+				var shoreline := a.lerp(b, t)
+				var rock_xz := shoreline + land_normal * rng.randf_range(0.5, 2.8)
+				var rock_height := rng.randf_range(0.45, 1.35)
+				var rock_scale_x := rng.randf_range(0.65, 2.0)
+				var rock_scale_z := rng.randf_range(0.55, 1.65)
+				var rock_y := _terrain_height_at_world(rock_xz.x, rock_xz.y) + rock_height * 0.28
+				var rock_basis := Basis(Vector3(rock_scale_x, 0.0, 0.0), Vector3(0.0, rock_height, 0.0), Vector3(0.0, 0.0, rock_scale_z)).rotated(Vector3.UP, rng.randf_range(0.0, TAU))
+				rock_transforms.append(Transform3D(rock_basis, Vector3(rock_xz.x, rock_y, rock_xz.y)))
+				var shade := rng.randf_range(0.70, 1.0)
+				rock_colors.append(Color(shade * 0.58, shade * 0.60, shade * 0.59, 1.0))
+
+	if foam_count > 0:
+		var foam_mesh := foam_surface.commit()
+		if foam_mesh != null and foam_mesh.get_surface_count() > 0:
+			var foam_instance := MeshInstance3D.new()
+			foam_instance.name = "Coastal_Wave_Foam"
+			foam_instance.mesh = foam_mesh
+			foam_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			foam_instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+			add_child(foam_instance)
+
+	if not rock_transforms.is_empty():
+		var rock_material := StandardMaterial3D.new()
+		rock_material.vertex_color_use_as_albedo = true
+		rock_material.roughness = 0.96
+		var rock_mesh := SphereMesh.new()
+		rock_mesh.radius = 1.0
+		rock_mesh.height = 1.35
+		rock_mesh.radial_segments = 7
+		rock_mesh.rings = 3
+		rock_mesh.material = rock_material
+		var multi := MultiMesh.new()
+		multi.transform_format = MultiMesh.TRANSFORM_3D
+		multi.use_colors = true
+		multi.mesh = rock_mesh
+		multi.instance_count = rock_transforms.size()
+		for index in range(rock_transforms.size()):
+			multi.set_instance_transform(index, rock_transforms[index])
+			multi.set_instance_color(index, rock_colors[index])
+		var rocks := MultiMeshInstance3D.new()
+		rocks.name = "Coastal_Rock_Formations"
+		rocks.multimesh = multi
+		rocks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		rocks.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+		add_child(rocks)
+	print("LIBREVILLE STORIES | littoral : %d segments, %d rubans d'écume, %d rochers" % [_coastline_paths.size(), foam_count, rock_transforms.size()])
 
 
 func _subdivide_ground_triangle(a: Vector2, b: Vector2, c: Vector2, max_edge: float, out: Array, depth: int = 0) -> void:
@@ -952,7 +1083,7 @@ func _environment_color(kind: String) -> Color:
 		"green_space":
 			return Color(0.24, 0.46, 0.24)
 		"natural_surface":
-			return Color(0.70, 0.62, 0.45)
+			return Color(0.76, 0.68, 0.49)  # sable chaud des plages de Libreville
 		_:
 			return Color(0.34, 0.42, 0.30)
 
