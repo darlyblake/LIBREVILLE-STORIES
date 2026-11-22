@@ -50,7 +50,7 @@ script = ExtResource("2_map")
 script = ExtResource("4_baie")
 
 [node name="Vehicle" parent="." instance=ExtResource("6_vehicle")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1794, 1, -570)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1790, 1, -574)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_world")
