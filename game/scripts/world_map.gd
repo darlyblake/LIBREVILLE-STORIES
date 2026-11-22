@@ -150,7 +150,11 @@ func _ready() -> void:
 	_build_road_materials()
 	_environment_material = _make_material(Color.WHITE)
 	_environment_material.vertex_color_use_as_albedo = true
+	# Le réseau routier doit être connu AVANT la génération du relief :
+	# le terrain SRTM est alors réellement évidé sous chaussées et trottoirs.
 	_load_road_clearance_data()
+	if _dem_loaded:
+		_build_terrain_chunks()
 	_grass_generator = GrassGenerator.new()
 	_grass_generator.name = "Procedural_Real_Grass"
 	add_child(_grass_generator)
@@ -288,7 +292,6 @@ func _load_real_terrain() -> void:
 	for i in range(_dem_heights.size()):
 		_dem_heights[i] = bytes.decode_float(i * 4) * TERRAIN_VERTICAL_EXAGGERATION
 	_dem_loaded = true
-	_build_terrain_chunks()
 	print("LIBREVILLE STORIES | relief SRTM chargé (%s) : %d x %d cellules, pas %.0f m" % ["étendu" if use_extended_dem else "secours", _dem_columns, _dem_rows, _dem_spacing])
 
 
@@ -333,30 +336,29 @@ func _build_terrain_chunks() -> void:
 					var x1 := x0 + _dem_spacing
 					var z0 := _dem_z_min + float(row) * _dem_spacing
 					var z1 := z0 + _dem_spacing
-					var h00 := _dem_heights[row * _dem_columns + col]
-					var h10 := _dem_heights[row * _dem_columns + col + 1]
-					var h01 := _dem_heights[(row + 1) * _dem_columns + col]
-					var h11 := _dem_heights[(row + 1) * _dem_columns + col + 1]
-					var c00 := _terrain_color(h00)
-					var c10 := _terrain_color(h10)
-					var c01 := _terrain_color(h01)
-					var c11 := _terrain_color(h11)
-					# Ordre des sommets orienté vers le haut (normale +Y).
-					surface.set_color(c00)
-					surface.add_vertex(Vector3(x0, h00, z0))
-					surface.set_color(c01)
-					surface.add_vertex(Vector3(x0, h01, z1))
-					surface.set_color(c11)
-					surface.add_vertex(Vector3(x1, h11, z1))
-					surface.set_color(c00)
-					surface.add_vertex(Vector3(x0, h00, z0))
-					surface.set_color(c11)
-					surface.add_vertex(Vector3(x1, h11, z1))
-					surface.set_color(c10)
-					surface.add_vertex(Vector3(x1, h10, z0))
+					# On découpe chaque cellule SRTM contre les corridors OSM.
+					# Cela retire le terrain lui-même sous la chaussée ET le trottoir ;
+					# masquer seulement les polygones OSM ne suffisait pas.
+					var cell := PackedVector2Array([
+						Vector2(x0, z0), Vector2(x0, z1),
+						Vector2(x1, z1), Vector2(x1, z0)
+					])
+					var terrain_pieces := _clip_polygon_away_from_roads(cell, 0.85)
+					for piece in terrain_pieces:
+						if piece.size() < 3:
+							continue
+						var indices := Geometry2D.triangulate_polygon(piece)
+						if indices.is_empty():
+							continue
+						for i in range(0, indices.size(), 3):
+							for vertex_index in range(3):
+								var point: Vector2 = piece[indices[i + vertex_index]]
+								var height := _terrain_height_at_world(point.x, point.y)
+								surface.set_color(_terrain_color(height))
+								surface.add_vertex(Vector3(point.x, height, point.y))
 			surface.generate_normals()
 			var mesh := surface.commit()
-			if mesh == null:
+			if mesh == null or mesh.get_surface_count() == 0:
 				continue
 			var chunk := MeshInstance3D.new()
 			chunk.name = "SRTM_Terrain_%03d" % chunk_index
@@ -373,16 +375,13 @@ func _build_terrain_chunks() -> void:
 			if terrain_collision == null:
 				push_error("Collision SRTM impossible pour le bloc %d." % chunk_index)
 				continue
-			# Le relief doit être solide même si l'ordre des faces du mesh
-			# varie selon les triangles ou les versions du moteur.
 			terrain_collision.backface_collision = true
 			shape.shape = terrain_collision
 			body.add_child(shape)
 			add_child(body)
 			chunk_index += 1
 	_create_terrain_boundary_walls()
-	print("LIBREVILLE STORIES | terrain et collisions SRTM générés : %d blocs" % chunk_index)
-
+	print("LIBREVILLE STORIES | terrain SRTM évidé sous routes et trottoirs : %d blocs" % chunk_index)
 
 func _create_terrain_boundary_walls() -> void:
 	# Le DEM couvre une zone finie : des murs invisibles empêchent le joueur
@@ -429,9 +428,14 @@ func _terrain_color(height: float) -> Color:
 
 
 func _position_player_on_terrain() -> void:
+	if not _dem_loaded:
+		return
 	var player := get_parent().get_node_or_null("Player") as CharacterBody3D
-	if player != null and _dem_loaded:
+	if player != null:
 		player.position.y = _terrain_height_at_world(player.position.x, player.position.z) + 2.0
+	var vehicle := get_parent().get_node_or_null("Vehicle") as Node3D
+	if vehicle != null:
+		vehicle.position.y = _terrain_height_at_world(vehicle.position.x, vehicle.position.z) + 0.25
 
 
 func _apply_ground_surface() -> void:
