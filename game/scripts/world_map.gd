@@ -920,7 +920,9 @@ void fragment() {
 				var rock_height := rng.randf_range(0.45, 1.35)
 				var rock_scale_x := rng.randf_range(0.65, 2.0)
 				var rock_scale_z := rng.randf_range(0.55, 1.65)
-				var rock_y := _terrain_height_at_world(rock_xz.x, rock_xz.y) + rock_height * 0.28
+				# Le bas du mesh est à y=0 : l'origine doit être légèrement
+				# sous le terrain pour éviter l'effet de rochers flottants.
+				var rock_y := _terrain_height_at_world(rock_xz.x, rock_xz.y) - 0.08
 				var rock_basis := Basis(Vector3(rock_scale_x, 0.0, 0.0), Vector3(0.0, rock_height, 0.0), Vector3(0.0, 0.0, rock_scale_z)).rotated(Vector3.UP, rng.randf_range(0.0, TAU))
 				rock_transforms.append(Transform3D(rock_basis, Vector3(rock_xz.x, rock_y, rock_xz.y)))
 				var shade := rng.randf_range(0.70, 1.0)
