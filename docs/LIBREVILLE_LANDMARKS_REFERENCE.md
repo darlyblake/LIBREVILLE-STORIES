@@ -24,6 +24,7 @@
 - L'arc principal atteint 30 m au sommet ; une charpente supérieure métallique courbe monte jusqu'à environ 47 m au total, en cohérence avec le reportage Le360. Les sources publiques ne donnent pas un plan d'exécution coté : cette géométrie est donc une reconstruction visuelle documentée, pas un relevé d'architecte.
 - Le musée est placé en retrait pour préserver la lecture du vide central.
 - Les huit pavillons latéraux portent maintenant les noms des huit provinces hors Estuaire.
+- Le parvis est ramené à environ 90 × 48 m (4 320 m²), ordre de grandeur cohérent avec l'emprise d'environ 4 000 m² rapportée par Le360 ; les huit pavillons sont redistribués dans cette emprise.
 - Les matériaux minéraux sont procéduraux (grain, variations de rugosité) et ne réutilisent pas de photographie protégée.
 - Des collisions sont ajoutées aux jambages, à l'arc et au volume du musée.
 
