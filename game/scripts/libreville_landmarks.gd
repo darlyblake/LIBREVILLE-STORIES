@@ -142,10 +142,10 @@ func _build_monument() -> void:
 	add_child(site)
 
 	# Parvis principal : dalle claire, joints de dilatation et cheminement axial.
-	_box(site, "Parvis_pierre_naturelle", Vector3(112.0, 0.32, 74.0), Vector3(0, 0.16, 0), _paving)
-	_add_platform_collision(site, Vector3(112.0, 0.4, 74.0), Vector3(0, 0.2, 0))
-	for x in range(-50, 51, 10):
-		_box(site, "Joint_parvis_%d" % x, Vector3(0.045, 0.012, 72.0), Vector3(float(x), 0.33, 0), _dark)
+	_box(site, "Parvis_pierre_naturelle", Vector3(90.0, 0.32, 48.0), Vector3(0, 0.16, 0), _paving)
+	_add_platform_collision(site, Vector3(90.0, 0.4, 48.0), Vector3(0, 0.2, 0))
+	for x in range(-40, 41, 10):
+		_box(site, "Joint_parvis_%d" % x, Vector3(0.045, 0.012, 46.0), Vector3(float(x), 0.33, 0), _dark)
 	_box(site, "Socle_batiment", Vector3(39.0, 0.9, 22.0), Vector3(0, 0.62, 0), _stone)
 
 	# Arc monumental principal : 30 m de haut, véritable ouverture traversante.
@@ -185,7 +185,7 @@ func _build_monument() -> void:
 	_box(site, "Socle_structure_superieure", Vector3(19.0, 0.65, 14.0), Vector3(0, 29.8, -0.2), _stone)
 
 	# Inscriptions patrimoniales sur les deux piliers et stèle au pied de l'arc.
-	_add_3d_text(site, "UNION - TRAVAIL - JUSTICE", Vector3(-14.0, 14.0, 8.72), 17, _gold)
+	_add_3d_text(site, "AUTEUR DE L’HYMNE NATIONAL", Vector3(-14.0, 14.0, 8.72), 17, _gold)
 	_add_3d_text(site, "LA CONCORDE", Vector3(14.0, 14.0, 8.72), 20, _gold)
 	_box(site, "Stele_memorielle", Vector3(3.2, 4.6, 0.38), Vector3(0, 2.7, 9.0), _stone)
 	_add_3d_text(site, "GEORGES DAMAS ALEKA", Vector3(0, 3.2, 9.25), 15, _gold)
@@ -193,26 +193,26 @@ func _build_monument() -> void:
 
 	# Huit pavillons d'exposition périphériques (le bâtiment central représente l'Estuaire).
 	var pavilion_positions: Array[Vector3] = [
-		Vector3(-43, 0, -25), Vector3(-29, 0, -25), Vector3(-15, 0, -25), Vector3(15, 0, -25),
-		Vector3(29, 0, -25), Vector3(43, 0, -25), Vector3(-22, 0, 25), Vector3(22, 0, 25)
+		Vector3(-34, 0, -20), Vector3(-22, 0, -20), Vector3(-10, 0, -20), Vector3(10, 0, -20),
+		Vector3(22, 0, -20), Vector3(34, 0, -20), Vector3(-17, 0, 20), Vector3(17, 0, 20)
 	]
 	for i in range(pavilion_positions.size()):
 		_build_pavilion(site, i + 1, pavilion_positions[i])
 
 	# Allée cérémonielle, bassins peu profonds et éclairage de mise en valeur.
-	_box(site, "Axe_promenade", Vector3(8.0, 0.08, 62.0), Vector3(0, 0.36, -1.0), _white)
+	_box(site, "Axe_promenade", Vector3(8.0, 0.08, 42.0), Vector3(0, 0.36, -1.0), _white)
 	for side in [-1.0, 1.0]:
-		_box(site, "Bassin_reflet_%s" % str(side), Vector3(7.0, 0.16, 22.0), Vector3(side * 49.0, 0.40, 0), _glass)
+		_box(site, "Bassin_reflet_%s" % str(side), Vector3(5.0, 0.16, 18.0), Vector3(side * 39.0, 0.40, 0), _glass)
 		for lamp_index in range(5):
-			var lz := -27.0 + float(lamp_index) * 13.5
-			_cylinder(site, "Mât_eclairage_%s_%d" % [str(side), lamp_index], 0.10, 5.0, Vector3(side * 53.0, 2.8, lz), _dark, 12)
-			_box(site, "Luminaire_%s_%d" % [str(side), lamp_index], Vector3(0.8, 0.22, 0.35), Vector3(side * 53.0, 5.4, lz), _gold)
+			var lz := -16.0 + float(lamp_index) * 8.0
+			_cylinder(site, "Mât_eclairage_%s_%d" % [str(side), lamp_index], 0.10, 5.0, Vector3(side * 42.0, 2.8, lz), _dark, 12)
+			_box(site, "Luminaire_%s_%d" % [str(side), lamp_index], Vector3(0.8, 0.22, 0.35), Vector3(side * 42.0, 5.4, lz), _gold)
 
 	# Drapeaux gabonais devant le monument.
 	for i in range(3):
 		var flag_x := float(i - 1) * 4.0
-		_cylinder(site, "Mât_drapeau_%d" % i, 0.07, 9.0, Vector3(flag_x, 4.8, -35.0), _dark, 12)
-		_box(site, "Drapeau_%d" % i, Vector3(2.2, 1.25, 0.06), Vector3(flag_x + 1.1, 7.2, -35.0), _yellow)
+		_cylinder(site, "Mât_drapeau_%d" % i, 0.07, 9.0, Vector3(flag_x, 4.8, -23.0), _dark, 12)
+		_box(site, "Drapeau_%d" % i, Vector3(2.2, 1.25, 0.06), Vector3(flag_x + 1.1, 7.2, -23.0), _yellow)
 
 
 func _add_quad_to_surface(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
