@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bx5jcd23fjq5s"]
+[gd_scene load_steps=15 format=3 uid="uid://bx5jcd23fjq5s"]
 
 [ext_resource type="Script" path="res://game/scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://game/scripts/world_map.gd" id="2_map"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://game/scripts/baie_des_rois.gd" id="4_baie"]
 [ext_resource type="Script" path="res://game/scripts/teleport_panel.gd" id="5_teleport"]
 [ext_resource type="PackedScene" path="res://game/scenes/vehicle.tscn" id="6_vehicle"]
+[ext_resource type="Script" path="res://game/scripts/libreville_landmarks.gd" id="7_landmarks"]
 
 [sub_resource type="Environment" id="Environment_world"]
 background_mode = 1
@@ -51,6 +52,9 @@ script = ExtResource("4_baie")
 
 [node name="Vehicle" parent="." instance=ExtResource("6_vehicle")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1790, 1, -574)
+
+[node name="WaterfrontLandmarks" type="Node3D" parent="."]
+script = ExtResource("7_landmarks")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_world")

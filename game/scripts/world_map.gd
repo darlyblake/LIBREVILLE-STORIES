@@ -112,7 +112,7 @@ var _environment_count := 0
 var _neighbourhood_count := 0
 var _locality_count := 0
 var _grass_generator: GrassGenerator
-var _environment_material: StandardMaterial3D
+var _environment_material: Material
 var _road_labels := 0
 var _road_material: Material
 var _road_hit_grid: Dictionary = {}
@@ -138,6 +138,8 @@ var _dem_spacing := 30.0
 var _dem_x_min := 0.0
 var _dem_z_min := 0.0
 var _dem_loaded := false
+var _coastline_paths: Array[PackedVector2Array] = []
+var _beach_polygons: Array[PackedVector2Array] = []
 
 func _ready() -> void:
 	_load_real_terrain()
@@ -148,8 +150,7 @@ func _ready() -> void:
 	_apply_ground_surface()
 	_add_ocean_plane()
 	_build_road_materials()
-	_environment_material = _make_material(Color.WHITE)
-	_environment_material.vertex_color_use_as_albedo = true
+	_environment_material = _make_environment_material()
 	# Le réseau routier doit être connu AVANT la génération du relief :
 	# le terrain SRTM est alors réellement évidé sous chaussées et trottoirs.
 	_load_road_clearance_data()
@@ -476,31 +477,156 @@ func _apply_ground_surface() -> void:
 
 
 func _add_ocean_plane() -> void:
-	# Plan mer Atlantique / estuaire — plus visible, teinte GTA.
+	# Océan Atlantique procédural : vagues géométriques animées et reflets Fresnel.
+	# Aucun fichier de texture externe n'est requis ; shader volontairement léger
+	# pour rester compatible avec les GPU intégrés.
 	var ocean := MeshInstance3D.new()
 	ocean.name = "OceanSurface"
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(16000.0, 11000.0)
+	plane.subdivide_width = 180
+	plane.subdivide_depth = 140
 	ocean.mesh = plane
 	ocean.position = Vector3(-2600.0, -0.12, 100.0)
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.08, 0.36, 0.55, 0.94)
-	mat.roughness = 0.15
-	mat.metallic = 0.22
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	# Texture eau procédurale légère
-	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	for y in range(128):
-		for x in range(128):
-			var wave := sin(float(x) * 0.12) * cos(float(y) * 0.09) * 0.06
-			img.set_pixel(x, y, Color(0.10 + wave, 0.40 + wave * 0.5, 0.58 + wave, 0.94))
-	img.generate_mipmaps()
-	mat.albedo_texture = ImageTexture.create_from_image(img)
-	mat.uv1_scale = Vector3(40, 40, 1)
-	ocean.material_override = mat
+
+	var water_shader := Shader.new()
+	water_shader.code = """
+shader_type spatial;
+render_mode cull_disabled, diffuse_burley, specular_schlick_ggx;
+
+varying vec3 water_normal;
+varying vec3 water_world_pos;
+varying float wave_height;
+
+void vertex() {
+	vec3 world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	float t = TIME;
+	vec2 p = world_pos.xz;
+
+	float a1 = dot(p, normalize(vec2(0.82, 0.57))) * 0.030 + t * 0.72;
+	float a2 = dot(p, normalize(vec2(-0.34, 0.94))) * 0.052 - t * 0.91;
+	float a3 = dot(p, normalize(vec2(0.98, -0.18))) * 0.091 + t * 1.18;
+
+	float h1 = sin(a1) * 0.34;
+	float h2 = sin(a2) * 0.13;
+	float h3 = sin(a3) * 0.045;
+	float height = h1 + h2 + h3;
+
+	float dx = cos(a1) * 0.34 * 0.030 * 0.82
+		+ cos(a2) * 0.13 * 0.052 * -0.34
+		+ cos(a3) * 0.045 * 0.091 * 0.98;
+	float dz = cos(a1) * 0.34 * 0.030 * 0.57
+		+ cos(a2) * 0.13 * 0.052 * 0.94
+		+ cos(a3) * 0.045 * 0.091 * -0.18;
+
+	VERTEX.y += height;
+	wave_height = height;
+	water_normal = normalize(vec3(-dx, 1.0, -dz));
+	water_world_pos = world_pos;
+}
+
+void fragment() {
+	float broad = sin(water_world_pos.x * 0.006 + TIME * 0.18)
+		* cos(water_world_pos.z * 0.008 - TIME * 0.15);
+	float fine = sin(water_world_pos.x * 0.041 + water_world_pos.z * 0.027 + TIME * 0.8);
+	float ripple_a = water_world_pos.x * 0.19 + water_world_pos.z * 0.11 + TIME * 1.55;
+	float ripple_b = water_world_pos.x * -0.13 + water_world_pos.z * 0.23 - TIME * 1.12;
+	float ripple_c = water_world_pos.x * 0.31 + water_world_pos.z * -0.08 + TIME * 2.05;
+	float ripple_dx = cos(ripple_a) * 0.19 * 0.075 + cos(ripple_b) * -0.13 * 0.045 + cos(ripple_c) * 0.31 * 0.018;
+	float ripple_dz = cos(ripple_a) * 0.11 * 0.075 + cos(ripple_b) * 0.23 * 0.045 + cos(ripple_c) * -0.08 * 0.018;
+	float crest = smoothstep(0.28, 0.48, wave_height + fine * 0.035);
+
+	vec3 deep_water = vec3(0.012, 0.105, 0.175);
+	vec3 mid_water = vec3(0.018, 0.235, 0.315);
+	vec3 sunlit_water = vec3(0.075, 0.36, 0.42);
+	vec3 water_color = mix(deep_water, mid_water, 0.45 + broad * 0.18);
+	water_color = mix(water_color, sunlit_water, crest * 0.12);
+	water_color *= 0.96 + 0.045 * sin(water_world_pos.x * 0.013 + water_world_pos.z * 0.009 + TIME * 0.22);
+
+	vec3 detailed_normal = normalize(water_normal + vec3(-ripple_dx, 0.0, -ripple_dz));
+	vec3 n = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(detailed_normal, 0.0)).xyz);
+	float fresnel = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 4.0);
+	vec3 sun_direction = normalize(vec3(-0.35, 0.82, 0.44));
+	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 48.0);
+	ALBEDO = mix(water_color, vec3(0.34, 0.52, 0.54), fresnel * 0.48);
+	ALBEDO += vec3(0.22, 0.27, 0.25) * glint * 0.22;
+	METALLIC = 0.12;
+	ROUGHNESS = mix(0.24, 0.38, clamp(abs(fine) * 0.5, 0.0, 1.0));
+	SPECULAR = 0.72;
+	NORMAL = n;
+}
+"""
+	var water_material := ShaderMaterial.new()
+	water_material.shader = water_shader
+	ocean.material_override = water_material
 	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	ocean.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	add_child(ocean)
+
+
+func _make_environment_material() -> ShaderMaterial:
+	# Matériau commun aux surfaces OSM : les plages reçoivent un grain fin,
+	# des rides de sable et des zones minérales irrégulières sans multiplier
+	# les matériaux ni les draw calls.
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode cull_disabled, diffuse_burley, specular_schlick_ggx;
+
+varying vec3 world_position;
+varying vec4 surface_tint;
+
+float hash21(vec2 p) {
+	p = fract(p * vec2(123.34, 456.21));
+	p += vec2(dot(p, p + vec2(45.32)));
+	return fract(p.x * p.y);
+}
+
+float noise21(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = hash21(i);
+	float b = hash21(i + vec2(1.0, 0.0));
+	float c = hash21(i + vec2(0.0, 1.0));
+	float d = hash21(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+void vertex() {
+	world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	surface_tint = COLOR;
+}
+
+void fragment() {
+	vec3 base = surface_tint.rgb;
+	float sand_mask = smoothstep(0.62, 0.78, base.r)
+		* smoothstep(0.52, 0.72, base.g)
+		* (1.0 - smoothstep(0.55, 0.72, base.b));
+	vec2 p = world_position.xz;
+	float broad = noise21(p * 0.075);
+	float medium = noise21(p * 0.62);
+	float grain = hash21(floor(p * 8.0));
+	float ripple = sin(p.x * 0.42 + sin(p.y * 0.17) * 1.8) * 0.5 + 0.5;
+	float sand_variation = 0.84 + broad * 0.18 + medium * 0.08;
+	sand_variation += (ripple - 0.5) * 0.045 + (grain - 0.5) * 0.055;
+	vec3 sand_color = base * sand_variation;
+	sand_color = mix(sand_color, sand_color * vec3(0.82, 0.78, 0.69), smoothstep(0.68, 0.92, broad) * 0.12);
+	// Humidité diffuse du sable près des zones basses : taches foncées,
+	// légèrement plus lisses, sans créer une bande artificielle uniforme.
+	float damp_noise = broad * 0.62 + medium * 0.38;
+	float damp_mask = smoothstep(0.58, 0.78, damp_noise) * sand_mask;
+	sand_color = mix(sand_color, sand_color * vec3(0.76, 0.79, 0.78), damp_mask * 0.34);
+	vec3 other_color = base * (0.97 + broad * 0.06);
+	ALBEDO = mix(other_color, sand_color, sand_mask);
+	float sand_roughness = mix(0.94, 0.88, damp_mask);
+	ROUGHNESS = mix(0.94, sand_roughness, sand_mask);
+	SPECULAR = mix(0.18, 0.28, damp_mask);
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	return material
 
 
 func _make_material(color: Color) -> StandardMaterial3D:
@@ -572,6 +698,8 @@ func _load_environment() -> void:
 				original_points.remove_at(original_points.size() - 1)
 			if original_points.size() < 3:
 				continue
+			if kind == "natural_surface" and (str(props.get("natural", "")).to_lower() in ["beach", "sand"] or str(props.get("surface", "")).to_lower() == "sand"):
+				_beach_polygons.append(original_points)
 			var has_landscape_relief := kind in ["vegetation", "green_space"]
 			if has_landscape_relief and not render_green_areas:
 				continue
@@ -628,17 +756,26 @@ func _load_environment() -> void:
 			added = polygon_added
 		elif str(geometry.get("type", "")) == "LineString":
 			var coords: Array = geometry.get("coordinates", [])
-			var width := 14.0 if kind == "coastline" else (5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6))
-			surface.set_color(_environment_color(kind))
-			for i in range(coords.size() - 1):
-				var a := _geo_to_world(coords[i])
-				var b := _geo_to_world(coords[i + 1])
-				var direction := Vector2(b.x - a.x, b.z - a.z)
-				if direction.length_squared() < 0.01:
-					continue
-				var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
-				_add_quad(surface, a + side + Vector3.UP * 0.014, a - side + Vector3.UP * 0.014, b - side + Vector3.UP * 0.014, b + side + Vector3.UP * 0.014)
-				added = true
+			if kind == "coastline":
+				var coast_path := PackedVector2Array()
+				for coordinate in coords:
+					var coast_point := _geo_to_world(coordinate)
+					coast_path.append(Vector2(coast_point.x, coast_point.z))
+				if coast_path.size() >= 2:
+					_coastline_paths.append(coast_path)
+					added = true
+			else:
+				var width := 5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6)
+				surface.set_color(_environment_color(kind))
+				for i in range(coords.size() - 1):
+					var a := _geo_to_world(coords[i])
+					var b := _geo_to_world(coords[i + 1])
+					var direction := Vector2(b.x - a.x, b.z - a.z)
+					if direction.length_squared() < 0.01:
+						continue
+					var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
+					_add_quad(surface, a + side + Vector3.UP * 0.014, a - side + Vector3.UP * 0.014, b - side + Vector3.UP * 0.014, b + side + Vector3.UP * 0.014)
+					added = true
 		if added:
 			_environment_count += 1
 			batch_count += 1
@@ -661,7 +798,284 @@ func _load_environment() -> void:
 		relief_shape.shape = relief_mesh.create_trimesh_shape()
 		relief_body.add_child(relief_shape)
 		add_child(relief_body)
+	_build_coastal_details()
 	_commit_tree_instances(tree_positions)
+
+
+func _is_inside_beach(point: Vector2) -> bool:
+	for beach in _beach_polygons:
+		if Geometry2D.is_point_in_polygon(point, beach):
+			return true
+	return false
+
+
+func _build_coastal_details() -> void:
+	if _coastline_paths.is_empty():
+		return
+
+	# L'écume suit exactement les trois vagues principales de l'océan.
+	# Le bruit animé casse le ruban uniforme en nappes et langues irrégulières.
+	var foam_shader := Shader.new()
+	foam_shader.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled, blend_mix, depth_prepass_alpha;
+
+varying vec3 shore_world_pos;
+varying vec4 shore_tint;
+
+void vertex() {
+	vec3 p = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	float t = TIME;
+	float a1 = dot(p.xz, normalize(vec2(0.82, 0.57))) * 0.030 + t * 0.72;
+	float a2 = dot(p.xz, normalize(vec2(-0.34, 0.94))) * 0.052 - t * 0.91;
+	float a3 = dot(p.xz, normalize(vec2(0.98, -0.18))) * 0.091 + t * 1.18;
+	float wave = sin(a1) * 0.34 + sin(a2) * 0.13 + sin(a3) * 0.045;
+	VERTEX.y = -0.12 + wave + 0.035;
+	shore_world_pos = p;
+	shore_tint = COLOR;
+}
+
+float hash21(vec2 p) {
+	p = fract(p * vec2(123.34, 456.21));
+	p += vec2(dot(p, p + vec2(45.32)));
+	return fract(p.x * p.y);
+}
+
+float noise21(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = hash21(i);
+	float b = hash21(i + vec2(1.0, 0.0));
+	float c = hash21(i + vec2(0.0, 1.0));
+	float d = hash21(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+void fragment() {
+	vec2 p = shore_world_pos.xz;
+	float broad = noise21(p * 0.12 + vec2(TIME * 0.035, -TIME * 0.021));
+	float middle = noise21(p * 0.48 + vec2(-TIME * 0.075, TIME * 0.052));
+	float fine = noise21(p * 2.4 + vec2(TIME * 0.13, TIME * 0.09));
+	float wave_a = sin(p.x * 0.72 + p.y * 0.31 + TIME * 0.8);
+	float wave_b = sin(p.x * 1.37 - p.y * 0.83 - TIME * 0.55);
+	float wave_pattern = wave_a * 0.34 + wave_b * 0.22 + (middle - 0.5) * 0.72;
+	float breakup = smoothstep(-0.24, 0.48, wave_pattern + (broad - 0.5) * 0.5);
+	float lace = smoothstep(0.24, 0.76, fine * 0.72 + middle * 0.28);
+	float foam_mask = breakup * mix(0.68, 1.0, lace);
+	float pulse = 0.82 + 0.18 * sin(TIME * 1.7 + p.x * 0.11);
+	ALBEDO = mix(vec3(0.52, 0.68, 0.69), vec3(0.96, 0.99, 0.97), lace);
+	ALPHA = shore_tint.a * foam_mask * pulse;
+}
+"""
+	var foam_material := ShaderMaterial.new()
+	foam_material.shader = foam_shader
+	var foam_surface := _new_surface(foam_material)
+	var foam_count := 0
+	var rock_transforms: Array[Transform3D] = []
+	var rock_colors: Array[Color] = []
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20261122
+
+	for coast_path in _coastline_paths:
+		for i in range(coast_path.size() - 1):
+			var a := coast_path[i]
+			var b := coast_path[i + 1]
+			var segment := b - a
+			var length := segment.length()
+			if length < 1.5:
+				continue
+			var direction := segment / length
+			var perpendicular := Vector2(-direction.y, direction.x)
+			var midpoint := (a + b) * 0.5
+			var sample_left := midpoint + perpendicular * 10.0
+			var sample_right := midpoint - perpendicular * 10.0
+			var left_height := _terrain_height_at_world(sample_left.x, sample_left.y)
+			var right_height := _terrain_height_at_world(sample_right.x, sample_right.y)
+			var land_normal := perpendicular if left_height >= right_height else -perpendicular
+			var sea_normal := -land_normal
+			var sandy := _is_inside_beach(midpoint + land_normal * 5.0) or _is_inside_beach(midpoint + land_normal * 12.0)
+
+			var foam_a_inner := a + sea_normal * 0.35
+			var foam_a_outer := a + sea_normal * 3.2
+			var foam_b_inner := b + sea_normal * 0.35
+			var foam_b_outer := b + sea_normal * 3.2
+			var foam_alpha := rng.randf_range(0.28, 0.68)
+			foam_surface.set_color(Color(0.88, 0.95, 0.94, foam_alpha))
+			foam_surface.add_vertex(Vector3(foam_a_inner.x, 0.055, foam_a_inner.y))
+			foam_surface.add_vertex(Vector3(foam_b_inner.x, 0.055, foam_b_inner.y))
+			foam_surface.add_vertex(Vector3(foam_b_outer.x, 0.055, foam_b_outer.y))
+			foam_surface.add_vertex(Vector3(foam_a_inner.x, 0.055, foam_a_inner.y))
+			foam_surface.add_vertex(Vector3(foam_b_outer.x, 0.055, foam_b_outer.y))
+			foam_surface.add_vertex(Vector3(foam_a_outer.x, 0.055, foam_a_outer.y))
+			foam_count += 1
+
+			if sandy:
+				continue
+			var rock_steps := maxi(1, int(ceil(length / 9.0)))
+			for rock_index in range(rock_steps):
+				var t := (float(rock_index) + rng.randf_range(0.2, 0.8)) / float(rock_steps)
+				var shoreline := a.lerp(b, t)
+				var rock_xz := shoreline + land_normal * rng.randf_range(0.5, 2.8)
+				var rock_height := rng.randf_range(0.45, 1.35)
+				var rock_scale_x := rng.randf_range(0.65, 2.0)
+				var rock_scale_z := rng.randf_range(0.55, 1.65)
+				# Le bas du mesh est à y=0 : l'origine doit être légèrement
+				# sous le terrain pour éviter l'effet de rochers flottants.
+				var rock_y := _terrain_height_at_world(rock_xz.x, rock_xz.y) - 0.08
+				var rock_basis := Basis(Vector3(rock_scale_x, 0.0, 0.0), Vector3(0.0, rock_height, 0.0), Vector3(0.0, 0.0, rock_scale_z)).rotated(Vector3.UP, rng.randf_range(0.0, TAU))
+				rock_transforms.append(Transform3D(rock_basis, Vector3(rock_xz.x, rock_y, rock_xz.y)))
+				var shade := rng.randf_range(0.70, 1.0)
+				rock_colors.append(Color(shade * 0.58, shade * 0.60, shade * 0.59, 1.0))
+
+				# Petits galets mêlés aux blocs : ils densifient la ligne de
+				# contact avec l'eau sans créer une bordure rocheuse continue.
+				if rng.randf() < 0.72:
+					var pebble_xz := shoreline + land_normal * rng.randf_range(0.15, 1.15)
+					var pebble_height := rng.randf_range(0.16, 0.38)
+					var pebble_scale := rng.randf_range(0.22, 0.62)
+					var pebble_y := _terrain_height_at_world(pebble_xz.x, pebble_xz.y) - 0.035
+					var pebble_basis := Basis(
+						Vector3(pebble_scale * rng.randf_range(0.9, 1.5), 0.0, 0.0),
+						Vector3(0.0, pebble_height, 0.0),
+						Vector3(0.0, 0.0, pebble_scale * rng.randf_range(0.8, 1.4))
+					).rotated(Vector3.UP, rng.randf_range(0.0, TAU))
+					rock_transforms.append(Transform3D(pebble_basis, Vector3(pebble_xz.x, pebble_y, pebble_xz.y)))
+					var pebble_shade := rng.randf_range(0.58, 0.82)
+					rock_colors.append(Color(pebble_shade * 0.58, pebble_shade * 0.60, pebble_shade * 0.59, 1.0))
+
+	if foam_count > 0:
+		var foam_mesh := foam_surface.commit()
+		if foam_mesh != null and foam_mesh.get_surface_count() > 0:
+			var foam_instance := MeshInstance3D.new()
+			foam_instance.name = "Coastal_Wave_Foam"
+			foam_instance.mesh = foam_mesh
+			foam_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			foam_instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+			add_child(foam_instance)
+
+	if not rock_transforms.is_empty():
+		# Shader minéral procédural : grain, strates irrégulières et humidité
+		# à la base. Il complète les futures textures PBR sans les remplacer.
+		var rock_shader := Shader.new()
+		rock_shader.code = """
+shader_type spatial;
+render_mode diffuse_burley, specular_schlick_ggx;
+
+varying vec3 rock_local;
+varying vec4 rock_tint;
+
+float hash21(vec2 p) {
+	p = fract(p * vec2(123.34, 456.21));
+	p += vec2(dot(p, p + vec2(45.32)));
+	return fract(p.x * p.y);
+}
+
+float noise21(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = hash21(i);
+	float b = hash21(i + vec2(1.0, 0.0));
+	float c = hash21(i + vec2(0.0, 1.0));
+	float d = hash21(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+void vertex() {
+	rock_local = VERTEX;
+	rock_tint = COLOR;
+}
+
+void fragment() {
+	vec2 p = rock_local.xz * 3.2 + vec2(rock_local.y * 1.7, rock_local.y * 0.8);
+	float broad = noise21(p * 0.7);
+	float grain = noise21(p * 5.4);
+	float strata_noise = noise21(p * 1.8);
+	float strata = smoothstep(0.42, 0.58,
+		0.5 + sin(rock_local.y * 34.0 + strata_noise * 3.8) * 0.5);
+	float mineral = 0.78 + broad * 0.22 + (grain - 0.5) * 0.12;
+	vec3 stone = rock_tint.rgb * mineral;
+	stone *= mix(0.88, 1.08, strata);
+	float wet_base = 1.0 - smoothstep(0.08, 0.38, rock_local.y);
+	stone = mix(stone, stone * vec3(0.56, 0.63, 0.66), wet_base * 0.48);
+	ALBEDO = stone;
+	ROUGHNESS = mix(0.96, 0.72, wet_base * 0.65);
+	SPECULAR = 0.28;
+}
+"""
+		var rock_material := ShaderMaterial.new()
+		rock_material.shader = rock_shader
+		var rock_mesh := _make_coastal_rock_mesh()
+		rock_mesh.material = rock_material
+		var multi := MultiMesh.new()
+		multi.transform_format = MultiMesh.TRANSFORM_3D
+		multi.use_colors = true
+		multi.mesh = rock_mesh
+		multi.instance_count = rock_transforms.size()
+		for index in range(rock_transforms.size()):
+			multi.set_instance_transform(index, rock_transforms[index])
+			multi.set_instance_color(index, rock_colors[index])
+		var rocks := MultiMeshInstance3D.new()
+		rocks.name = "Coastal_Rock_Formations"
+		rocks.multimesh = multi
+		rocks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		rocks.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+		add_child(rocks)
+	print("LIBREVILLE STORIES | littoral : %d segments, %d rubans d'écume, %d rochers" % [_coastline_paths.size(), foam_count, rock_transforms.size()])
+
+
+func _make_coastal_rock_mesh() -> ArrayMesh:
+	# Une forme rocheuse facettée et asymétrique, partagée par toutes les
+	# instances MultiMesh : davantage de relief sans multiplier les draw calls.
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 20261123
+	const SIDES := 9
+	var ring_heights := [0.0, 0.18, 0.48, 0.78, 1.0]
+	var ring_radii := [0.48, 0.78, 0.70, 0.46, 0.12]
+	var rings: Array[PackedVector3Array] = []
+	var ring_colors: Array[PackedColorArray] = []
+	var phase := rng.randf_range(0.0, TAU)
+	for ring_index in range(ring_heights.size()):
+		var vertices := PackedVector3Array()
+		var colors := PackedColorArray()
+		for side in range(SIDES):
+			var angle := TAU * float(side) / float(SIDES) + phase
+			var irregularity := rng.randf_range(0.78, 1.22)
+			var radius := ring_radii[ring_index] * irregularity
+			var y_jitter := rng.randf_range(-0.055, 0.055) if ring_index > 0 and ring_index < 4 else 0.0
+			vertices.append(Vector3(cos(angle) * radius, ring_heights[ring_index] + y_jitter, sin(angle) * radius))
+			var shade := rng.randf_range(0.72, 1.0) * (1.0 - float(ring_index) * 0.045)
+			colors.append(Color(0.58 * shade, 0.61 * shade, 0.60 * shade, 1.0))
+		rings.append(vertices)
+		ring_colors.append(colors)
+	for ring_index in range(rings.size() - 1):
+		for side in range(SIDES):
+			var next_side := (side + 1) % SIDES
+			var a := rings[ring_index][side]
+			var b := rings[ring_index][next_side]
+			var c := rings[ring_index + 1][next_side]
+			var d := rings[ring_index + 1][side]
+			var ca := ring_colors[ring_index][side]
+			var cb := ring_colors[ring_index][next_side]
+			var cc := ring_colors[ring_index + 1][next_side]
+			var cd := ring_colors[ring_index + 1][side]
+			surface.set_color(ca)
+			surface.add_vertex(a)
+			surface.set_color(cb)
+			surface.add_vertex(b)
+			surface.set_color(cc)
+			surface.add_vertex(c)
+			surface.set_color(ca)
+			surface.add_vertex(a)
+			surface.set_color(cc)
+			surface.add_vertex(c)
+			surface.set_color(cd)
+			surface.add_vertex(d)
+	surface.generate_normals()
+	return surface.commit()
 
 
 func _subdivide_ground_triangle(a: Vector2, b: Vector2, c: Vector2, max_edge: float, out: Array, depth: int = 0) -> void:
@@ -899,7 +1313,7 @@ func _environment_color(kind: String) -> Color:
 		"green_space":
 			return Color(0.24, 0.46, 0.24)
 		"natural_surface":
-			return Color(0.70, 0.62, 0.45)
+			return Color(0.76, 0.68, 0.49)  # sable chaud des plages de Libreville
 		_:
 			return Color(0.34, 0.42, 0.30)
 
@@ -1374,7 +1788,7 @@ func _load_roads() -> void:
 		var collision := SurfaceTool.new()
 		collision.begin(Mesh.PRIMITIVE_TRIANGLES)
 		for part_index in tiles[tile_key]:
-			_build_road_part(parts[part_index], part_index, surfaces, collision, node_registry, patched)
+			_build_road_part(parts[part_index], part_index, surfaces, collision, node_registry, patched, parts)
 			_road_count += 1
 		_commit_road_surfaces(surfaces, collision, "%03d" % tile_counter)
 		_commit_lamps("%03d" % tile_counter)
@@ -1422,6 +1836,7 @@ func _new_road_surfaces() -> Dictionary:
 		surfaces[key] = textured
 	var plain_colors := {
 		"median": Color(0.52, 0.51, 0.49),
+		"island": Color(0.31, 0.39, 0.25),
 		"curb": Color(0.70, 0.69, 0.66),
 		"skirt": Color(0.42, 0.40, 0.36),
 		"marking": Color(0.96, 0.96, 0.90),
@@ -1475,7 +1890,7 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 	add_child(body)
 
 
-func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, collision: SurfaceTool, node_registry: Dictionary, patched: Dictionary) -> void:
+func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, collision: SurfaceTool, node_registry: Dictionary, patched: Dictionary, all_parts: Array[Dictionary]) -> void:
 	var points: Array[Vector3] = part.points
 	var orig_points: Array[Vector3] = part.orig_points
 	var keys: Array[String] = part.keys
@@ -1486,22 +1901,25 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 	var sidewalk_mode: String = part.sidewalk
 	var road_surface: SurfaceTool = surfaces[surface_key]
 	var half := width * 0.5
+	# Les voies OSM fermées taguées roundabout reçoivent un véritable îlot central.
+	if keys.size() >= 8 and keys[0] == keys[keys.size() - 1] and (str(props.get("junction", "")) == "roundabout" or str(props.get("roundabout", "")) == "yes"):
+		_add_roundabout_island(surfaces["island"], orig_points, half)
 	var lift: float = ROAD_LIFT + float(part.class_lift)
 	var last := points.size() - 1
 	_set_uv_origin(points[0])
 	road_surface.set_color(part.tint)
-	# Raccords aux carrefours (une seule fois par nœud).
-	for end_slot in range(2):
-		var end_index := 0 if end_slot == 0 else last
-		var node_key: String = keys[0] if end_slot == 0 else keys[keys.size() - 1]
+	# Raccords aux carrefours : les nœuds OSM peuvent être aux extrémités
+	# ou au milieu d'une LineString. On traite donc tous les nœuds d'origine.
+	for node_index in range(keys.size()):
+		var node_key: String = keys[node_index]
 		var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
 		var entry_count := int(entries.size() / 3)
-		if entry_count >= 3 and not patched.has(node_key):
+		if _junction_arm_count(node_key, node_registry, all_parts) >= 3 and not patched.has(node_key):
 			patched[node_key] = true
 			var patch_radius := 2.2
 			for e in range(entry_count):
 				patch_radius = maxf(patch_radius, entries[e * 3 + 1])
-			_add_junction_patch(road_surface, points[end_index], minf(patch_radius, 9.0))
+			_add_intersection_patch(road_surface, orig_points[node_index], node_key, node_registry, all_parts)
 	# Chaussée : bandes longitudinales ~7 m, chaque sommet posé sur le relief exact.
 	var strips := maxi(2, ceili(width / 7.0))
 	var draped: Array = []
@@ -1517,19 +1935,54 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 		var outgoing := Vector2(points[join_index + 1].x - points[join_index].x, points[join_index + 1].z - points[join_index].z).normalized()
 		if incoming.dot(outgoing) < 0.97:
 			_add_road_round_join(road_surface, points[join_index], half)
-	var has_center_marking := _road_has_center_marking(props, kind) and surface_key == "asphalt"
+	var lane_count := _road_lane_count(props)
+	var is_oneway := _road_is_oneway(props)
+	var has_lane_marking := (lane_count >= 2 or kind in ["trunk", "primary", "secondary"]) and surface_key == "asphalt"
 	var crosswalk_start := -1.0
 	var crosswalk_end := -1.0
 	if kind in ["primary", "secondary", "tertiary", "trunk"]:
 		crosswalk_start = _junction_clearance(node_registry.get(keys[0], PackedFloat32Array()), part_index, true)
 		crosswalk_end = _junction_clearance(node_registry.get(keys[keys.size() - 1], PackedFloat32Array()), part_index, true)
 	var marking_surface: SurfaceTool = surfaces["marking"]
+	# Distance cumulée sur la géométrie d'origine : les marquages sont coupés
+	# avant les zones de conflit, au lieu de traverser le centre des carrefours.
+	var junction_cuts := _road_part_cuts(part_index, keys, orig_points, node_registry)
+	var distance_along := PackedFloat32Array()
+	distance_along.resize(points.size())
+	distance_along[0] = 0.0
+	for distance_index in range(1, points.size()):
+		distance_along[distance_index] = distance_along[distance_index - 1] + Vector2(
+			points[distance_index].x - points[distance_index - 1].x,
+			points[distance_index].z - points[distance_index - 1].z
+		).length()
 	for i in range(last):
 		var a := points[i]
 		var b := points[i + 1]
 		var seg_len := Vector2(b.x - a.x, b.z - a.z).length()
 		if seg_len < 0.08:
 			continue
+		var mark_from := 0.0
+		var mark_to := seg_len
+		var segment_start := distance_along[i]
+		var segment_end := segment_start + seg_len
+		var internal_junction_overlap := false
+		for junction_cut in junction_cuts:
+			# Les extrémités sont coupées précisément ci-dessous ; pour un carrefour
+			# situé au milieu d'une géométrie, on supprime le segment qui le traverse.
+			if junction_cut.x > 0.05 and junction_cut.x < float(part.length) - 0.05:
+				if segment_start <= junction_cut.x + junction_cut.y and segment_end >= junction_cut.x - junction_cut.y:
+					internal_junction_overlap = true
+					break
+		if internal_junction_overlap:
+			mark_to = 0.0
+		if crosswalk_start >= 0.0 and segment_start < crosswalk_start:
+			mark_from = maxf(mark_from, crosswalk_start - segment_start)
+		if crosswalk_end >= 0.0:
+			var distance_to_end := float(part.length) - segment_start
+			if distance_to_end - seg_len < crosswalk_end:
+				mark_to = minf(mark_to, distance_to_end - crosswalk_end)
+		var marking_a := a.lerp(b, clampf(mark_from / seg_len, 0.0, 1.0))
+		var marking_b := a.lerp(b, clampf(mark_to / seg_len, 0.0, 1.0))
 		for k in range(strips):
 			var l0: Array[Vector3] = draped[k]
 			var l1: Array[Vector3] = draped[k + 1]
@@ -1541,17 +1994,21 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 			var edge_left: Array[Vector3] = draped[0]
 			var edge_right: Array[Vector3] = draped[strips]
 			_add_plain_quad(collision, edge_left[i], edge_right[i], edge_right[i + 1], edge_left[i + 1])
-		if has_center_marking:
-			_add_road_center_dashes(marking_surface, a, b)
+		if has_lane_marking and mark_to > mark_from + 0.25:
+			_add_road_lane_markings(marking_surface, marking_a, marking_b, width, lane_count, is_oneway, props)
 			if kind in ["trunk", "primary", "motorway"]:
-				var direction := Vector2(b.x - a.x, b.z - a.z).normalized()
+				var direction := Vector2(marking_b.x - marking_a.x, marking_b.z - marking_a.z).normalized()
 				var perp := Vector3(-direction.y, 0.0, direction.x)
-				_add_marking_quad(marking_surface, a + perp * (half - 0.18), b + perp * (half - 0.18), 0.06)
-				_add_marking_quad(marking_surface, a - perp * (half - 0.18), b - perp * (half - 0.18), 0.06)
-		if i == 0 and crosswalk_start >= 0.0:
-			_add_crosswalk(surfaces["crosswalk"], a, Vector2(b.x - a.x, b.z - a.z).normalized(), width, crosswalk_start + 1.9)
-		if i == last - 1 and crosswalk_end >= 0.0:
-			_add_crosswalk(surfaces["crosswalk"], b, Vector2(a.x - b.x, a.z - b.z).normalized(), width, crosswalk_end + 1.9)
+				_add_marking_quad(marking_surface, marking_a + perp * (half - 0.18), marking_b + perp * (half - 0.18), 0.06)
+				_add_marking_quad(marking_surface, marking_a - perp * (half - 0.18), marking_b - perp * (half - 0.18), 0.06)
+		if i == 0 and crosswalk_start >= 0.0 and float(part.length) > crosswalk_start + 6.0:
+			var approach_direction := Vector2(b.x - a.x, b.z - a.z).normalized()
+			_add_crosswalk(surfaces["crosswalk"], a, approach_direction, width, crosswalk_start + 1.9)
+			_add_stop_line(marking_surface, a, approach_direction, width, crosswalk_start + 4.8)
+		if i == last - 1 and crosswalk_end >= 0.0 and float(part.length) > crosswalk_end + 6.0:
+			var approach_direction := Vector2(a.x - b.x, a.z - b.z).normalized()
+			_add_crosswalk(surfaces["crosswalk"], b, approach_direction, width, crosswalk_end + 1.9)
+			_add_stop_line(marking_surface, b, approach_direction, width, crosswalk_end + 4.8)
 	# Trottoirs : découpés aux carrefours, T, entrées de service et voies voisines.
 	if sidewalk_mode != "none":
 		var cuts := _road_part_cuts(part_index, keys, orig_points, node_registry)
@@ -1569,9 +2026,12 @@ func _junction_clearance(entries: PackedFloat32Array, part_index: int, self_is_e
 		return -1.0
 	var others := 0
 	var other_ends := 0
+	var self_half := 0.0
 	var other_half := 0.0
 	for e in range(count):
-		if int(entries[e * 3]) == part_index:
+		var entry_part := int(entries[e * 3])
+		if entry_part == part_index:
+			self_half = maxf(self_half, entries[e * 3 + 1])
 			continue
 		others += 1
 		other_half = maxf(other_half, entries[e * 3 + 1])
@@ -1581,7 +2041,9 @@ func _junction_clearance(entries: PackedFloat32Array, part_index: int, self_is_e
 		return -1.0
 	if others == 1 and self_is_end and other_ends == 1:
 		return -1.0
-	return other_half + JUNCTION_CLEARANCE
+	# Le dégagement doit couvrir la chaussée la plus large des deux voies :
+	# sinon un trottoir de grand axe peut commencer sous la chaussée secondaire.
+	return maxf(self_half, other_half) + JUNCTION_CLEARANCE
 
 
 func _road_part_cuts(part_index: int, keys: Array[String], points: Array[Vector3], node_registry: Dictionary) -> Array[Vector2]:
@@ -1686,8 +2148,44 @@ func _add_sidewalk_strip(surfaces: Dictionary, collision: SurfaceTool, run: Arra
 			edge_y.append(ey)
 			top_y.append(maxf(ey + CURB_HEIGHT, maxf(cy, oy) + 0.07))
 			ground_y.append(oy)
-		var first_built := -1
-		var last_built := -1
+		var built_segments := PackedByteArray()
+		built_segments.resize(count - 1)
+		# Première passe : repérer chaque portion réellement construite.
+		# Une route secondaire peut interrompre le trottoir plusieurs fois ;
+		# chaque portion doit donc avoir ses propres rampes et ses propres bouchons.
+		for scan_index in range(count - 1):
+			var scan_is_median := gaps[scan_index] > 0.0 and gaps[scan_index + 1] > 0.0
+			if scan_is_median and (gaps[scan_index] < 2.0 * CURB_WIDTH + 0.5 or gaps[scan_index + 1] < 2.0 * CURB_WIDTH + 0.5):
+				continue
+			var scan_curb := (curb[scan_index] + curb[scan_index + 1]) * 0.5
+			var scan_outer := (outer[scan_index] + outer[scan_index + 1]) * 0.5
+			if _point_on_other_road(scan_curb.x, scan_curb.z, part_index) or _point_on_other_road(scan_outer.x, scan_outer.z, part_index):
+				continue
+			built_segments[scan_index] = 1
+		# Chaque suite continue de segments reçoit une rampe à ses deux bouts.
+		var segment_cursor := 0
+		while segment_cursor < built_segments.size():
+			if built_segments[segment_cursor] == 0:
+				segment_cursor += 1
+				continue
+			var run_start := segment_cursor
+			while segment_cursor + 1 < built_segments.size() and built_segments[segment_cursor + 1] == 1:
+				segment_cursor += 1
+			var run_end := segment_cursor + 1
+			var travelled_from_start := 0.0
+			var distance_to_end := PackedFloat32Array()
+			distance_to_end.resize(run_end - run_start + 1)
+			distance_to_end[run_end - run_start] = 0.0
+			for ramp_index in range(run_end - 1, run_start - 1, -1):
+				distance_to_end[ramp_index - run_start] = distance_to_end[ramp_index + 1 - run_start] + edge[ramp_index].distance_to(edge[ramp_index + 1])
+			for ramp_index in range(run_start, run_end + 1):
+				var from_start := travelled_from_start
+				var from_end := distance_to_end[ramp_index - run_start]
+				var ramp_factor := minf(minf(from_start / 1.5, from_end / 1.5), 1.0)
+				top_y[ramp_index] = edge_y[ramp_index] + (top_y[ramp_index] - edge_y[ramp_index]) * ramp_factor
+				if ramp_index < run_end:
+					travelled_from_start += edge[ramp_index].distance_to(edge[ramp_index + 1])
+			segment_cursor += 1
 		for i in range(count - 1):
 			var is_median := gaps[i] > 0.0 and gaps[i + 1] > 0.0
 			if is_median and (gaps[i] < 2.0 * CURB_WIDTH + 0.5 or gaps[i + 1] < 2.0 * CURB_WIDTH + 0.5):
@@ -1719,15 +2217,24 @@ func _add_sidewalk_strip(surfaces: Dictionary, collision: SurfaceTool, run: Arra
 				var dir := Vector2(run[i + 1].x - run[i].x, run[i + 1].z - run[i].z).normalized()
 				var outward := Vector3(-dir.y, 0.0, dir.x) * side_sign
 				_add_sidewalk_skirt(surfaces, collision, ot0, ot1, ground_y[i], ground_y[i + 1], outward)
-		# Bouts du trottoir fermés (pas de dalle creuse vue de côté).
-		for end_index in [first_built, last_built]:
-			if end_index < 0:
+		# Fermer chaque extrémité de dalle, y compris après une interruption
+		# causée par une entrée ou une chaussée transversale.
+		var cap_cursor := 0
+		while cap_cursor < built_segments.size():
+			if built_segments[cap_cursor] == 0:
+				cap_cursor += 1
 				continue
-			var top_edge := Vector3(edge[end_index].x, top_y[end_index], edge[end_index].z)
-			var top_outer := Vector3(outer[end_index].x, top_y[end_index], outer[end_index].z)
-			var base_outer := Vector3(outer[end_index].x, ground_y[end_index], outer[end_index].z)
-			var base_edge := Vector3(edge[end_index].x, edge_y[end_index], edge[end_index].z)
-			_add_plain_quad(curb_surface, top_edge, top_outer, base_outer, base_edge)
+			var cap_start := cap_cursor
+			while cap_cursor + 1 < built_segments.size() and built_segments[cap_cursor + 1] == 1:
+				cap_cursor += 1
+			var cap_end := cap_cursor + 1
+			for end_index in [cap_start, cap_end]:
+				var top_edge := Vector3(edge[end_index].x, top_y[end_index], edge[end_index].z)
+				var top_outer := Vector3(outer[end_index].x, top_y[end_index], outer[end_index].z)
+				var base_outer := Vector3(outer[end_index].x, ground_y[end_index], outer[end_index].z)
+				var base_edge := Vector3(edge[end_index].x, edge_y[end_index], edge[end_index].z)
+				_add_plain_quad(curb_surface, top_edge, top_outer, base_outer, base_edge)
+			cap_cursor += 1
 		# Lampadaires : décalés d'une demi-période entre les deux côtés ; une seule rive
 		# pour les petites rues ; un côté sur deux dans un terre-plein (pas de doublon).
 		if spacing > 0.0 and not (kind in ["residential", "unclassified"] and side_sign > 0.0):
@@ -2120,18 +2627,41 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 	var result: Array[Vector3] = []
 	if points.size() < 2:
 		return result
-	for i in range(points.size()):
+	# Nettoyer les doublons horizontaux sans changer le nombre ni l'ordre des sommets
+	# renvoyés : les consommateurs associent les décalages aux altitudes par index.
+	var clean_points: Array[Vector3] = []
+	var point_map := PackedInt32Array()
+	for point in points:
+		if clean_points.is_empty():
+			clean_points.append(point)
+			point_map.append(0)
+			continue
+		var previous_point := clean_points[clean_points.size() - 1]
+		var horizontal_distance := Vector2(point.x - previous_point.x, point.z - previous_point.z).length()
+		if horizontal_distance > 0.05:
+			clean_points.append(point)
+			point_map.append(clean_points.size() - 1)
+		else:
+			point_map.append(clean_points.size() - 1)
+			if point.y > previous_point.y:
+				clean_points[clean_points.size() - 1] = Vector3(previous_point.x, point.y, previous_point.z)
+	if clean_points.size() < 2:
+		for point in points:
+			result.append(Vector3(point.x, point.y, point.z))
+		return result
+	var clean_offsets: Array[Vector3] = []
+	for i in range(clean_points.size()):
 		var previous_direction: Vector2
 		var next_direction: Vector2
 		if i == 0:
-			next_direction = Vector2(points[1].x - points[0].x, points[1].z - points[0].z).normalized()
+			next_direction = Vector2(clean_points[1].x - clean_points[0].x, clean_points[1].z - clean_points[0].z).normalized()
 			previous_direction = next_direction
-		elif i == points.size() - 1:
-			previous_direction = Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).normalized()
+		elif i == clean_points.size() - 1:
+			previous_direction = Vector2(clean_points[i].x - clean_points[i - 1].x, clean_points[i].z - clean_points[i - 1].z).normalized()
 			next_direction = previous_direction
 		else:
-			previous_direction = Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).normalized()
-			next_direction = Vector2(points[i + 1].x - points[i].x, points[i + 1].z - points[i].z).normalized()
+			previous_direction = Vector2(clean_points[i].x - clean_points[i - 1].x, clean_points[i].z - clean_points[i - 1].z).normalized()
+			next_direction = Vector2(clean_points[i + 1].x - clean_points[i].x, clean_points[i + 1].z - clean_points[i].z).normalized()
 		var previous_normal := Vector2(-previous_direction.y, previous_direction.x)
 		var next_normal := Vector2(-next_direction.y, next_direction.x)
 		var miter := (previous_normal + next_normal).normalized()
@@ -2139,10 +2669,12 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 			miter = next_normal
 		var denominator := maxf(absf(miter.dot(next_normal)), 0.35)
 		var miter_length := clampf(offset / denominator, -absf(offset) * 2.2, absf(offset) * 2.2)
-		var displaced := Vector2(points[i].x, points[i].z) + miter * miter_length
-		result.append(Vector3(displaced.x, points[i].y, displaced.y))
+		var displaced := Vector2(clean_points[i].x, clean_points[i].z) + miter * miter_length
+		clean_offsets.append(Vector3(displaced.x, clean_points[i].y, displaced.y))
+	for point_index in range(points.size()):
+		var offset_point := clean_offsets[point_map[point_index]]
+		result.append(Vector3(offset_point.x, points[point_index].y, offset_point.z))
 	return result
-
 
 func _load_road_clearance_data() -> void:
 	_road_clearance_segments.clear()
@@ -2225,6 +2757,145 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 		_add_textured_quad(surface, i0, o0, o1, i1, ROAD_UV_METERS)
 
 
+func _junction_arm_count(node_key: String, node_registry: Dictionary, all_parts: Array[Dictionary]) -> int:
+	# Une route traversant le nœud au milieu de sa LineString apporte deux bras,
+	# même si elle ne compte que comme une seule entrée dans le registre.
+	var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
+	var arm_count := 0
+	for entry_index in range(0, entries.size(), 3):
+		var part_index := int(entries[entry_index])
+		if part_index < 0 or part_index >= all_parts.size():
+			continue
+		var part: Dictionary = all_parts[part_index]
+		var keys: Array[String] = part.keys
+		for point_index in range(keys.size()):
+			if keys[point_index] != node_key:
+				continue
+			if point_index > 0:
+				arm_count += 1
+			if point_index + 1 < keys.size():
+				arm_count += 1
+	return arm_count
+
+
+func _round_convex_road_outline(outline: PackedVector2Array, radius: float = 0.45) -> PackedVector2Array:
+	# Adoucit légèrement les angles du patch d'asphalte sans changer son emprise générale.
+	# Les segments intermédiaires évitent les pointes triangulaires aux raccordements.
+	var rounded := PackedVector2Array()
+	if outline.size() < 3:
+		return outline
+	for i in range(outline.size()):
+		var previous := outline[(i - 1 + outline.size()) % outline.size()]
+		var current := outline[i]
+		var next := outline[(i + 1) % outline.size()]
+		var incoming := previous - current
+		var outgoing := next - current
+		var trim := minf(radius, minf(incoming.length(), outgoing.length()) * 0.22)
+		if trim < 0.04:
+			rounded.append(current)
+			continue
+		var start := current + incoming.normalized() * trim
+		var finish := current + outgoing.normalized() * trim
+		for step in range(4):
+			var t := float(step) / 3.0
+			var one_minus_t := 1.0 - t
+			var point := start * (one_minus_t * one_minus_t) + current * (2.0 * one_minus_t * t) + finish * (t * t)
+			if rounded.is_empty() or rounded[rounded.size() - 1].distance_to(point) > 0.01:
+				rounded.append(point)
+	return rounded
+
+
+func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: String,
+		node_registry: Dictionary, all_parts: Array[Dictionary]) -> void:
+	# Empreinte calculée depuis les branches réellement connectées :
+	# un T produit une forme à trois bras, un croisement une forme à quatre bras.
+	# Cela évite le disque uniforme qui déborde sur les trottoirs aux carrefours étroits.
+	var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
+	var outline_points := PackedVector2Array()
+	var center_2d := Vector2(center.x, center.z)
+	# Le dégagement des trottoirs est calculé avec la route la plus large du
+	# carrefour. Le patch doit atteindre ce même rayon sur chaque branche,
+	# sinon les coupes des trottoirs laissent des trous autour de l'asphalte.
+	var junction_reach := 0.0
+	for entry_index in range(0, entries.size(), 3):
+		var connected_part_index := int(entries[entry_index])
+		if connected_part_index < 0 or connected_part_index >= all_parts.size():
+			continue
+		var connected_part: Dictionary = all_parts[connected_part_index]
+		junction_reach = maxf(junction_reach, float(connected_part.width) * 0.5 + JUNCTION_CLEARANCE)
+	for entry_index in range(0, entries.size(), 3):
+		var connected_part_index := int(entries[entry_index])
+		if connected_part_index < 0 or connected_part_index >= all_parts.size():
+			continue
+		var connected_part: Dictionary = all_parts[connected_part_index]
+		var connected_points: Array[Vector3] = connected_part.orig_points
+		var connected_keys: Array[String] = connected_part.keys
+		var half_width := float(connected_part.width) * 0.5
+		for point_index in range(connected_keys.size()):
+			if connected_keys[point_index] != node_key:
+				continue
+			var neighbours: Array[int] = []
+			if point_index > 0:
+				neighbours.append(point_index - 1)
+			if point_index + 1 < connected_points.size():
+				neighbours.append(point_index + 1)
+			for neighbour_index in neighbours:
+				var neighbour := connected_points[neighbour_index]
+				var direction := Vector2(neighbour.x - center.x, neighbour.z - center.z).normalized()
+				if direction.length_squared() < 0.001:
+					continue
+				var side := Vector2(-direction.y, direction.x) * half_width
+				var reach := maxf(junction_reach, half_width + JUNCTION_CLEARANCE)
+				var arm_end := center_2d + direction * reach
+				outline_points.append(arm_end + side)
+				outline_points.append(arm_end - side)
+	if outline_points.size() < 6:
+		_add_junction_patch(surface, center, 3.0)
+		return
+	var hull := Geometry2D.convex_hull(outline_points)
+	if hull.size() < 3:
+		_add_junction_patch(surface, center, 3.0)
+		return
+	var rounded_hull := _round_convex_road_outline(hull)
+	var indices := Geometry2D.triangulate_polygon(rounded_hull)
+	if indices.is_empty():
+		_add_junction_patch(surface, center, 3.0)
+		return
+	for triangle_index in range(0, indices.size(), 3):
+		var a: Vector2 = rounded_hull[indices[triangle_index]]
+		var b: Vector2 = rounded_hull[indices[triangle_index + 1]]
+		var c: Vector2 = rounded_hull[indices[triangle_index + 2]]
+		_add_textured_tri(surface,
+			_rp(Vector3(a.x, center.y, a.y), ROAD_LIFT + 0.06),
+			_rp(Vector3(b.x, center.y, b.y), ROAD_LIFT + 0.06),
+			_rp(Vector3(c.x, center.y, c.y), ROAD_LIFT + 0.06),
+			ROAD_UV_METERS)
+
+
+func _add_roundabout_island(surface: SurfaceTool, road_points: Array[Vector3], road_half_width: float) -> void:
+	# La ligne OSM suit l'axe de l'anneau : on décale son contour vers l'intérieur
+	# d'une demi-largeur de chaussée pour remplir uniquement l'îlot central.
+	var outline := PackedVector2Array()
+	for i in range(road_points.size() - 1):
+		outline.append(Vector2(road_points[i].x, road_points[i].z))
+	if outline.size() < 7:
+		return
+	var islands := Geometry2D.offset_polygon(outline, -maxf(road_half_width, 2.0))
+	if islands.is_empty():
+		return
+	surface.set_color(Color(0.30, 0.38, 0.23))
+	for island in islands:
+		if island.size() < 3:
+			continue
+		var indices := Geometry2D.triangulate_polygon(island)
+		if indices.is_empty():
+			continue
+		for i in range(0, indices.size(), 3):
+			for vertex_index in range(3):
+				var point: Vector2 = island[indices[i + vertex_index]]
+				surface.add_vertex(_rp(Vector3(point.x, 0.0, point.y), ROAD_LIFT + 0.045))
+
+
 func _add_road_round_join(surface: SurfaceTool, center: Vector3, radius: float) -> void:
 	const SEGMENTS := 7
 	var c := _rp(center, ROAD_LIFT + 0.01)
@@ -2237,30 +2908,106 @@ func _add_road_round_join(surface: SurfaceTool, center: Vector3, radius: float) 
 			ROAD_UV_METERS)
 
 
+func _add_stop_line(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float, distance: float) -> void:
+	if road_width < 5.5:
+		return
+	var direction := Vector3(inward_direction.x, 0.0, inward_direction.y).normalized()
+	if direction.length_squared() < 0.001:
+		return
+	# Ligne transversale continue, placée juste après le passage béton
+	# dans le sens d'approche du carrefour.
+	var side := Vector3(-direction.z, 0.0, direction.x) * (road_width * 0.45)
+	var center := junction + direction * distance
+	var along := direction * 0.065
+	surface.set_color(Color(0.91, 0.91, 0.88, 1.0))
+	_add_quad(surface,
+		_rp(center - along + side, MARKING_LIFT + 0.012),
+		_rp(center - along - side, MARKING_LIFT + 0.012),
+		_rp(center + along - side, MARKING_LIFT + 0.012),
+		_rp(center + along + side, MARKING_LIFT + 0.012))
+
+
 func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float, distance: float = 3.5) -> void:
 	if road_width < 5.5:
 		return
 	var direction := Vector3(inward_direction.x, 0.0, inward_direction.y).normalized()
-	var side := Vector3(-direction.z, 0.0, direction.x) * (road_width * 0.42)
+	var side := Vector3(-direction.z, 0.0, direction.x) * (road_width * 0.46)
 	var center := junction + direction * distance
-	for stripe_index in range(6):
-		var offset := (float(stripe_index) - 2.5) * 0.72
-		var stripe_center := center + direction * offset
-		var along := direction * 0.22
-		_add_quad(surface,
-			_rp(stripe_center - along + side, MARKING_LIFT + 0.005),
-			_rp(stripe_center - along - side, MARKING_LIFT + 0.005),
-			_rp(stripe_center + along - side, MARKING_LIFT + 0.005),
-			_rp(stripe_center + along + side, MARKING_LIFT + 0.005))
+	# À Libreville, représenter le passage comme des éléments de béton,
+	# et non comme de simples bandes de peinture blanche.
+	# Les dalles sont légèrement surélevées, avec joints sombres et nuances minérales.
+	for slab_index in range(6):
+		var offset := (float(slab_index) - 2.5) * 0.78
+		var slab_center := center + direction * offset
+		var along := direction * 0.29
+		var lift := MARKING_LIFT + 0.035
+		var shade := 0.72 + float((slab_index * 3) % 4) * 0.025
+		var concrete := Color(shade * 0.99, shade, shade * 0.98, 1.0)
+		var a := _rp(slab_center - along + side, lift)
+		var b := _rp(slab_center - along - side, lift)
+		var c := _rp(slab_center + along - side, lift)
+		var d := _rp(slab_center + along + side, lift)
+		surface.set_color(concrete)
+		_add_quad(surface, a, b, c, d)
 
 
 func _road_has_center_marking(props: Dictionary, road_kind: String) -> bool:
-	# Marquage de représentation : uniquement sur les axes structurants ou voies
-	# explicitement à plusieurs voies. Ce n'est pas un relevé des lignes peintes.
-	var lanes := str(props.get("lanes", "")).to_int()
-	if lanes >= 2:
-		return true
-	return road_kind in ["trunk", "primary", "secondary"]
+	return _road_lane_count(props) >= 2 or road_kind in ["trunk", "primary", "secondary"]
+
+
+func _add_road_lane_markings(surface: SurfaceTool, a: Vector3, b: Vector3, width: float, lanes: int, oneway: bool, props: Dictionary) -> void:
+	var direction := Vector2(b.x - a.x, b.z - a.z).normalized()
+	if direction.length_squared() < 0.001:
+		return
+	var perpendicular := Vector3(-direction.y, 0.0, direction.x)
+	var half := width * 0.5
+	var forward := str(props.get("lanes:forward", "")).to_int()
+	var backward := str(props.get("lanes:backward", "")).to_int()
+	if forward > 0 and backward > 0 and not oneway:
+		# Répartition exacte des voies de chaque sens selon les tags directionnels OSM.
+		var total := forward + backward
+		var divider := -half + width * float(forward) / float(total)
+		_add_marking_quad(surface, a + perpendicular * (divider - 0.045), b + perpendicular * (divider - 0.045), 0.035)
+		_add_marking_quad(surface, a + perpendicular * (divider + 0.045), b + perpendicular * (divider + 0.045), 0.035)
+		for lane_index in range(1, forward):
+			var offset := -half + width * float(lane_index) / float(total)
+			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
+		for lane_index in range(1, backward):
+			var offset := divider + width * float(lane_index) / float(total)
+			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
+		return
+	var count := maxi(2, lanes)
+	if oneway:
+		# Une chaussée à sens unique : séparations internes, sans fausse ligne centrale.
+		for lane_index in range(1, count):
+			var offset := -half + width * float(lane_index) / float(count)
+			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
+	elif count <= 2 or count % 2 != 0:
+		# Pour un nombre impair sans détail directionnel, ne pas inventer la répartition.
+		_add_road_center_dashes(surface, a, b)
+	else:
+		# Double ligne centrale et séparations des voies supplémentaires de chaque côté.
+		_add_marking_quad(surface, a + perpendicular * -0.07, b + perpendicular * -0.07, 0.035)
+		_add_marking_quad(surface, a + perpendicular * 0.07, b + perpendicular * 0.07, 0.035)
+		var lanes_each_side := int(count / 2)
+		for lane_index in range(1, lanes_each_side):
+			var offset := width * float(lane_index) / float(count)
+			_add_road_dashes_offset(surface, a, b, perpendicular, offset)
+			_add_road_dashes_offset(surface, a, b, perpendicular, -offset)
+
+
+func _add_road_dashes_offset(surface: SurfaceTool, a: Vector3, b: Vector3, perpendicular: Vector3, offset: float) -> void:
+	var delta := Vector3(b.x - a.x, 0.0, b.z - a.z)
+	var length := delta.length()
+	if length < 4.0:
+		return
+	var direction := delta / length
+	var distance := 0.8
+	while distance + 2.8 < length:
+		_add_marking_quad(surface,
+			a + perpendicular * offset + direction * distance,
+			a + perpendicular * offset + direction * (distance + 2.8), 0.055)
+		distance += 7.0
 
 
 func _add_road_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, length: float, width: float) -> void:
@@ -2680,24 +3427,37 @@ func _road_color(kind: String, props: Dictionary = {}) -> Color:
 		_:
 			return Color(0.58, 0.58, 0.56)
 
+func _road_lane_count(props: Dictionary) -> int:
+	# lanes:both_ways décrit une voie centrale partagée, pas le total des voies.
+	var forward := str(props.get("lanes:forward", "")).to_int()
+	var backward := str(props.get("lanes:backward", "")).to_int()
+	if forward > 0 or backward > 0:
+		return clampi(forward + backward, 1, 8)
+	return clampi(str(props.get("lanes", "")).to_int(), 0, 8)
+
+
+func _road_is_oneway(props: Dictionary) -> bool:
+	var value := str(props.get("oneway", "")).to_lower()
+	return value in ["yes", "true", "1", "-1"]
+
+
 func _road_width(kind: String, props: Dictionary = {}) -> float:
-	# Utilise la largeur réelle ou le nombre de voies OSM quand ils existent.
-	# Largeurs inspirées de Libreville : Boulevard Triomphal / Bord de mer ≈ 4 voies.
-	# Le parseur commun gère aussi les largeurs exprimées en pieds (ft / ')
-	# et les décimales avec virgule, au lieu de les interpréter comme des mètres.
+	# Les voies OSM priment sur les largeurs manifestement incohérentes.
+	# Ex. Libreville : width=5 avec lanes=2 ne peut pas contenir deux voies.
+	var lanes := _road_lane_count(props)
 	var tagged_width := _parse_osm_height(str(props.get("width", "")))
 	if tagged_width >= 1.5 and tagged_width <= 40.0:
-		return tagged_width
-	var lanes := str(props.get("lanes", "")).to_int()
-	if lanes >= 1 and lanes <= 8:
+		if lanes == 0 or tagged_width >= float(lanes) * 2.65:
+			return tagged_width
+	if lanes >= 1:
 		return clampf(float(lanes) * 3.4 + 1.2, 3.5, 28.0)
 	match kind:
 		"motorway", "trunk":
-			return 16.0   # type autoroute / voie rapide
+			return 8.0 if _road_is_oneway(props) else 16.0
 		"primary":
-			return 12.5  # Boulevard Triomphal, Bd de l'Indépendance
+			return 7.2 if _road_is_oneway(props) else 13.6 # 2x2 par défaut en double sens
 		"secondary":
-			return 9.0
+			return 4.8 if _road_is_oneway(props) else 9.2
 		"tertiary":
 			return 7.0
 		"residential", "unclassified":
