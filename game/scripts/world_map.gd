@@ -2625,9 +2625,10 @@ func _road_tint(kind: String, props: Dictionary, surface_key: String) -> Color:
 
 func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vector3]:
 	var result: Array[Vector3] = []
-	# Certaines géométries OSM contiennent des coordonnées consécutives identiques
-	# ou presque. Elles produisent des directions nulles et pincent les décalages
-	# des bordures/trottoirs. Nettoyer uniquement le plan horizontal avant le calcul.
+	if points.size() < 2:
+		return result
+	# Nettoyer les doublons horizontaux sans changer le nombre ni l'ordre des sommets
+	# renvoyés : les consommateurs associent les décalages aux altitudes par index.
 	var clean_points: Array[Vector3] = []
 	var point_map := PackedInt32Array()
 	for point in points:
@@ -2643,17 +2644,12 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 		else:
 			point_map.append(clean_points.size() - 1)
 			if point.y > previous_point.y:
-			# Conserver la hauteur la plus élevée en cas de doublon à altitude différente.
-			clean_points[clean_points.size() - 1] = Vector3(previous_point.x, point.y, previous_point.z)
+				clean_points[clean_points.size() - 1] = Vector3(previous_point.x, point.y, previous_point.z)
 	if clean_points.size() < 2:
-		# Conserver un sommet de sortie par sommet d'entrée : plusieurs consommateurs
-	# associent les points décalés aux altitudes et aux segments d'origine par index.
-	var clean_offsets := result
-	result = []
-	for point_index in range(points.size()):
-		var offset_point := clean_offsets[point_map[point_index]]
-		result.append(Vector3(offset_point.x, points[point_index].y, offset_point.z))
-	return result
+		for point in points:
+			result.append(Vector3(point.x, point.y, point.z))
+		return result
+	var clean_offsets: Array[Vector3] = []
 	for i in range(clean_points.size()):
 		var previous_direction: Vector2
 		var next_direction: Vector2
@@ -2674,9 +2670,11 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 		var denominator := maxf(absf(miter.dot(next_normal)), 0.35)
 		var miter_length := clampf(offset / denominator, -absf(offset) * 2.2, absf(offset) * 2.2)
 		var displaced := Vector2(clean_points[i].x, clean_points[i].z) + miter * miter_length
-		result.append(Vector3(displaced.x, clean_points[i].y, displaced.y))
+		clean_offsets.append(Vector3(displaced.x, clean_points[i].y, displaced.y))
+	for point_index in range(points.size()):
+		var offset_point := clean_offsets[point_map[point_index]]
+		result.append(Vector3(offset_point.x, points[point_index].y, offset_point.z))
 	return result
-
 
 func _load_road_clearance_data() -> void:
 	_road_clearance_segments.clear()
