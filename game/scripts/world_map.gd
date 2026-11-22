@@ -476,30 +476,82 @@ func _apply_ground_surface() -> void:
 
 
 func _add_ocean_plane() -> void:
-	# Plan mer Atlantique / estuaire — plus visible, teinte GTA.
+	# Océan Atlantique procédural : vagues géométriques animées et reflets Fresnel.
+	# Aucun fichier de texture externe n'est requis ; shader volontairement léger
+	# pour rester compatible avec les GPU intégrés.
 	var ocean := MeshInstance3D.new()
 	ocean.name = "OceanSurface"
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(16000.0, 11000.0)
+	plane.subdivide_width = 180
+	plane.subdivide_depth = 140
 	ocean.mesh = plane
 	ocean.position = Vector3(-2600.0, -0.12, 100.0)
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.08, 0.36, 0.55, 0.94)
-	mat.roughness = 0.15
-	mat.metallic = 0.22
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	# Texture eau procédurale légère
-	var img := Image.create(128, 128, false, Image.FORMAT_RGBA8)
-	for y in range(128):
-		for x in range(128):
-			var wave := sin(float(x) * 0.12) * cos(float(y) * 0.09) * 0.06
-			img.set_pixel(x, y, Color(0.10 + wave, 0.40 + wave * 0.5, 0.58 + wave, 0.94))
-	img.generate_mipmaps()
-	mat.albedo_texture = ImageTexture.create_from_image(img)
-	mat.uv1_scale = Vector3(40, 40, 1)
-	ocean.material_override = mat
+
+	var water_shader := Shader.new()
+	water_shader.code = """
+shader_type spatial;
+render_mode cull_disabled, diffuse_burley, specular_schlick_ggx;
+
+varying vec3 water_normal;
+varying vec3 water_world_pos;
+varying float wave_height;
+
+void vertex() {
+	vec3 world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	float t = TIME;
+	vec2 p = world_pos.xz;
+
+	float a1 = dot(p, normalize(vec2(0.82, 0.57))) * 0.030 + t * 0.72;
+	float a2 = dot(p, normalize(vec2(-0.34, 0.94))) * 0.052 - t * 0.91;
+	float a3 = dot(p, normalize(vec2(0.98, -0.18))) * 0.091 + t * 1.18;
+
+	float h1 = sin(a1) * 0.34;
+	float h2 = sin(a2) * 0.13;
+	float h3 = sin(a3) * 0.045;
+	float height = h1 + h2 + h3;
+
+	float dx = cos(a1) * 0.34 * 0.030 * 0.82
+		+ cos(a2) * 0.13 * 0.052 * -0.34
+		+ cos(a3) * 0.045 * 0.091 * 0.98;
+	float dz = cos(a1) * 0.34 * 0.030 * 0.57
+		+ cos(a2) * 0.13 * 0.052 * 0.94
+		+ cos(a3) * 0.045 * 0.091 * -0.18;
+
+	VERTEX.y += height;
+	wave_height = height;
+	water_normal = normalize(vec3(-dx, 1.0, -dz));
+	water_world_pos = world_pos;
+}
+
+void fragment() {
+	float broad = sin(water_world_pos.x * 0.006 + TIME * 0.18)
+		* cos(water_world_pos.z * 0.008 - TIME * 0.15);
+	float fine = sin(water_world_pos.x * 0.041 + water_world_pos.z * 0.027 + TIME * 0.8);
+	float crest = smoothstep(0.28, 0.48, wave_height + fine * 0.035);
+
+	vec3 deep_water = vec3(0.012, 0.105, 0.175);
+	vec3 mid_water = vec3(0.018, 0.235, 0.315);
+	vec3 sunlit_water = vec3(0.075, 0.36, 0.42);
+	vec3 water_color = mix(deep_water, mid_water, 0.45 + broad * 0.18);
+	water_color = mix(water_color, sunlit_water, crest * 0.12);
+
+	vec3 n = normalize(water_normal);
+	float fresnel = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 4.0);
+	float glint = pow(max(dot(reflect(normalize(-LIGHT), n), VIEW), 0.0), 48.0);
+	ALBEDO = mix(water_color, vec3(0.34, 0.52, 0.54), fresnel * 0.48);
+	ALBEDO += vec3(0.22, 0.27, 0.25) * glint * 0.22;
+	METALLIC = 0.12;
+	ROUGHNESS = mix(0.24, 0.38, clamp(abs(fine) * 0.5, 0.0, 1.0));
+	SPECULAR = 0.72;
+	NORMAL = n;
+}
+"""
+	var water_material := ShaderMaterial.new()
+	water_material.shader = water_shader
+	ocean.material_override = water_material
 	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	ocean.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	add_child(ocean)
 
 
