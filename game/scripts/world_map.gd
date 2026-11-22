@@ -2625,20 +2625,35 @@ func _road_tint(kind: String, props: Dictionary, surface_key: String) -> Color:
 
 func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vector3]:
 	var result: Array[Vector3] = []
-	if points.size() < 2:
+	# Certaines géométries OSM contiennent des coordonnées consécutives identiques
+	# ou presque. Elles produisent des directions nulles et pincent les décalages
+	# des bordures/trottoirs. Nettoyer uniquement le plan horizontal avant le calcul.
+	var clean_points: Array[Vector3] = []
+	for point in points:
+		if clean_points.is_empty():
+			clean_points.append(point)
+			continue
+		var previous_point := clean_clean_points[clean_points.size() - 1]
+		var horizontal_distance := Vector2(point.x - previous_point.x, point.z - previous_point.z).length()
+		if horizontal_distance > 0.05:
+			clean_points.append(point)
+		elif point.y > previous_point.y:
+			# Conserver la hauteur la plus élevée en cas de doublon à altitude différente.
+			clean_clean_points[clean_points.size() - 1] = Vector3(previous_point.x, point.y, previous_point.z)
+	if clean_points.size() < 2:
 		return result
-	for i in range(points.size()):
+	for i in range(clean_points.size()):
 		var previous_direction: Vector2
 		var next_direction: Vector2
 		if i == 0:
-			next_direction = Vector2(points[1].x - points[0].x, points[1].z - points[0].z).normalized()
+			next_direction = Vector2(clean_points[1].x - clean_points[0].x, clean_points[1].z - clean_points[0].z).normalized()
 			previous_direction = next_direction
 		elif i == points.size() - 1:
-			previous_direction = Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).normalized()
+			previous_direction = Vector2(clean_points[i].x - clean_points[i - 1].x, clean_points[i].z - clean_points[i - 1].z).normalized()
 			next_direction = previous_direction
 		else:
-			previous_direction = Vector2(points[i].x - points[i - 1].x, points[i].z - points[i - 1].z).normalized()
-			next_direction = Vector2(points[i + 1].x - points[i].x, points[i + 1].z - points[i].z).normalized()
+			previous_direction = Vector2(clean_points[i].x - clean_points[i - 1].x, clean_points[i].z - clean_points[i - 1].z).normalized()
+			next_direction = Vector2(clean_points[i + 1].x - clean_points[i].x, clean_points[i + 1].z - clean_points[i].z).normalized()
 		var previous_normal := Vector2(-previous_direction.y, previous_direction.x)
 		var next_normal := Vector2(-next_direction.y, next_direction.x)
 		var miter := (previous_normal + next_normal).normalized()
@@ -2646,8 +2661,8 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 			miter = next_normal
 		var denominator := maxf(absf(miter.dot(next_normal)), 0.35)
 		var miter_length := clampf(offset / denominator, -absf(offset) * 2.2, absf(offset) * 2.2)
-		var displaced := Vector2(points[i].x, points[i].z) + miter * miter_length
-		result.append(Vector3(displaced.x, points[i].y, displaced.y))
+		var displaced := Vector2(clean_points[i].x, clean_points[i].z) + miter * miter_length
+		result.append(Vector3(displaced.x, clean_points[i].y, displaced.y))
 	return result
 
 
