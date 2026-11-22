@@ -2186,7 +2186,7 @@ func _add_sidewalk_strip(surfaces: Dictionary, collision: SurfaceTool, run: Arra
 			for ramp_index in range(last_built - 1, first_built - 1, -1):
 				distance_to_end[ramp_index] = distance_to_end[ramp_index + 1] + edge[ramp_index].distance_to(edge[ramp_index + 1])
 			for ramp_index in range(first_built, last_built + 1):
-				var ramp_factor := minf(distance_from_start[ramp_index] / 1.5, distance_to_end[ramp_index] / 1.5, 1.0)
+				var ramp_factor := minf(minf(distance_from_start[ramp_index] / 1.5, distance_to_end[ramp_index] / 1.5), 1.0)
 				top_y[ramp_index] = edge_y[ramp_index] + (top_y[ramp_index] - edge_y[ramp_index]) * ramp_factor
 		# Bouts du trottoir fermés (pas de dalle creuse vue de côté).
 		for end_index in [first_built, last_built]:
