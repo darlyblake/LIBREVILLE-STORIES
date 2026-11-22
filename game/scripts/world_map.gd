@@ -1836,6 +1836,7 @@ func _new_road_surfaces() -> Dictionary:
 		surfaces[key] = textured
 	var plain_colors := {
 		"median": Color(0.52, 0.51, 0.49),
+		"island": Color(0.31, 0.39, 0.25),
 		"curb": Color(0.70, 0.69, 0.66),
 		"skirt": Color(0.42, 0.40, 0.36),
 		"marking": Color(0.96, 0.96, 0.90),
@@ -1900,6 +1901,9 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 	var sidewalk_mode: String = part.sidewalk
 	var road_surface: SurfaceTool = surfaces[surface_key]
 	var half := width * 0.5
+	# Les voies OSM fermées taguées roundabout reçoivent un véritable îlot central.
+	if keys.size() >= 8 and keys[0] == keys[keys.size() - 1] and (str(props.get("junction", "")) == "roundabout" or str(props.get("roundabout", "")) == "yes"):
+		_add_roundabout_island(surfaces["island"], orig_points, half)
 	var lift: float = ROAD_LIFT + float(part.class_lift)
 	var last := points.size() - 1
 	_set_uv_origin(points[0])
@@ -2672,6 +2676,30 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 		var o1 := _rp(center + d1 * radius, PATCH_LIFT)
 		_add_textured_tri(surface, c, i0, i1, ROAD_UV_METERS)
 		_add_textured_quad(surface, i0, o0, o1, i1, ROAD_UV_METERS)
+
+
+func _add_roundabout_island(surface: SurfaceTool, road_points: Array[Vector3], road_half_width: float) -> void:
+	# La ligne OSM suit l'axe de l'anneau : on décale son contour vers l'intérieur
+	# d'une demi-largeur de chaussée pour remplir uniquement l'îlot central.
+	var outline := PackedVector2Array()
+	for i in range(road_points.size() - 1):
+		outline.append(Vector2(road_points[i].x, road_points[i].z))
+	if outline.size() < 7:
+		return
+	var islands := Geometry2D.offset_polygon(outline, -maxf(road_half_width, 2.0))
+	if islands.is_empty():
+		return
+	surface.set_color(Color(0.30, 0.38, 0.23))
+	for island in islands:
+		if island.size() < 3:
+			continue
+		var indices := Geometry2D.triangulate_polygon(island)
+		if indices.is_empty():
+			continue
+		for i in range(0, indices.size(), 3):
+			for vertex_index in range(3):
+				var point: Vector2 = island[indices[i + vertex_index]]
+				surface.add_vertex(_rp(Vector3(point.x, 0.0, point.y), ROAD_LIFT + 0.045))
 
 
 func _add_road_round_join(surface: SurfaceTool, center: Vector3, radius: float) -> void:
