@@ -185,7 +185,7 @@ func _build_monument() -> void:
 	_box(site, "Socle_structure_superieure", Vector3(19.0, 0.65, 14.0), Vector3(0, 29.8, -0.2), _stone)
 
 	# Inscriptions patrimoniales sur les deux piliers et stèle au pied de l'arc.
-	_add_3d_text(site, "AUTEUR DE L’HYMNE NATIONAL", Vector3(-14.0, 14.0, 8.72), 17, _gold)
+	_add_3d_text(site, "AUTEUR DE LA CONCORDE", Vector3(-14.0, 14.0, 8.72), 17, _gold)
 	_add_3d_text(site, "LA CONCORDE", Vector3(14.0, 14.0, 8.72), 20, _gold)
 	_box(site, "Stele_memorielle", Vector3(3.2, 4.6, 0.38), Vector3(0, 2.7, 9.0), _stone)
 	_add_3d_text(site, "GEORGES DAMAS ALEKA", Vector3(0, 3.2, 9.25), 15, _gold)
@@ -284,6 +284,7 @@ func _build_pavilion(parent: Node3D, number: int, center: Vector3) -> void:
 	parent.add_child(pavilion)
 	_box(pavilion, "Socle_granit", Vector3(10.5, 0.55, 8.5), Vector3(0, 0.28, 0), _stone)
 	_box(pavilion, "Volume_blanc", Vector3(9.8, 4.8, 7.8), Vector3(0, 2.85, 0), _white)
+	_add_platform_collision(pavilion, Vector3(9.8, 4.8, 7.8), Vector3(0, 2.85, 0))
 	_box(pavilion, "Toiture_debordante", Vector3(10.8, 0.42, 8.8), Vector3(0, 5.45, 0), _dark)
 	_box(pavilion, "Bandeau_verre", Vector3(8.6, 2.0, 0.16), Vector3(0, 3.3, 3.98), _glass)
 	for mullion in range(7):
@@ -310,6 +311,7 @@ func _build_official_tribune() -> void:
 		var rz := -13.0 + float(row) * 2.7
 		var ry := 1.0 + float(row) * 0.42
 		_box(site, "Marche_gradin_%02d" % row, Vector3(74.0, 0.42, 2.7), Vector3(0, ry, rz), _stone)
+		_add_platform_collision(site, Vector3(74.0, 0.42, 2.7), Vector3(0, ry, rz))
 		for seat_index in range(9):
 			var seat_x_left := -33.0 + float(seat_index) * 3.6
 			var seat_x_right := 4.5 + float(seat_index) * 3.6
@@ -352,6 +354,7 @@ func _build_official_tribune() -> void:
 
 	# Façade arrière jaune avec panneaux verticaux et baies sombres.
 	_box(site, "Facade_arriere_jaune", Vector3(80.0, 12.0, 1.2), Vector3(0, 8.0, -16.0), _yellow)
+	_add_platform_collision(site, Vector3(80.0, 12.0, 1.2), Vector3(0, 8.0, -16.0))
 	for fin in range(41):
 		var fx := -39.0 + float(fin) * 1.95
 		_box(site, "Lame_facade_%02d" % fin, Vector3(0.22, 11.5, 0.34), Vector3(fx, 8.0, -15.25), _gold)
