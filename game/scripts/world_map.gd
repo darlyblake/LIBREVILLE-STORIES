@@ -536,9 +536,10 @@ void fragment() {
 	vec3 water_color = mix(deep_water, mid_water, 0.45 + broad * 0.18);
 	water_color = mix(water_color, sunlit_water, crest * 0.12);
 
-	vec3 n = normalize(water_normal);
+	vec3 n = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(water_normal, 0.0)).xyz);
 	float fresnel = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 4.0);
-	float glint = pow(max(dot(reflect(normalize(-LIGHT), n), VIEW), 0.0), 48.0);
+	vec3 sun_direction = normalize(vec3(-0.35, 0.82, 0.44));
+	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 48.0);
 	ALBEDO = mix(water_color, vec3(0.34, 0.52, 0.54), fresnel * 0.48);
 	ALBEDO += vec3(0.22, 0.27, 0.25) * glint * 0.22;
 	METALLIC = 0.12;
