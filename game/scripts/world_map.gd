@@ -2001,10 +2001,14 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 				var perp := Vector3(-direction.y, 0.0, direction.x)
 				_add_marking_quad(marking_surface, marking_a + perp * (half - 0.18), marking_b + perp * (half - 0.18), 0.06)
 				_add_marking_quad(marking_surface, marking_a - perp * (half - 0.18), marking_b - perp * (half - 0.18), 0.06)
-		if i == 0 and crosswalk_start >= 0.0:
-			_add_crosswalk(surfaces["crosswalk"], a, Vector2(b.x - a.x, b.z - a.z).normalized(), width, crosswalk_start + 1.9)
-		if i == last - 1 and crosswalk_end >= 0.0:
-			_add_crosswalk(surfaces["crosswalk"], b, Vector2(a.x - b.x, a.z - b.z).normalized(), width, crosswalk_end + 1.9)
+		if i == 0 and crosswalk_start >= 0.0 and float(part.length) > crosswalk_start + 6.0:
+			var approach_direction := Vector2(b.x - a.x, b.z - a.z).normalized()
+			_add_crosswalk(surfaces["crosswalk"], a, approach_direction, width, crosswalk_start + 1.9)
+			_add_stop_line(marking_surface, a, approach_direction, width, crosswalk_start + 4.8)
+		if i == last - 1 and crosswalk_end >= 0.0 and float(part.length) > crosswalk_end + 6.0:
+			var approach_direction := Vector2(a.x - b.x, a.z - b.z).normalized()
+			_add_crosswalk(surfaces["crosswalk"], b, approach_direction, width, crosswalk_end + 1.9)
+			_add_stop_line(marking_surface, b, approach_direction, width, crosswalk_end + 4.8)
 	# Trottoirs : découpés aux carrefours, T, entrées de service et voies voisines.
 	if sidewalk_mode != "none":
 		var cuts := _road_part_cuts(part_index, keys, orig_points, node_registry)
@@ -2784,6 +2788,25 @@ func _add_road_round_join(surface: SurfaceTool, center: Vector3, radius: float) 
 			_rp(center + Vector3(cos(a0), 0.0, sin(a0)) * radius, ROAD_LIFT + 0.01),
 			_rp(center + Vector3(cos(a1), 0.0, sin(a1)) * radius, ROAD_LIFT + 0.01),
 			ROAD_UV_METERS)
+
+
+func _add_stop_line(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float, distance: float) -> void:
+	if road_width < 5.5:
+		return
+	var direction := Vector3(inward_direction.x, 0.0, inward_direction.y).normalized()
+	if direction.length_squared() < 0.001:
+		return
+	# Ligne transversale continue, placée juste après le passage béton
+	# dans le sens d'approche du carrefour.
+	var side := Vector3(-direction.z, 0.0, direction.x) * (road_width * 0.45)
+	var center := junction + direction * distance
+	var along := direction * 0.065
+	surface.set_color(Color(0.91, 0.91, 0.88, 1.0))
+	_add_quad(surface,
+		_rp(center - along + side, MARKING_LIFT + 0.012),
+		_rp(center - along - side, MARKING_LIFT + 0.012),
+		_rp(center + along - side, MARKING_LIFT + 0.012),
+		_rp(center + along + side, MARKING_LIFT + 0.012))
 
 
 func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: Vector2, road_width: float, distance: float = 3.5) -> void:
