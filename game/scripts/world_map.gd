@@ -2437,7 +2437,7 @@ func _load_buildings() -> void:
 				for footprint_point in footprint:
 					building_center += footprint_point
 				building_center /= float(footprint.size())
-				var building_base_y := _terrain_height_at_world(building_center.x, buildinging_center.y)
+				var building_base_y := _terrain_height_at_world(building_center.x, building_center.y)
 				surface.set_color(facade_col)
 				_add_building(surface, roof_surface, detail_surface, footprint, indices, height, _roof_color(building_kind, osm_id, props), building_kind, osm_id, props, facade_col, building_base_y)
 				added = true
