@@ -2633,13 +2633,13 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 		if clean_points.is_empty():
 			clean_points.append(point)
 			continue
-		var previous_point := clean_clean_points[clean_points.size() - 1]
+		var previous_point := clean_points[clean_points.size() - 1]
 		var horizontal_distance := Vector2(point.x - previous_point.x, point.z - previous_point.z).length()
 		if horizontal_distance > 0.05:
 			clean_points.append(point)
 		elif point.y > previous_point.y:
 			# Conserver la hauteur la plus élevée en cas de doublon à altitude différente.
-			clean_clean_points[clean_points.size() - 1] = Vector3(previous_point.x, point.y, previous_point.z)
+			clean_points[clean_points.size() - 1] = Vector3(previous_point.x, point.y, previous_point.z)
 	if clean_points.size() < 2:
 		return result
 	for i in range(clean_points.size()):
@@ -2648,7 +2648,7 @@ func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vecto
 		if i == 0:
 			next_direction = Vector2(clean_points[1].x - clean_points[0].x, clean_points[1].z - clean_points[0].z).normalized()
 			previous_direction = next_direction
-		elif i == points.size() - 1:
+		elif i == clean_points.size() - 1:
 			previous_direction = Vector2(clean_points[i].x - clean_points[i - 1].x, clean_points[i].z - clean_points[i - 1].z).normalized()
 			next_direction = previous_direction
 		else:
