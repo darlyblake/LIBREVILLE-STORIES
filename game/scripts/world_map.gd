@@ -2788,6 +2788,16 @@ func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: St
 	var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
 	var outline_points := PackedVector2Array()
 	var center_2d := Vector2(center.x, center.z)
+	# Le dégagement des trottoirs est calculé avec la route la plus large du
+	# carrefour. Le patch doit atteindre ce même rayon sur chaque branche,
+	# sinon les coupes des trottoirs laissent des trous autour de l'asphalte.
+	var junction_reach := 0.0
+	for entry_index in range(0, entries.size(), 3):
+		var connected_part_index := int(entries[entry_index])
+		if connected_part_index < 0 or connected_part_index >= all_parts.size():
+			continue
+		var connected_part: Dictionary = all_parts[connected_part_index]
+		junction_reach = maxf(junction_reach, float(connected_part.width) * 0.5 + JUNCTION_CLEARANCE)
 	for entry_index in range(0, entries.size(), 3):
 		var connected_part_index := int(entries[entry_index])
 		if connected_part_index < 0 or connected_part_index >= all_parts.size():
@@ -2810,7 +2820,7 @@ func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: St
 				if direction.length_squared() < 0.001:
 					continue
 				var side := Vector2(-direction.y, direction.x) * half_width
-				var reach := maxf(half_width + 1.2, 3.0)
+				var reach := maxf(junction_reach, half_width + JUNCTION_CLEARANCE)
 				var arm_end := center_2d + direction * reach
 				outline_points.append(arm_end + side)
 				outline_points.append(arm_end - side)
