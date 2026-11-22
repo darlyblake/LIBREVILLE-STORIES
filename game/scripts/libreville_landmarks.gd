@@ -11,8 +11,8 @@ const MONUMENT_LAT := 0.3879
 const MONUMENT_LON := 9.44288
 # Position indicative de la tribune sur le côté opposé de l'esplanade.
 # Elle est volontairement isolée ici pour pouvoir être corrigée sans toucher au modèle.
-const TRIBUNE_LAT := 0.38855
-const TRIBUNE_LON := 9.44405
+const TRIBUNE_LAT := 0.38831
+const TRIBUNE_LON := 9.44356
 
 var _stone: StandardMaterial3D
 var _white: StandardMaterial3D
@@ -21,6 +21,7 @@ var _roof: StandardMaterial3D
 var _glass: StandardMaterial3D
 var _dark: StandardMaterial3D
 var _paving: StandardMaterial3D
+var _yellow: StandardMaterial3D
 
 func _ready() -> void:
 	_make_materials()
@@ -37,6 +38,7 @@ func _make_materials() -> void:
 	_glass = _mat(Color(0.12, 0.25, 0.31), 0.22, 0.35)
 	_dark = _mat(Color(0.16, 0.18, 0.18), 0.8)
 	_paving = _mat(Color(0.66, 0.63, 0.56), 0.95)
+	_yellow = _mat(Color(0.88, 0.62, 0.12), 0.62, 0.12)
 
 
 func _mat(color: Color, roughness: float, metallic: float = 0.0) -> StandardMaterial3D:
@@ -93,6 +95,7 @@ func _build_monument() -> void:
 
 	# Esplanade et socle du bâtiment principal.
 	_box(site, "Esplanade_pierre", Vector3(92.0, 0.28, 58.0), Vector3(0, 0.12, 0), _paving)
+	_add_platform_collision(site, Vector3(92.0, 0.35, 58.0), Vector3(0, 0.17, 0))
 	_box(site, "Socle_arc", Vector3(34.0, 1.1, 19.0), Vector3(0, 0.68, 0), _white)
 
 	# Arc monumental : deux piles épaisses, une traverse haute et un vide central.
@@ -101,6 +104,8 @@ func _build_monument() -> void:
 	_box(site, "Linteau_superieur", Vector3(27.0, 5.0, 8.0), Vector3(0, 28.0, 0), _white)
 	_box(site, "Corniche_frontale", Vector3(29.0, 0.7, 8.8), Vector3(0, 30.5, 0), _gold)
 	_box(site, "Couronnement", Vector3(24.0, 1.0, 7.5), Vector3(0, 31.25, 0), _stone)
+	_box(site, "Plaque_memorielle", Vector3(7.0, 2.2, 0.28), Vector3(0, 3.4, 3.72), _gold)
+	_add_memorial_title(site)
 
 	# Décrochements et nervures de façade qui donnent de la profondeur à l'arc.
 	for side in [-1.0, 1.0]:
@@ -156,6 +161,7 @@ func _build_official_tribune() -> void:
 
 	# Plateforme allongée et gradins en trois niveaux.
 	_box(site, "Dalle_tribune", Vector3(72.0, 0.8, 25.0), Vector3(0, 0.4, 0), _dark)
+	_add_platform_collision(site, Vector3(72.0, 0.9, 25.0), Vector3(0, 0.45, 0))
 	for row in range(3):
 		var depth := 6.0 + float(row) * 5.2
 		var height := 1.2 + float(row) * 1.35
@@ -169,12 +175,14 @@ func _build_official_tribune() -> void:
 		_cylinder(site, "Poteau_%02d" % i, 0.22, 9.0, Vector3(x, 5.0, 0), _white, 12)
 
 	# Toiture couverte à profil ondulé/zigzag, caractéristique de la tribune.
-	_box(site, "Toit_support", Vector3(76.0, 0.7, 29.0), Vector3(0, 10.0, 0), _roof)
+	_box(site, "Toit_support", Vector3(76.0, 0.7, 29.0), Vector3(0, 10.0, 0), _dark)
 	for segment in range(12):
 		var x := -35.0 + float(segment) * 6.35
 		var y := 10.7 + (1.15 if segment % 2 == 0 else 0.0)
-		var panel := _box(site, "Toit_zigzag_%02d" % segment, Vector3(6.5, 0.32, 29.5), Vector3(x, y, 0), _white)
+		var panel := _box(site, "Toit_zigzag_%02d" % segment, Vector3(6.5, 0.32, 29.5), Vector3(x, y, 0), _dark)
 		panel.rotation.z = deg_to_rad(4.5 if segment % 2 == 0 else -4.5)
+		# Nervures métalliques du toit, visibles depuis le boulevard.
+		_box(site, "Bord_toit_%02d" % segment, Vector3(0.16, 0.42, 29.2), Vector3(x + 3.1, y + 0.12, 0), _yellow)
 	for i in range(8):
 		var x := -28.0 + float(i) * 8.0
 		_box(site, "Bandeau_façade_%d" % i, Vector3(0.18, 1.1, 0.35), Vector3(x, 8.9, 14.5), _gold)
@@ -183,3 +191,29 @@ func _build_official_tribune() -> void:
 	for side in [-1.0, 1.0]:
 		for step in range(5):
 			_box(site, "Marche_%s_%d" % [str(side), step], Vector3(5.0, 0.28, 1.3), Vector3(side * 33.0, 0.5 + float(step) * 0.32, 10.0 - float(step) * 1.5), _white)
+
+
+func _add_platform_collision(parent: Node3D, size: Vector3, position: Vector3) -> void:
+	var body := StaticBody3D.new()
+	body.name = "Collision_plateforme"
+	var shape_node := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	shape_node.shape = shape
+	shape_node.position = position
+	body.add_child(shape_node)
+	parent.add_child(body)
+
+
+func _add_memorial_title(parent: Node3D) -> void:
+	var title := Label3D.new()
+	title.name = "Inscription_Georges_Damas_Aleka"
+	title.text = "GEORGES DAMAS ALEKA\nLA CONCORDE"
+	title.font_size = 48
+	title.pixel_size = 0.012
+	title.modulate = Color(0.96, 0.91, 0.76)
+	title.position = Vector3(0, 3.35, 3.9)
+	title.rotation_degrees = Vector3(0, 180, 0)
+	title.outline_size = 8
+	title.outline_modulate = Color(0.12, 0.12, 0.12)
+	parent.add_child(title)
