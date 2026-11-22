@@ -937,9 +937,57 @@ void fragment() {
 			add_child(foam_instance)
 
 	if not rock_transforms.is_empty():
-		var rock_material := StandardMaterial3D.new()
-		rock_material.vertex_color_use_as_albedo = true
-		rock_material.roughness = 0.96
+		# Shader minéral procédural : grain, strates irrégulières et humidité
+		# à la base. Il complète les futures textures PBR sans les remplacer.
+		var rock_shader := Shader.new()
+		rock_shader.code = """
+shader_type spatial;
+render_mode diffuse_burley, specular_schlick_ggx;
+
+varying vec3 rock_local;
+varying vec4 rock_tint;
+
+float hash21(vec2 p) {
+	p = fract(p * vec2(123.34, 456.21));
+	p += vec2(dot(p, p + vec2(45.32)));
+	return fract(p.x * p.y);
+}
+
+float noise21(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = hash21(i);
+	float b = hash21(i + vec2(1.0, 0.0));
+	float c = hash21(i + vec2(0.0, 1.0));
+	float d = hash21(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+void vertex() {
+	rock_local = VERTEX;
+	rock_tint = COLOR;
+}
+
+void fragment() {
+	vec2 p = rock_local.xz * 3.2 + vec2(rock_local.y * 1.7, rock_local.y * 0.8);
+	float broad = noise21(p * 0.7);
+	float grain = noise21(p * 5.4);
+	float strata_noise = noise21(p * 1.8);
+	float strata = smoothstep(0.42, 0.58,
+		0.5 + sin(rock_local.y * 34.0 + strata_noise * 3.8) * 0.5);
+	float mineral = 0.78 + broad * 0.22 + (grain - 0.5) * 0.12;
+	vec3 stone = rock_tint.rgb * mineral;
+	stone *= mix(0.88, 1.08, strata);
+	float wet_base = 1.0 - smoothstep(0.08, 0.38, rock_local.y);
+	stone = mix(stone, stone * vec3(0.56, 0.63, 0.66), wet_base * 0.48);
+	ALBEDO = stone;
+	ROUGHNESS = mix(0.96, 0.72, wet_base * 0.65);
+	SPECULAR = 0.28;
+}
+"""
+		var rock_material := ShaderMaterial.new()
+		rock_material.shader = rock_shader
 		var rock_mesh := _make_coastal_rock_mesh()
 		rock_mesh.material = rock_material
 		var multi := MultiMesh.new()
