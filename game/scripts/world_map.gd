@@ -2167,9 +2167,6 @@ func _add_sidewalk_strip(surfaces: Dictionary, collision: SurfaceTool, run: Arra
 			while segment_cursor + 1 < built_segments.size() and built_segments[segment_cursor + 1] == 1:
 				segment_cursor += 1
 			var run_end := segment_cursor + 1
-			var distance_from_start := 0.0
-			for ramp_index in range(run_start + 1, run_end + 1):
-				distance_from_start += edge[ramp_index - 1].distance_to(edge[ramp_index])
 			var travelled_from_start := 0.0
 			var distance_to_end := PackedFloat32Array()
 			distance_to_end.resize(run_end - run_start + 1)
