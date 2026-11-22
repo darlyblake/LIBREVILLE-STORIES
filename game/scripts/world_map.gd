@@ -1213,9 +1213,9 @@ func _is_water_environment_polygon(kind: String, props: Dictionary) -> bool:
 	var natural := str(props.get("natural", "")).to_lower()
 	var water := str(props.get("water", "")).to_lower()
 	var landuse := str(props.get("landuse", "")).to_lower()
-	return normalized_kind in ["water", "water_area", "lake", "river", "sea", "ocean", "lagoon", "reservoir"] \
-		or natural == "water" or water in ["lake", "river", "reservoir", "pond", "basin"] \
-		or landuse in ["reservoir", "basin"]
+	var is_water_kind := normalized_kind in ["water", "water_area", "lake", "river", "sea", "ocean", "lagoon", "reservoir", "coastline"]
+	var is_water_tagged := natural == "water" or water in ["lake", "river", "reservoir", "pond", "basin"] or landuse in ["reservoir", "basin"]
+	return is_water_kind or is_water_tagged
 
 
 func _clip_polygon_away_from_roads(subject: PackedVector2Array, extra_margin: float = 0.0) -> Array[PackedVector2Array]:
