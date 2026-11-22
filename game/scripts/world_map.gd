@@ -142,6 +142,16 @@ var _coastline_paths: Array[PackedVector2Array] = []
 var _beach_polygons: Array[PackedVector2Array] = []
 
 func _ready() -> void:
+	# Lire le profil avant de construire le monde 3D.
+	var graphics_config := ConfigFile.new()
+	if graphics_config.load("user://graphics_settings.cfg") == OK:
+		show_buildings = bool(graphics_config.get_value("graphics", "buildings", false))
+		render_green_areas = bool(graphics_config.get_value("graphics", "vegetation", false))
+		load_extra_road_textures = bool(graphics_config.get_value("graphics", "extra_textures", false))
+		var sun := get_parent().get_node_or_null("DirectionalLight3D") as DirectionalLight3D
+		if sun != null:
+			sun.shadow_enabled = bool(graphics_config.get_value("graphics", "shadows", false))
+	await get_tree().process_frame
 	_load_real_terrain()
 	if _dem_loaded:
 		_disable_flat_ground()
@@ -154,15 +164,21 @@ func _ready() -> void:
 	# Le réseau routier doit être connu AVANT la génération du relief :
 	# le terrain SRTM est alors réellement évidé sous chaussées et trottoirs.
 	_load_road_clearance_data()
+	await get_tree().process_frame
 	if _dem_loaded:
 		_build_terrain_chunks()
+		await get_tree().process_frame
 	_grass_generator = GrassGenerator.new()
 	_grass_generator.name = "Procedural_Real_Grass"
 	add_child(_grass_generator)
 	_load_environment()
+	await get_tree().process_frame
 	_grass_generator.build()
+	await get_tree().process_frame
 	_load_neighbourhoods()
+	await get_tree().process_frame
 	_load_localities()
+	await get_tree().process_frame
 	_building_material = _make_material(Color(0.76, 0.68, 0.56))
 	# Les couleurs attribuées aux bâtiments par type/OSM ID doivent être visibles.
 	_building_material.vertex_color_use_as_albedo = true
@@ -176,8 +192,10 @@ func _ready() -> void:
 	_facade_detail_material.roughness = 0.85
 	if show_roads:
 		_load_roads()
+		await get_tree().process_frame
 	if show_buildings:
 		_load_buildings()
+		await get_tree().process_frame
 	_load_pois()
 	_position_player_on_terrain()
 	_create_location_hud()
