@@ -175,8 +175,8 @@ func _build_monument() -> void:
 
 	# Structure supérieure sculpturale : deux montants courbes qui culminent à environ 47 m.
 	# Les traverses donnent une vraie lecture de charpente métallique, sans bloc plein.
-	var crest_left: Array[Vector3] = [Vector3(-8.0, 29.5, -0.2), Vector3(-7.0, 35.0, -0.2), Vector3(-4.2, 41.0, -0.2), Vector3(0.0, 47.0, -0.2)]
-	var crest_right: Array[Vector3] = [Vector3(8.0, 29.5, -0.2), Vector3(7.0, 35.0, -0.2), Vector3(4.2, 41.0, -0.2), Vector3(0.0, 47.0, -0.2)]
+	var crest_left: Array[Vector3] = [Vector3(-4.5, 30.0, -0.2), Vector3(-4.0, 35.5, -0.2), Vector3(-2.2, 41.5, -0.2), Vector3(0.0, 47.0, -0.2)]
+	var crest_right: Array[Vector3] = [Vector3(4.5, 30.0, -0.2), Vector3(4.0, 35.5, -0.2), Vector3(2.2, 41.5, -0.2), Vector3(0.0, 47.0, -0.2)]
 	for segment in range(crest_left.size() - 1):
 		_add_arch_beam(site, "Aile_sculpturale_gauche_%d" % segment, crest_left[segment], crest_left[segment + 1], 1.0, 1.45, _gold)
 		_add_arch_beam(site, "Aile_sculpturale_droite_%d" % segment, crest_right[segment], crest_right[segment + 1], 1.0, 1.45, _gold)
@@ -310,10 +310,12 @@ func _build_official_tribune() -> void:
 		var rz := -13.0 + float(row) * 2.7
 		var ry := 1.0 + float(row) * 0.42
 		_box(site, "Marche_gradin_%02d" % row, Vector3(74.0, 0.42, 2.7), Vector3(0, ry, rz), _stone)
-		for seat_index in range(20):
-			var seat_x := -35.0 + float(seat_index) * 3.7
-			seat_transforms.append(Transform3D(Basis.IDENTITY, Vector3(seat_x, ry + 0.68, rz - 0.18)))
-			backrest_transforms.append(Transform3D(Basis.IDENTITY, Vector3(seat_x, ry + 0.94, rz + 0.20)))
+		for seat_index in range(9):
+			var seat_x_left := -33.0 + float(seat_index) * 3.6
+			var seat_x_right := 4.5 + float(seat_index) * 3.6
+			for seat_x in [seat_x_left, seat_x_right]:
+				seat_transforms.append(Transform3D(Basis.IDENTITY, Vector3(seat_x, ry + 0.68, rz - 0.18)))
+				backrest_transforms.append(Transform3D(Basis.IDENTITY, Vector3(seat_x, ry + 0.94, rz + 0.20)))
 	var seat_mesh := BoxMesh.new()
 	seat_mesh.size = Vector3(3.35, 0.24, 0.88)
 	seat_mesh.material = _dark
