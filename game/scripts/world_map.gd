@@ -19,6 +19,13 @@ const TERRAIN_VERTICAL_EXAGGERATION := 1.0
 const TERRAIN_STREAM_RADIUS := 1
 const TERRAIN_STREAM_UPDATE_SECONDS := 0.45
 const TERRAIN_STREAM_MAX_BUILDS_PER_UPDATE := 2
+# Rayon de données réellement converties en géométrie au démarrage (en mètres).
+# Les fichiers GeoJSON restent des données compactes ; les meshes hors zone ne sont pas créés.
+const WORLD_ENVIRONMENT_RADIUS := 1800.0
+const WORLD_ROAD_RADIUS := 2400.0
+const WORLD_BUILDING_RADIUS := 1400.0
+const WORLD_POI_RADIUS := 1800.0
+const WORLD_LOCALITY_RADIUS := 3500.0
 
 @export var show_roads := true
 @export var show_buildings := true
@@ -188,6 +195,14 @@ func _ready() -> void:
 	await get_tree().process_frame
 	if _dem_loaded:
 		await _build_terrain_chunks()
+	# Le joueur reprend le contrôle dès que le sol et ses collisions proches
+	# existent. Les décors non essentiels continuent ensuite leur préparation.
+	var player_after_terrain := get_parent().get_node_or_null("Player") as CharacterBody3D
+	if player_after_terrain != null:
+		player_after_terrain.set_physics_process(true)
+	var vehicle_after_terrain := get_parent().get_node_or_null("Vehicle") as CharacterBody3D
+	if vehicle_after_terrain != null:
+		vehicle_after_terrain.set_physics_process(true)
 	_grass_generator = GrassGenerator.new()
 	_grass_generator.name = "Procedural_Real_Grass"
 	add_child(_grass_generator)
@@ -230,7 +245,7 @@ func _ready() -> void:
 	if vehicle_ready != null:
 		vehicle_ready.set_physics_process(true)
 	_create_location_hud()
-	print("LIBREVILLE STORIES | routes: %d | bâtiments: %d | lieux identifiables: %d | éléments environnementaux: %d" % [_road_count, _building_count, _poi_count, _environment_count])
+	print("LIBREVILLE STORIES | zone initiale : environnement %.0f m, routes %.0f m, bâtiments %.0f m | routes: %d | bâtiments: %d | POI: %d" % [WORLD_ENVIRONMENT_RADIUS, WORLD_ROAD_RADIUS, WORLD_BUILDING_RADIUS, _road_count, _building_count, _poi_count])
 
 
 func _process(delta: float) -> void:
@@ -842,7 +857,7 @@ func _load_environment() -> void:
 	var batch_count := 0
 	var batch_index := 0
 	var environment_index := 0
-	var environment_features: Array = data.get("features", []).duplicate()
+	var environment_features: Array = _filter_features_to_player_zone(data.get("features", []).duplicate(), WORLD_ENVIRONMENT_RADIUS)
 	var player_for_environment := get_parent().get_node_or_null("Player") as Node3D
 	var environment_origin := Vector2.ZERO
 	if player_for_environment != null:
@@ -1888,7 +1903,7 @@ func _load_roads() -> void:
 		push_warning("roads.geojson absent : carte routière non chargée.")
 		return
 	var started_ms := Time.get_ticks_msec()
-	var features: Array = data.get("features", []).duplicate()
+	var features: Array = _filter_features_to_player_zone(data.get("features", []).duplicate(), WORLD_ROAD_RADIUS)
 	var player_for_roads := get_parent().get_node_or_null("Player") as Node3D
 	var road_origin := Vector2.ZERO
 	if player_for_roads != null:
@@ -3347,7 +3362,7 @@ func _load_buildings() -> void:
 	if data.is_empty():
 		push_warning("buildings.geojson absent : bâtiments non chargés.")
 		return
-	var features: Array = data.get("features", []).duplicate()
+	var features: Array = _filter_features_to_player_zone(data.get("features", []).duplicate(), WORLD_BUILDING_RADIUS)
 	var player_for_buildings := get_parent().get_node_or_null("Player") as Node3D
 	var building_origin := Vector2.ZERO
 	if player_for_buildings != null:
@@ -3440,7 +3455,7 @@ func _load_localities() -> void:
 	if data.is_empty():
 		push_warning("localities.geojson absent : les noms de quartiers/localités ne seront pas affichés.")
 		return
-	var features: Array = data.get("features", []).duplicate()
+	var features: Array = _filter_features_to_player_zone(data.get("features", []).duplicate(), WORLD_LOCALITY_RADIUS)
 	var player_for_localities := get_parent().get_node_or_null("Player") as Node3D
 	var locality_origin := Vector2.ZERO
 	if player_for_localities != null:
@@ -3537,7 +3552,7 @@ func _load_pois() -> void:
 	if data.is_empty():
 		push_warning("pois.geojson absent : les lieux nommés ne seront pas affichés.")
 		return
-	var poi_features: Array = data.get("features", []).duplicate()
+	var poi_features: Array = _filter_features_to_player_zone(data.get("features", []).duplicate(), WORLD_POI_RADIUS)
 	poi_features.sort_custom(Callable(self, "_compare_poi_features"))
 	for feature in poi_features:
 		if _poi_count >= MAX_POI_LABELS:
@@ -3632,6 +3647,32 @@ func _collect_geo_points(value: Variant, points: Array[Vector2]) -> void:
 	for child in values:
 		_collect_geo_points(child, points)
 
+
+
+func _filter_features_to_player_zone(features: Array, radius_m: float) -> Array:
+	var player := get_parent().get_node_or_null("Player") as Node3D
+	if player == null:
+		return features
+	var center := Vector2(player.global_position.x, player.global_position.z)
+	var radius_squared := radius_m * radius_m
+	var selected: Array = []
+	for feature in features:
+		if not feature is Dictionary:
+			continue
+		var geometry: Dictionary = feature.get("geometry", {})
+		var points: Array[Vector2] = []
+		_collect_geo_points(geometry.get("coordinates", []), points)
+		if points.is_empty():
+			continue
+		# La distance au centre géométrique permet de ne créer que les objets
+		# appartenant à la zone active et à sa couronne de préparation.
+		var feature_center := Vector2.ZERO
+		for point in points:
+			feature_center += point
+		feature_center /= float(points.size())
+		if feature_center.distance_squared_to(center) <= radius_squared:
+			selected.append(feature)
+	return selected
 
 func _feature_world_center(feature: Dictionary) -> Vector2:
 	var geometry: Dictionary = feature.get("geometry", {})
