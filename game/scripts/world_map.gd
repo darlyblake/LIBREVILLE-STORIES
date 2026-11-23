@@ -3983,13 +3983,17 @@ func _place_baie_des_rois_restaurant(feature: Dictionary, scenes: Array[PackedSc
 	]
 	var best_scene: PackedScene
 	var best_scale := 0.0
-	var best_coverage := -1.0
+	var best_score := INF
 	for scene_index in range(mini(scenes.size(), model_dimensions.size())):
 		var dimensions := model_dimensions[scene_index]
 		var fit_scale := minf(target_width / dimensions.x, target_depth / dimensions.y) * 0.94
 		var coverage := (dimensions.x * dimensions.y * fit_scale * fit_scale) / (target_width * target_depth)
-		if fit_scale > 0.0 and coverage > best_coverage:
-			best_coverage = coverage
+		# Choisir la variante dont l'échelle reste la plus proche de 1.0 :
+		# cela évite d'agrandir un petit kiosque de 60 % alors qu'un modèle large
+		# existe déjà pour l'empreinte OSM.
+		var score := absf(log(maxf(fit_scale, 0.001))) + (1.0 - coverage) * 0.25
+		if fit_scale > 0.0 and score < best_score:
+			best_score = score
 			best_scale = fit_scale
 			best_scene = scenes[scene_index]
 	if best_scene == null:
