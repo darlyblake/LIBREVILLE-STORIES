@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://c8xx0n16wc0y8"
-path="res://.godot/imported/jeep_wrangler_rubicon_4xe_2024.glb-2e2553e38ad5cdc50f80ad16e781dcb6.scn"
+path="res://.godot/imported/jeep_wrangler_rubicon_4xe_2024.glb-ec9b4985667207e42c2eb1f119377bad.scn"
 
 [deps]
 
 source_file="res://assets/models/vehicles/jeep_wrangler_rubicon_4xe_2024/jeep_wrangler_rubicon_4xe_2024.glb"
-dest_files=["res://.godot/imported/jeep_wrangler_rubicon_4xe_2024.glb-2e2553e38ad5cdc50f80ad16e781dcb6.scn"]
+dest_files=["res://.godot/imported/jeep_wrangler_rubicon_4xe_2024.glb-ec9b4985667207e42c2eb1f119377bad.scn"]
 
 [params]
 

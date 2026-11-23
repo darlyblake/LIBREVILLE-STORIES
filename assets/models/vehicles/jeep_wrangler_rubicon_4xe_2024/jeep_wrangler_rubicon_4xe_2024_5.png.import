@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://rftbngmu8tsk"
-path.s3tc="res://.godot/imported/jeep_wrangler_rubicon_4xe_2024_5.png-e5fe5409bb3723878e70d397f244c146.s3tc.ctex"
+path.s3tc="res://.godot/imported/jeep_wrangler_rubicon_4xe_2024_5.png-290c94a85bb2575faf90a87c427e40f8.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -14,8 +14,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://jeep_wrangler_rubicon_4xe_2024_5.png"
-dest_files=["res://.godot/imported/jeep_wrangler_rubicon_4xe_2024_5.png-e5fe5409bb3723878e70d397f244c146.s3tc.ctex"]
+source_file="res://assets/models/vehicles/jeep_wrangler_rubicon_4xe_2024/jeep_wrangler_rubicon_4xe_2024_5.png"
+dest_files=["res://.godot/imported/jeep_wrangler_rubicon_4xe_2024_5.png-290c94a85bb2575faf90a87c427e40f8.s3tc.ctex"]
 
 [params]
 

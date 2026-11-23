@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cvic3c56yr7qp"
-path="res://.godot/imported/asphalt_floor_4k.gltf-9b6400e969ec7a5000177d335d050e6c.scn"
+path="res://.godot/imported/asphalt_floor_4k.gltf-a7468b2e1367da135fe8562535c59b44.scn"
 
 [deps]
 
-source_file="res://asphalt_floor_4k.gltf/asphalt_floor_4k.gltf"
-dest_files=["res://.godot/imported/asphalt_floor_4k.gltf-9b6400e969ec7a5000177d335d050e6c.scn"]
+source_file="res://assets/textures/roads/asphalt_floor_4k.gltf/asphalt_floor_4k.gltf"
+dest_files=["res://.godot/imported/asphalt_floor_4k.gltf-a7468b2e1367da135fe8562535c59b44.scn"]
 
 [params]
 

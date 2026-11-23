@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://r7jwivo553yn"
-path="res://.godot/imported/worn_asphalt_4k.gltf-8e5ec2af0ff11c250de658e784591f6c.scn"
+path="res://.godot/imported/worn_asphalt_4k.gltf-38a5ab292776f6d1e1a14da94ea45316.scn"
 
 [deps]
 
-source_file="res://worn_asphalt_4k.gltf/worn_asphalt_4k.gltf"
-dest_files=["res://.godot/imported/worn_asphalt_4k.gltf-8e5ec2af0ff11c250de658e784591f6c.scn"]
+source_file="res://assets/textures/roads/worn_asphalt_4k.gltf/worn_asphalt_4k.gltf"
+dest_files=["res://.godot/imported/worn_asphalt_4k.gltf-38a5ab292776f6d1e1a14da94ea45316.scn"]
 
 [params]
 
