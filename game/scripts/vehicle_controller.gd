@@ -39,6 +39,8 @@ var _steering_input := 0.0
 var _steering_angle := 0.0
 var _planar_velocity := Vector3.ZERO
 var _camera_pivot: Node3D
+var _camera_arm: SpringArm3D
+var _hud_layer: CanvasLayer
 var _chase_camera: Camera3D
 var _cockpit_camera: Camera3D
 var _camera_mode := 0
@@ -59,7 +61,6 @@ func _ready() -> void:
 		push_warning("Jeep : %d éléments de roue détectés. Les pivots du GLB doivent être vérifiés avant de corriger les axes." % _wheel_nodes.size())
 	_setup_vehicle_cameras()
 	_setup_vehicle_hud()
-	_set_camera_mode(0)
 
 func _physics_process(delta: float) -> void:
 	if not player_driving:
@@ -220,15 +221,15 @@ func _setup_vehicle_cameras() -> void:
 	_camera_pivot.name = "VehicleCameraPivot"
 	_camera_pivot.position = Vector3(0.0, 1.65, 0.25)
 	add_child(_camera_pivot)
-	var arm := SpringArm3D.new()
-	arm.name = "ChaseSpringArm"
-	arm.spring_length = 4.8
-	arm.margin = 0.25
-	_camera_pivot.add_child(arm)
+	_camera_arm = SpringArm3D.new()
+	_camera_arm.name = "ChaseSpringArm"
+	_camera_arm.spring_length = 4.8
+	_camera_arm.margin = 0.25
+	_camera_pivot.add_child(_camera_arm)
 	_chase_camera = Camera3D.new()
 	_chase_camera.name = "ChaseCamera"
 	_chase_camera.fov = 72.0
-	arm.add_child(_chase_camera)
+	_camera_arm.add_child(_chase_camera)
 	_cockpit_camera = Camera3D.new()
 	_cockpit_camera.name = "CockpitCamera"
 	_cockpit_camera.position = Vector3(-0.38, 1.38, 0.28)
@@ -236,14 +237,15 @@ func _setup_vehicle_cameras() -> void:
 	add_child(_cockpit_camera)
 
 func _setup_vehicle_hud() -> void:
-	var layer := CanvasLayer.new()
-	layer.name = "VehicleDashboard"
-	layer.layer = 8
-	add_child(layer)
+	_hud_layer = CanvasLayer.new()
+	_hud_layer.name = "VehicleDashboard"
+	_hud_layer.layer = 8
+	_hud_layer.visible = false
+	add_child(_hud_layer)
 	var panel := PanelContainer.new()
 	panel.position = Vector2(22, 150)
 	panel.custom_minimum_size = Vector2(190, 100)
-	layer.add_child(panel)
+	_hud_layer.add_child(panel)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 4)
 	panel.add_child(column)
@@ -279,19 +281,20 @@ func _set_camera_mode(mode: int) -> void:
 		if _camera_mode == 0:
 			_camera_pivot.position = Vector3(0.0, 1.65, 0.25)
 			_camera_pivot.rotation = Vector3(-0.12, 0.0, 0.0)
-			_chase_camera.get_parent().spring_length = 4.8
+			_camera_arm.spring_length = 4.8
 		elif _camera_mode == 1:
 			_camera_pivot.position = Vector3(0.0, 1.85, 0.25)
 			_camera_pivot.rotation = Vector3(-0.10, 0.0, 0.0)
-			_chase_camera.get_parent().spring_length = 8.0
+			_camera_arm.spring_length = 8.0
 		else:
 			_camera_pivot.position = Vector3(0.0, 2.2, 0.25)
 			_camera_pivot.rotation = Vector3(-0.22, 0.0, 0.0)
-			_chase_camera.get_parent().spring_length = 7.0
+			_camera_arm.spring_length = 7.0
 	_update_vehicle_hud()
 
 func enter_vehicle() -> void:
 	player_driving = true
+	_hud_layer.visible = true
 	current_speed = 0.0
 	_planar_velocity = Vector3.ZERO
 	_steering_angle = 0.0
@@ -301,6 +304,7 @@ func enter_vehicle() -> void:
 
 func exit_vehicle() -> void:
 	player_driving = false
+	_hud_layer.visible = false
 	current_speed = 0.0
 	_planar_velocity = Vector3.ZERO
 	_steering_angle = 0.0
