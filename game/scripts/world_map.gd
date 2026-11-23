@@ -785,6 +785,12 @@ render_mode cull_disabled, diffuse_burley, specular_schlick_ggx;
 varying vec3 world_position;
 varying vec4 surface_tint;
 
+uniform sampler2D grass_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D wet_sand_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D dry_sand_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D soil_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D gravel_albedo : source_color, filter_linear_mipmap, repeat_enable;
+
 float hash21(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
 	p += vec2(dot(p, p + vec2(45.32)));
@@ -819,22 +825,53 @@ void fragment() {
 	float ripple = sin(p.x * 0.42 + sin(p.y * 0.17) * 1.8) * 0.5 + 0.5;
 	float sand_variation = 0.84 + broad * 0.18 + medium * 0.08;
 	sand_variation += (ripple - 0.5) * 0.045 + (grain - 0.5) * 0.055;
-	vec3 sand_color = base * sand_variation;
-	sand_color = mix(sand_color, sand_color * vec3(0.82, 0.78, 0.69), smoothstep(0.68, 0.92, broad) * 0.12);
-	// Humidité diffuse du sable près des zones basses : taches foncées,
-	// légèrement plus lisses, sans créer une bande artificielle uniforme.
+	// Humidité diffuse du sable : transition entre sable sec et humide.
 	float damp_noise = broad * 0.62 + medium * 0.38;
 	float damp_mask = smoothstep(0.58, 0.78, damp_noise) * sand_mask;
-	sand_color = mix(sand_color, sand_color * vec3(0.76, 0.79, 0.78), damp_mask * 0.34);
-	vec3 other_color = base * (0.97 + broad * 0.06);
+	vec2 ground_uv = p * 0.065;
+	vec3 dry_sand = texture(dry_sand_albedo, ground_uv).rgb;
+	vec3 wet_sand = texture(wet_sand_albedo, ground_uv * 0.82).rgb;
+	vec3 sand_texture = mix(dry_sand, wet_sand, damp_mask * 0.78);
+	vec3 sand_color = sand_texture * (0.91 + sand_variation * 0.10);
+	sand_color = mix(sand_color, sand_color * vec3(0.76, 0.79, 0.78), damp_mask * 0.18);
+
+	float grass_mask = smoothstep(0.06, 0.18, base.g - base.r)
+		* smoothstep(0.035, 0.15, base.g - base.b);
+	vec3 grass_texture = texture(grass_albedo, ground_uv * 0.72).rgb;
+	vec3 grass_color = grass_texture * vec3(0.78, 0.86, 0.74);
+
+	float neutral_mask = 1.0 - smoothstep(0.035, 0.15,
+		abs(base.r - base.g) + abs(base.g - base.b));
+	vec3 soil_color = texture(soil_albedo, ground_uv * 0.84).rgb * vec3(0.92, 0.90, 0.84);
+	vec3 gravel_color = texture(gravel_albedo, ground_uv * 0.95).rgb;
+	vec3 other_color = mix(soil_color, gravel_color, neutral_mask * 0.72);
+	float water_mask = smoothstep(0.08, 0.24, base.b - base.g);
 	ALBEDO = mix(other_color, sand_color, sand_mask);
-	float sand_roughness = mix(0.94, 0.88, damp_mask);
+	ALBEDO = mix(ALBEDO, grass_color, grass_mask);
+	ALBEDO = mix(ALBEDO, base, water_mask);
+	float sand_roughness = mix(0.94, 0.82, damp_mask);
 	ROUGHNESS = mix(0.94, sand_roughness, sand_mask);
-	SPECULAR = mix(0.18, 0.28, damp_mask);
+	ROUGHNESS = mix(ROUGHNESS, 0.96, grass_mask);
+	SPECULAR = mix(0.16, 0.26, damp_mask);
 }
 """
 	var material := ShaderMaterial.new()
 	material.shader = shader
+	var texture_paths := {
+		"grass_albedo": "res://assets/textures/vegetation/Grass001_4K-JPG/Grass001_4K-JPG_Color.jpg",
+		"wet_sand_albedo": "res://assets/textures/ground/Ground061_4K-JPG/Ground061_4K-JPG_Color.jpg",
+		"dry_sand_albedo": "res://assets/textures/ground/Ground093C_4K-JPG/Ground093C_4K-JPG_Color.jpg",
+		"soil_albedo": "res://assets/textures/ground/Ground103_4K-JPG/Ground103_4K-JPG_Color.jpg",
+		"gravel_albedo": "res://assets/textures/ground/Ground014_4K-JPG/Ground014_4K-JPG_Color.jpg"
+	}
+	for parameter in texture_paths:
+		var texture_path: String = texture_paths[parameter]
+		var texture := load(texture_path) as Texture2D
+		if texture != null:
+			material.set_shader_parameter(parameter, texture)
+		else:
+			push_warning("Texture environnementale absente : %s" % texture_path)
+	print("LIBREVILLE STORIES | textures PBR de sable, herbe, terre et gravier connectées.")
 	return material
 
 
