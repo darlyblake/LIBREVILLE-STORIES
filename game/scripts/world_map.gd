@@ -1169,6 +1169,12 @@ func _build_baie_des_rois_seawall() -> void:
 	concrete.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var wall_surface := _new_surface(concrete)
 	var wall_segments := 0
+	var rail_root := Node3D.new()
+	rail_root.name = "BaieDesRois_Seafront_Guardrail"
+	var rail_material := StandardMaterial3D.new()
+	rail_material.albedo_color = Color(0.34, 0.38, 0.39)
+	rail_material.metallic = 0.62
+	rail_material.roughness = 0.42
 	var rock_root := Node3D.new()
 	rock_root.name = "BaieDesRois_Coastal_Rock_Assets"
 	var rock_scene_a := load("res://assets/models/environment/coastal_rocks/rock_face_01_4k.gltf/rock_face_01_4k.gltf") as PackedScene
@@ -1216,6 +1222,31 @@ func _build_baie_des_rois_seawall() -> void:
 				Vector3(land_b.x, top_b, land_b.y), Vector3(land_a.x, top_a, land_a.y))
 			wall_segments += 1
 
+			# Garde-corps métallique bas au-dessus du muret béton : deux lisses
+			# et des montants espacés, orientés suivant chaque segment OSM.
+			var rail_mid := (wall_a + wall_b) * 0.5
+			var rail_base_y := (top_a + top_b) * 0.5
+			var rail_yaw := atan2(direction.x, direction.y)
+			for rail_height in [0.34, 0.88]:
+				var rail_bar := MeshInstance3D.new()
+				var rail_box := BoxMesh.new()
+				rail_box.size = Vector3(0.055, 0.055, length + 0.06)
+				rail_bar.mesh = rail_box
+				rail_bar.material_override = rail_material
+				rail_bar.position = Vector3(rail_mid.x, rail_base_y + rail_height, rail_mid.y)
+				rail_bar.rotation.y = rail_yaw
+				rail_bar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				rail_root.add_child(rail_bar)
+			if i % 3 == 0:
+				var post := MeshInstance3D.new()
+				var post_box := BoxMesh.new()
+				post_box.size = Vector3(0.075, 0.98, 0.075)
+				post.mesh = post_box
+				post.material_override = rail_material
+				post.position = Vector3(rail_mid.x, rail_base_y + 0.49, rail_mid.y)
+				post.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				rail_root.add_child(post)
+
 			# Les sections sableuses restent dégagées. Sur les portions rocheuses,
 			# alterner les deux modèles PBR téléchargés, à faible densité.
 			var sandy := _is_inside_beach(midpoint + land_normal * 5.0) or _is_inside_beach(midpoint + land_normal * 12.0)
@@ -1251,9 +1282,11 @@ func _build_baie_des_rois_seawall() -> void:
 			wall_collision.shape = wall_mesh.create_trimesh_shape()
 			wall_body.add_child(wall_collision)
 			add_child(wall_body)
+	if rail_root.get_child_count() > 0:
+		add_child(rail_root)
 	if rock_count > 0:
 		add_child(rock_root)
-	print("LIBREVILLE STORIES | rive Baie des Rois : %d segments béton, %d rochers PBR" % [wall_segments, rock_count])
+	print("LIBREVILLE STORIES | rive Baie des Rois : %d segments béton, garde-corps %d pièces, %d rochers PBR" % [wall_segments, rail_root.get_child_count(), rock_count])
 
 
 func _is_inside_beach(point: Vector2) -> bool:
