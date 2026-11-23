@@ -217,7 +217,7 @@ func _build_monument() -> void:
 		_box(site, "Bandeau_base_arc_%s" % str(side), Vector3(8.1, 0.22, 17.2), Vector3(side * 14.0, 1.05, 0), _gold)
 
 	# Musée et hall d'exposition placés en retrait : l'ouverture monumentale reste lisible.
-	_box(site, "Volume_musee_en_retrait", Vector3(19.0, 30.0, 12.0), Vector3(0, 15.2, -5.5), _stone)
+	_box(site, "Volume_musee_en_retrait", Vector3(19.0, 30.0, 12.0), Vector3(0, 15.2, -5.5), _white)
 	_add_platform_collision(site, Vector3(19.0, 30.0, 12.0), Vector3(0, 15.2, -5.5))
 	_box(site, "Facade_vitree_musee", Vector3(17.0, 27.0, 0.20), Vector3(0, 15.2, 0.62), _glass)
 	# Façade arrière vitrée et trame de sept niveaux : le bâtiment garde du détail
@@ -375,7 +375,7 @@ func _build_official_tribune() -> void:
 	_add_platform_collision(site, Vector3(84.0, 1.5, 40.0), Vector3(0, -0.60, 0))
 
 	# Tribune monumentale jaune : gradins, allées rouges et assises vertes.
-	_box(site, "Plateforme_beton", Vector3(82.0, 0.9, 38.0), Vector3(0, 0.45, 0), _stone)
+	_box(site, "Plateforme_beton", Vector3(82.0, 0.9, 38.0), Vector3(0, 0.45, 0), _white)
 	_add_platform_collision(site, Vector3(82.0, 1.0, 38.0), Vector3(0, 0.5, 0))
 	var seat_transforms: Array[Transform3D] = []
 	var backrest_transforms: Array[Transform3D] = []
