@@ -177,8 +177,21 @@ func _cylinder(parent: Node3D, node_name: String, radius: float, height: float, 
 func _build_monument() -> void:
 	var site := Node3D.new()
 	site.name = "Monument_Georges_Damas_Aleka"
-	site.position = _geo_to_world(MONUMENT_LAT, MONUMENT_LON)
+	var monument_anchor := _geo_to_world(MONUMENT_LAT, MONUMENT_LON)
+	# Le site est une esplanade aménagée sur le rivage : son socle doit rester
+	# au-dessus du niveau marin et s'ancrer dans un remblai, jamais flotter.
+	monument_anchor.y = maxf(monument_anchor.y, 0.35)
+	site.position = monument_anchor
 	add_child(site)
+
+	# Fondation de remblai et murs de soutènement sous le parvis, pour une assise
+	# continue sur le terrain côtier au lieu d'une dalle suspendue au-dessus de l'eau.
+	_box(site, "Fondation_remblai_parvis", Vector3(92.0, 1.6, 50.0), Vector3(0, -0.64, 0), _stone)
+	_add_platform_collision(site, Vector3(92.0, 1.6, 50.0), Vector3(0, -0.64, 0))
+	_box(site, "Mur_soutenement_gauche", Vector3(1.0, 1.6, 50.0), Vector3(-45.5, -0.64, 0), _stone)
+	_box(site, "Mur_soutenement_droit", Vector3(1.0, 1.6, 50.0), Vector3(45.5, -0.64, 0), _stone)
+	_box(site, "Mur_soutenement_avant", Vector3(92.0, 1.6, 1.0), Vector3(0, -0.64, 24.5), _stone)
+	_box(site, "Mur_soutenement_arriere", Vector3(92.0, 1.6, 1.0), Vector3(0, -0.64, -24.5), _stone)
 
 	# Parvis principal : dalle claire, joints de dilatation et cheminement axial.
 	_box(site, "Parvis_pierre_naturelle", Vector3(90.0, 0.32, 48.0), Vector3(0, 0.16, 0), _paving)
@@ -204,17 +217,27 @@ func _build_monument() -> void:
 		_box(site, "Bandeau_base_arc_%s" % str(side), Vector3(8.1, 0.22, 17.2), Vector3(side * 14.0, 1.05, 0), _gold)
 
 	# Musée et hall d'exposition placés en retrait : l'ouverture monumentale reste lisible.
-	_box(site, "Volume_musee_en_retrait", Vector3(19.0, 8.0, 12.0), Vector3(0, 4.2, -5.5), _stone)
-	_add_platform_collision(site, Vector3(19.0, 8.0, 12.0), Vector3(0, 4.2, -5.5))
-	_box(site, "Facade_vitree_musee", Vector3(17.0, 6.6, 0.20), Vector3(0, 4.2, 0.62), _glass)
-	# La façade arrière reçoit également son vitrage et ses meneaux : le musée
-	# reste fermé et détaillé lorsque le joueur contourne le bâtiment.
-	_box(site, "Facade_vitree_musee_arriere", Vector3(17.0, 6.6, 0.20), Vector3(0, 4.2, -11.62), _glass)
+	_box(site, "Volume_musee_en_retrait", Vector3(19.0, 30.0, 12.0), Vector3(0, 15.2, -5.5), _stone)
+	_add_platform_collision(site, Vector3(19.0, 30.0, 12.0), Vector3(0, 15.2, -5.5))
+	_box(site, "Facade_vitree_musee", Vector3(17.0, 27.0, 0.20), Vector3(0, 15.2, 0.62), _glass)
+	# Façade arrière vitrée et trame de sept niveaux : le bâtiment garde du détail
+	# quand le joueur le contourne, sans face arrière nue ou ouverte sur le vide.
+	_box(site, "Facade_vitree_musee_arriere", Vector3(17.0, 27.0, 0.20), Vector3(0, 15.2, -11.62), _glass)
 	for mullion in range(9):
 		var mx := -7.6 + float(mullion) * 1.9
-		_box(site, "Meneau_musee_%02d" % mullion, Vector3(0.10, 6.4, 0.16), Vector3(mx, 4.2, 0.78), _dark)
-		_box(site, "Meneau_musee_arriere_%02d" % mullion, Vector3(0.10, 6.4, 0.16), Vector3(mx, 4.2, -11.78), _dark)
-	_box(site, "Auvent_musee", Vector3(21.0, 0.45, 13.5), Vector3(0, 8.45, -5.5), _white)
+		_box(site, "Meneau_musee_%02d" % mullion, Vector3(0.10, 26.6, 0.16), Vector3(mx, 15.2, 0.78), _dark)
+		_box(site, "Meneau_musee_arriere_%02d" % mullion, Vector3(0.10, 26.6, 0.16), Vector3(mx, 15.2, -11.78), _dark)
+	for floor_index in range(7):
+		var floor_y := 2.8 + float(floor_index) * 3.75
+		_box(site, "Bandeau_etage_avant_%02d" % floor_index, Vector3(17.4, 0.16, 0.22), Vector3(0, floor_y, 0.78), _gold)
+		_box(site, "Bandeau_etage_arriere_%02d" % floor_index, Vector3(17.4, 0.16, 0.22), Vector3(0, floor_y, -11.78), _gold)
+	# Ouvertures latérales répétées : les deux flancs ne sont pas des murs aveugles.
+	for side in [-1.0, 1.0]:
+		for floor_index in range(7):
+			var floor_y := 2.8 + float(floor_index) * 3.75
+			_box(site, "Vitrage_lateral_%s_%02d" % [str(side), floor_index],
+				Vector3(0.18, 2.35, 8.8), Vector3(side * 9.58, floor_y + 1.35, -5.5), _glass)
+	_box(site, "Auvent_musee", Vector3(21.0, 0.45, 13.5), Vector3(0, 30.45, -5.5), _white)
 
 	# Structure supérieure sculpturale : deux montants courbes qui culminent à environ 47 m.
 	# Les traverses donnent une vraie lecture de charpente métallique, sans bloc plein.
@@ -342,8 +365,14 @@ func _build_pavilion(parent: Node3D, number: int, center: Vector3) -> void:
 func _build_official_tribune() -> void:
 	var site := Node3D.new()
 	site.name = "Tribune_Officielle_Independance"
-	site.position = _geo_to_world(TRIBUNE_LAT, TRIBUNE_LON)
+	var tribune_anchor := _geo_to_world(TRIBUNE_LAT, TRIBUNE_LON)
+	tribune_anchor.y = maxf(tribune_anchor.y, 0.35)
+	site.position = tribune_anchor
 	add_child(site)
+
+	# Fondation enterrée et plateforme continue : la tribune repose sur le terrain.
+	_box(site, "Fondation_remblai_tribune", Vector3(84.0, 1.5, 40.0), Vector3(0, -0.60, 0), _stone)
+	_add_platform_collision(site, Vector3(84.0, 1.5, 40.0), Vector3(0, -0.60, 0))
 
 	# Tribune monumentale jaune : gradins, allées rouges et assises vertes.
 	_box(site, "Plateforme_beton", Vector3(82.0, 0.9, 38.0), Vector3(0, 0.45, 0), _stone)
@@ -447,11 +476,14 @@ func _build_freedom_stele() -> void:
 	var site := Node3D.new()
 	site.name = "Stele_Liberte"
 	site.position = _geo_to_world(STELE_LAT, STELE_LON)
+	site.position.y = maxf(site.position.y, 0.35)
 	var palace_position := _geo_to_world(PRESIDENTIAL_PALACE_LAT, PRESIDENTIAL_PALACE_LON)
 	var facing := Vector2(palace_position.x - site.position.x, palace_position.z - site.position.z).normalized()
 	site.rotation.y = atan2(-facing.x, -facing.y)
 	add_child(site)
 
+	_box(site, "Fondation_remblai_stele", Vector3(18.5, 1.4, 12.5), Vector3(0, -0.49, 0), _stone)
+	_add_platform_collision(site, Vector3(18.5, 1.4, 12.5), Vector3(0, -0.49, 0))
 	_box(site, "Socle_stele_liberté", Vector3(18.0, 0.42, 12.0), Vector3(0, 0.21, 0), _paving)
 	_add_platform_collision(site, Vector3(18.0, 0.5, 12.0), Vector3(0, 0.25, 0))
 	_box(site, "Dalle_centrale", Vector3(8.8, 0.48, 5.4), Vector3(0, 0.45, 0), _stone)
