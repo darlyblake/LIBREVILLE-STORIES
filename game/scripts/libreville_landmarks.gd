@@ -10,6 +10,10 @@ const MONUMENT_LON := 9.44288
 # Centroïde du toit de la tribune officielle (OSM way 1495944465).
 const TRIBUNE_LAT := 0.38831
 const TRIBUNE_LON := 9.44356
+const STELE_LAT := 0.39155
+const STELE_LON := 9.44067
+const PRESIDENTIAL_PALACE_LAT := 0.39237
+const PRESIDENTIAL_PALACE_LON := 9.44235
 const PAVILION_PROVINCES := ["HAUT-OGOOUE", "MOYEN-OGOOUE", "NGOUNIE", "NYANGA", "OGOOUE-IVINDO", "OGOOUE-LOLO", "OGOOUE-MARITIME", "WOLEU-NTEM"]
 
 var _stone: Material
@@ -25,12 +29,19 @@ func _ready() -> void:
 	_make_materials()
 	_build_monument()
 	_build_official_tribune()
+	_build_freedom_stele()
 	print("LIBREVILLE STORIES | repères du front de mer : monument Georges-Damas-Aleka + tribune officielle")
 
 
 func _make_materials() -> void:
 	# Surfaces procédurales PBR : variations minérales, grain fin et rugosité irrégulière.
-	_stone = _make_surface_shader(Color(0.48, 0.46, 0.42), 0.88, 0.34, 0.0)
+	# Les textures rocheuses PBR déjà présentes servent uniquement aux socles,
+	# plinthes et dalles minérales (pas aux façades peintes ni aux toitures).
+	_stone = _make_rock_material(
+		"res://assets/models/environment/coastal_rocks/rock_face_01_4k.gltf/textures/rock_face_01_diff_4k.jpg",
+		"res://assets/models/environment/coastal_rocks/rock_face_01_4k.gltf/textures/rock_face_01_nor_gl_4k.jpg",
+		"res://assets/models/environment/coastal_rocks/rock_face_01_4k.gltf/textures/rock_face_01_arm_4k.jpg",
+		Color(0.88, 0.86, 0.82), 1.7)
 	_white = _make_surface_shader(Color(0.82, 0.82, 0.78), 0.72, 0.52, 0.0)
 	_gold = _mat(Color(0.73, 0.57, 0.27), 0.34, 0.62)
 	_roof = _make_surface_shader(Color(0.67, 0.62, 0.49), 0.52, 0.7, 0.22)
@@ -39,8 +50,36 @@ func _make_materials() -> void:
 	_glass.clearcoat_enabled = true
 	_glass.clearcoat = 0.8
 	_dark = _mat(Color(0.075, 0.085, 0.09), 0.62, 0.48)
-	_paving = _make_surface_shader(Color(0.58, 0.57, 0.53), 0.9, 0.22, 0.0)
+	_paving = _make_rock_material(
+		"res://assets/models/environment/coastal_rocks/rock_face_02_4k.gltf/textures/rock_face_02_diff_4k.jpg",
+		"res://assets/models/environment/coastal_rocks/rock_face_02_4k.gltf/textures/rock_face_02_nor_gl_4k.jpg",
+		"res://assets/models/environment/coastal_rocks/rock_face_02_4k.gltf/textures/rock_face_02_arm_4k.jpg",
+		Color(0.82, 0.81, 0.77), 2.3)
 	_yellow = _make_surface_shader(Color(0.82, 0.55, 0.13), 0.48, 0.75, 0.28)
+
+
+func _make_rock_material(albedo_path: String, normal_path: String, arm_path: String,
+		tint: Color, tiling: float) -> Material:
+	var albedo := load(albedo_path) as Texture2D
+	var normal := load(normal_path) as Texture2D
+	var arm := load(arm_path) as Texture2D
+	if albedo == null or normal == null or arm == null:
+		push_warning("Texture roche PBR introuvable : matériau minéral procédural utilisé.")
+		return _make_surface_shader(tint, 0.88, 0.34, 0.0)
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = albedo
+	material.albedo_color = tint
+	material.normal_enabled = true
+	material.normal_texture = normal
+	material.normal_scale = 0.62
+	material.ao_enabled = true
+	material.ao_texture = arm
+	material.ao_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	material.roughness = 0.88
+	material.roughness_texture = arm
+	material.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_GREEN
+	material.uv1_scale = Vector3(tiling, tiling, tiling)
+	return material
 
 
 func _make_surface_shader(base_color: Color, roughness: float, scale: float, metallic: float) -> ShaderMaterial:
@@ -168,9 +207,13 @@ func _build_monument() -> void:
 	_box(site, "Volume_musee_en_retrait", Vector3(19.0, 8.0, 12.0), Vector3(0, 4.2, -5.5), _stone)
 	_add_platform_collision(site, Vector3(19.0, 8.0, 12.0), Vector3(0, 4.2, -5.5))
 	_box(site, "Facade_vitree_musee", Vector3(17.0, 6.6, 0.20), Vector3(0, 4.2, 0.62), _glass)
+	# La façade arrière reçoit également son vitrage et ses meneaux : le musée
+	# reste fermé et détaillé lorsque le joueur contourne le bâtiment.
+	_box(site, "Facade_vitree_musee_arriere", Vector3(17.0, 6.6, 0.20), Vector3(0, 4.2, -11.62), _glass)
 	for mullion in range(9):
 		var mx := -7.6 + float(mullion) * 1.9
 		_box(site, "Meneau_musee_%02d" % mullion, Vector3(0.10, 6.4, 0.16), Vector3(mx, 4.2, 0.78), _dark)
+		_box(site, "Meneau_musee_arriere_%02d" % mullion, Vector3(0.10, 6.4, 0.16), Vector3(mx, 4.2, -11.78), _dark)
 	_box(site, "Auvent_musee", Vector3(21.0, 0.45, 13.5), Vector3(0, 8.45, -5.5), _white)
 
 	# Structure supérieure sculpturale : deux montants courbes qui culminent à environ 47 m.
@@ -396,6 +439,95 @@ func _build_official_tribune() -> void:
 			_box(site, "Marche_acces_%s_%d" % [str(side), step], Vector3(5.0, 0.24, 1.1), Vector3(side * 38.0, 1.0 + float(step) * 0.34, 13.0 - float(step) * 1.2), _stone)
 			_add_platform_collision(site, Vector3(5.0, 0.24, 1.1), Vector3(side * 38.0, 1.0 + float(step) * 0.34, 13.0 - float(step) * 1.2))
 		_cylinder(site, "Main_courante_%s" % str(side), 0.07, 12.0, Vector3(side * 40.5, 3.2, 8.0), _dark, 10)
+
+
+func _build_freedom_stele() -> void:
+	# Emplacement OSM de la Stèle de la Liberté : 0.39155, 9.44067.
+	# Le personnage central est une interprétation de jeu, pas une copie sculpturale exacte.
+	var site := Node3D.new()
+	site.name = "Stele_Liberte"
+	site.position = _geo_to_world(STELE_LAT, STELE_LON)
+	var palace_position := _geo_to_world(PRESIDENTIAL_PALACE_LAT, PRESIDENTIAL_PALACE_LON)
+	var facing := Vector2(palace_position.x - site.position.x, palace_position.z - site.position.z).normalized()
+	site.rotation.y = atan2(-facing.x, -facing.y)
+	add_child(site)
+
+	_box(site, "Socle_stele_liberté", Vector3(18.0, 0.42, 12.0), Vector3(0, 0.21, 0), _paving)
+	_add_platform_collision(site, Vector3(18.0, 0.5, 12.0), Vector3(0, 0.25, 0))
+	_box(site, "Dalle_centrale", Vector3(8.8, 0.48, 5.4), Vector3(0, 0.45, 0), _stone)
+
+	# Deux piliers de pierre encadrent la figure, conformément aux descriptions
+	# documentaires de la stèle : reliefs géométriques et motifs sculptés stylisés.
+	for side in [-1.0, 1.0]:
+		var x := side * 4.0
+		_box(site, "Pilier_sculpte_%s" % str(side), Vector3(0.95, 7.0, 1.0), Vector3(x, 3.95, -0.15), _stone)
+		_box(site, "Chapiteau_pilier_%s" % str(side), Vector3(1.35, 0.38, 1.35), Vector3(x, 7.62, -0.15), _white)
+		for band in range(5):
+			var y := 1.25 + float(band) * 1.12
+			var relief := _box(site, "Relief_geometrique_%s_%d" % [str(side), band],
+				Vector3(0.58, 0.12, 0.08), Vector3(x, y, -0.68), _gold)
+			relief.rotation.z = deg_to_rad(18.0 if band % 2 == 0 else -18.0)
+		_box(site, "Bande_sculptee_pilier_%s" % str(side), Vector3(0.72, 0.34, 0.10), Vector3(x, 6.85, -0.70), _dark)
+
+	# Figure androgyne en mouvement : buste, tête, jambes et bras tendus vers les chaînes.
+	var body := MeshInstance3D.new()
+	body.name = "Figure_liberation_buste"
+	var torso := CapsuleMesh.new()
+	torso.radius = 0.48
+	torso.height = 2.05
+	body.mesh = torso
+	body.position = Vector3(0, 3.05, -0.55)
+	body.material_override = _white
+	site.add_child(body)
+
+	var head := MeshInstance3D.new()
+	head.name = "Figure_liberation_tete"
+	var head_mesh := SphereMesh.new()
+	head_mesh.radius = 0.42
+	head_mesh.height = 0.84
+	head.mesh = head_mesh
+	head.position = Vector3(0, 4.55, -0.55)
+	head.material_override = _white
+	site.add_child(head)
+
+	_cylinder_between(site, "Jambe_gauche", Vector3(-0.22, 1.95, -0.55), Vector3(-0.55, 0.85, -0.30), 0.22, _white)
+	_cylinder_between(site, "Jambe_droite", Vector3(0.22, 1.95, -0.55), Vector3(0.55, 0.85, -0.80), 0.22, _white)
+	_cylinder_between(site, "Bras_gauche_tendu", Vector3(-0.36, 3.75, -0.55), Vector3(-1.65, 4.55, -0.55), 0.19, _white)
+	_cylinder_between(site, "Bras_droit_tendu", Vector3(0.36, 3.75, -0.55), Vector3(1.65, 4.55, -0.55), 0.19, _white)
+	_cylinder_between(site, "Avant_bras_gauche", Vector3(-1.65, 4.55, -0.55), Vector3(-2.15, 4.15, -0.55), 0.15, _white)
+	_cylinder_between(site, "Avant_bras_droit", Vector3(1.65, 4.55, -0.55), Vector3(2.15, 4.15, -0.55), 0.15, _white)
+
+	# Chaînes rompues reliant les poignets aux piliers : maillons espacés et extrémités tombées.
+	for side in [-1.0, 1.0]:
+		for link in range(5):
+			var t := float(link) / 5.0
+			var start := Vector3(side * lerpf(2.15, 3.55, t), lerpf(4.15, 4.55, t), -0.60)
+			var finish := start + Vector3(side * 0.22, -0.04, 0.0)
+			_cylinder_between(site, "Chaine_rompue_%s_%d" % [str(side), link], start, finish, 0.055, _dark)
+		_cylinder_between(site, "Chaine_tombee_%s" % str(side),
+			Vector3(side * 2.7, 0.72, -0.75), Vector3(side * 3.3, 0.55, -0.75), 0.045, _gold)
+
+	_add_3d_text(site, "STELE DE LA LIBERTE", Vector3(0, 0.85, -5.7), 18, _gold)
+	_add_3d_text(site, "1848 - 1849", Vector3(0, 0.52, -5.7), 12, _white)
+
+
+func _cylinder_between(parent: Node3D, node_name: String, start: Vector3, finish: Vector3,
+		radius: float, material: Material) -> MeshInstance3D:
+	var delta := finish - start
+	var instance := MeshInstance3D.new()
+	instance.name = node_name
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius
+	mesh.bottom_radius = radius
+	mesh.height = maxf(delta.length(), 0.05)
+	mesh.radial_segments = 10
+	instance.mesh = mesh
+	instance.position = (start + finish) * 0.5
+	instance.quaternion = Quaternion(Vector3.UP, delta.normalized())
+	instance.material_override = material
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	parent.add_child(instance)
+	return instance
 
 
 func _add_3d_text(parent: Node3D, value: String, position: Vector3, font_size: int, material: Material) -> void:

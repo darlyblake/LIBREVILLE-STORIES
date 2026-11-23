@@ -140,6 +140,7 @@ var _facade_detail_material: StandardMaterial3D
 var _locality_points: Array[Dictionary] = []
 var _neighbourhood_polygons: Dictionary = {}
 var _neighbourhood_arrondissements: Dictionary = {}
+var _neighbourhood_names: Dictionary = {}
 var _road_clearance_segments: Array[Dictionary] = []
 var _road_clearance_grid: Dictionary = {}
 var _location_hud: Label
@@ -1960,6 +1961,7 @@ func _load_neighbourhoods() -> void:
 				polygon.append(Vector2(world_point.x, world_point.z))
 			_neighbourhood_polygons[osm_id] = polygon
 			_neighbourhood_arrondissements[osm_id] = str(props.get("arrondissement", ""))
+			_neighbourhood_names[osm_id] = str(props.get("name", "Quartier"))
 		var added := false
 		# Tracer aussi les anneaux intérieurs des multipolygones (îlots/exclusions).
 		for coords in rings:
@@ -3968,7 +3970,10 @@ func _load_localities() -> void:
 	if data.is_empty():
 		push_warning("localities.geojson absent : les noms de quartiers/localités ne seront pas affichés.")
 		return
-	var features: Array = _filter_features_to_player_zone(data.get("features", []).duplicate(), WORLD_LOCALITY_RADIUS)
+	# Le panneau de téléportation doit couvrir les six arrondissements, pas seulement
+	# le rayon de streaming autour du point de départ. Cette couche ne contient qu'une
+	# centaine de points : charger toute la liste reste très léger.
+	var features: Array = data.get("features", []).duplicate()
 	var player_for_localities := get_parent().get_node_or_null("Player") as Node3D
 	var locality_origin := Vector2.ZERO
 	if player_for_localities != null:
@@ -4010,30 +4015,31 @@ func _load_localities() -> void:
 
 func get_locality_destinations() -> Array[Dictionary]:
 	var destinations: Array[Dictionary] = []
-	for locality in _locality_points:
-		var point: Vector2 = locality.position
-		var osm_id := int(locality.get("osm_id", 0))
-		var polygon: PackedVector2Array = _neighbourhood_polygons.get(osm_id, PackedVector2Array())
-		# Le point OSM doit rester dans son propre secteur ; sinon, utiliser son centroïde.
-		if not polygon.is_empty() and not _point_in_polygon(point, polygon):
-			point = _polygon_centroid(polygon)
-		# Avec le DEM étendu, les limites du relief remplacent l'ancienne
-		# boîte fixe de 12 km qui excluait les quartiers périphériques.
-		if _dem_loaded:
-			if point.x < _dem_x_min or point.x > _dem_x_min + float(_dem_columns - 1) * _dem_spacing:
-				continue
-			if point.y < _dem_z_min or point.y > _dem_z_min + float(_dem_rows - 1) * _dem_spacing:
-				continue
-		else:
-			if absf(point.x) > 5900.0 or absf(point.y) > 5900.0:
-				continue
+	# Les polygones OSM sont la source de vérité pour les quartiers géolocalisés.
+	# On ne dépend plus des points localities filtrés autour du joueur : cela évite
+	# le message « aucun quartier dans cette zone » lorsque le joueur démarre en bord de mer.
+	for key in _neighbourhood_polygons.keys():
+		var osm_id := int(key)
+		var polygon: PackedVector2Array = _neighbourhood_polygons[osm_id]
+		if polygon.size() < 4:
+			continue
+		var point := _polygon_centroid(polygon)
+		if not _point_in_polygon(point, polygon):
+			# Les centroïdes de polygones concaves peuvent tomber hors du quartier.
+			# Le premier point intérieur issu du contour sert alors de point sûr.
+			point = polygon[0]
 		var ground_y := _terrain_height_at_world(point.x, point.y)
 		destinations.append({
-			"name": str(locality.name),
-			"arrondissement": str(locality.get("arrondissement", "")),
+			"name": str(_neighbourhood_names.get(osm_id, "Quartier")),
+			"arrondissement": str(_neighbourhood_arrondissements.get(osm_id, "")),
 			"osm_id": osm_id,
-			"position": Vector3(point.x, ground_y + 2.2, point.y)
+			"position": Vector3(point.x, ground_y + 1.8, point.y)
 		})
+	destinations.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if str(a.get("arrondissement", "")) == str(b.get("arrondissement", "")):
+			return str(a.get("name", "")) < str(b.get("name", ""))
+		return str(a.get("arrondissement", "")) < str(b.get("arrondissement", ""))
+	)
 	return destinations
 
 
