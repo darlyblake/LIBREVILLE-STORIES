@@ -77,10 +77,11 @@ func add_patch(points: PackedVector2Array, osm_id: int, relief_center: Vector2, 
 
 
 func build() -> void:
-	if _built or _transforms.is_empty():
-		_built = true
+	if _built:
 		return
 	_built = true
+	if _transforms.is_empty():
+		return
 
 	var grass_mesh := _create_blade_cluster_mesh()
 	var grass_material := StandardMaterial3D.new()
@@ -90,23 +91,38 @@ func build() -> void:
 	grass_material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	grass_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 
-	var multimesh := MultiMesh.new()
-	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	multimesh.use_colors = true
-	multimesh.mesh = grass_mesh
-	multimesh.instance_count = _transforms.size()
-	for i in range(_transforms.size()):
-		multimesh.set_instance_transform(i, _transforms[i])
-		multimesh.set_instance_color(i, _colors[i])
-
-	var instance := MultiMeshInstance3D.new()
-	instance.name = "Grass_Blades_MultiMesh"
-	instance.multimesh = multimesh
-	instance.material_override = grass_material
-	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
-	add_child(instance)
-	print("LIBREVILLE STORIES | touffes d'herbe 3D instanciées : %d" % _transforms.size())
+	# Des MultiMeshes indépendants par secteur évitent un unique volume d'herbe
+	# qui englobe toute la carte et reste considéré visible en permanence.
+	var sectors: Dictionary = {}
+	for index in range(_transforms.size()):
+		var origin := _transforms[index].origin
+		var key := Vector2i(floori(origin.x / 500.0), floori(origin.z / 500.0))
+		if not sectors.has(key):
+			sectors[key] = []
+		sectors[key].append(index)
+	for key in sectors.keys():
+		var tile_origin := Vector3((float(key.x) + 0.5) * 500.0, 0.0, (float(key.y) + 0.5) * 500.0)
+		var indices: Array = sectors[key]
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.use_colors = true
+		multimesh.mesh = grass_mesh
+		multimesh.instance_count = indices.size()
+		for local_index in range(indices.size()):
+			var source_index: int = indices[local_index]
+			var local_transform: Transform3D = _transforms[source_index]
+			local_transform.origin -= tile_origin
+			multimesh.set_instance_transform(local_index, local_transform)
+			multimesh.set_instance_color(local_index, _colors[source_index])
+		var instance := MultiMeshInstance3D.new()
+		instance.name = "Grass_Sector_%d_%d" % [key.x, key.y]
+		instance.multimesh = multimesh
+		instance.position = tile_origin
+		instance.material_override = grass_material
+		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+		add_child(instance)
+	print("LIBREVILLE STORIES | touffes d'herbe réparties en %d secteurs (%d touffes)" % [sectors.size(), _transforms.size()])
 
 
 func _create_blade_cluster_mesh() -> ArrayMesh:
