@@ -481,7 +481,11 @@ func _build_terrain_chunk(key: Vector2i) -> void:
 				Vector2(x0, z0), Vector2(x0, z1),
 				Vector2(x1, z1), Vector2(x1, z0)
 			])
-			var terrain_pieces := _clip_polygon_away_from_roads(cell, 0.85)
+			# Garder le relief collidable SOUS les chaussées. Le découpage du DEM
+			# créait un vide physique dès qu'une collision routière manquait un triangle
+			# (carrefours, bords de meshes ou surfaces OSM). La route reste visible
+			# au-dessus du terrain grâce à ROAD_LIFT ; le sol garantit la marche.
+			var terrain_pieces: Array[PackedVector2Array] = [cell]
 			for piece in terrain_pieces:
 				if piece.size() < 3:
 					continue
