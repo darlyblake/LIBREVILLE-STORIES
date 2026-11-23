@@ -55,6 +55,8 @@ var _tutorial_panel: PanelContainer
 var _tutorial_label: Label
 var _tutorial_index := 0
 var _tutorial_steps: Array[String] = []
+var _brake_lights: Array[OmniLight3D] = []
+var _brake_lamp_materials: Array[StandardMaterial3D] = []
 
 const CAMERA_NAMES := ["EXTÉRIEURE PROCHE", "EXTÉRIEURE ÉLOIGNÉE", "COCKPIT", "CINÉMATIQUE"]
 
@@ -67,6 +69,7 @@ func _ready() -> void:
 	var jeep := get_node_or_null("JeepModel")
 	if jeep != null:
 		_collect_wheel_nodes(jeep, false)
+		_setup_brake_lights(jeep)
 	_classify_wheels()
 	if _wheel_nodes.size() < 4:
 		push_warning("Jeep : %d éléments de roue détectés. Les pivots du GLB doivent être vérifiés avant de corriger les axes." % _wheel_nodes.size())
@@ -88,7 +91,9 @@ func _physics_process(delta: float) -> void:
 		_set_camera_mode((_camera_mode + 1) % CAMERA_NAMES.size())
 
 	var controls := _read_drive_controls()
+	var speed_before_update := absf(current_speed)
 	_update_longitudinal_speed(controls.x, controls.y, delta)
+	_update_brake_lights(controls.y, speed_before_update, delta)
 	_steering_input = controls.z
 	_update_steering_and_heading(delta)
 	_update_planar_motion(delta)
@@ -279,6 +284,59 @@ func _update_wheel_animation() -> void:
 		var steering_basis := Basis(steer_axis, -steering_angle)
 		var rolling_basis := Basis(spin_axis, _wheel_roll_angle)
 		_wheel_nodes[i].transform.basis = (_wheel_base_basis[i] * steering_basis * rolling_basis).orthonormalized()
+
+func _setup_brake_lights(model_root: Node3D) -> void:
+	# Le véhicule avance vers -Z : l'arrière se trouve du côté +Z.
+	var bounds := _get_subtree_world_aabb(model_root)
+	if bounds.size.length_squared() < 0.01:
+		push_warning("Feux stop : dimensions du modèle Jeep indisponibles.")
+		return
+	var center := to_local(bounds.get_center())
+	var rear_world_z := bounds.position.z + bounds.size.z
+	var rear_local := to_local(Vector3(bounds.get_center().x, bounds.get_center().y, rear_world_z))
+	var half_width := maxf(0.45, bounds.size.x * 0.34)
+	var lamp_y := center.y + bounds.size.y * 0.12
+	var rear_offset := maxf(0.06, absf(rear_local.z - center.z) * 0.015)
+	for side in [-1.0, 1.0]:
+		var lamp_position := Vector3(center.x + side * half_width, lamp_y, rear_local.z - rear_offset)
+		var lamp_mesh := MeshInstance3D.new()
+		lamp_mesh.name = "BrakeLamp_%s" % ("Left" if side < 0.0 else "Right")
+		var sphere := SphereMesh.new()
+		sphere.radius = 0.105
+		sphere.height = 0.21
+		lamp_mesh.mesh = sphere
+		var material := StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.albedo_color = Color(0.22, 0.008, 0.012)
+		material.emission_enabled = true
+		material.emission = Color(1.0, 0.015, 0.025)
+		material.emission_energy_multiplier = 0.35
+		lamp_mesh.material_override = material
+		add_child(lamp_mesh)
+		lamp_mesh.position = lamp_position
+		_brake_lamp_materials.append(material)
+		var glow := OmniLight3D.new()
+		glow.name = "BrakeLightGlow_%s" % ("Left" if side < 0.0 else "Right")
+		glow.position = lamp_position
+		glow.light_color = Color(1.0, 0.025, 0.035)
+		glow.light_energy = 0.0
+		glow.omni_range = 3.0
+		glow.shadow_enabled = false
+		add_child(glow)
+		_brake_lights.append(glow)
+
+
+func _update_brake_lights(brake_input: float, speed_before: float, delta: float) -> void:
+	var speed_now := absf(current_speed)
+	var deceleration := (speed_before - speed_now) / maxf(delta, 0.0001)
+	var braking := player_driving and speed_before > 1.2 and (
+		brake_input > 0.04 or (deceleration > 1.0 and speed_now > 0.8)
+	)
+	for light in _brake_lights:
+		light.light_energy = 1.8 if braking else 0.0
+	for material in _brake_lamp_materials:
+		material.emission_energy_multiplier = 3.0 if braking else 0.35
+
 
 func _setup_vehicle_cameras() -> void:
 	_camera_pivot = Node3D.new()
