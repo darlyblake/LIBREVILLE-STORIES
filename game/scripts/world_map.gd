@@ -10,10 +10,10 @@ const BUILDINGS_PER_MESH := 1200
 const ROADS_PER_MESH := 700
 const MAX_ROAD_LABELS := 250
 const MAX_POI_LABELS := 450
-const DEM_META_EXTENDED_PATH := "res://libreville_dem_extended.json"
-const DEM_BINARY_EXTENDED_PATH := "res://libreville_dem_extended_f32.bin"
-const DEM_META_FALLBACK_PATH := "res://libreville_dem.json"
-const DEM_BINARY_FALLBACK_PATH := "res://libreville_dem_f32.bin"
+const DEM_META_EXTENDED_PATH := "res://data/terrain/libreville_dem_extended.json"
+const DEM_BINARY_EXTENDED_PATH := "res://data/terrain/libreville_dem_extended_f32.bin"
+const DEM_META_FALLBACK_PATH := "res://data/terrain/libreville_dem.json"
+const DEM_BINARY_FALLBACK_PATH := "res://data/terrain/libreville_dem_f32.bin"
 const TERRAIN_CHUNK_CELLS := 32
 const TERRAIN_VERTICAL_EXAGGERATION := 1.0
 const TERRAIN_STREAM_RADIUS := 1
@@ -1725,7 +1725,7 @@ func _find_road_texture(folder_name: String, file_stem: String) -> Texture2D:
 	# chemins directement : fonctionne dans l'éditeur comme dans un export.
 	if folder_name == "":
 		return null
-	var base := "res://%s/textures/%s" % [folder_name, file_stem]
+	var base := "res://assets/textures/roads/%s/textures/%s" % [folder_name, file_stem]
 	for extension in ["jpg", "jpeg", "png", "webp", "tga", "bmp"]:
 		var path := "%s.%s" % [base, extension]
 		if ResourceLoader.exists(path):
