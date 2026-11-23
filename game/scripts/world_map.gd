@@ -196,6 +196,7 @@ func _ready() -> void:
 	# Le réseau routier doit être connu AVANT la génération du relief :
 	# le terrain SRTM est alors réellement évidé sous chaussées et trottoirs.
 	_load_road_clearance_data()
+	_load_coastline_paths()
 	await get_tree().process_frame
 	if _dem_loaded:
 		await _build_terrain_chunks()
@@ -1002,6 +1003,22 @@ func _commit_surface(surface: SurfaceTool, instance_name: String) -> void:
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(instance)
 
+func _load_coastline_paths() -> void:
+	var data := _read_geojson("res://data/osm/environment.geojson")
+	for feature in data.get("features", []):
+		var geometry: Dictionary = feature.get("geometry", {})
+		var props: Dictionary = feature.get("properties", {})
+		if str(props.get("environment_kind", "")) != "coastline" or str(geometry.get("type", "")) != "LineString":
+			continue
+		var coast_path := PackedVector2Array()
+		for coordinate in geometry.get("coordinates", []):
+			var coast_point := _geo_to_world(coordinate)
+			coast_path.append(Vector2(coast_point.x, coast_point.z))
+		if coast_path.size() >= 2:
+			_coastline_paths.append(coast_path)
+	print("LIBREVILLE STORIES | lignes de côte chargées avant le relief : %d" % _coastline_paths.size())
+
+
 func _load_environment() -> void:
 	var data := _read_geojson("res://data/osm/environment.geojson")
 	if data.is_empty():
@@ -1102,7 +1119,8 @@ func _load_environment() -> void:
 					var coast_point := _geo_to_world(coordinate)
 					coast_path.append(Vector2(coast_point.x, coast_point.z))
 				if coast_path.size() >= 2:
-					_coastline_paths.append(coast_path)
+					if _coastline_paths.is_empty():
+						_coastline_paths.append(coast_path)
 					added = true
 			else:
 				var width := 5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6)
