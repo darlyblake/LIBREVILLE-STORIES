@@ -310,10 +310,12 @@ func _build_pavilions() -> void:
 
 	for i in range(PROGRESS_VALUES.size()):
 		var progress: float = PROGRESS_VALUES[i]
-
-		var kiosk_a := type_a.instantiate() as Node3D
+		# Le premier kiosque déjà validé reste inchangé. Les sept autres reprennent
+		# le volume bois à toiture plate/verte visible sur les photos de la promenade.
+		var kiosk_a_scene: PackedScene = type_a if i == 0 else type_b
+		var kiosk_a := kiosk_a_scene.instantiate() as Node3D
 		if kiosk_a != null:
-			kiosk_a.name = "Kiosque_TypeA_RangeeA_%02d" % (i + 1)
+			kiosk_a.name = "Kiosque_%s_RangeeA_%02d" % ["TypeA" if i == 0 else "TypeB", i + 1]
 			kiosk_a.position = BaieDesRoisSurvey.row_a_position(progress)
 			kiosk_a.rotation.y = ROW_A_YAW
 			kiosk_a.scale = Vector3.ONE

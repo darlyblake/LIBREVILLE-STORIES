@@ -772,72 +772,58 @@ uniform sampler2D ocean_roughness : hint_roughness_r, filter_linear_mipmap, repe
 
 varying vec3 water_normal;
 varying vec3 water_world_pos;
-varying float wave_height;
 
 void vertex() {
 	vec3 world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	float t = TIME;
 	vec2 p = world_pos.xz;
-
-	float a1 = dot(p, normalize(vec2(0.82, 0.57))) * 0.030 + t * 0.72;
-	float a2 = dot(p, normalize(vec2(-0.34, 0.94))) * 0.052 - t * 0.91;
-	float a3 = dot(p, normalize(vec2(0.98, -0.18))) * 0.091 + t * 1.18;
-
-	float h1 = sin(a1) * 0.055;
-	float h2 = sin(a2) * 0.022;
-	float h3 = sin(a3) * 0.008;
+	// Trois houles longues et douces : pas de sinusoïdes serrées qui dessinent
+	// des bandes parallèles visibles sur toute la surface.
+	float a1 = dot(p, normalize(vec2(0.82, 0.57))) * 0.014 + t * 0.34;
+	float a2 = dot(p, normalize(vec2(-0.34, 0.94))) * 0.027 - t * 0.25;
+	float a3 = dot(p, normalize(vec2(0.98, -0.18))) * 0.043 + t * 0.19;
+	float h1 = sin(a1) * 0.038;
+	float h2 = sin(a2) * 0.014;
+	float h3 = sin(a3) * 0.004;
 	float height = h1 + h2 + h3;
-
-	float dx = cos(a1) * 0.055 * 0.030 * 0.82
-		+ cos(a2) * 0.022 * 0.052 * -0.34
-		+ cos(a3) * 0.008 * 0.091 * 0.98;
-	float dz = cos(a1) * 0.055 * 0.030 * 0.57
-		+ cos(a2) * 0.022 * 0.052 * 0.94
-		+ cos(a3) * 0.008 * 0.091 * -0.18;
-
+	float dx = cos(a1) * 0.038 * 0.014 * 0.82
+		+ cos(a2) * 0.014 * 0.027 * -0.34
+		+ cos(a3) * 0.004 * 0.043 * 0.98;
+	float dz = cos(a1) * 0.038 * 0.014 * 0.57
+		+ cos(a2) * 0.014 * 0.027 * 0.94
+		+ cos(a3) * 0.004 * 0.043 * -0.18;
 	VERTEX.y += height;
-	wave_height = height;
 	water_normal = normalize(vec3(-dx, 1.0, -dz));
 	water_world_pos = world_pos;
 }
 
 void fragment() {
-	float broad = sin(water_world_pos.x * 0.006 + TIME * 0.18)
-		* cos(water_world_pos.z * 0.008 - TIME * 0.15);
-	float fine = sin(water_world_pos.x * 0.041 + water_world_pos.z * 0.027 + TIME * 0.8);
-	float ripple_a = water_world_pos.x * 0.19 + water_world_pos.z * 0.11 + TIME * 1.55;
-	float ripple_b = water_world_pos.x * -0.13 + water_world_pos.z * 0.23 - TIME * 1.12;
-	float ripple_c = water_world_pos.x * 0.31 + water_world_pos.z * -0.08 + TIME * 2.05;
-	float ripple_dx = cos(ripple_a) * 0.19 * 0.075 + cos(ripple_b) * -0.13 * 0.045 + cos(ripple_c) * 0.31 * 0.018;
-	float ripple_dz = cos(ripple_a) * 0.11 * 0.075 + cos(ripple_b) * 0.23 * 0.045 + cos(ripple_c) * -0.08 * 0.018;
-	float crest = smoothstep(0.28, 0.48, wave_height + fine * 0.035);
-
 	vec3 deep_water = vec3(0.012, 0.105, 0.175);
 	vec3 mid_water = vec3(0.018, 0.235, 0.315);
-	vec3 sunlit_water = vec3(0.075, 0.36, 0.42);
-	vec3 water_color = mix(deep_water, mid_water, 0.45 + broad * 0.18);
-	water_color = mix(water_color, sunlit_water, crest * 0.12);
-	water_color *= 0.96 + 0.045 * sin(water_world_pos.x * 0.013 + water_world_pos.z * 0.009 + TIME * 0.22);
-
-	vec3 detailed_normal = normalize(water_normal + vec3(-ripple_dx, 0.0, -ripple_dz));
-	vec3 n = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(detailed_normal, 0.0)).xyz);
+	float broad = sin(water_world_pos.x * 0.004 + TIME * 0.11)
+		* cos(water_world_pos.z * 0.005 - TIME * 0.09);
+	vec3 water_color = mix(deep_water, mid_water, 0.48 + broad * 0.10);
+	vec3 n = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(water_normal, 0.0)).xyz);
 	float fresnel = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 4.0);
 	vec3 sun_direction = normalize(vec3(-0.35, 0.82, 0.44));
-	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 48.0);
-	vec2 ocean_uv = UV * vec2(210.0, 145.0);
-	vec2 drift_uv = ocean_uv + vec2(TIME * 0.012, -TIME * 0.008);
-	vec3 ocean_albedo = texture(ocean_base_color, drift_uv).rgb;
-	vec3 normal_a = texture(ocean_normal, drift_uv).rgb;
-	vec3 normal_b = texture(ocean_normal, ocean_uv * 1.37 + vec2(-TIME * 0.009, TIME * 0.011)).rgb;
-	vec3 blended_normal = normalize(mix(normal_a, normal_b, 0.35));
-	ALBEDO = mix(water_color, ocean_albedo * vec3(0.42, 0.72, 0.82), 0.28);
-	ALBEDO = mix(ALBEDO, vec3(0.34, 0.52, 0.54), fresnel * 0.48);
-	ALBEDO += vec3(0.22, 0.27, 0.25) * glint * 0.22;
-	METALLIC = 0.04;
-	ROUGHNESS = clamp(texture(ocean_roughness, drift_uv).r * 0.48 + 0.12, 0.12, 0.55);
-	SPECULAR = 0.72;
+	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 64.0);
+	// Le normal map océan défile à deux échelles et vitesses différentes :
+	// le détail bouge en continu sans former des traits ou des rubans réguliers.
+	vec2 ocean_uv = UV * vec2(430.0, 300.0);
+	vec2 drift_a = ocean_uv + vec2(TIME * 0.006, -TIME * 0.004);
+	vec2 drift_b = ocean_uv * 1.63 + vec2(-TIME * 0.003, TIME * 0.005);
+	vec3 normal_a = texture(ocean_normal, drift_a).rgb;
+	vec3 normal_b = texture(ocean_normal, drift_b).rgb;
+	vec3 blended_normal = normalize(mix(normal_a, normal_b, 0.32));
+	vec3 ocean_albedo = texture(ocean_base_color, drift_a).rgb;
+	ALBEDO = mix(water_color, ocean_albedo * vec3(0.48, 0.76, 0.86), 0.42);
+	ALBEDO = mix(ALBEDO, vec3(0.34, 0.52, 0.54), fresnel * 0.36);
+	ALBEDO += vec3(0.18, 0.23, 0.22) * glint * 0.12;
+	METALLIC = 0.015;
+	ROUGHNESS = clamp(texture(ocean_roughness, drift_a).r * 0.58 + 0.18, 0.18, 0.62);
+	SPECULAR = 0.58;
 	NORMAL_MAP = blended_normal;
-	NORMAL_MAP_DEPTH = 0.42;
+	NORMAL_MAP_DEPTH = 0.24;
 }
 """
 	var water_material := ShaderMaterial.new()
@@ -875,6 +861,10 @@ varying vec4 surface_tint;
 uniform sampler2D grass_albedo : source_color, filter_linear_mipmap, repeat_enable;
 uniform sampler2D wet_sand_albedo : source_color, filter_linear_mipmap, repeat_enable;
 uniform sampler2D dry_sand_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D wet_sand_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+uniform sampler2D dry_sand_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+uniform sampler2D wet_sand_ao : filter_linear_mipmap, repeat_enable;
+uniform sampler2D dry_sand_ao : filter_linear_mipmap, repeat_enable;
 uniform sampler2D soil_albedo : source_color, filter_linear_mipmap, repeat_enable;
 uniform sampler2D gravel_albedo : source_color, filter_linear_mipmap, repeat_enable;
 
@@ -936,10 +926,15 @@ void fragment() {
 	ALBEDO = mix(other_color, sand_color, sand_mask);
 	ALBEDO = mix(ALBEDO, grass_color, grass_mask);
 	ALBEDO = mix(ALBEDO, base, water_mask);
-	float sand_roughness = mix(0.94, 0.82, damp_mask);
+	float dry_roughness = texture(dry_sand_roughness, ground_uv).r;
+	float wet_roughness = texture(wet_sand_roughness, ground_uv * 0.82).r;
+	float sand_roughness = mix(dry_roughness, wet_roughness, damp_mask);
 	ROUGHNESS = mix(0.94, sand_roughness, sand_mask);
 	ROUGHNESS = mix(ROUGHNESS, 0.96, grass_mask);
-	SPECULAR = mix(0.16, 0.26, damp_mask);
+	float dry_ao = texture(dry_sand_ao, ground_uv).r;
+	float wet_ao = texture(wet_sand_ao, ground_uv * 0.82).r;
+	AO = mix(1.0, mix(dry_ao, wet_ao, damp_mask), sand_mask);
+	SPECULAR = mix(0.16, 0.24, damp_mask);
 }
 """
 	var material := ShaderMaterial.new()
@@ -948,6 +943,10 @@ void fragment() {
 		"grass_albedo": "res://assets/textures/vegetation/Grass001_4K-JPG/Grass001_4K-JPG_Color.jpg",
 		"wet_sand_albedo": "res://assets/textures/ground/Ground061_4K-JPG/Ground061_4K-JPG_Color.jpg",
 		"dry_sand_albedo": "res://assets/textures/ground/Ground093C_4K-JPG/Ground093C_4K-JPG_Color.jpg",
+		"wet_sand_roughness": "res://assets/textures/ground/Ground061_4K-JPG/Ground061_4K-JPG_Roughness.jpg",
+		"dry_sand_roughness": "res://assets/textures/ground/Ground093C_4K-JPG/Ground093C_4K-JPG_Roughness.jpg",
+		"wet_sand_ao": "res://assets/textures/ground/Ground061_4K-JPG/Ground061_4K-JPG_AmbientOcclusion.jpg",
+		"dry_sand_ao": "res://assets/textures/ground/Ground093C_4K-JPG/Ground093C_4K-JPG_AmbientOcclusion.jpg",
 		"soil_albedo": "res://assets/textures/ground/Ground103_4K-JPG/Ground103_4K-JPG_Color.jpg",
 		"gravel_albedo": "res://assets/textures/ground/Ground014_4K-JPG/Ground014_4K-JPG_Color.jpg"
 	}
@@ -1160,7 +1159,7 @@ func _load_environment() -> void:
 		relief_shape.shape = relief_mesh.create_trimesh_shape()
 		relief_body.add_child(relief_shape)
 		add_child(relief_body)
-	_build_baie_des_rois_water()
+	# L'océan global texturé est l'unique surface d'eau ; ne pas superposer une seconde nappe locale.
 	_build_coastal_details()
 	_build_baie_des_rois_seawall()
 	_commit_tree_instances(tree_positions)
@@ -1335,38 +1334,45 @@ func _build_baie_des_rois_seawall() -> void:
 			var rail_length := rail_delta.length() + 0.16
 			var rail_base_y := (top_a + top_b) * 0.5
 			var rail_yaw := atan2(rail_delta.x, rail_delta.y)
-			for rail_height in [0.34, 0.88]:
+			for rail_height in [0.12, 0.50, 0.91]:
 				var rail_bar := MeshInstance3D.new()
 				var rail_box := BoxMesh.new()
-				rail_box.size = Vector3(0.055, 0.055, rail_length)
+				rail_box.size = Vector3(0.042, 0.042, rail_length)
 				rail_bar.mesh = rail_box
 				rail_bar.material_override = rail_material
 				rail_bar.position = Vector3(rail_mid.x, rail_base_y + rail_height, rail_mid.y)
 				rail_bar.rotation.y = rail_yaw
 				rail_bar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 				rail_root.add_child(rail_bar)
-			if i % 3 == 0:
+			# Montants fins rapprochés : le garde-corps ne ressemble plus à une
+			# succession de longues barres flottantes avec un poteau tous les 15 m.
+			var post_count := maxi(1, int(ceil(rail_length / 2.4)))
+			for post_index in range(post_count + 1):
+				var post_t := float(post_index) / float(post_count)
+				var post_point := wall_a.lerp(wall_b, post_t)
 				var post := MeshInstance3D.new()
 				var post_box := BoxMesh.new()
-				post_box.size = Vector3(0.075, 0.98, 0.075)
+				post_box.size = Vector3(0.052, 0.96, 0.052)
 				post.mesh = post_box
 				post.material_override = rail_material
-				post.position = Vector3(rail_mid.x, rail_base_y + 0.49, rail_mid.y)
+				post.position = Vector3(post_point.x, rail_base_y + 0.48, post_point.y)
+				post.rotation.y = rail_yaw
 				post.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 				rail_root.add_child(post)
 
 			# Les sections sableuses restent dégagées. Sur les portions rocheuses,
 			# alterner les deux modèles PBR téléchargés, à faible densité.
 			var sandy := _is_inside_beach(midpoint + land_normal * 5.0) or _is_inside_beach(midpoint + land_normal * 12.0)
-			if not sandy and i % 3 == 0 and rock_count < 18 and (rock_scene_a != null or rock_scene_b != null):
+			if not sandy and i % 2 == 0 and rock_count < 40 and (rock_scene_a != null or rock_scene_b != null):
 				var rock_scene: PackedScene = rock_scene_a if (rock_index % 2 == 0 and rock_scene_a != null) or rock_scene_b == null else rock_scene_b
 				var rock_instance := rock_scene.instantiate() as Node3D
 				if rock_instance != null:
 					rock_instance.name = "CoastalRock_%02d" % rock_count
-					var rock_position := midpoint + land_normal * 0.22
-					rock_instance.position = Vector3(rock_position.x, BAIE_DES_ROIS_WATER_LEVEL - 0.045, rock_position.y)
+					var rock_position := midpoint - land_normal * 0.62
+					var rock_ground := _terrain_height_at_world(rock_position.x, rock_position.y)
+					rock_instance.position = Vector3(rock_position.x, maxf(rock_ground - 0.10, BAIE_DES_ROIS_WATER_LEVEL - 0.42), rock_position.y)
 					rock_instance.rotation.y = atan2(-direction.y, direction.x)
-					var rock_scale := 0.30 if rock_index % 2 == 0 else 0.38
+					var rock_scale := 0.42 if rock_index % 2 == 0 else 0.50
 					rock_instance.scale = Vector3.ONE * rock_scale
 					rock_root.add_child(rock_instance)
 					rock_count += 1
@@ -1492,10 +1498,10 @@ void fragment() {
 			var sandy := _is_inside_beach(midpoint + land_normal * 5.0) or _is_inside_beach(midpoint + land_normal * 12.0)
 
 			var foam_a_inner := a + sea_normal * 0.35
-			var foam_a_outer := a + sea_normal * 3.2
+			var foam_a_outer := a + sea_normal * rng.randf_range(1.25, 2.0)
 			var foam_b_inner := b + sea_normal * 0.35
-			var foam_b_outer := b + sea_normal * 3.2
-			var foam_alpha := rng.randf_range(0.28, 0.68)
+			var foam_b_outer := b + sea_normal * rng.randf_range(1.25, 2.0)
+			var foam_alpha := rng.randf_range(0.10, 0.30)
 			foam_surface.set_color(Color(0.88, 0.95, 0.94, foam_alpha))
 			foam_surface.add_vertex(Vector3(foam_a_inner.x, 0.055, foam_a_inner.y))
 			foam_surface.add_vertex(Vector3(foam_b_inner.x, 0.055, foam_b_inner.y))
@@ -1511,8 +1517,8 @@ void fragment() {
 			for rock_index in range(rock_steps):
 				var t := (float(rock_index) + rng.randf_range(0.2, 0.8)) / float(rock_steps)
 				var shoreline := a.lerp(b, t)
-				var rock_xz := shoreline + land_normal * rng.randf_range(0.5, 2.8)
-				# Une côte OSM peut croiser une chaussée : ne jamais y poser de rochers.
+				var rock_xz := shoreline - land_normal * rng.randf_range(0.35, 2.1)
+				# Les blocs sont côté mer, hors chaussée, et partiellement immergés.
 				if _is_near_road(rock_xz):
 					continue
 				var rock_height := rng.randf_range(0.45, 1.35)
@@ -1520,7 +1526,7 @@ void fragment() {
 				var rock_scale_z := rng.randf_range(0.55, 1.65)
 				# Le bas du mesh est à y=0 : l'origine doit être légèrement
 				# sous le terrain pour éviter l'effet de rochers flottants.
-				var rock_y := _terrain_height_at_world(rock_xz.x, rock_xz.y) - 0.08
+				var rock_y := maxf(_terrain_height_at_world(rock_xz.x, rock_xz.y) - 0.08, BAIE_DES_ROIS_WATER_LEVEL - 0.55)
 				var rock_basis := Basis(Vector3(rock_scale_x, 0.0, 0.0), Vector3(0.0, rock_height, 0.0), Vector3(0.0, 0.0, rock_scale_z)).rotated(Vector3.UP, rng.randf_range(0.0, TAU))
 				rock_transforms.append(Transform3D(rock_basis, Vector3(rock_xz.x, rock_y, rock_xz.y)))
 				var shade := rng.randf_range(0.70, 1.0)
@@ -1529,12 +1535,12 @@ void fragment() {
 				# Petits galets mêlés aux blocs : ils densifient la ligne de
 				# contact avec l'eau sans créer une bordure rocheuse continue.
 				if rng.randf() < 0.72:
-					var pebble_xz := shoreline + land_normal * rng.randf_range(0.15, 1.15)
+					var pebble_xz := shoreline - land_normal * rng.randf_range(0.12, 0.85)
 					if _is_near_road(pebble_xz):
 						continue
 					var pebble_height := rng.randf_range(0.16, 0.38)
 					var pebble_scale := rng.randf_range(0.22, 0.62)
-					var pebble_y := _terrain_height_at_world(pebble_xz.x, pebble_xz.y) - 0.035
+					var pebble_y := maxf(_terrain_height_at_world(pebble_xz.x, pebble_xz.y) - 0.035, BAIE_DES_ROIS_WATER_LEVEL - 0.18)
 					var pebble_basis := Basis(
 						Vector3(pebble_scale * rng.randf_range(0.9, 1.5), 0.0, 0.0),
 						Vector3(0.0, pebble_height, 0.0),
@@ -3901,6 +3907,11 @@ func _is_baie_des_rois_restaurant_candidate(props: Dictionary, center: Vector2) 
 	var building := str(props.get("building", "")).to_lower()
 	var shop := str(props.get("shop", "")).to_lower()
 	var name := str(props.get("name", "")).to_lower()
+	var osm_id := int(props.get("osm_id", 0))
+	# Ces cinq empreintes OSM sont les petits commerces/kiosques identifiés sur
+	# la promenade nord ; ne pas transformer les immeubles voisins en restaurants.
+	if osm_id in [1070652037, 1070652038, 1070652039, 1070652040, 1070652041]:
+		return true
 	var food_tags := ["restaurant", "cafe", "fast_food", "food_court", "bar"]
 	if amenity in food_tags or building in ["restaurant", "catering"]:
 		return true
@@ -3924,26 +3935,19 @@ func _place_baie_des_rois_restaurant(feature: Dictionary, scenes: Array[PackedSc
 			var polygons: Array = geometry.get("coordinates", [])
 			if not polygons.is_empty() and not polygons[0].is_empty():
 				coordinates = polygons[0][0]
-	if coordinates.size() < 4:
+	if coordinates.size() < 4 or scenes.is_empty():
 		return false
+
 	var points := PackedVector2Array()
-	var min_x := INF
-	var max_x := -INF
-	var min_z := INF
-	var max_z := -INF
 	var center := Vector2.ZERO
 	for coordinate in coordinates:
 		var point3 := _geo_to_world(coordinate)
 		var point := Vector2(point3.x, point3.z)
 		points.append(point)
 		center += point
-		min_x = minf(min_x, point.x)
-		max_x = maxf(max_x, point.x)
-		min_z = minf(min_z, point.y)
-		max_z = maxf(max_z, point.y)
 	center /= float(points.size())
-	if (max_x - min_x) < 4.0 or (max_z - min_z) < 4.0:
-		return false
+
+	# Axe principal et largeur réelle mesurés dans le polygone OSM.
 	var longest_edge := Vector2.RIGHT
 	var longest_length := 0.0
 	for point_index in range(points.size()):
@@ -3951,16 +3955,56 @@ func _place_baie_des_rois_restaurant(feature: Dictionary, scenes: Array[PackedSc
 		if edge.length_squared() > longest_length:
 			longest_length = edge.length_squared()
 			longest_edge = edge
-	var packed := scenes[index % scenes.size()]
-	var instance := packed.instantiate() as Node3D
+	if longest_length < 16.0:
+		return false
+	var axis := longest_edge.normalized()
+	var side_axis := Vector2(-axis.y, axis.x)
+	var min_along := INF
+	var max_along := -INF
+	var min_side := INF
+	var max_side := -INF
+	for point in points:
+		var along := point.dot(axis)
+		var across := point.dot(side_axis)
+		min_along = minf(min_along, along)
+		max_along = maxf(max_along, along)
+		min_side = minf(min_side, across)
+		max_side = maxf(max_side, across)
+	var target_width := max_along - min_along
+	var target_depth := max_side - min_side
+	if target_width < 4.0 or target_depth < 4.0:
+		return false
+
+	# Dimensions X/Z des trois modèles Blender : compact, standard, grand.
+	var model_dimensions: Array[Vector2] = [
+		Vector2(6.8, 5.8),
+		Vector2(8.4, 6.8),
+		Vector2(10.0, 7.8)
+	]
+	var best_scene: PackedScene
+	var best_scale := 0.0
+	var best_coverage := -1.0
+	for scene_index in range(mini(scenes.size(), model_dimensions.size())):
+		var dimensions := model_dimensions[scene_index]
+		var fit_scale := minf(target_width / dimensions.x, target_depth / dimensions.y) * 0.94
+		var coverage := (dimensions.x * dimensions.y * fit_scale * fit_scale) / (target_width * target_depth)
+		if fit_scale > 0.0 and coverage > best_coverage:
+			best_coverage = coverage
+			best_scale = fit_scale
+			best_scene = scenes[scene_index]
+	if best_scene == null:
+		return false
+
+	var instance := best_scene.instantiate() as Node3D
 	if instance == null:
 		return false
-	var osm_id := int(feature.get("properties", {}).get("osm_id", index))
-	instance.name = "Restaurant_BaieDesRois_OSM_%d" % osm_id
-	instance.position = Vector3(center.x, _terrain_height_at_world(center.x, center.y) + 0.02, center.y)
-	instance.rotation.y = atan2(-longest_edge.y, longest_edge.x)
-	var footprint_scale := clampf(minf(max_x - min_x, max_z - min_z) / 6.0, 0.68, 1.35)
-	instance.scale = Vector3.ONE * footprint_scale
+	var props: Dictionary = feature.get("properties", {})
+	var osm_id := int(props.get("osm_id", index))
+	var label := str(props.get("name", "Kiosque commercial"))
+	instance.name = "Kiosque_BaieDesRois_OSM_%d_%s" % [osm_id, label.replace(" ", "_")]
+	instance.position = Vector3(center.x, _terrain_height_at_world(center.x, center.y) + 0.025, center.y)
+	instance.rotation.y = atan2(-axis.y, axis.x)
+	instance.scale = Vector3.ONE * best_scale
 	add_child(instance)
 	return true
 
