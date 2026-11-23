@@ -465,6 +465,91 @@ func _build_terrain_stream_queue() -> void:
 		_build_terrain_stream_queue()
 
 
+func _baie_coast_sea_normal(a: Vector2, b: Vector2) -> Vector2:
+	var direction := (b - a).normalized()
+	var sea_normal := Vector2(-direction.y, direction.x)
+	if sea_normal.y < 0.0:
+		sea_normal = -sea_normal
+	return sea_normal
+
+
+func _clip_baie_terrain_cell_to_shore(cell: PackedVector2Array) -> PackedVector2Array:
+	if cell.size() < 3 or _coastline_paths.is_empty():
+		return cell
+	const SITE_CENTER := Vector2(-1884.0, -400.0)
+	const CLIP_RADIUS := 270.0
+	var center := Vector2.ZERO
+	for point in cell:
+		center += point
+	center /= float(cell.size())
+	if center.distance_to(SITE_CENTER) > CLIP_RADIUS:
+		return cell
+	var nearest_distance := INF
+	var nearest_point := Vector2.ZERO
+	var nearest_sea_normal := Vector2.ZERO
+	for coast_path in _coastline_paths:
+		for i in range(coast_path.size() - 1):
+			var a: Vector2 = coast_path[i]
+			var b: Vector2 = coast_path[i + 1]
+			var segment := b - a
+			if segment.length_squared() < 1.0:
+				continue
+			var t := clampf((center - a).dot(segment) / segment.length_squared(), 0.0, 1.0)
+			var candidate := a + segment * t
+			var distance := center.distance_to(candidate)
+			if distance < nearest_distance:
+				nearest_distance = distance
+				nearest_point = candidate
+				nearest_sea_normal = _baie_coast_sea_normal(a, b)
+	if nearest_distance > 75.0:
+		return cell
+	var clipped: Array[Vector2] = []
+	for i in range(cell.size()):
+		var current: Vector2 = cell[i]
+		var next: Vector2 = cell[(i + 1) % cell.size()]
+		var current_side := (current - nearest_point).dot(nearest_sea_normal)
+		var next_side := (next - nearest_point).dot(nearest_sea_normal)
+		var current_inside := current_side <= 0.0
+		var next_inside := next_side <= 0.0
+		if current_inside:
+			clipped.append(current)
+		if current_inside != next_inside:
+			var denominator := current_side - next_side
+			if absf(denominator) > 0.0001:
+				clipped.append(current.lerp(next, current_side / denominator))
+	if clipped.size() < 3:
+		return PackedVector2Array()
+	return PackedVector2Array(clipped)
+
+
+func _coastline_land_normal(path: PackedVector2Array, segment_index: int) -> Vector2:
+	var a: Vector2 = path[segment_index]
+	var b: Vector2 = path[segment_index + 1]
+	var direction := (b - a).normalized()
+	var perpendicular := Vector2(-direction.y, direction.x)
+	var midpoint := (a + b) * 0.5
+	var left_height := _terrain_height_at_world(midpoint.x + perpendicular.x * 10.0, midpoint.y + perpendicular.y * 10.0)
+	var right_height := _terrain_height_at_world(midpoint.x - perpendicular.x * 10.0, midpoint.y - perpendicular.y * 10.0)
+	return perpendicular if left_height >= right_height else -perpendicular
+
+
+func _coastline_miter_normal(path: PackedVector2Array, vertex_index: int, fallback: Vector2) -> Vector2:
+	var previous_normal := fallback
+	var next_normal := fallback
+	if vertex_index > 0:
+		previous_normal = _coastline_land_normal(path, vertex_index - 1)
+	if vertex_index < path.size() - 1:
+		next_normal = _coastline_land_normal(path, vertex_index)
+	var summed := previous_normal + next_normal
+	if summed.length_squared() < 0.0001:
+		return fallback
+	var miter := summed.normalized()
+	var denominator := miter.dot(next_normal)
+	if absf(denominator) < 0.25:
+		return fallback
+	return miter / denominator
+
+
 func _build_terrain_chunk(key: Vector2i) -> void:
 	var row_start := key.y * TERRAIN_CHUNK_CELLS
 	var col_start := key.x * TERRAIN_CHUNK_CELLS
@@ -489,7 +574,7 @@ func _build_terrain_chunk(key: Vector2i) -> void:
 			# créait un vide physique dès qu'une collision routière manquait un triangle
 			# (carrefours, bords de meshes ou surfaces OSM). La route reste visible
 			# au-dessus du terrain grâce à ROAD_LIFT ; le sol garantit la marche.
-			var terrain_pieces: Array[PackedVector2Array] = [cell]
+			var terrain_pieces: Array[PackedVector2Array] = [_clip_baie_terrain_cell_to_shore(cell)]
 			for piece in terrain_pieces:
 				if piece.size() < 3:
 					continue
@@ -1200,12 +1285,14 @@ func _build_baie_des_rois_seawall() -> void:
 			var left_height := _terrain_height_at_world(left_sample.x, left_sample.y)
 			var right_height := _terrain_height_at_world(right_sample.x, right_sample.y)
 			var land_normal := perpendicular if left_height >= right_height else -perpendicular
-			var wall_a := a + land_normal * 1.0
-			var wall_b := b + land_normal * 1.0
-			var sea_a := wall_a - land_normal * 0.16
-			var sea_b := wall_b - land_normal * 0.16
-			var land_a := wall_a + land_normal * 0.16
-			var land_b := wall_b + land_normal * 0.16
+			var start_normal := _coastline_miter_normal(coast_path, i, land_normal)
+			var end_normal := _coastline_miter_normal(coast_path, i + 1, land_normal)
+			var wall_a := a + start_normal * 1.0
+			var wall_b := b + end_normal * 1.0
+			var sea_a := wall_a - start_normal * 0.16
+			var sea_b := wall_b - end_normal * 0.16
+			var land_a := wall_a + start_normal * 0.16
+			var land_b := wall_b + end_normal * 0.16
 			var bottom_y := BAIE_DES_ROIS_WATER_LEVEL - 0.30
 			var top_a := maxf(_terrain_height_at_world(wall_a.x, wall_a.y) + 0.72, BAIE_DES_ROIS_WATER_LEVEL + 0.95)
 			var top_b := maxf(_terrain_height_at_world(wall_b.x, wall_b.y) + 0.72, BAIE_DES_ROIS_WATER_LEVEL + 0.95)
@@ -1225,12 +1312,14 @@ func _build_baie_des_rois_seawall() -> void:
 			# Garde-corps métallique bas au-dessus du muret béton : deux lisses
 			# et des montants espacés, orientés suivant chaque segment OSM.
 			var rail_mid := (wall_a + wall_b) * 0.5
+			var rail_delta := wall_b - wall_a
+			var rail_length := rail_delta.length() + 0.16
 			var rail_base_y := (top_a + top_b) * 0.5
-			var rail_yaw := atan2(direction.x, direction.y)
+			var rail_yaw := atan2(rail_delta.x, rail_delta.y)
 			for rail_height in [0.34, 0.88]:
 				var rail_bar := MeshInstance3D.new()
 				var rail_box := BoxMesh.new()
-				rail_box.size = Vector3(0.055, 0.055, length + 0.06)
+				rail_box.size = Vector3(0.055, 0.055, rail_length)
 				rail_bar.mesh = rail_box
 				rail_bar.material_override = rail_material
 				rail_bar.position = Vector3(rail_mid.x, rail_base_y + rail_height, rail_mid.y)
