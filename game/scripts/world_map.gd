@@ -769,6 +769,7 @@ render_mode cull_disabled, diffuse_burley, specular_schlick_ggx;
 uniform sampler2D ocean_base_color : source_color, filter_linear_mipmap, repeat_enable;
 uniform sampler2D ocean_normal : hint_normal, filter_linear_mipmap, repeat_enable;
 uniform sampler2D ocean_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+uniform sampler2D ocean_ao : filter_linear_mipmap, repeat_enable;
 
 varying vec3 water_normal;
 varying vec3 water_world_pos;
@@ -821,6 +822,7 @@ void fragment() {
 	ALBEDO += vec3(0.18, 0.23, 0.22) * glint * 0.12;
 	METALLIC = 0.015;
 	ROUGHNESS = clamp(texture(ocean_roughness, drift_a).r * 0.58 + 0.18, 0.18, 0.62);
+	AO = texture(ocean_ao, drift_a).r;
 	SPECULAR = 0.58;
 	NORMAL_MAP = blended_normal;
 	NORMAL_MAP_DEPTH = 0.24;
@@ -832,10 +834,12 @@ void fragment() {
 	var ocean_base := load(ocean_texture_root + "baseColor.png") as Texture2D
 	var ocean_normal_map := load(ocean_texture_root + "normal.png") as Texture2D
 	var ocean_rough := load(ocean_texture_root + "roughness.png") as Texture2D
-	if ocean_base != null and ocean_normal_map != null and ocean_rough != null:
+	var ocean_ao := load(ocean_texture_root + "ambientOcclusion.png") as Texture2D
+	if ocean_base != null and ocean_normal_map != null and ocean_rough != null and ocean_ao != null:
 		water_material.set_shader_parameter("ocean_base_color", ocean_base)
 		water_material.set_shader_parameter("ocean_normal", ocean_normal_map)
 		water_material.set_shader_parameter("ocean_roughness", ocean_rough)
+		water_material.set_shader_parameter("ocean_ao", ocean_ao)
 		print("LIBREVILLE STORIES | pack PBR océan 1K chargé.")
 	else:
 		push_warning("Pack PBR océan incomplet : eau procédurale conservée en secours.")
