@@ -9,5 +9,5 @@ size = Vector3(1.9, 1.15, 4.0)
 script = ExtResource("1_vehicle")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-position = Vector3(0, 0.72, 0)
+position = Vector3(0, 0.57, 0)
 shape = SubResource("BoxShape3D_vehicle")
