@@ -1,6 +1,6 @@
 extends Node3D
-## Baie des Rois — anciens générateurs conservés comme référence, désactivés en attendant la reconstruction réaliste.
-## Ancre OSM ≈ 0.40512 N, 9.43142 E  →  monde (-1790, -570)
+## Baie des Rois — kiosques GPS et mobilier 3D.
+## Les modèles sont alignés sur le relief après la création des collisions DEM.
 
 const ANCHOR := Vector3(-1790.0, 0.0, -570.0)
 
@@ -12,9 +12,20 @@ func _ready() -> void:
 	name = "BaieDesRois"
 	_build_pavilions()
 	_build_baie_street_props()
+	# WorldMap construit le DEM de façon asynchrone. Ne pas placer les objets
+	# avant que le relief proche existe, sinon ils restent au niveau zéro.
+	await get_tree().process_frame
+	var world_map := get_parent().get_node_or_null("WorldMap")
+	if world_map != null and world_map.has_method("is_terrain_ready"):
+		while not bool(world_map.call("is_terrain_ready")):
+			await get_tree().process_frame
 	_conform_baie_objects_to_terrain()
-	print("LIBREVILLE STORIES | Baie des Rois : kiosques et mobilier 3D chargés")
+	print("LIBREVILLE STORIES | Baie des Rois : kiosques et mobilier 3D chargés et posés sur le terrain")
 
+
+# ---------------------------------------------------------------------------
+# Textures procédurales (style GTA : pas de couleur plate)
+# ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
 # Textures procédurales (style GTA : pas de couleur plate)
@@ -230,18 +241,42 @@ func _conform_baie_objects_to_terrain() -> void:
 	if world_map == null or not world_map.has_method("terrain_height_at_world"):
 		push_warning("DEM non disponible pour ajuster les objets de la Baie des Rois.")
 		return
-	# Chaque modèle autonome est décalé selon l'altitude de son point d'ancrage.
-	# On ne touche pas aux transformations internes des GLB.
+
 	for container in get_children():
 		if not (container is Node3D):
 			continue
 		for asset_root in container.get_children():
 			if not (asset_root is Node3D):
 				continue
-			var local_position: Vector3 = asset_root.position
-			local_position.y += float(world_map.call("terrain_height_at_world", local_position.x, local_position.z))
-			asset_root.position = local_position
-	print("LIBREVILLE STORIES | objets de la Baie des Rois ajustés au relief SRTM")
+			var root_3d := asset_root as Node3D
+			var ground_y := float(world_map.call("terrain_height_at_world", root_3d.global_position.x, root_3d.global_position.z))
+			var lowest_y := _lowest_visual_world_y(root_3d)
+			if is_finite(lowest_y):
+				root_3d.global_position.y += ground_y - lowest_y + 0.025
+			else:
+				root_3d.global_position.y = ground_y + 0.025
+	print("LIBREVILLE STORIES | mobilier et kiosques alignés par leur base réelle sur le relief SRTM")
+
+
+func _lowest_visual_world_y(root: Node3D) -> float:
+	var lowest_y := INF
+	var pending: Array[Node] = [root]
+	while not pending.is_empty():
+		var current := pending.pop_back()
+		if current is VisualInstance3D:
+			var visual := current as VisualInstance3D
+			var bounds := visual.get_aabb()
+			if bounds.size.length_squared() > 0.000001:
+				for corner_index in range(8):
+					var corner := Vector3(
+						bounds.position.x + (bounds.size.x if (corner_index & 1) != 0 else 0.0),
+						bounds.position.y + (bounds.size.y if (corner_index & 2) != 0 else 0.0),
+						bounds.position.z + (bounds.size.z if (corner_index & 4) != 0 else 0.0)
+					)
+					lowest_y = minf(lowest_y, visual.to_global(corner).y)
+		for child in current.get_children():
+			pending.append(child)
+	return lowest_y
 
 
 func _build_pavilions() -> void:
