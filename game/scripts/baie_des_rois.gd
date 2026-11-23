@@ -262,7 +262,7 @@ func _lowest_visual_world_y(root: Node3D) -> float:
 	var lowest_y := INF
 	var pending: Array[Node] = [root]
 	while not pending.is_empty():
-		var current := pending.pop_back()
+		var current: Node = pending.pop_back()
 		if current is VisualInstance3D:
 			var visual := current as VisualInstance3D
 			var bounds := visual.get_aabb()
