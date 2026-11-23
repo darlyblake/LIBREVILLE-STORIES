@@ -93,10 +93,11 @@ surface_material_override/0 = SubResource("Material_player")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 
 [node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraPivot"]
-transform = Transform3D(1, 0, 0, 0, 0.983844, 0.17903, 0, -0.17903, 0.983844, 0, 0, 0)
-spring_length = 5.0
+transform = Transform3D(1, 0, 0, 0, 0.978148, 0.207912, 0, -0.207912, 0.978148, 0, 0, 0)
+spring_length = 3.4
 
 [node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
+fov = 75.0
 current = true
 
 [node name="Minimap" type="Control" parent="."]
