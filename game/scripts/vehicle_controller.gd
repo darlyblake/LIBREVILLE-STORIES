@@ -208,7 +208,7 @@ func _create_wheel_pivot(wheel_node: Node3D) -> void:
 	pivot.add_child(wheel_node)
 	wheel_node.global_transform = original_global
 	_wheel_nodes.append(pivot)
-	_wheel_base_basis.append(Basis.IDENTITY)
+	_wheel_base_basis.append(pivot.transform.basis.orthonormalized())
 	_wheel_local_positions.append(to_local(wheel_center))
 
 
