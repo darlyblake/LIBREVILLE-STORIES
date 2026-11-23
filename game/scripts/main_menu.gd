@@ -12,6 +12,9 @@ var _fullscreen: CheckButton
 var _status: Label
 var _menu_box: VBoxContainer
 var _settings_box: VBoxContainer
+var _controls_box: VBoxContainer
+var _binding_buttons: Dictionary = {}
+var _waiting_action := ""
 
 func _ready() -> void:
 	_build_interface()
@@ -61,6 +64,7 @@ func _build_interface() -> void:
 	_menu_box.add_theme_constant_override("separation", 12)
 	content.add_child(_menu_box)
 	_add_button(_menu_box, "DÉMARRER", _start_game)
+	_add_button(_menu_box, "COMMANDES CLAVIER", _show_controls)
 	_add_button(_menu_box, "PARAMÈTRES GRAPHIQUES", _show_settings)
 	_add_button(_menu_box, "QUITTER", _quit_game)
 
@@ -69,7 +73,7 @@ func _build_interface() -> void:
 	content.add_child(_settings_box)
 
 	var settings_title := Label.new()
-	settings_title.text = "PARAMÈTRES AVANT LE CHARGEMENT DU MONDE"
+	settings_title.text = "PARAMÈTRES GRAPHIQUES"
 	settings_title.add_theme_font_size_override("font_size", 18)
 	_settings_box.add_child(settings_title)
 
@@ -90,10 +94,75 @@ func _build_interface() -> void:
 	_add_button(_settings_box, "ENREGISTRER ET RETOUR", _save_and_back)
 	_add_button(_settings_box, "RETOUR AU MENU", _show_menu)
 
+	_controls_box = VBoxContainer.new()
+	_controls_box.add_theme_constant_override("separation", 8)
+	content.add_child(_controls_box)
+	_build_controls_panel()
+
 	_status = Label.new()
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status.add_theme_color_override("font_color", Color(0.85, 0.78, 0.52))
 	content.add_child(_status)
+
+func _build_controls_panel() -> void:
+	var heading := Label.new()
+	heading.text = "CONFIGURATION DES TOUCHES"
+	heading.add_theme_font_size_override("font_size", 18)
+	_controls_box.add_child(heading)
+	var hint := Label.new()
+	hint.text = "Clique sur une touche, puis appuie sur la nouvelle touche à utiliser."
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_controls_box.add_child(hint)
+	_add_control_category("DÉPLACEMENT DU PERSONNAGE", ["move_forward", "move_back", "move_left", "move_right", "jump", "sprint", "enter_exit_vehicle"])
+	_add_control_category("CONDUITE DU VÉHICULE", ["vehicle_accelerate", "vehicle_brake", "vehicle_left", "vehicle_right", "vehicle_camera_next"])
+	_add_button(_controls_box, "RÉTABLIR LES TOUCHES PAR DÉFAUT", _reset_controls)
+	_add_button(_controls_box, "RETOUR AU MENU", _show_menu)
+
+func _add_control_category(caption: String, actions: Array) -> void:
+	var title := Label.new()
+	title.text = caption
+	title.add_theme_color_override("font_color", Color(0.35, 0.72, 1.0))
+	_controls_box.add_child(title)
+	for action in actions:
+		var row := HBoxContainer.new()
+		var name_label := Label.new()
+		name_label.text = InputConfig.action_labels[action]
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(name_label)
+		var key_button := Button.new()
+		key_button.custom_minimum_size = Vector2(112, 34)
+		key_button.text = InputConfig.get_key_label(action)
+		key_button.pressed.connect(_begin_rebind.bind(action))
+		row.add_child(key_button)
+		_binding_buttons[action] = key_button
+		_controls_box.add_child(row)
+
+func _begin_rebind(action: String) -> void:
+	_waiting_action = action
+	_binding_buttons[action].text = "Appuie…"
+	_status.text = "Nouvelle touche pour : " + InputConfig.action_labels[action]
+
+func _input(event: InputEvent) -> void:
+	if _waiting_action == "" or not (event is InputEventKey):
+		return
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.echo:
+		return
+	if key_event.keycode == KEY_ESCAPE:
+		_binding_buttons[_waiting_action].text = InputConfig.get_key_label(_waiting_action)
+		_waiting_action = ""
+		return
+	InputConfig.set_key(_waiting_action, int(key_event.physical_keycode if key_event.physical_keycode != 0 else key_event.keycode))
+	_binding_buttons[_waiting_action].text = InputConfig.get_key_label(_waiting_action)
+	_waiting_action = ""
+	_status.text = "Configuration enregistrée."
+
+func _reset_controls() -> void:
+	InputConfig.reset_bindings()
+	for action in _binding_buttons:
+		_binding_buttons[action].text = InputConfig.get_key_label(action)
+	_waiting_action = ""
+	_status.text = "Touches par défaut restaurées."
 
 func _add_button(parent: VBoxContainer, caption: String, action: Callable) -> void:
 	var button := Button.new()
@@ -117,12 +186,20 @@ func _add_check(parent: VBoxContainer, caption: String) -> CheckButton:
 func _show_menu() -> void:
 	_menu_box.visible = true
 	_settings_box.visible = false
+	_controls_box.visible = false
 	_status.text = "Le monde 3D n'est pas chargé. Choisissez vos réglages avant de démarrer."
 
 func _show_settings() -> void:
 	_menu_box.visible = false
 	_settings_box.visible = true
+	_controls_box.visible = false
 	_status.text = "Les réglages seront appliqués avant la création du monde ouvert."
+
+func _show_controls() -> void:
+	_menu_box.visible = false
+	_settings_box.visible = false
+	_controls_box.visible = true
+	_status.text = "Les commandes clavier sont enregistrées automatiquement."
 
 func _on_quality_selected(index: int) -> void:
 	if index == 0:
@@ -196,7 +273,6 @@ func _start_game() -> void:
 	_apply_display_mode()
 	_status.text = "Préparation du monde…"
 	await get_tree().process_frame
-	# Remplace réellement le menu : il ne doit jamais rester au-dessus du monde.
 	var change_error := get_tree().change_scene_to_packed(WORLD_SCENE)
 	if change_error != OK:
 		_status.text = "Impossible de démarrer le monde (code %d)." % change_error

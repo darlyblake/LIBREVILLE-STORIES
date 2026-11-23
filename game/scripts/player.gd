@@ -1,7 +1,6 @@
 extends CharacterBody3D
 
-## Exploration à pied : stick gauche/ZQSD. Triangle ou F : entrer/sortir du véhicule.
-## Dans le véhicule : stick gauche pour tourner, RT accélérer, LT freiner.
+## Déplacement à pied et prise en charge du véhicule.
 
 @export var move_speed: float = 8.5
 @export var sprint_speed: float = 16.0
@@ -11,6 +10,7 @@ extends CharacterBody3D
 @export var gamepad_deadzone: float = 0.18
 
 @onready var camera_pivot: Node3D = $CameraPivot
+@onready var player_camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera_pitch: float = -0.18
 var _vehicle: VehicleController
@@ -32,7 +32,7 @@ func _on_joy_connection_changed(device: int, connected: bool) -> void:
 		_jump_was_pressed = false
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED and _vehicle == null:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		camera_pitch = clampf(camera_pitch - event.relative.y * mouse_sensitivity, -0.85, 0.35)
 		camera_pivot.rotation.x = camera_pitch
@@ -40,7 +40,7 @@ func _input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if event is InputEventMouseButton and event.pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F:
+	if event.is_action_pressed("enter_exit_vehicle"):
 		_toggle_vehicle()
 	if event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_Y:
 		_toggle_vehicle()
@@ -57,15 +57,17 @@ func _physics_process(delta: float) -> void:
 	var jump_pressed := Input.is_action_just_pressed("jump")
 	if not devices.is_empty():
 		var device := devices[0]
-		input_vector = _read_gamepad_move(device)
+		var pad_move := _read_gamepad_move(device)
+		if pad_move.length() > input_vector.length():
+			input_vector = pad_move
 		var jump_now := Input.is_joy_button_pressed(device, JOY_BUTTON_A)
-		jump_pressed = jump_now and not _jump_was_pressed
+		jump_pressed = jump_pressed or (jump_now and not _jump_was_pressed)
 		_jump_was_pressed = jump_now
 	else:
 		_jump_was_pressed = false
 
 	var move_direction := (transform.basis * Vector3(input_vector.x, 0.0, input_vector.y)).normalized()
-	var sprinting := Input.is_key_pressed(KEY_SHIFT) or Input.is_action_pressed("ui_select")
+	var sprinting := Input.is_action_pressed("sprint") or Input.is_action_pressed("ui_select")
 	var current_speed := sprint_speed if sprinting else move_speed
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -80,10 +82,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 func _read_gamepad_move(device: int) -> Vector2:
-	var value := Vector2(
-		Input.get_joy_axis(device, JOY_AXIS_LEFT_X),
-		Input.get_joy_axis(device, JOY_AXIS_LEFT_Y)
-	)
+	var value := Vector2(Input.get_joy_axis(device, JOY_AXIS_LEFT_X), Input.get_joy_axis(device, JOY_AXIS_LEFT_Y))
 	if value.length() < gamepad_deadzone:
 		value = Vector2.ZERO
 	else:
@@ -106,6 +105,7 @@ func _toggle_vehicle() -> void:
 		_vehicle = null
 		global_position = exit_position
 		visible = true
+		player_camera.make_current()
 		return
 	var nearest: VehicleController
 	var nearest_distance := 5.0
@@ -119,9 +119,11 @@ func _toggle_vehicle() -> void:
 		_vehicle = nearest
 		_vehicle.enter_vehicle()
 		visible = false
-		print("LIBREVILLE STORIES | véhicule pris en charge — RT accélérer, LT freiner, stick gauche diriger")
+		print("LIBREVILLE STORIES | véhicule pris en charge — touches configurables dans COMMANDES CLAVIER")
 
 func _update_gamepad_camera(delta: float) -> void:
+	if _vehicle != null:
+		return
 	var devices := Input.get_connected_joypads()
 	if devices.is_empty():
 		return
