@@ -48,11 +48,22 @@ var _hud_speed: Label
 var _hud_odo: Label
 var _hud_camera: Label
 var _cinematic_time := 0.0
+var _engine_audio: AudioStreamPlayer
+var _starter_audio: AudioStreamPlayer
+var _brake_audio: AudioStreamPlayer
+var _tutorial_panel: PanelContainer
+var _tutorial_label: Label
+var _tutorial_index := 0
+var _tutorial_steps: Array[String] = []
 
 const CAMERA_NAMES := ["EXTÉRIEURE PROCHE", "EXTÉRIEURE ÉLOIGNÉE", "COCKPIT", "CINÉMATIQUE"]
 
 func _ready() -> void:
 	add_to_group("drivable_vehicle")
+	motion_mode = CharacterBody3D.MOTION_MODE_GROUNDED
+	floor_snap_length = 0.38
+	floor_max_angle = deg_to_rad(48.0)
+	floor_stop_on_slope = true
 	var jeep := get_node_or_null("JeepModel")
 	if jeep != null:
 		_collect_wheel_nodes(jeep, false)
@@ -61,6 +72,8 @@ func _ready() -> void:
 		push_warning("Jeep : %d éléments de roue détectés. Les pivots du GLB doivent être vérifiés avant de corriger les axes." % _wheel_nodes.size())
 	_setup_vehicle_cameras()
 	_setup_vehicle_hud()
+	_setup_vehicle_audio()
+	_setup_driving_lesson()
 
 func _physics_process(delta: float) -> void:
 	if not player_driving:
@@ -88,6 +101,7 @@ func _physics_process(delta: float) -> void:
 		_wheel_roll_angle -= signf(current_speed) * travelled / wheel_radius
 	_update_wheel_animation()
 	_update_vehicle_hud()
+	_update_vehicle_audio(controls.x, controls.y)
 	if _camera_mode == 3:
 		_cinematic_time += delta
 		_camera_pivot.rotation.y = sin(_cinematic_time * 0.22) * 0.72
@@ -171,11 +185,61 @@ func _collect_wheel_nodes(root: Node, inside_wheel: bool) -> void:
 					is_candidate = false
 					break
 		if is_candidate:
-			_wheel_nodes.append(node)
-			_wheel_base_basis.append(node.transform.basis.orthonormalized())
-			_wheel_local_positions.append(to_local(node.global_position))
+			_create_wheel_pivot(node)
 			continue
 		_collect_wheel_nodes(node, inside_wheel)
+
+
+func _create_wheel_pivot(wheel_node: Node3D) -> void:
+	var original_parent := wheel_node.get_parent()
+	if original_parent == null:
+		return
+	var world_bounds := _get_subtree_world_aabb(wheel_node)
+	if world_bounds.size.length_squared() < 0.0001:
+		push_warning("Pivot roue ignoré : géométrie introuvable pour %s" % wheel_node.name)
+		return
+	var wheel_center := world_bounds.get_center()
+	var original_global := wheel_node.global_transform
+	var pivot := Node3D.new()
+	pivot.name = "%s_RotationPivot" % wheel_node.name
+	original_parent.add_child(pivot)
+	pivot.global_transform = Transform3D(global_transform.basis.orthonormalized(), wheel_center)
+	original_parent.remove_child(wheel_node)
+	pivot.add_child(wheel_node)
+	wheel_node.global_transform = original_global
+	_wheel_nodes.append(pivot)
+	_wheel_base_basis.append(Basis.IDENTITY)
+	_wheel_local_positions.append(to_local(wheel_center))
+
+
+func _get_subtree_world_aabb(root: Node) -> AABB:
+	var result := AABB()
+	var found := false
+	if root is MeshInstance3D:
+		var mesh_node := root as MeshInstance3D
+		if mesh_node.mesh != null:
+			var local_bounds := mesh_node.mesh.get_aabb()
+			for corner_index in range(8):
+				var corner := Vector3(
+					local_bounds.position.x + (local_bounds.size.x if (corner_index & 1) != 0 else 0.0),
+					local_bounds.position.y + (local_bounds.size.y if (corner_index & 2) != 0 else 0.0),
+					local_bounds.position.z + (local_bounds.size.z if (corner_index & 4) != 0 else 0.0)
+				)
+				var world_corner := mesh_node.global_transform * corner
+				if not found:
+					result = AABB(world_corner, Vector3.ZERO)
+					found = true
+				else:
+					result = result.expand(world_corner)
+	for child in root.get_children():
+		var child_bounds := _get_subtree_world_aabb(child)
+		if child_bounds.size.length_squared() > 0.0001:
+			if not found:
+				result = child_bounds
+				found = true
+			else:
+				result = result.merge(child_bounds)
+	return result
 
 func _classify_wheels() -> void:
 	if _wheel_nodes.is_empty():
@@ -236,6 +300,133 @@ func _setup_vehicle_cameras() -> void:
 	_cockpit_camera.fov = 78.0
 	add_child(_cockpit_camera)
 
+
+func _setup_vehicle_audio() -> void:
+	_engine_audio = AudioStreamPlayer.new()
+	_engine_audio.name = "EngineLoop"
+	_engine_audio.stream = _build_vehicle_tone(1.0, 48.0, 96.0, true)
+	_engine_audio.volume_db = -17.0
+	add_child(_engine_audio)
+	_starter_audio = AudioStreamPlayer.new()
+	_starter_audio.name = "EngineStarter"
+	_starter_audio.stream = _build_vehicle_tone(0.48, 72.0, 145.0, false)
+	_starter_audio.volume_db = -9.0
+	add_child(_starter_audio)
+	_brake_audio = AudioStreamPlayer.new()
+	_brake_audio.name = "BrakeSqueal"
+	_brake_audio.stream = _build_vehicle_tone(0.8, 690.0, 1040.0, true)
+	_brake_audio.volume_db = -25.0
+	add_child(_brake_audio)
+
+
+func _build_vehicle_tone(duration: float, base_frequency: float, harmonic: float, looping: bool) -> AudioStreamWAV:
+	var sample_rate := 22050
+	var sample_count := maxi(1, int(sample_rate * duration))
+	var bytes := PackedByteArray()
+	bytes.resize(sample_count * 2)
+	for i in range(sample_count):
+		var time := float(i) / float(sample_rate)
+		var envelope := 1.0
+		if not looping:
+			envelope = minf(1.0, time * 18.0) * pow(maxf(0.0, 1.0 - time / duration), 1.7)
+		var wave := sin(TAU * base_frequency * time) * 0.48 + sin(TAU * harmonic * time) * 0.20
+		if looping and base_frequency < 100.0:
+			wave += sin(TAU * 24.0 * time) * 0.16
+		else:
+			wave += sin(TAU * (harmonic * 1.37) * time) * 0.10
+		bytes.encode_s16(i * 2, int(clampf(wave * envelope, -1.0, 1.0) * 26000.0))
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = sample_rate
+	stream.stereo = false
+	stream.data = bytes
+	if looping:
+		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		stream.loop_begin = 0
+		stream.loop_end = sample_count
+	return stream
+
+
+func _update_vehicle_audio(throttle: float, brake: float) -> void:
+	if not player_driving:
+		if _engine_audio.playing:
+			_engine_audio.stop()
+		if _brake_audio.playing:
+			_brake_audio.stop()
+		return
+	if not _engine_audio.playing:
+		_engine_audio.play()
+	var speed_ratio := clampf(absf(current_speed) / max_speed, 0.0, 1.0)
+	_engine_audio.pitch_scale = 0.82 + speed_ratio * 1.25 + throttle * 0.12
+	_engine_audio.volume_db = -18.0 + throttle * 2.5
+	if brake > 0.72 and absf(current_speed) > 8.0:
+		if not _brake_audio.playing:
+			_brake_audio.play()
+	elif _brake_audio.playing:
+		_brake_audio.stop()
+
+
+func _setup_driving_lesson() -> void:
+	_tutorial_steps = [
+		"1 / DÉMARRER\nAppuie sur W (clavier) ou RT (manette) progressivement pour lancer la Jeep. La vitesse s'affiche en km/h.",
+		"2 / ACCÉLÉRER\nMaintiens W ou RT. La vitesse augmente progressivement : relâche pour laisser le véhicule ralentir.",
+		"3 / TOURNER\nUtilise A et D ou le stick gauche. À grande vitesse, braque moins fort pour garder le contrôle.",
+		"4 / FREINER\nMaintiens S ou LT pour ralentir. À l'arrêt, maintenir S ou LT engage la marche arrière.",
+		"5 / CAMÉRAS\nAppuie sur C pour passer de la vue proche à la vue éloignée, au cockpit puis à la vue cinématique.",
+		"6 / QUITTER LE VÉHICULE\nAppuie sur F ou Y (manette) pour sortir. Arrête-toi avant de quitter le véhicule."
+	]
+	var panel := PanelContainer.new()
+	panel.name = "DrivingLesson"
+	panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	panel.position = Vector2(-220, 22)
+	panel.custom_minimum_size = Vector2(440, 0)
+	panel.visible = false
+	_hud_layer.add_child(panel)
+	_tutorial_panel = panel
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 8)
+	panel.add_child(column)
+	var heading := Label.new()
+	heading.text = "ÉCOLE DE CONDUITE — JEEP WRANGLER"
+	heading.add_theme_font_size_override("font_size", 17)
+	column.add_child(heading)
+	_tutorial_label = Label.new()
+	_tutorial_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tutorial_label.custom_minimum_size = Vector2(400, 76)
+	column.add_child(_tutorial_label)
+	var buttons := HBoxContainer.new()
+	column.add_child(buttons)
+	var next_button := Button.new()
+	next_button.text = "SUIVANT"
+	next_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	next_button.pressed.connect(_next_tutorial_step)
+	buttons.add_child(next_button)
+	var close_button := Button.new()
+	close_button.text = "IGNORER"
+	close_button.pressed.connect(_hide_driving_lesson)
+	buttons.add_child(close_button)
+
+
+func _next_tutorial_step() -> void:
+	_tutorial_index += 1
+	if _tutorial_index >= _tutorial_steps.size():
+		_hide_driving_lesson()
+		return
+	_tutorial_label.text = _tutorial_steps[_tutorial_index]
+
+
+func _hide_driving_lesson() -> void:
+	if _tutorial_panel != null:
+		_tutorial_panel.visible = false
+
+
+func _show_driving_lesson() -> void:
+	if _tutorial_panel == null:
+		return
+	_tutorial_index = 0
+	_tutorial_label.text = _tutorial_steps[_tutorial_index]
+	_tutorial_panel.visible = true
+
 func _setup_vehicle_hud() -> void:
 	_hud_layer = CanvasLayer.new()
 	_hud_layer.name = "VehicleDashboard"
@@ -295,6 +486,8 @@ func _set_camera_mode(mode: int) -> void:
 func enter_vehicle() -> void:
 	player_driving = true
 	_hud_layer.visible = true
+	_starter_audio.play()
+	_show_driving_lesson()
 	current_speed = 0.0
 	_planar_velocity = Vector3.ZERO
 	_steering_angle = 0.0
@@ -305,6 +498,8 @@ func enter_vehicle() -> void:
 func exit_vehicle() -> void:
 	player_driving = false
 	_hud_layer.visible = false
+	_hide_driving_lesson()
+	_update_vehicle_audio(0.0, 0.0)
 	current_speed = 0.0
 	_planar_velocity = Vector3.ZERO
 	_steering_angle = 0.0
