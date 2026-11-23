@@ -676,6 +676,10 @@ func _add_ocean_plane() -> void:
 shader_type spatial;
 render_mode cull_disabled, diffuse_burley, specular_schlick_ggx;
 
+uniform sampler2D ocean_base_color : source_color, filter_linear_mipmap, repeat_enable;
+uniform sampler2D ocean_normal : hint_normal, filter_linear_mipmap, repeat_enable;
+uniform sampler2D ocean_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+
 varying vec3 water_normal;
 varying vec3 water_world_pos;
 varying float wave_height;
@@ -730,16 +734,35 @@ void fragment() {
 	float fresnel = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 4.0);
 	vec3 sun_direction = normalize(vec3(-0.35, 0.82, 0.44));
 	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 48.0);
-	ALBEDO = mix(water_color, vec3(0.34, 0.52, 0.54), fresnel * 0.48);
+	vec2 ocean_uv = UV * vec2(210.0, 145.0);
+	vec2 drift_uv = ocean_uv + vec2(TIME * 0.012, -TIME * 0.008);
+	vec3 ocean_albedo = texture(ocean_base_color, drift_uv).rgb;
+	vec3 normal_a = texture(ocean_normal, drift_uv).rgb;
+	vec3 normal_b = texture(ocean_normal, ocean_uv * 1.37 + vec2(-TIME * 0.009, TIME * 0.011)).rgb;
+	vec3 blended_normal = normalize(mix(normal_a, normal_b, 0.35));
+	ALBEDO = mix(water_color, ocean_albedo * vec3(0.42, 0.72, 0.82), 0.28);
+	ALBEDO = mix(ALBEDO, vec3(0.34, 0.52, 0.54), fresnel * 0.48);
 	ALBEDO += vec3(0.22, 0.27, 0.25) * glint * 0.22;
-	METALLIC = 0.12;
-	ROUGHNESS = mix(0.24, 0.38, clamp(abs(fine) * 0.5, 0.0, 1.0));
+	METALLIC = 0.04;
+	ROUGHNESS = clamp(texture(ocean_roughness, drift_uv).r * 0.48 + 0.12, 0.12, 0.55);
 	SPECULAR = 0.72;
-	NORMAL = n;
+	NORMAL_MAP = blended_normal;
+	NORMAL_MAP_DEPTH = 0.42;
 }
 """
 	var water_material := ShaderMaterial.new()
 	water_material.shader = water_shader
+	var ocean_texture_root := "res://assets/textures/water/ocean_1k/"
+	var ocean_base := load(ocean_texture_root + "baseColor.png") as Texture2D
+	var ocean_normal_map := load(ocean_texture_root + "normal.png") as Texture2D
+	var ocean_rough := load(ocean_texture_root + "roughness.png") as Texture2D
+	if ocean_base != null and ocean_normal_map != null and ocean_rough != null:
+		water_material.set_shader_parameter("ocean_base_color", ocean_base)
+		water_material.set_shader_parameter("ocean_normal", ocean_normal_map)
+		water_material.set_shader_parameter("ocean_roughness", ocean_rough)
+		print("LIBREVILLE STORIES | pack PBR océan 1K chargé.")
+	else:
+		push_warning("Pack PBR océan incomplet : eau procédurale conservée en secours.")
 	_ocean_water_material = water_material
 	ocean.material_override = water_material
 	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
