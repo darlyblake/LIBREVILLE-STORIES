@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://ca2u2cr1sl1xy"
+path.s3tc="res://.godot/imported/jeep_wrangler_rubicon_4xe_2024_40.jpg-346106f6515f6d6c6c4c76aa5dc2fa38.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "d8e16e77d3327b50d8f47f73503e8f9e"
+}
+
+[deps]
+
+source_file="res://jeep_wrangler_rubicon_4xe_2024_40.jpg"
+dest_files=["res://.godot/imported/jeep_wrangler_rubicon_4xe_2024_40.jpg-346106f6515f6d6c6c4c76aa5dc2fa38.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0
