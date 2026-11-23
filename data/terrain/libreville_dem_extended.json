@@ -28,6 +28,6 @@
   "valid_source_cells": 496324,
   "nodata_cells_set_to_zero": 0,
   "encoding": "row-major little-endian float32; row 0 = north; columns increase east",
-  "generated_at_utc": "2026-11-19T12:37:56.796070+00:00",
+  "generated_at_utc": "2026-11-23T01:25:06.992207+00:00",
   "binary_file": "libreville_dem_extended_f32.bin"
 }
