@@ -4025,9 +4025,17 @@ func get_locality_destinations() -> Array[Dictionary]:
 			continue
 		var point := _polygon_centroid(polygon)
 		if not _point_in_polygon(point, polygon):
-			# Les centroïdes de polygones concaves peuvent tomber hors du quartier.
-			# Le premier point intérieur issu du contour sert alors de point sûr.
-			point = polygon[0]
+			# Pour un quartier concave, rapprocher le centroïde des milieux de côtés
+			# jusqu'à trouver un point réellement à l'intérieur du contour.
+			var found_inside := false
+			for vertex_index in range(polygon.size() - 1):
+				var candidate := polygon[vertex_index].lerp(point, 0.5)
+				if _point_in_polygon(candidate, polygon):
+					point = candidate
+					found_inside = true
+					break
+			if not found_inside:
+				point = polygon[0].lerp(point, 0.02)
 		var ground_y := _terrain_height_at_world(point.x, point.y)
 		destinations.append({
 			"name": str(_neighbourhood_names.get(osm_id, "Quartier")),

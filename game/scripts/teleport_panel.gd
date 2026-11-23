@@ -160,7 +160,9 @@ func _on_teleport(world_map_position: Vector3) -> void:
 
 func _on_monument_teleport() -> void:
 	var landmarks := get_tree().current_scene.get_node_or_null("WaterfrontLandmarks")
-	var monument := landmarks.get_node_or_null("Monument_Georges_Damas_Aleka") as Node3D if landmarks != null else null
+	var monument: Node3D = null
+	if landmarks != null:
+		monument = landmarks.get_node_or_null("Monument_Georges_Damas_Aleka") as Node3D
 	if monument == null:
 		push_warning("Téléport : monument Georges-Damas-Aleka introuvable")
 		return
@@ -169,7 +171,9 @@ func _on_monument_teleport() -> void:
 
 func _on_stele_teleport() -> void:
 	var landmarks := get_tree().current_scene.get_node_or_null("WaterfrontLandmarks")
-	var stele := landmarks.get_node_or_null("Stele_Liberte") as Node3D if landmarks != null else null
+	var stele: Node3D = null
+	if landmarks != null:
+		stele = landmarks.get_node_or_null("Stele_Liberte") as Node3D
 	if stele == null:
 		push_warning("Téléport : Stèle de la Liberté introuvable")
 		return
