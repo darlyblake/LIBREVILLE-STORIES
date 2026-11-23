@@ -329,8 +329,8 @@ func _setup_brake_lights(model_root: Node3D) -> void:
 func _update_brake_lights(brake_input: float, speed_before: float, delta: float) -> void:
 	var speed_now := absf(current_speed)
 	var deceleration := (speed_before - speed_now) / maxf(delta, 0.0001)
-	var braking := player_driving and speed_before > 1.2 and (
-		brake_input > 0.04 or (deceleration > 1.0 and speed_now > 0.8)
+	var braking := player_driving and (
+		brake_input > 0.04 or (speed_before > 1.2 and deceleration > 1.0 and speed_now > 0.8)
 	)
 	for light in _brake_lights:
 		light.light_energy = 1.8 if braking else 0.0
