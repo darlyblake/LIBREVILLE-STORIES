@@ -842,7 +842,15 @@ func _load_environment() -> void:
 	var batch_count := 0
 	var batch_index := 0
 	var environment_index := 0
-	for feature in data.get("features", []):
+	var environment_features: Array = data.get("features", []).duplicate()
+	var player_for_environment := get_parent().get_node_or_null("Player") as Node3D
+	var environment_origin := Vector2.ZERO
+	if player_for_environment != null:
+		environment_origin = Vector2(player_for_environment.global_position.x, player_for_environment.global_position.z)
+	environment_features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return _feature_world_center(a).distance_squared_to(environment_origin) < _feature_world_center(b).distance_squared_to(environment_origin)
+	)
+	for feature in environment_features:
 		var geometry: Dictionary = feature.get("geometry", {})
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("environment_kind", ""))
@@ -1864,7 +1872,14 @@ func _load_roads() -> void:
 		push_warning("roads.geojson absent : carte routière non chargée.")
 		return
 	var started_ms := Time.get_ticks_msec()
-	var features: Array = data.get("features", [])
+	var features: Array = data.get("features", []).duplicate()
+	var player_for_roads := get_parent().get_node_or_null("Player") as Node3D
+	var road_origin := Vector2.ZERO
+	if player_for_roads != null:
+		road_origin = Vector2(player_for_roads.global_position.x, player_for_roads.global_position.z)
+	features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return _feature_world_center(a).distance_squared_to(road_origin) < _feature_world_center(b).distance_squared_to(road_origin)
+	)
 	_load_lamp_parts()
 	_add_road_name_labels(features)
 	# 1. Découpe en tronçons + registre des nœuds (carrefours, T, croisements).
@@ -1950,7 +1965,11 @@ func _load_roads() -> void:
 			tiles[tile] = []
 		tiles[tile].append(part_index)
 	var tile_keys: Array = tiles.keys()
-	tile_keys.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.x < b.x or (a.x == b.x and a.y < b.y))
+	tile_keys.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		var center_a := Vector2((float(a.x) + 0.5) * ROAD_TILE_SIZE, (float(a.y) + 0.5) * ROAD_TILE_SIZE)
+		var center_b := Vector2((float(b.x) + 0.5) * ROAD_TILE_SIZE, (float(b.y) + 0.5) * ROAD_TILE_SIZE)
+		return center_a.distance_squared_to(road_origin) < center_b.distance_squared_to(road_origin)
+	)
 	var patched: Dictionary = {}
 	var tile_counter := 0
 	for tile_key in tile_keys:
@@ -2543,6 +2562,10 @@ func _commit_lamps(tile_name: String) -> void:
 	if _lamp_batch.is_empty() or _lamp_parts.is_empty():
 		_lamp_batch.clear()
 		return
+	var batch_center := Vector3.ZERO
+	for transform in _lamp_batch:
+		batch_center += transform.origin
+	batch_center /= float(_lamp_batch.size())
 	for part_number in range(_lamp_parts.size()):
 		var info: Dictionary = _lamp_parts[part_number]
 		var multimesh := MultiMesh.new()
@@ -2551,10 +2574,13 @@ func _commit_lamps(tile_name: String) -> void:
 		multimesh.instance_count = _lamp_batch.size()
 		var part_transform: Transform3D = info.xform
 		for i in range(_lamp_batch.size()):
-			multimesh.set_instance_transform(i, _lamp_batch[i] * part_transform)
+			var local_transform: Transform3D = _lamp_batch[i] * part_transform
+			local_transform.origin -= batch_center
+			multimesh.set_instance_transform(i, local_transform)
 		var instance := MultiMeshInstance3D.new()
 		instance.name = "OSM_Lampadaires_%s_%d" % [tile_name, part_number]
 		instance.multimesh = multimesh
+		instance.position = batch_center
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		instance.visibility_range_end = LAMP_VISIBILITY
 		add_child(instance)
@@ -3305,7 +3331,16 @@ func _load_buildings() -> void:
 	if data.is_empty():
 		push_warning("buildings.geojson absent : bâtiments non chargés.")
 		return
-	var features: Array = data.get("features", [])
+	var features: Array = data.get("features", []).duplicate()
+	var player_for_buildings := get_parent().get_node_or_null("Player") as Node3D
+	var building_origin := Vector2.ZERO
+	if player_for_buildings != null:
+		building_origin = Vector2(player_for_buildings.global_position.x, player_for_buildings.global_position.z)
+	# Les empreintes proches du joueur sont traitées en premier : les premiers
+	# lots de meshes contiennent donc le quartier de départ, pas l'autre bout de Libreville.
+	features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return _feature_world_center(a).distance_squared_to(building_origin) < _feature_world_center(b).distance_squared_to(building_origin)
+	)
 	var limit := mini(features.size(), BUILDING_LIMIT)
 	var surface := _new_surface(_building_material)
 	var roof_surface := _new_surface(_roof_material)
@@ -3390,7 +3425,19 @@ func _load_localities() -> void:
 		push_warning("localities.geojson absent : les noms de quartiers/localités ne seront pas affichés.")
 		return
 	var features: Array = data.get("features", []).duplicate()
-	features.sort_custom(Callable(self, "_compare_locality_features"))
+	var player_for_localities := get_parent().get_node_or_null("Player") as Node3D
+	var locality_origin := Vector2.ZERO
+	if player_for_localities != null:
+		locality_origin = Vector2(player_for_localities.global_position.x, player_for_localities.global_position.z)
+	features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var props_a: Dictionary = a.get("properties", {})
+		var props_b: Dictionary = b.get("properties", {})
+		var priority_a := _locality_priority(str(props_a.get("place", "")))
+		var priority_b := _locality_priority(str(props_b.get("place", "")))
+		if priority_a != priority_b:
+			return priority_a < priority_b
+		return _feature_world_center(a).distance_squared_to(locality_origin) < _feature_world_center(b).distance_squared_to(locality_origin)
+	)
 	for feature in features:
 		var geometry: Dictionary = feature.get("geometry", {})
 		if str(geometry.get("type", "")) != "Point":
@@ -3557,6 +3604,31 @@ func _poi_color(kind: String) -> Color:
 			return Color(0.60, 0.90, 0.72)
 		_:
 			return Color(0.96, 0.96, 0.90)
+
+func _collect_geo_points(value: Variant, points: Array[Vector2]) -> void:
+	if not value is Array:
+		return
+	var values: Array = value
+	if values.size() >= 2 and typeof(values[0]) in [TYPE_FLOAT, TYPE_INT] and typeof(values[1]) in [TYPE_FLOAT, TYPE_INT]:
+		var world_point := _geo_to_world([float(values[0]), float(values[1])])
+		points.append(Vector2(world_point.x, world_point.z))
+		return
+	for child in values:
+		_collect_geo_points(child, points)
+
+
+func _feature_world_center(feature: Dictionary) -> Vector2:
+	var geometry: Dictionary = feature.get("geometry", {})
+	var points: Array[Vector2] = []
+	_collect_geo_points(geometry.get("coordinates", []), points)
+	if points.is_empty():
+		var player := get_parent().get_node_or_null("Player") as Node3D
+		return Vector2(player.global_position.x, player.global_position.z) if player != null else Vector2.ZERO
+	var center := Vector2.ZERO
+	for point in points:
+		center += point
+	return center / float(points.size())
+
 
 func _geo_to_world(coordinate: Array) -> Vector3:
 	var lon := float(coordinate[0])
