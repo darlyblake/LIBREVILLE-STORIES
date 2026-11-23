@@ -4,7 +4,8 @@ class_name BaieDesRoisPropsPlacement
 ## Les coordonnées sont calculées depuis BaieDesRoisSurvey, pas depuis l'ancre
 ## décorative historique. Les décalages extérieurs restent à valider dans Godot.
 
-const PALM_PATH := "res://assets/models/baie_des_rois/palmier_baie_des_rois.glb"
+const PALM_PATH := "res://assets/models/vegetation/palm_trees.glb"
+const LEGACY_PALM_PATH := "res://assets/models/baie_des_rois/palmier_baie_des_rois.glb"
 const BENCH_PATH := "res://assets/models/baie_des_rois/banc_baie_des_rois.glb"
 const LAMP_PATH := "res://assets/models/baie_des_rois/lampadaire_baie_des_rois.glb"
 
@@ -26,7 +27,9 @@ func _ready() -> void:
 
 
 func _build_placements() -> void:
-	var palm_scene := _load_model(PALM_PATH, "palmier")
+	var palm_scene := _load_model(PALM_PATH, "palmier réaliste")
+	if palm_scene == null:
+		palm_scene = _load_model(LEGACY_PALM_PATH, "palmier de secours")
 	var bench_scene := _load_model(BENCH_PATH, "banc")
 	var lamp_scene := _load_model(LAMP_PATH, "lampadaire")
 

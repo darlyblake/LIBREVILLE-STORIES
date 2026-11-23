@@ -26,6 +26,9 @@ const WORLD_ROAD_RADIUS := 2400.0
 const WORLD_BUILDING_RADIUS := 1400.0
 const WORLD_POI_RADIUS := 1800.0
 const WORLD_LOCALITY_RADIUS := 3500.0
+const BAIE_DES_ROIS_WATER_LEVEL := -0.12
+const BAIE_DES_ROIS_SITE_CENTER := Vector2(-1884.0, -400.0)
+const BAIE_DES_ROIS_SITE_RADIUS := 190.0
 
 @export var show_roads := true
 @export var show_buildings := true
@@ -693,17 +696,17 @@ void vertex() {
 	float a2 = dot(p, normalize(vec2(-0.34, 0.94))) * 0.052 - t * 0.91;
 	float a3 = dot(p, normalize(vec2(0.98, -0.18))) * 0.091 + t * 1.18;
 
-	float h1 = sin(a1) * 0.34;
-	float h2 = sin(a2) * 0.13;
-	float h3 = sin(a3) * 0.045;
+	float h1 = sin(a1) * 0.055;
+	float h2 = sin(a2) * 0.022;
+	float h3 = sin(a3) * 0.008;
 	float height = h1 + h2 + h3;
 
-	float dx = cos(a1) * 0.34 * 0.030 * 0.82
-		+ cos(a2) * 0.13 * 0.052 * -0.34
-		+ cos(a3) * 0.045 * 0.091 * 0.98;
-	float dz = cos(a1) * 0.34 * 0.030 * 0.57
-		+ cos(a2) * 0.13 * 0.052 * 0.94
-		+ cos(a3) * 0.045 * 0.091 * -0.18;
+	float dx = cos(a1) * 0.055 * 0.030 * 0.82
+		+ cos(a2) * 0.022 * 0.052 * -0.34
+		+ cos(a3) * 0.008 * 0.091 * 0.98;
+	float dz = cos(a1) * 0.055 * 0.030 * 0.57
+		+ cos(a2) * 0.022 * 0.052 * 0.94
+		+ cos(a3) * 0.008 * 0.091 * -0.18;
 
 	VERTEX.y += height;
 	wave_height = height;
@@ -1018,6 +1021,7 @@ func _load_environment() -> void:
 		add_child(relief_body)
 	_build_baie_des_rois_water()
 	_build_coastal_details()
+	_build_baie_des_rois_seawall()
 	_commit_tree_instances(tree_positions)
 
 
@@ -1082,10 +1086,10 @@ func _build_baie_des_rois_water() -> void:
 			var inner_b := coast_b + sea_normal * 0.8
 			var outer_a := coast_a + sea_normal * SEA_WIDTH
 			var outer_b := coast_b + sea_normal * SEA_WIDTH
-			var y_inner_a := maxf(0.025, _terrain_height_at_world(inner_a.x, inner_a.y) + 0.045)
-			var y_inner_b := maxf(0.025, _terrain_height_at_world(inner_b.x, inner_b.y) + 0.045)
-			var y_outer_a := maxf(0.025, _terrain_height_at_world(outer_a.x, outer_a.y) + 0.045)
-			var y_outer_b := maxf(0.025, _terrain_height_at_world(outer_b.x, outer_b.y) + 0.045)
+			var y_inner_a := BAIE_DES_ROIS_WATER_LEVEL + 0.018
+			var y_inner_b := BAIE_DES_ROIS_WATER_LEVEL + 0.018
+			var y_outer_a := BAIE_DES_ROIS_WATER_LEVEL + 0.018
+			var y_outer_b := BAIE_DES_ROIS_WATER_LEVEL + 0.018
 
 			var vertices := [
 				Vector3(inner_a.x, y_inner_a, inner_a.y),
@@ -1117,6 +1121,104 @@ func _build_baie_des_rois_water() -> void:
 	print("LIBREVILLE STORIES | eau locale Baie des Rois : %d tronçons OSM, départ au bord du rivage" % segment_count)
 
 
+func _build_baie_des_rois_seawall() -> void:
+	# Mur de rive en béton, construit uniquement sur le tronçon côtier
+	# correspondant au relevé GPS de la Baie des Rois.
+	if _coastline_paths.is_empty():
+		return
+	var concrete := StandardMaterial3D.new()
+	concrete.albedo_color = Color(0.70, 0.70, 0.66)
+	concrete.roughness = 0.92
+	concrete.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var wall_surface := _new_surface(concrete)
+	var wall_segments := 0
+	var rock_root := Node3D.new()
+	rock_root.name = "BaieDesRois_Coastal_Rock_Assets"
+	var rock_scene_a := load("res://assets/models/environment/coastal_rocks/rock_face_01_4k.gltf/rock_face_01_4k.gltf") as PackedScene
+	var rock_scene_b := load("res://assets/models/environment/coastal_rocks/rock_face_02_4k.gltf/rock_face_02_4k.gltf") as PackedScene
+	var rock_count := 0
+	var rock_index := 0
+
+	for coast_path in _coastline_paths:
+		for i in range(coast_path.size() - 1):
+			var a: Vector2 = coast_path[i]
+			var b: Vector2 = coast_path[i + 1]
+			var segment := b - a
+			var length := segment.length()
+			if length < 1.5:
+				continue
+			var midpoint := (a + b) * 0.5
+			if midpoint.distance_to(BAIE_DES_ROIS_SITE_CENTER) > BAIE_DES_ROIS_SITE_RADIUS:
+				continue
+			var direction := segment / length
+			var perpendicular := Vector2(-direction.y, direction.x)
+			var left_sample := midpoint + perpendicular * 10.0
+			var right_sample := midpoint - perpendicular * 10.0
+			var left_height := _terrain_height_at_world(left_sample.x, left_sample.y)
+			var right_height := _terrain_height_at_world(right_sample.x, right_sample.y)
+			var land_normal := perpendicular if left_height >= right_height else -perpendicular
+			var wall_a := a + land_normal * 1.0
+			var wall_b := b + land_normal * 1.0
+			var sea_a := wall_a - land_normal * 0.16
+			var sea_b := wall_b - land_normal * 0.16
+			var land_a := wall_a + land_normal * 0.16
+			var land_b := wall_b + land_normal * 0.16
+			var bottom_y := BAIE_DES_ROIS_WATER_LEVEL - 0.30
+			var top_a := maxf(_terrain_height_at_world(wall_a.x, wall_a.y) + 0.72, BAIE_DES_ROIS_WATER_LEVEL + 0.95)
+			var top_b := maxf(_terrain_height_at_world(wall_b.x, wall_b.y) + 0.72, BAIE_DES_ROIS_WATER_LEVEL + 0.95)
+
+			# Face tournée vers l'eau, face tournée vers la promenade et couronnement.
+			_add_quad(wall_surface,
+				Vector3(sea_a.x, bottom_y, sea_a.y), Vector3(sea_b.x, bottom_y, sea_b.y),
+				Vector3(sea_b.x, top_b, sea_b.y), Vector3(sea_a.x, top_a, sea_a.y))
+			_add_quad(wall_surface,
+				Vector3(land_b.x, bottom_y, land_b.y), Vector3(land_a.x, bottom_y, land_a.y),
+				Vector3(land_a.x, top_a, land_a.y), Vector3(land_b.x, top_b, land_b.y))
+			_add_quad(wall_surface,
+				Vector3(sea_a.x, top_a, sea_a.y), Vector3(sea_b.x, top_b, sea_b.y),
+				Vector3(land_b.x, top_b, land_b.y), Vector3(land_a.x, top_a, land_a.y))
+			wall_segments += 1
+
+			# Les sections sableuses restent dégagées. Sur les portions rocheuses,
+			# alterner les deux modèles PBR téléchargés, à faible densité.
+			var sandy := _is_inside_beach(midpoint + land_normal * 5.0) or _is_inside_beach(midpoint + land_normal * 12.0)
+			if not sandy and i % 3 == 0 and rock_count < 18 and (rock_scene_a != null or rock_scene_b != null):
+				var rock_scene: PackedScene = rock_scene_a if (rock_index % 2 == 0 and rock_scene_a != null) or rock_scene_b == null else rock_scene_b
+				var rock_instance := rock_scene.instantiate() as Node3D
+				if rock_instance != null:
+					rock_instance.name = "CoastalRock_%02d" % rock_count
+					var rock_position := midpoint + land_normal * 0.22
+					rock_instance.position = Vector3(rock_position.x, BAIE_DES_ROIS_WATER_LEVEL - 0.045, rock_position.y)
+					rock_instance.rotation.y = atan2(-direction.y, direction.x)
+					var rock_scale := 0.30 if rock_index % 2 == 0 else 0.38
+					rock_instance.scale = Vector3.ONE * rock_scale
+					rock_root.add_child(rock_instance)
+					rock_count += 1
+					rock_index += 1
+
+	if wall_segments > 0:
+		wall_surface.generate_normals()
+		var wall_mesh := wall_surface.commit()
+		if wall_mesh != null and wall_mesh.get_surface_count() > 0:
+			var wall_instance := MeshInstance3D.new()
+			wall_instance.name = "BaieDesRois_Concrete_Seawall"
+			wall_instance.mesh = wall_mesh
+			wall_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			wall_instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+			add_child(wall_instance)
+			var wall_body := StaticBody3D.new()
+			wall_body.name = "BaieDesRois_Concrete_Seawall_Collision"
+			wall_body.collision_layer = 1
+			wall_body.collision_mask = 1
+			var wall_collision := CollisionShape3D.new()
+			wall_collision.shape = wall_mesh.create_trimesh_shape()
+			wall_body.add_child(wall_collision)
+			add_child(wall_body)
+	if rock_count > 0:
+		add_child(rock_root)
+	print("LIBREVILLE STORIES | rive Baie des Rois : %d segments béton, %d rochers PBR" % [wall_segments, rock_count])
+
+
 func _is_inside_beach(point: Vector2) -> bool:
 	for beach in _beach_polygons:
 		if Geometry2D.is_point_in_polygon(point, beach):
@@ -1144,8 +1246,8 @@ void vertex() {
 	float a1 = dot(p.xz, normalize(vec2(0.82, 0.57))) * 0.030 + t * 0.72;
 	float a2 = dot(p.xz, normalize(vec2(-0.34, 0.94))) * 0.052 - t * 0.91;
 	float a3 = dot(p.xz, normalize(vec2(0.98, -0.18))) * 0.091 + t * 1.18;
-	float wave = sin(a1) * 0.34 + sin(a2) * 0.13 + sin(a3) * 0.045;
-	VERTEX.y = -0.12 + wave + 0.035;
+	float wave = sin(a1) * 0.055 + sin(a2) * 0.022 + sin(a3) * 0.008;
+	VERTEX.y = BAIE_DES_ROIS_WATER_LEVEL + wave + 0.005;
 	shore_world_pos = p;
 	shore_tint = COLOR;
 }
@@ -3520,6 +3622,16 @@ func _load_buildings() -> void:
 	features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return _feature_world_center(a).distance_squared_to(building_origin) < _feature_world_center(b).distance_squared_to(building_origin)
 	)
+	var restaurant_scenes: Array[PackedScene] = []
+	for restaurant_path in [
+		"res://assets/models/baie_des_rois/restaurant_pavillon_baie_des_rois_compact.glb",
+		"res://assets/models/baie_des_rois/restaurant_pavillon_baie_des_rois.glb",
+		"res://assets/models/baie_des_rois/restaurant_pavillon_baie_des_rois_large.glb"
+	]:
+		var restaurant_scene := load(restaurant_path) as PackedScene
+		if restaurant_scene != null:
+			restaurant_scenes.append(restaurant_scene)
+	var baie_restaurant_count := 0
 	var limit := mini(features.size(), BUILDING_LIMIT)
 	var surface := _new_surface(_building_material)
 	var roof_surface := _new_surface(_roof_material)
@@ -3538,6 +3650,11 @@ func _load_buildings() -> void:
 			_:
 				continue
 		var props: Dictionary = feature.get("properties", {})
+		var feature_center := _feature_world_center(feature)
+		if not restaurant_scenes.is_empty() and _is_baie_des_rois_restaurant_candidate(props, feature_center):
+			if _place_baie_des_rois_restaurant(feature, restaurant_scenes, baie_restaurant_count):
+				baie_restaurant_count += 1
+				continue
 		var building_kind := str(props.get("building", "yes"))
 		var osm_id := int(props.get("osm_id", index))
 		var height := _building_height(building_kind, osm_id, props)
@@ -3596,6 +3713,77 @@ func _load_buildings() -> void:
 		_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
 		_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
 
+
+
+func _is_baie_des_rois_restaurant_candidate(props: Dictionary, center: Vector2) -> bool:
+	if center.distance_to(BAIE_DES_ROIS_SITE_CENTER) > BAIE_DES_ROIS_SITE_RADIUS:
+		return false
+	var amenity := str(props.get("amenity", "")).to_lower()
+	var building := str(props.get("building", "")).to_lower()
+	var shop := str(props.get("shop", "")).to_lower()
+	var name := str(props.get("name", "")).to_lower()
+	var food_tags := ["restaurant", "cafe", "fast_food", "food_court", "bar"]
+	if amenity in food_tags or building in ["restaurant", "catering"]:
+		return true
+	if building in ["commercial", "retail"] and (shop in ["food", "bakery", "convenience", "restaurant"] or not name.is_empty()):
+		return true
+	for keyword in ["restaurant", "resto", "cafe", "café", "snack", "pavillon"]:
+		if name.contains(keyword):
+			return true
+	return false
+
+
+func _place_baie_des_rois_restaurant(feature: Dictionary, scenes: Array[PackedScene], index: int) -> bool:
+	var geometry: Dictionary = feature.get("geometry", {})
+	var coordinates: Array = []
+	match str(geometry.get("type", "")):
+		"Polygon":
+			var rings: Array = geometry.get("coordinates", [])
+			if not rings.is_empty():
+				coordinates = rings[0]
+		"MultiPolygon":
+			var polygons: Array = geometry.get("coordinates", [])
+			if not polygons.is_empty() and not polygons[0].is_empty():
+				coordinates = polygons[0][0]
+	if coordinates.size() < 4:
+		return false
+	var points := PackedVector2Array()
+	var min_x := INF
+	var max_x := -INF
+	var min_z := INF
+	var max_z := -INF
+	var center := Vector2.ZERO
+	for coordinate in coordinates:
+		var point3 := _geo_to_world(coordinate)
+		var point := Vector2(point3.x, point3.z)
+		points.append(point)
+		center += point
+		min_x = minf(min_x, point.x)
+		max_x = maxf(max_x, point.x)
+		min_z = minf(min_z, point.y)
+		max_z = maxf(max_z, point.y)
+	center /= float(points.size())
+	if (max_x - min_x) < 4.0 or (max_z - min_z) < 4.0:
+		return false
+	var longest_edge := Vector2.RIGHT
+	var longest_length := 0.0
+	for point_index in range(points.size()):
+		var edge := points[(point_index + 1) % points.size()] - points[point_index]
+		if edge.length_squared() > longest_length:
+			longest_length = edge.length_squared()
+			longest_edge = edge
+	var packed := scenes[index % scenes.size()]
+	var instance := packed.instantiate() as Node3D
+	if instance == null:
+		return false
+	var osm_id := int(feature.get("properties", {}).get("osm_id", index))
+	instance.name = "Restaurant_BaieDesRois_OSM_%d" % osm_id
+	instance.position = Vector3(center.x, _terrain_height_at_world(center.x, center.y) + 0.02, center.y)
+	instance.rotation.y = atan2(-longest_edge.y, longest_edge.x)
+	var footprint_scale := clampf(minf(max_x - min_x, max_z - min_z) / 6.0, 0.68, 1.35)
+	instance.scale = Vector3.ONE * footprint_scale
+	add_child(instance)
+	return true
 
 
 func _load_localities() -> void:
