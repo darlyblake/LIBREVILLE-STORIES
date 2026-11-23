@@ -69,10 +69,6 @@ func _ready() -> void:
 	list.add_theme_constant_override("separation", 5)
 	scroll.add_child(list)
 
-	var destinations: Array = []
-	if _world_map != null and _world_map.has_method("get_locality_destinations"):
-		destinations = _world_map.call("get_locality_destinations")
-
 	for arrondissement in ARRONDISSEMENTS:
 		var section := VBoxContainer.new()
 		section.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -92,6 +88,31 @@ func _ready() -> void:
 		arrondissement_button.pressed.connect(_toggle_arrondissement.bind(arrondissement))
 		section.add_child(arrondissement_button)
 
+		var loading_label := Label.new()
+		loading_label.text = "  Chargement des quartiers…"
+		quartier_list.add_child(loading_label)
+
+	# WorldMap construit les contours de quartiers de façon asynchrone.
+	# Attendre leur disponibilité ici évite que le menu lise une liste encore vide.
+	var destinations: Array = []
+	for attempt in range(3600):
+		if _world_map != null and _world_map.has_method("get_locality_destinations"):
+			destinations = _world_map.call("get_locality_destinations")
+			if not destinations.is_empty():
+				break
+		await get_tree().process_frame
+	_populate_arrondissements(destinations)
+
+
+func _populate_arrondissements(destinations: Array) -> void:
+	for arrondissement in ARRONDISSEMENTS:
+		var quartier_list: VBoxContainer = _groups.get(arrondissement) as VBoxContainer
+		if quartier_list == null:
+			continue
+		for child in quartier_list.get_children():
+			quartier_list.remove_child(child)
+			child.queue_free()
+
 		var matching: Array = []
 		for destination in destinations:
 			if str(destination.get("arrondissement", "")) == arrondissement:
@@ -102,7 +123,7 @@ func _ready() -> void:
 
 		if matching.is_empty():
 			var empty_label := Label.new()
-			empty_label.text = "  Aucun quartier géolocalisé dans les données."
+			empty_label.text = "  Aucun quartier géolocalisé dans les contours chargés."
 			empty_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			quartier_list.add_child(empty_label)
 		else:
@@ -114,20 +135,15 @@ func _ready() -> void:
 				btn.pressed.connect(_on_teleport.bind(destination.get("position", Vector3.ZERO)))
 				quartier_list.add_child(btn)
 
-	if destinations.is_empty():
-		var warning := Label.new()
-		warning.text = "Les contours des quartiers ne sont pas chargés."
-		warning.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		vbox.add_child(warning)
-
 
 func _toggle_arrondissement(arrondissement: String) -> void:
-	var selected: VBoxContainer = _groups.get(arrondissement)
+	var selected := _groups.get(arrondissement) as VBoxContainer
 	if selected == null:
 		return
 	var should_show := not selected.visible
 	for key in _groups.keys():
-		(_groups[key] as VBoxContainer).visible = false
+		var section := _groups[key] as VBoxContainer
+		section.visible = false
 	selected.visible = should_show
 
 
@@ -157,7 +173,7 @@ func _on_stele_teleport() -> void:
 	if stele == null:
 		push_warning("Téléport : Stèle de la Liberté introuvable")
 		return
-	_teleport_global(stele.to_global(Vector3(0.0, 2.0, 7.5)))
+	_teleport_global(stele.to_global(Vector3(0.0, 2.0, 5.0)))
 
 
 func _teleport_global(target: Vector3) -> void:
