@@ -94,8 +94,8 @@ def main() -> None:
     actual_east = WEST + columns * lon_step
     actual_south = NORTH - rows * lat_step
 
-    binary_path = ROOT / "libreville_dem_extended_f32.bin"
-    meta_path = ROOT / "libreville_dem_extended.json"
+    binary_path = ROOT / "data/terrain/libreville_dem_extended_f32.bin"
+    meta_path = ROOT / "data/terrain/libreville_dem_extended.json"
     destination.tofile(binary_path)
     metadata = {
         "source": "NASA/NGA SRTM 1 arc-second (SRTM1), AWS elevation-tiles-prod mirror",
