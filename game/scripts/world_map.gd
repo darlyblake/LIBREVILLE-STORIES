@@ -1373,9 +1373,6 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 	trunk_mesh.bottom_radius = 0.19
 	trunk_mesh.height = 1.9
 	trunk_mesh.radial_segments = 7
-
-	# Trois silhouettes tropicales en volumes de feuillage irréguliers :
-	# arbre large, arbre arrondi dense et arbre haut plus étroit.
 	var canopy_meshes: Array[ArrayMesh] = [
 		_make_foliage_cluster([
 			{"offset": Vector3(0, 0, 0), "scale": Vector3(0.78, 0.66, 0.76)},
@@ -1399,41 +1396,61 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 			{"offset": Vector3(0.04, 0.48, 0.26), "scale": Vector3(0.42, 0.54, 0.42)}
 		])
 	]
-
 	var trunk_material := _make_material(Color.WHITE)
 	trunk_material.vertex_color_use_as_albedo = true
 	var canopy_material := _make_material(Color.WHITE)
 	canopy_material.vertex_color_use_as_albedo = true
 	canopy_material.roughness = 0.96
+	var foliage_palette: Array[Color] = [
+		Color(0.075, 0.23, 0.105), Color(0.11, 0.31, 0.14),
+		Color(0.16, 0.37, 0.17), Color(0.22, 0.39, 0.16),
+		Color(0.10, 0.32, 0.23), Color(0.27, 0.40, 0.19),
+		Color(0.18, 0.29, 0.12)
+	]
 
+	# Un lot MultiMesh par carré de 800 m : les arbres lointains ne forcent
+	# plus un unique grand volume visible depuis toute la ville.
+	var spatial_tiles: Dictionary = {}
+	for position in positions:
+		var key := Vector2i(floori(position.x / ROAD_TILE_SIZE), floori(position.z / ROAD_TILE_SIZE))
+		if not spatial_tiles.has(key):
+			spatial_tiles[key] = []
+		spatial_tiles[key].append(position)
+	var tile_keys: Array = spatial_tiles.keys()
+	var player := get_parent().get_node_or_null("Player") as Node3D
+	var player_xz := Vector2.ZERO
+	if player != null:
+		player_xz = Vector2(player.global_position.x, player.global_position.z)
+	tile_keys.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		var ca := Vector2((float(a.x) + 0.5) * ROAD_TILE_SIZE, (float(a.y) + 0.5) * ROAD_TILE_SIZE)
+		var cb := Vector2((float(b.x) + 0.5) * ROAD_TILE_SIZE, (float(b.y) + 0.5) * ROAD_TILE_SIZE)
+		return ca.distance_squared_to(player_xz) < cb.distance_squared_to(player_xz)
+	)
+	for tile_key in tile_keys:
+		_build_tree_tile_instances(tile_key, spatial_tiles[tile_key], trunk_mesh, canopy_meshes, trunk_material, canopy_material, foliage_palette)
+	print("LIBREVILLE STORIES | arbres tropicaux regroupés par secteurs : %d arbres, %d secteurs" % [positions.size(), tile_keys.size()])
+
+
+func _build_tree_tile_instances(tile_key: Vector2i, positions: Array, trunk_mesh: CylinderMesh,
+		canopy_meshes: Array[ArrayMesh], trunk_material: StandardMaterial3D,
+		canopy_material: StandardMaterial3D, foliage_palette: Array[Color]) -> void:
+	var tile_origin := Vector3((float(tile_key.x) + 0.5) * ROAD_TILE_SIZE, 0.0, (float(tile_key.y) + 0.5) * ROAD_TILE_SIZE)
 	var trunks := MultiMesh.new()
 	trunks.transform_format = MultiMesh.TRANSFORM_3D
 	trunks.use_colors = true
 	trunks.mesh = trunk_mesh
 	trunks.instance_count = positions.size()
-
 	var canopy_multimeshes: Array[MultiMesh] = []
 	var canopy_counts: Array[int] = [0, 0, 0]
 	for mesh in canopy_meshes:
-		var canopy_batch := MultiMesh.new()
-		canopy_batch.transform_format = MultiMesh.TRANSFORM_3D
-		canopy_batch.use_colors = true
-		canopy_batch.mesh = mesh
-		canopy_batch.instance_count = positions.size()
-		canopy_multimeshes.append(canopy_batch)
-
-	var foliage_palette: Array[Color] = [
-		Color(0.075, 0.23, 0.105),
-		Color(0.11, 0.31, 0.14),
-		Color(0.16, 0.37, 0.17),
-		Color(0.22, 0.39, 0.16),
-		Color(0.10, 0.32, 0.23),
-		Color(0.27, 0.40, 0.19),
-		Color(0.18, 0.29, 0.12)
-	]
-
+		var batch := MultiMesh.new()
+		batch.transform_format = MultiMesh.TRANSFORM_3D
+		batch.use_colors = true
+		batch.mesh = mesh
+		batch.instance_count = positions.size()
+		canopy_multimeshes.append(batch)
 	for i in range(positions.size()):
-		var position := positions[i]
+		var position: Vector3 = positions[i]
 		var rng := RandomNumberGenerator.new()
 		rng.seed = int(absf(position.x * 13.0 + position.z * 29.0)) + i * 7919
 		var height_scale := rng.randf_range(0.82, 1.34)
@@ -1441,40 +1458,39 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 		var yaw := rng.randf_range(0.0, TAU)
 		var trunk_scale := Vector3(rng.randf_range(0.88, 1.12), height_scale, rng.randf_range(0.88, 1.12))
 		var trunk_basis := Basis(Vector3.UP, yaw).scaled(trunk_scale)
-		trunks.set_instance_transform(i, Transform3D(trunk_basis, position + Vector3.UP * (0.95 * height_scale)))
+		var trunk_position := position + Vector3.UP * (0.95 * height_scale) - tile_origin
+		trunks.set_instance_transform(i, Transform3D(trunk_basis, trunk_position))
 		trunks.set_instance_color(i, Color(0.43, 0.30, 0.18).lerp(Color(0.20, 0.15, 0.10), rng.randf()))
-
 		var canopy_type := rng.randi_range(0, canopy_meshes.size() - 1)
 		var canopy_index := canopy_counts[canopy_type]
-		var canopy_basis := Basis(Vector3.UP, yaw).scaled(Vector3(width_scale, height_scale, width_scale))
-		var canopy_height := 2.65 * height_scale
-		if canopy_type == 1:
-			canopy_height = 2.55 * height_scale
-		elif canopy_type == 2:
+		var canopy_height := (2.65 if canopy_type != 1 else 2.55) * height_scale
+		if canopy_type == 2:
 			canopy_height = 2.95 * height_scale
-		canopy_multimeshes[canopy_type].set_instance_transform(canopy_index, Transform3D(canopy_basis, position + Vector3.UP * canopy_height))
+		var canopy_basis := Basis(Vector3.UP, yaw).scaled(Vector3(width_scale, height_scale, width_scale))
+		var canopy_position := position + Vector3.UP * canopy_height - tile_origin
+		canopy_multimeshes[canopy_type].set_instance_transform(canopy_index, Transform3D(canopy_basis, canopy_position))
 		canopy_multimeshes[canopy_type].set_instance_color(canopy_index, foliage_palette[rng.randi_range(0, foliage_palette.size() - 1)])
 		canopy_counts[canopy_type] += 1
-
 	var trunk_instance := MultiMeshInstance3D.new()
-	trunk_instance.name = "OSM_Tree_Trunks"
+	trunk_instance.name = "OSM_Tree_Trunks_%d_%d" % [tile_key.x, tile_key.y]
 	trunk_instance.multimesh = trunks
 	trunk_instance.material_override = trunk_material
+	trunk_instance.position = tile_origin
 	trunk_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(trunk_instance)
-
 	for canopy_type in range(canopy_multimeshes.size()):
-		var canopy_batch := canopy_multimeshes[canopy_type]
-		canopy_batch.visible_instance_count = canopy_counts[canopy_type]
+		var batch := canopy_multimeshes[canopy_type]
+		batch.visible_instance_count = canopy_counts[canopy_type]
 		if canopy_counts[canopy_type] == 0:
 			continue
 		var canopy_instance := MultiMeshInstance3D.new()
-		canopy_instance.name = "OSM_Tree_Canopies_%d" % canopy_type
-		canopy_instance.multimesh = canopy_batch
+		canopy_instance.name = "OSM_Tree_Canopies_%d_%d_%d" % [tile_key.x, tile_key.y, canopy_type]
+		canopy_instance.multimesh = batch
 		canopy_instance.material_override = canopy_material
+		canopy_instance.position = tile_origin
 		canopy_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(canopy_instance)
-	print("LIBREVILLE STORIES | arbres tropicaux à couronnes groupées instanciés : %d" % positions.size())
+
 
 func _environment_color(kind: String) -> Color:
 	match kind:
