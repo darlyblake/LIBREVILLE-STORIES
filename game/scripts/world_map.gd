@@ -154,6 +154,7 @@ var _terrain_stream_timer := 0.0
 var _terrain_stream_build_queue: Array[Vector2i] = []
 var _terrain_stream_building := false
 var _terrain_stream_material: StandardMaterial3D
+var _ocean_water_material: ShaderMaterial
 var _coastline_paths: Array[PackedVector2Array] = []
 var _beach_polygons: Array[PackedVector2Array] = []
 
@@ -739,6 +740,7 @@ void fragment() {
 """
 	var water_material := ShaderMaterial.new()
 	water_material.shader = water_shader
+	_ocean_water_material = water_material
 	ocean.material_override = water_material
 	ocean.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	ocean.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
@@ -991,8 +993,105 @@ func _load_environment() -> void:
 		relief_shape.shape = relief_mesh.create_trimesh_shape()
 		relief_body.add_child(relief_shape)
 		add_child(relief_body)
+	_build_baie_des_rois_water()
 	_build_coastal_details()
 	_commit_tree_instances(tree_positions)
+
+
+func is_terrain_ready() -> bool:
+	# Le mode secours utilise un sol plat ; avec le DEM, attendre au moins
+	# le premier bloc de terrain et ses collisions.
+	return not _dem_loaded or not _terrain_stream_chunks.is_empty()
+
+
+func _build_baie_des_rois_water() -> void:
+	if _coastline_paths.is_empty():
+		push_warning("Baie des Rois : aucune ligne de côte OSM disponible pour positionner l'eau.")
+		return
+
+	# Les relevés GPS des kiosques placent la côte de ce secteur à environ
+	# 29–38 m côté +Z. On sélectionne la ligne OSM la plus proche de ce secteur,
+	# puis on prolonge la mer depuis le rivage vers le large, pas depuis le centre-ville.
+	const SITE_CENTER := Vector2(-1884.0, -400.0)
+	const SITE_RADIUS := 190.0
+	const SEA_WIDTH := 480.0
+	var water_surface := SurfaceTool.new()
+	water_surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var segment_count := 0
+
+	for coast_path in _coastline_paths:
+		for i in range(coast_path.size() - 1):
+			var a: Vector2 = coast_path[i]
+			var b: Vector2 = coast_path[i + 1]
+			var segment := b - a
+			var length := segment.length()
+			if length < 1.5:
+				continue
+
+			var nearest_t := clampf((SITE_CENTER - a).dot(segment) / segment.length_squared(), 0.0, 1.0)
+			var nearest := a + segment * nearest_t
+			if nearest.distance_to(SITE_CENTER) > SITE_RADIUS:
+				continue
+
+			# Limiter chaque tronçon à la portion utile autour des kiosques.
+			var half_span := minf(length * 0.5, SITE_RADIUS)
+			var t0 := maxf(0.0, nearest_t - half_span / length)
+			var t1 := minf(1.0, nearest_t + half_span / length)
+			var coast_a := a.lerp(b, t0)
+			var coast_b := a.lerp(b, t1)
+			var local_segment := coast_b - coast_a
+			if local_segment.length_squared() < 1.0:
+				continue
+
+			var direction := local_segment.normalized()
+			var perpendicular := Vector2(-direction.y, direction.x)
+			var midpoint := (coast_a + coast_b) * 0.5
+			var left_height := _terrain_height_at_world(midpoint.x + perpendicular.x * 10.0, midpoint.y + perpendicular.y * 10.0)
+			var right_height := _terrain_height_at_world(midpoint.x - perpendicular.x * 10.0, midpoint.y - perpendicular.y * 10.0)
+			var land_normal := perpendicular if left_height >= right_height else -perpendicular
+			var sea_normal := -land_normal
+			# Les coordonnées GPS et le relevé du littoral indiquent le large
+			# du côté +Z pour cette portion nord de la Baie des Rois.
+			if sea_normal.y < 0.0:
+				sea_normal = -sea_normal
+
+			var inner_a := coast_a + sea_normal * 0.8
+			var inner_b := coast_b + sea_normal * 0.8
+			var outer_a := coast_a + sea_normal * SEA_WIDTH
+			var outer_b := coast_b + sea_normal * SEA_WIDTH
+			var y_inner_a := maxf(0.025, _terrain_height_at_world(inner_a.x, inner_a.y) + 0.045)
+			var y_inner_b := maxf(0.025, _terrain_height_at_world(inner_b.x, inner_b.y) + 0.045)
+			var y_outer_a := maxf(0.025, _terrain_height_at_world(outer_a.x, outer_a.y) + 0.045)
+			var y_outer_b := maxf(0.025, _terrain_height_at_world(outer_b.x, outer_b.y) + 0.045)
+
+			var vertices := [
+				Vector3(inner_a.x, y_inner_a, inner_a.y),
+				Vector3(inner_b.x, y_inner_b, inner_b.y),
+				Vector3(outer_b.x, y_outer_b, outer_b.y),
+				Vector3(outer_a.x, y_outer_a, outer_a.y)
+			]
+			for index in [0, 1, 2, 0, 2, 3]:
+				var vertex: Vector3 = vertices[index]
+				water_surface.set_uv(Vector2(vertex.x, vertex.z) * 0.018)
+				water_surface.add_vertex(vertex)
+			segment_count += 1
+
+	if segment_count == 0:
+		push_warning("Baie des Rois : la ligne de côte OSM n'a pas de tronçon dans le périmètre GPS attendu.")
+		return
+
+	water_surface.generate_normals()
+	var water_mesh := water_surface.commit()
+	if water_mesh == null or water_mesh.get_surface_count() == 0:
+		return
+	var water_instance := MeshInstance3D.new()
+	water_instance.name = "BaieDesRois_SeaSurface"
+	water_instance.mesh = water_mesh
+	water_instance.material_override = _ocean_water_material
+	water_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	water_instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+	add_child(water_instance)
+	print("LIBREVILLE STORIES | eau locale Baie des Rois : %d tronçons OSM, départ au bord du rivage" % segment_count)
 
 
 func _is_inside_beach(point: Vector2) -> bool:
@@ -1110,6 +1209,9 @@ void fragment() {
 				var t := (float(rock_index) + rng.randf_range(0.2, 0.8)) / float(rock_steps)
 				var shoreline := a.lerp(b, t)
 				var rock_xz := shoreline + land_normal * rng.randf_range(0.5, 2.8)
+				# Une côte OSM peut croiser une chaussée : ne jamais y poser de rochers.
+				if _is_near_road(rock_xz):
+					continue
 				var rock_height := rng.randf_range(0.45, 1.35)
 				var rock_scale_x := rng.randf_range(0.65, 2.0)
 				var rock_scale_z := rng.randf_range(0.55, 1.65)
@@ -1125,6 +1227,8 @@ void fragment() {
 				# contact avec l'eau sans créer une bordure rocheuse continue.
 				if rng.randf() < 0.72:
 					var pebble_xz := shoreline + land_normal * rng.randf_range(0.15, 1.15)
+					if _is_near_road(pebble_xz):
+						continue
 					var pebble_height := rng.randf_range(0.16, 0.38)
 					var pebble_scale := rng.randf_range(0.22, 0.62)
 					var pebble_y := _terrain_height_at_world(pebble_xz.x, pebble_xz.y) - 0.035
