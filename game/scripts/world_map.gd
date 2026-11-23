@@ -611,7 +611,9 @@ func _position_player_on_terrain() -> void:
 			vehicle_x = player.position.x
 			vehicle_z = player.position.z
 			vehicle_ground = _terrain_height_at_world(vehicle_x, vehicle_z)
-		vehicle.position = Vector3(vehicle_x, vehicle_ground + 0.65, vehicle_z)
+		# L'origine du véhicule correspond au bas des pneus (rayon 0,42 m).
+		# Le placer à +0,65 m le faisait flotter au-dessus de la chaussée.
+		vehicle.position = Vector3(vehicle_x, vehicle_ground + ROAD_LIFT + 0.01, vehicle_z)
 
 
 func _apply_ground_surface() -> void:
@@ -2087,6 +2089,21 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 		instance.name = ("OSM_Roads_%s" % tile_name) if key == "asphalt" else ("OSM_Roads_%s_%s" % [str(key).capitalize(), tile_name])
 		instance.mesh = mesh
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# Collision de secours construite directement depuis la chaussée visible.
+		# Elle garantit que les triangles physiques utilisent exactement les mêmes
+		# sommets que le rendu, même si le maillage de collision dédié est incomplet.
+		if road_collision and key in ["asphalt", "dirt", "paving"]:
+			var road_shape := mesh.create_trimesh_shape() as ConcavePolygonShape3D
+			if road_shape != null:
+				road_shape.backface_collision = true
+				var road_body := StaticBody3D.new()
+				road_body.name = "OSM_Road_Surface_Collision_%s_%s" % [str(key), tile_name]
+				road_body.collision_layer = 1
+				road_body.collision_mask = 1
+				var road_collision_shape := CollisionShape3D.new()
+				road_collision_shape.shape = road_shape
+				road_body.add_child(road_collision_shape)
+				add_child(road_body)
 		if key != "asphalt" and key != "dirt" and key != "paving":
 			# Bordures, trottoirs, marquages : inutiles au loin.
 			instance.visibility_range_end = ROAD_DETAIL_VISIBILITY
