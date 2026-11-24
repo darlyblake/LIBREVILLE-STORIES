@@ -178,3 +178,10 @@ static func facade_window_parameters(edge_length: float, height: float) -> Vecto
 	var window_width := clampf(spacing * 0.36, 0.60, 1.20)
 	var window_height := 0.92 if floors == 1 else 1.10
 	return Vector4(float(floors), float(window_count), window_width * 0.5, window_height * 0.5)
+
+static func facade_door_parameters(edge_length: float) -> Vector3:
+	# x = demi-largeur, y = demi-hauteur, z = hauteur du centre.
+	# Une arête trop courte ne reçoit pas de porte, comme dans le générateur historique.
+	if edge_length < 2.8:
+		return Vector3.ZERO
+	return Vector3(0.44, 1.05, 1.05)
