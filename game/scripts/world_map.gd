@@ -1409,7 +1409,7 @@ func _build_baie_des_rois_seawall() -> void:
 
 func _is_inside_beach(point: Vector2) -> bool:
 	for beach in _beach_polygons:
-		if Geometry2D.is_point_in_polygon(point, beach):
+		if Geometry2D.isWorldMapGeometryUtils.point_in_polygon(point, beach):
 			return true
 	return false
 
@@ -1763,7 +1763,7 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 	while added < desired and attempts < desired * 36:
 		attempts += 1
 		var candidate := Vector2(rng.randf_range(min_x, max_x), rng.randf_range(min_y, max_y))
-		if not Geometry2D.is_point_in_polygon(candidate, points):
+		if not Geometry2D.isWorldMapGeometryUtils.point_in_polygon(candidate, points):
 			continue
 		var has_nearby_tree := false
 		for existing_position in output:
@@ -1999,41 +1999,6 @@ func _load_neighbourhoods() -> void:
 	print("LIBREVILLE STORIES | limites locales OSM : %d" % _neighbourhood_count)
 
 
-func _point_in_polygon(point: Vector2, polygon: PackedVector2Array) -> bool:
-	if polygon.size() < 4:
-		return false
-	var inside := false
-	var previous := polygon.size() - 1
-	for current in range(polygon.size()):
-		var a := polygon[current]
-		var b := polygon[previous]
-		if (a.y > point.y) != (b.y > point.y):
-			var crossing_x := (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x
-			if point.x < crossing_x:
-				inside = not inside
-		previous = current
-	return inside
-
-
-func _polygon_centroid(polygon: PackedVector2Array) -> Vector2:
-	var twice_area := 0.0
-	var centroid_x := 0.0
-	var centroid_y := 0.0
-	for index in range(polygon.size() - 1):
-		var a := polygon[index]
-		var b := polygon[index + 1]
-		var cross := a.x * b.y - b.x * a.y
-		twice_area += cross
-		centroid_x += (a.x + b.x) * cross
-		centroid_y += (a.y + b.y) * cross
-	if absf(twice_area) < 0.001:
-		var average := Vector2.ZERO
-		for point in polygon:
-			average += point
-		return average / maxf(1.0, float(polygon.size()))
-	return Vector2(centroid_x / (3.0 * twice_area), centroid_y / (3.0 * twice_area))
-
-
 func _find_road_texture(folder_name: String, file_stem: String) -> Texture2D:
 	# Les packs restent dans leur dossier d'origine (xxx_4k.gltf/textures). On teste les
 	# chemins directement : fonctionne dans l'éditeur comme dans un export.
@@ -2242,17 +2207,6 @@ func _make_sidewalk_texture() -> Texture2D:
 			image.set_pixel(x, y, Color(shade * 0.80, shade * 0.79, shade * 0.76, 1.0))
 	image.generate_mipmaps()
 	return ImageTexture.create_from_image(image)
-
-
-func _polygon_area_abs(points: PackedVector2Array) -> float:
-	if points.size() < 3:
-		return 0.0
-	var twice_area := 0.0
-	for i in range(points.size()):
-		var a := points[i]
-		var b := points[(i + 1) % points.size()]
-		twice_area += a.x * b.y - b.x * a.y
-	return absf(twice_area) * 0.5
 
 
 func _is_water_environment_polygon(kind: String, props: Dictionary) -> bool:
@@ -3867,7 +3821,7 @@ func _load_buildings() -> void:
 				if footprint.size() < 3:
 					continue
 				# Évite les fragments résiduels sans supprimer les petits bâtiments intacts.
-				if footprint_parts.size() > 1 and _polygon_area_abs(footprint) < 2.0:
+				if footprint_parts.size() > 1 and WorldMapGeometryUtils.polygon_area_abs(footprint) < 2.0:
 					continue
 				var indices := Geometry2D.triangulate_polygon(footprint)
 				if indices.is_empty():
@@ -4075,14 +4029,14 @@ func get_locality_destinations() -> Array[Dictionary]:
 		var polygon: PackedVector2Array = _neighbourhood_polygons[osm_id]
 		if polygon.size() < 4:
 			continue
-		var point := _polygon_centroid(polygon)
-		if not _point_in_polygon(point, polygon):
+		var point := WorldMapGeometryUtils.polygon_centroid(polygon)
+		if not WorldMapGeometryUtils.point_in_polygon(point, polygon):
 			# Pour un quartier concave, rapprocher le centroïde des milieux de côtés
 			# jusqu'à trouver un point réellement à l'intérieur du contour.
 			var found_inside := false
 			for vertex_index in range(polygon.size() - 1):
 				var candidate := polygon[vertex_index].lerp(point, 0.5)
-				if _point_in_polygon(candidate, polygon):
+				if WorldMapGeometryUtils.point_in_polygon(candidate, polygon):
 					point = candidate
 					found_inside = true
 					break
