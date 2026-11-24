@@ -4262,7 +4262,7 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 	var glass := Color(0.14, 0.22, 0.28) if abs(osm_id) % 3 == 0 else Color(0.20, 0.28, 0.33)
 	for floor_index in range(floors):
 		var center_y := 1.10 + float(floor_index) * 3.00
-		if center_y + window_height * 0.5 > height - 0.30:
+		if center_y + half_height > height - 0.30:
 			continue
 		for window_index in range(window_count):
 			var center_distance := (float(window_index) + 0.5) * spacing
