@@ -1,6 +1,6 @@
 # LIBREVILLE STORIES — Histoire générale du jeu
 
-> Document de référence narratif — version 1.0  
+> Document de référence narratif — version 1.1  
 > Univers : Gabon contemporain fictif  
 > Genre : monde ouvert, drame social, action-aventure, crime et surnaturel  
 > Ton : réaliste dans les situations humaines, progressivement surnaturel dans ses manifestations
@@ -196,3 +196,63 @@ Ces éléments seront décidés pendant le développement de la bible narrative 
 ## Résumé en une phrase
 
 **LIBREVILLE STORIES est l'histoire d'un jeune Gabonais de 18 ans qui tente de poursuivre ses études tout en travaillant pour survivre, devient père malgré les difficultés, traverse une séparation, puis se retrouve progressivement entraîné dans les petits trafics, les réseaux criminels et un univers surnaturel où la recherche d'argent, de protection et de pouvoir a toujours un prix.**
+
+
+## 14. Police, contrôles et justice — règles narratives validées (V1.1)
+
+La police de LIBREVILLE STORIES est inspirée du contexte gabonais et adaptée à un univers fictif. Elle ne reprend pas le modèle de poursuite permanente de certains jeux américains. La présence policière doit être crédible, graduée et liée aux horaires, aux lieux, aux faits observés et aux informations réellement connues des services.
+
+### 14.1 Principes de représentation
+
+- La police n'est pas omniprésente et ne poursuit pas automatiquement le protagoniste après chaque infraction.
+- Les contrôles routiers et d'identité font partie de la vie urbaine, avec une présence renforcée possible la nuit.
+- Les contrôles du matin peuvent davantage concerner les véhicules commerciaux, taxis, transports et véhicules utilitaires ; la nuit, les contrôles peuvent viser plus largement les véhicules particuliers.
+- Ces tendances sont des choix de simulation inspirés de témoignages et d'observations du joueur, pas une règle statistique affirmée pour toutes les unités ou toutes les zones du Gabon.
+- Les courses-poursuites existent, mais restent occasionnelles et proportionnées à la situation.
+- Une interpellation peut survenir sans poursuite préalable : contrôle, enquête, convocation ou opération ciblée.
+- Les organisations, personnages, procédures particulières et opérations scénarisées restent fictifs. Les appellations d'unités réelles ne doivent être employées qu'après vérification documentaire.
+
+### 14.2 Unités et véhicules représentés
+
+Le jeu peut représenter, avec des rôles distincts et sans prétendre reproduire exactement l'organigramme réel, la police urbaine, des équipes mobiles, une unité anticriminalité inspirée de la BAC, la police judiciaire et des unités spécialisées réservées aux opérations rares.
+
+Les véhicules visibles comprennent des voitures ordinaires de patrouille, des 4x4 blancs et des véhicules de transport de policiers de type Iveco. Leur présence doit rester limitée et cohérente avec la scène. Les hélicoptères ne constituent pas un moyen ordinaire de recherche ou de poursuite.
+
+### 14.3 Horaires et contrôles
+
+Le monde propose trois plages indicatives :
+- matin (06 h–12 h) : contrôles commerciaux et routiers plus probables ;
+- journée (12 h–18 h) : patrouilles ordinaires et contrôles ponctuels ;
+- nuit (18 h–06 h) : contrôles nocturnes renforcés possibles, notamment sur les axes choisis par le directeur de circulation.
+
+Ces plages sont des paramètres de gameplay modifiables, pas des horaires officiels attribués à la police gabonaise. Les contrôles doivent être répartis sur des points configurés et varier d'une session à l'autre sans bloquer systématiquement les mêmes routes.
+
+### 14.4 Recherche persistante
+
+La recherche d'un suspect est persistante jusqu'à résolution de l'enquête. Le niveau de pression opérationnelle peut toutefois diminuer avec le temps :
+- l'identification, les preuves et les événements connus restent enregistrés ;
+- une baisse de pression réduit les patrouilles ciblées et la probabilité d'une intervention immédiate ;
+- une nouvelle preuve, un témoignage ou une infraction peut réactiver l'enquête ;
+- changer de vêtements ou de véhicule ne supprime pas automatiquement une identité déjà établie ;
+- une localisation n'est jamais omnisciente : le système distingue dernière position connue, adresse identifiée et position actuelle observée.
+
+Les états narratifs sont : inconnu, identifié, recherché, localisé et enquête résolue. Une affaire peut aussi être suspendue ou classée sans suite selon les preuves disponibles et le scénario.
+
+### 14.5 Arrestations et sanctions
+
+Le modèle validé est mixte :
+- infractions mineures : amende ou avertissement selon les règles du scénario ;
+- infractions routières plus graves : amende, immobilisation ou procédure ;
+- faits criminels établis : interpellation, enquête et possible détention ;
+- résistance ou fuite : conséquences supplémentaires possibles, sans déclencher automatiquement une escalade disproportionnée.
+
+La détention doit avoir des conséquences jouables : temps écoulé, frais, perte éventuelle de revenus, effets sur les relations et disponibilité de certaines missions. Les amendes doivent être affichées clairement et ne jamais être prélevées sans retour explicite au joueur.
+
+### 14.6 Corruption et diversité des comportements
+
+Les policiers ne sont pas tous représentés de la même manière. Le récit peut inclure des agents professionnels, stricts, abusifs ou corrompus, sans généraliser ces comportements à toute une institution. Les abus peuvent donner lieu à des choix narratifs : payer une somme illégitime dans la fiction, refuser, chercher un témoin ou signaler les faits.
+
+### 14.7 Conséquences sur l'histoire
+
+Les contrôles, enquêtes et arrestations doivent soutenir la progression du protagoniste : un personnage encore lycéen ou civil peut d'abord vivre des contrôles ordinaires ; les risques judiciaires augmentent progressivement avec ses choix et ses fréquentations. La police ne doit pas devenir le sujet principal au détriment de l'école, des chantiers, de la famille, de la paternité et des autres dimensions de l'histoire.
+
