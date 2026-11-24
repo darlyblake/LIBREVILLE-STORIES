@@ -4253,11 +4253,12 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 	if edge_length < 4.0 or height < 2.6:
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
-	var floors := clampi(int(ceil(height / 3.05)), 1, 8)
-	var window_count := clampi(int(floor(edge_length / 4.8)), 1, 6)
+	var window_parameters := WorldMapBuildingStyleUtils.facade_window_parameters(edge_length, height)
+	var floors := int(window_parameters.x)
+	var window_count := int(window_parameters.y)
 	var spacing := edge_length / float(window_count)
-	var window_width := clampf(spacing * 0.36, 0.60, 1.20)
-	var window_height := 0.92 if floors == 1 else 1.10
+	var half_width := window_parameters.z
+	var half_height := window_parameters.w
 	var glass := Color(0.14, 0.22, 0.28) if abs(osm_id) % 3 == 0 else Color(0.20, 0.28, 0.33)
 	for floor_index in range(floors):
 		var center_y := 1.10 + float(floor_index) * 3.00
@@ -4266,8 +4267,6 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 		for window_index in range(window_count):
 			var center_distance := (float(window_index) + 0.5) * spacing
 			var center := Vector3(a.x, base_y, a.y) + tangent * center_distance + Vector3.UP * center_y
-			var half_width := window_width * 0.5
-			var half_height := window_height * 0.5
 			# Offset très léger pour coller la fenêtre à la façade (évite le flottement).
 			var offset := normal * 0.028
 			surface.set_color(glass)
