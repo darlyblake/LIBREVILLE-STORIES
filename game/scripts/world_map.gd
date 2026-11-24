@@ -2353,7 +2353,7 @@ func _load_roads() -> void:
 				continue
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("highway", "residential"))
-		var width := _road_width(kind, props)
+		var width := WorldMapRoadUtils.road_width(kind, props)
 		var surface_key := _road_surface_key(kind, props)
 		var sidewalk_mode := _road_sidewalk_mode(props, kind)
 		if surface_key == "dirt":
@@ -2595,8 +2595,8 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 		var outgoing := Vector2(points[join_index + 1].x - points[join_index].x, points[join_index + 1].z - points[join_index].z).normalized()
 		if incoming.dot(outgoing) < 0.97:
 			_add_road_round_join(road_surface, points[join_index], half)
-	var lane_count := _road_lane_count(props)
-	var is_oneway := _road_is_oneway(props)
+	var lane_count := WorldMapRoadUtils.road_lane_count(props)
+	var is_oneway := WorldMapRoadUtils.road_is_oneway(props)
 	var has_lane_marking := (lane_count >= 2 or kind in ["trunk", "primary", "secondary"]) and surface_key == "asphalt"
 	var crosswalk_start := -1.0
 	var crosswalk_end := -1.0
@@ -3348,7 +3348,7 @@ func _load_road_clearance_data() -> void:
 		var geometry: Dictionary = feature.get("geometry", {})
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("highway", "residential"))
-		var width := _road_width(kind, props)
+		var width := WorldMapRoadUtils.road_width(kind, props)
 		var sidewalk_extra := (CURB_WIDTH + SIDEWALK_WIDTH) if _road_sidewalk_mode(props, kind) != "none" else 0.0
 		var lines: Array = []
 		match str(geometry.get("type", "")):
@@ -3616,7 +3616,7 @@ func _add_crosswalk(surface: SurfaceTool, junction: Vector3, inward_direction: V
 
 
 func _road_has_center_marking(props: Dictionary, road_kind: String) -> bool:
-	return _road_lane_count(props) >= 2 or road_kind in ["trunk", "primary", "secondary"]
+	return WorldMapRoadUtils.road_lane_count(props) >= 2 or road_kind in ["trunk", "primary", "secondary"]
 
 
 func _add_road_lane_markings(surface: SurfaceTool, a: Vector3, b: Vector3, width: float, lanes: int, oneway: bool, props: Dictionary) -> void:
@@ -4305,86 +4305,12 @@ func _road_color(kind: String, props: Dictionary = {}) -> Color:
 		_:
 			return Color(0.58, 0.58, 0.56)
 
-func _road_lane_count(props: Dictionary) -> int:
-	# lanes:both_ways décrit une voie centrale partagée, pas le total des voies.
-	var forward := str(props.get("lanes:forward", "")).to_int()
-	var backward := str(props.get("lanes:backward", "")).to_int()
-	if forward > 0 or backward > 0:
-		return clampi(forward + backward, 1, 8)
-	return clampi(str(props.get("lanes", "")).to_int(), 0, 8)
 
 
-func _road_is_oneway(props: Dictionary) -> bool:
-	var value := str(props.get("oneway", "")).to_lower()
-	return value in ["yes", "true", "1", "-1"]
-
-
-func _road_width(kind: String, props: Dictionary = {}) -> float:
-	# Les voies OSM priment sur les largeurs manifestement incohérentes.
-	# Ex. Libreville : width=5 avec lanes=2 ne peut pas contenir deux voies.
-	var lanes := _road_lane_count(props)
-	var tagged_width := _parse_osm_height(str(props.get("width", "")))
-	if tagged_width >= 1.5 and tagged_width <= 40.0:
-		if lanes == 0 or tagged_width >= float(lanes) * 2.65:
-			return tagged_width
-	if lanes >= 1:
-		return clampf(float(lanes) * 3.4 + 1.2, 3.5, 28.0)
-	match kind:
-		"motorway", "trunk":
-			return 8.0 if _road_is_oneway(props) else 16.0
-		"primary":
-			return 7.2 if _road_is_oneway(props) else 13.6 # 2x2 par défaut en double sens
-		"secondary":
-			return 4.8 if _road_is_oneway(props) else 9.2
-		"tertiary":
-			return 7.0
-		"residential", "unclassified":
-			return 5.5
-		"service":
-			return 3.6
-		"motorway_link", "trunk_link", "primary_link":
-			return 7.0
-		"secondary_link":
-			return 6.0
-		"tertiary_link":
-			return 5.5
-		"construction":
-			return 6.0
-		"track":
-			return 3.5
-		"pedestrian":
-			return 4.0
-		"footway", "path", "steps", "cycleway":
-			return 1.8
-		_:
-			return 5.0
-
-func _parse_osm_height(raw_value: String) -> float:
-	# OSM accepte des hauteurs en mètres, centimètres ou pieds.
-	# Sans unité explicite, la convention OSM est le mètre.
-	var value := raw_value.strip_edges().to_lower().replace(",", ".")
-	if value.is_empty():
-		return -1.0
-	var multiplier := 1.0
-	if value.ends_with("ft") or value.ends_with("feet"):
-		multiplier = 0.3048
-		value = value.replace("feet", "").replace("ft", "").strip_edges()
-	elif value.ends_with("cm"):
-		multiplier = 0.01
-		value = value.replace("cm", "").strip_edges()
-	elif value.ends_with("m"):
-		value = value.substr(0, value.length() - 1).strip_edges()
-	elif value.ends_with("'"):
-		multiplier = 0.3048
-		value = value.substr(0, value.length() - 1).strip_edges()
-	var parsed := value.to_float()
-	if parsed <= 0.0:
-		return -1.0
-	return parsed * multiplier
 
 
 func _building_height(kind: String, osm_id: int, props: Dictionary) -> float:
-	var tagged_height := _parse_osm_height(str(props.get("height", "")))
+	var tagged_height := WorldMapRoadUtils.parse_osm_height(str(props.get("height", "")))
 	if tagged_height >= 2.5 and tagged_height <= 150.0:
 		return tagged_height
 	var levels := str(props.get("building:levels", "")).to_int()
