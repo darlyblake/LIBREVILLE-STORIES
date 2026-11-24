@@ -49,6 +49,19 @@ static func polygon_area_abs(points: PackedVector2Array) -> float:
 	return absf(twice_area) * 0.5
 
 
+
+static func longest_polygon_edge(points: PackedVector2Array) -> Vector2:
+	# x = index de la plus longue arête, y = sa longueur.
+	# Le test strict conserve la première arête en cas d'égalité.
+	var longest_index := 0
+	var longest_length := 0.0
+	for index in range(points.size()):
+		var edge_length := points[index].distance_to(points[(index + 1) % points.size()])
+		if edge_length > longest_length:
+			longest_length = edge_length
+			longest_index = index
+	return Vector2(float(longest_index), longest_length)
+
 static func polygon_signed_area(points: PackedVector2Array) -> float:
 	if points.size() < 3:
 		return 0.0
