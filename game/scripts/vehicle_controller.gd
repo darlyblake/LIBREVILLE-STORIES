@@ -28,6 +28,7 @@ class_name VehicleController
 @export var wheel_steer_visual_multiplier: float = 1.0
 
 @export_group("Architecture du véhicule")
+@export var vehicle_model_path: NodePath = ^"JeepModel"
 @export_enum("Avant", "Arrière", "Aucun") var steering_axle: int = 0
 @export_enum("Avant", "Arrière", "Intégrale", "Aucune") var drive_axle: int = 1
 
@@ -73,13 +74,15 @@ func _ready() -> void:
 	floor_snap_length = 0.38
 	floor_max_angle = deg_to_rad(48.0)
 	floor_stop_on_slope = true
-	var jeep := get_node_or_null("JeepModel")
-	if jeep != null:
-		_collect_wheel_nodes(jeep, false)
-		_setup_brake_lights(jeep)
+	var vehicle_model := get_node_or_null(vehicle_model_path) as Node3D
+	if vehicle_model != null:
+		_collect_wheel_nodes(vehicle_model, false)
+		_setup_brake_lights(vehicle_model)
+	else:
+		push_warning("Véhicule : modèle introuvable au chemin configuré (%s)." % str(vehicle_model_path))
 	_classify_wheels()
 	if _wheel_nodes.size() < 4:
-		push_warning("Jeep : %d éléments de roue détectés. Les pivots du GLB doivent être vérifiés avant de corriger les axes." % _wheel_nodes.size())
+		push_warning("Véhicule : %d pivots de roue détectés. Vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
 	_setup_vehicle_cameras()
 	_setup_vehicle_hud()
 	_setup_vehicle_audio()
@@ -214,7 +217,7 @@ func _create_wheel_pivot(wheel_node: Node3D) -> bool:
 	var largest_dimension := maxf(dimensions.x, maxf(dimensions.y, dimensions.z))
 	var smallest_dimension := minf(dimensions.x, minf(dimensions.y, dimensions.z))
 	# Une roue individuelle mesure moins d'environ 1,4 m. Les blocs
-	# contenant toute la Jeep et les petites plaques de secours sont exclus.
+	# contenant tout le véhicule et les petites plaques de secours sont exclus.
 	if largest_dimension > 1.4 or smallest_dimension < 0.18:
 		return false
 	var wheel_center := world_bounds.get_center()
@@ -370,7 +373,7 @@ func _setup_brake_lights(model_root: Node3D) -> void:
 	# Le véhicule avance vers -Z : l'arrière se trouve du côté +Z.
 	var bounds := _get_subtree_world_aabb(model_root)
 	if bounds.size.length_squared() < 0.01:
-		push_warning("Feux stop : dimensions du modèle Jeep indisponibles.")
+		push_warning("Feux stop : dimensions du modèle indisponibles.")
 		return
 	var center := to_local(bounds.get_center())
 	var rear_world_z := bounds.position.z + bounds.size.z
@@ -507,7 +510,7 @@ func _update_vehicle_audio(throttle: float, brake: float) -> void:
 
 func _setup_driving_lesson() -> void:
 	_tutorial_steps = [
-		"1 / DÉMARRER\nAppuie sur W (clavier) ou RT (manette) progressivement pour lancer la Jeep. La vitesse s'affiche en km/h.",
+		"1 / DÉMARRER\nAppuie sur W (clavier) ou RT (manette) progressivement pour démarrer le véhicule. La vitesse s'affiche en km/h.",
 		"2 / ACCÉLÉRER\nMaintiens W ou RT. La vitesse augmente progressivement : relâche pour laisser le véhicule ralentir.",
 		"3 / TOURNER\nUtilise A et D ou le stick gauche. À grande vitesse, braque moins fort pour garder le contrôle.",
 		"4 / FREINER\nMaintiens S ou LT pour ralentir. À l'arrêt, maintenir S ou LT engage la marche arrière.",
@@ -526,7 +529,7 @@ func _setup_driving_lesson() -> void:
 	column.add_theme_constant_override("separation", 8)
 	panel.add_child(column)
 	var heading := Label.new()
-	heading.text = "ÉCOLE DE CONDUITE — JEEP WRANGLER"
+	heading.text = "ÉCOLE DE CONDUITE — VÉHICULE"
 	heading.add_theme_font_size_override("font_size", 17)
 	column.add_child(heading)
 	_tutorial_label = Label.new()
