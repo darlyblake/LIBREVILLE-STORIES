@@ -8,6 +8,9 @@ size = Vector3(2.15, 1.6, 4.9)
 
 [node name="Vehicle" type="CharacterBody3D"]
 script = ExtResource("1_vehicle")
+vehicle_model_path = NodePath("JeepModel")
+steering_axle = 0
+drive_axle = 1
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 position = Vector3(0, 0.8, 0)
