@@ -36,5 +36,13 @@ jobs:
           unzip -q /tmp/godot.zip -d /tmp/godot
           chmod +x /tmp/godot/Godot_v4.3-stable_linux.x86_64
 
+      - name: Restore Godot import cache
+        uses: actions/cache@v4
+        with:
+          path: .godot/
+          key: ${{ runner.os }}-godot-4.3-${{ hashFiles('project.godot', 'assets/**', 'data/**', 'game/**') }}
+          restore-keys: |
+            ${{ runner.os }}-godot-4.3-
+
       - name: Import project and parse scripts
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --verbose --quit
