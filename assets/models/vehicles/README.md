@@ -24,6 +24,7 @@ Ces exemples sont des configurations de départ : les essieux doivent correspond
 - `drive_axle` : Avant, Arrière, Intégrale ou Aucune.
 - `front_track` et `rear_track` : largeur de voie utilisée pour l'angle différentiel des roues.
 - `wheel_radius`, `wheel_spin_axis` et `wheel_steer_axis` : adaptation de l'animation aux axes et dimensions du modèle.
+- `minimum_wheel_dimension` et `maximum_wheel_dimension` : seuils de taille pour reconnaître les pneus ; à réduire pour les petites roues de transpalette.
 
 Le contrôleur identifie les roues à partir de leur hiérarchie et de leurs dimensions, puis les répartit entre l'avant et l'arrière selon leur position locale. Les modèles à trois roues sont acceptés ; les modèles à quatre roues sont vérifiés pour s'assurer qu'une roue est présente à chaque coin.
 
