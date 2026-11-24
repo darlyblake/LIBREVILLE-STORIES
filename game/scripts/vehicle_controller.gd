@@ -185,24 +185,31 @@ func _collect_wheel_nodes(root: Node, inside_wheel: bool) -> void:
 		var is_candidate := false
 		if not inside_wheel:
 			is_candidate = wheel_name.contains("wheel") or wheel_name.contains("tire") or wheel_name.contains("tyre") or wheel_name.contains("roue") or wheel_name.contains("pneu")
-			for excluded in ["arch", "flare", "well", "fender", "mudguard", "cover", "guard"]:
+			for excluded in ["arch", "flare", "well", "fender", "mudguard", "cover", "guard", "plate", "spare"]:
 				if wheel_name.contains(excluded):
 					is_candidate = false
 					break
-		if is_candidate:
-			_create_wheel_pivot(node)
+		if is_candidate and _create_wheel_pivot(node):
 			continue
+		# Un parent nommé "wheels" peut contenir plusieurs roues et avoir
+		# une boîte englobante de la taille du véhicule : on explore ses enfants.
 		_collect_wheel_nodes(node, inside_wheel)
 
 
-func _create_wheel_pivot(wheel_node: Node3D) -> void:
+func _create_wheel_pivot(wheel_node: Node3D) -> bool:
 	var original_parent := wheel_node.get_parent()
 	if original_parent == null:
-		return
+		return false
 	var world_bounds := _get_subtree_world_aabb(wheel_node)
 	if world_bounds.size.length_squared() < 0.0001:
-		push_warning("Pivot roue ignoré : géométrie introuvable pour %s" % wheel_node.name)
-		return
+		return false
+	var dimensions := world_bounds.size
+	var largest_dimension := maxf(dimensions.x, maxf(dimensions.y, dimensions.z))
+	var smallest_dimension := minf(dimensions.x, minf(dimensions.y, dimensions.z))
+	# Une roue individuelle mesure moins d'environ 1,4 m. Les blocs
+	# contenant toute la Jeep et les petites plaques de secours sont exclus.
+	if largest_dimension > 1.4 or smallest_dimension < 0.18:
+		return false
 	var wheel_center := world_bounds.get_center()
 	var original_global := wheel_node.global_transform
 	var pivot := Node3D.new()
@@ -215,6 +222,7 @@ func _create_wheel_pivot(wheel_node: Node3D) -> void:
 	_wheel_nodes.append(pivot)
 	_wheel_base_basis.append(pivot.transform.basis.orthonormalized())
 	_wheel_local_positions.append(to_local(wheel_center))
+	return true
 
 
 func _get_subtree_world_aabb(root: Node) -> AABB:
