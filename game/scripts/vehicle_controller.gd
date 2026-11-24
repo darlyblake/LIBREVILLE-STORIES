@@ -361,8 +361,18 @@ func _update_wheel_animation() -> void:
 	for i in range(_wheel_nodes.size()):
 		var steering_angle := 0.0
 		if _wheel_is_steering[i]:
+			var axle_wheel_count := 0
+			for j in range(_wheel_nodes.size()):
+				if _wheel_is_front[j] == _wheel_is_front[i]:
+					axle_wheel_count += 1
 			var axle_track := front_track if _wheel_is_front[i] else rear_track
-			steering_angle = _ackermann_angle(_wheel_is_left[i], axle_track) * wheel_steer_visual_multiplier
+			# Une roue centrale seule (tricycle ou transpalette) n'a pas
+			# besoin de correction Ackermann gauche/droite.
+			if axle_wheel_count > 1:
+				steering_angle = _ackermann_angle(_wheel_is_left[i], axle_track)
+			else:
+				steering_angle = _steering_angle
+			steering_angle *= wheel_steer_visual_multiplier
 			# Sur un chariot à direction arrière, les roues arrière braquent
 			# dans le sens opposé à l'angle de référence du châssis.
 			if steering_axle == 1:
