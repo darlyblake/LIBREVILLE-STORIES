@@ -48,6 +48,17 @@ static func polygon_area_abs(points: PackedVector2Array) -> float:
 		twice_area += a.x * b.y - b.x * a.y
 	return absf(twice_area) * 0.5
 
+
+static func polygon_signed_area(points: PackedVector2Array) -> float:
+	if points.size() < 3:
+		return 0.0
+	var twice_area := 0.0
+	for index in range(points.size()):
+		var a := points[index]
+		var b := points[(index + 1) % points.size()]
+		twice_area += a.x * b.y - b.x * a.y
+	return twice_area * 0.5
+
 static func pitched_roof_triangles(points: PackedVector2Array, wall_height: float, base_y: float = 0.0) -> PackedVector3Array:
 	# Retourne les 6 triangles d'un toit à deux pans, sans toucher à une scène.
 	# Un tableau vide signifie que l'empreinte ne convient pas à ce type de toit.
