@@ -1089,9 +1089,9 @@ func _load_environment() -> void:
 					var is_grass_area := str(props.get("landuse", "")) == "grass" or (kind == "green_space" and mapped_surface not in ["concrete", "paved", "asphalt"]) or str(props.get("leisure", "")) == "garden"
 					if is_grass_area and _grass_generator != null:
 						_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind, Callable(self, "_terrain_height_at_world"), Callable(self, "_is_near_road"))
-				surface.set_color(_environment_color(kind))
+				surface.set_color(WorldMapColorUtils.environment_color(kind))
 				if has_landscape_relief:
-					relief_collision_surface.set_color(_environment_color(kind))
+					relief_collision_surface.set_color(WorldMapColorUtils.environment_color(kind))
 				for i in range(0, indices.size(), 3):
 					var p0 := points[indices[i]]
 					var p1 := points[indices[i + 1]]
@@ -1128,7 +1128,7 @@ func _load_environment() -> void:
 					added = true
 			else:
 				var width := 5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6)
-				surface.set_color(_environment_color(kind))
+				surface.set_color(WorldMapColorUtils.environment_color(kind))
 				for i in range(coords.size() - 1):
 					var a := _geo_to_world(coords[i])
 					var b := _geo_to_world(coords[i + 1])
@@ -1930,22 +1930,6 @@ func _build_tree_tile_instances(tile_key: Vector2i, positions: Array, trunk_mesh
 		add_child(canopy_instance)
 
 
-func _environment_color(kind: String) -> Color:
-	match kind:
-		"water", "waterway":
-			return Color(0.12, 0.42, 0.62)   # mer / rivières plus visibles
-		"coastline":
-			return Color(0.86, 0.76, 0.52)   # bande sable littoral
-		"vegetation":
-			return Color(0.16, 0.38, 0.22)
-		"green_space":
-			return Color(0.24, 0.46, 0.24)
-		"natural_surface":
-			return Color(0.76, 0.68, 0.49)  # sable chaud des plages de Libreville
-		_:
-			return Color(0.34, 0.42, 0.30)
-
-
 func _load_neighbourhoods() -> void:
 	var data := _read_geojson("res://data/osm/neighbourhoods.geojson")
 	if data.is_empty():
@@ -2308,7 +2292,7 @@ func _load_roads() -> void:
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("highway", "residential"))
 		var width := WorldMapRoadUtils.road_width(kind, props)
-		var surface_key := _road_surface_key(kind, props)
+		var surface_key := WorldMapColorUtils.road_surface_key(kind, props)
 		var sidewalk_mode := _road_sidewalk_mode(props, kind)
 		if surface_key == "dirt":
 			sidewalk_mode = "none"
@@ -2356,7 +2340,7 @@ func _load_roads() -> void:
 				"orig_points": points,
 				"keys": keys,
 				"length": length,
-				"tint": _road_tint(kind, props, surface_key),
+				"tint": WorldMapColorUtils.road_tint(kind, props, surface_key),
 				"class_lift": _road_class_lift(kind),
 				"oneway_sign": _road_oneway_sign(props),
 			})
@@ -3179,66 +3163,6 @@ func _point_on_other_road(x: float, z: float, part_index: int) -> bool:
 		if point.distance_to(nearest) < float(segment[4]) - 0.2:
 			return true
 	return false
-
-
-func _road_surface_key(kind: String, props: Dictionary) -> String:
-	var surface_tag := str(props.get("surface", "")).to_lower()
-	if surface_tag in ["unpaved", "ground", "dirt", "earth", "compacted", "gravel", "fine_gravel", "sand", "mud", "grass"]:
-		return "dirt"
-	if kind in ["track", "construction"]:
-		return "dirt"
-	if surface_tag in ["concrete", "paving_stones", "sett", "cobblestone", "concrete:plates", "concrete:lanes", "paved_stones"]:
-		return "paving"
-	if kind in ["footway", "pedestrian", "steps", "cycleway"]:
-		return "paving"
-	if kind == "path" and surface_tag == "":
-		return "dirt"
-	return "asphalt"
-
-
-func _road_tint(kind: String, props: Dictionary, surface_key: String) -> Color:
-	var shade := 0.95
-	var wear := 1.0
-	if surface_key == "asphalt":
-		match kind:
-			"motorway", "trunk", "motorway_link", "trunk_link":
-				shade = 0.84
-				wear = 0.35
-			"primary", "primary_link":
-				shade = 0.88
-				wear = 0.45
-			"secondary", "secondary_link":
-				shade = 0.91
-				wear = 0.6
-			"tertiary", "tertiary_link":
-				shade = 0.94
-				wear = 0.8
-			"service":
-				shade = 1.0
-				wear = 1.3
-			_:
-				shade = 0.97
-				wear = 1.0
-	elif surface_key == "dirt":
-		shade = 1.0
-	var smoothness := str(props.get("smoothness", "")).to_lower()
-	if smoothness in ["bad", "very_bad", "horrible", "very_horrible", "impassable"]:
-		shade *= 0.86
-		wear += 0.4
-	elif smoothness == "intermediate":
-		shade *= 0.94
-		wear += 0.2
-	# Légère variation déterministe par route : casse l'uniformité sans aléatoire.
-	var id_value := str(props.get("osm_id", "0")).to_int()
-	shade = clampf(shade + (float(id_value % 17) / 16.0 - 0.5) * 0.08, 0.6, 1.0)
-	wear = clampf(wear + (float(id_value % 11) / 10.0 - 0.5) * 0.3, 0.1, 1.5)
-	if surface_key == "dirt":
-		return Color(shade, shade * 0.95, shade * 0.90)
-	if surface_key == "paving":
-		# La texture asphalt_floor est beige : on la refroidit pour obtenir un béton gris.
-		return Color(shade * 0.80, shade * 0.85, shade * 0.92)
-	# L'alpha porte le niveau d'usure lu par le shader d'asphalte.
-	return Color(shade, shade, shade, wear)
 
 
 func _offset_road_polyline(points: Array[Vector3], offset: float) -> Array[Vector3]:
@@ -4105,7 +4029,7 @@ func _load_pois() -> void:
 		var kind := str(props.get("place", ""))
 		if kind.is_empty():
 			kind = str(props.get("amenity", props.get("shop", props.get("tourism", props.get("healthcare", props.get("building", "place"))))))
-		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 0.55, _poi_color(kind), 500.0)
+		_add_map_label(place_name, _geo_to_world(coordinates) + Vector3.UP * 0.55, WorldMapColorUtils.poi_color(kind), 500.0)
 		_poi_count += 1
 
 
@@ -4151,23 +4075,6 @@ func _add_map_label(label_text: String, world_position: Vector3, label_color: Co
 	label.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 	add_child(label)
 
-
-func _poi_color(kind: String) -> Color:
-	match kind:
-		"city", "town", "suburb", "neighbourhood", "quarter", "district", "village", "hamlet":
-			return Color(1.0, 0.88, 0.58)
-		"hospital", "clinic", "doctors", "pharmacy", "healthcare":
-			return Color(1.0, 0.48, 0.43)
-		"school", "college", "university", "kindergarten", "school_building":
-			return Color(0.48, 0.72, 1.0)
-		"police", "fire_station", "government", "townhall", "civic", "administrative":
-			return Color(0.72, 0.78, 1.0)
-		"marketplace", "supermarket", "mall", "convenience":
-			return Color(1.0, 0.82, 0.42)
-		"hotel", "museum", "attraction", "viewpoint":
-			return Color(0.60, 0.90, 0.72)
-		_:
-			return Color(0.96, 0.96, 0.90)
 
 func _collect_geo_points(value: Variant, points: Array[Vector2]) -> void:
 	if not value is Array:
@@ -4226,42 +4133,6 @@ func _geo_to_world(coordinate: Array) -> Vector3:
 	var x := (lon - CENTER_LON) * METERS_PER_DEG_LAT * cos(deg_to_rad(CENTER_LAT))
 	var z := -(lat - CENTER_LAT) * METERS_PER_DEG_LAT
 	return Vector3(x, _terrain_height_at_world(x, z), z)
-
-func _road_color(kind: String, props: Dictionary = {}) -> Color:
-	# Palette asphalte plus propre / GTA, teintée par la texture procédurale.
-	var surface_tag := str(props.get("surface", "")).to_lower()
-	match surface_tag:
-		"asphalt", "paved":
-			return Color(0.55, 0.56, 0.55)
-		"concrete":
-			return Color(0.72, 0.72, 0.70)
-		"paving_stones", "sett":
-			return Color(0.68, 0.66, 0.60)
-		"gravel", "fine_gravel":
-			return Color(0.62, 0.58, 0.50)
-		"ground", "dirt", "earth", "unpaved":
-			return Color(0.58, 0.50, 0.40)
-	match kind:
-		"motorway", "trunk":
-			return Color(0.48, 0.50, 0.50)   # axes principaux plus sombres
-		"primary":
-			return Color(0.52, 0.53, 0.53)
-		"secondary":
-			return Color(0.56, 0.57, 0.56)
-		"tertiary":
-			return Color(0.58, 0.59, 0.57)
-		"residential", "unclassified":
-			return Color(0.60, 0.60, 0.58)
-		"service":
-			return Color(0.58, 0.58, 0.56)
-		"footway", "path", "steps", "cycleway":
-			return Color(0.70, 0.66, 0.58)
-		_:
-			return Color(0.58, 0.58, 0.56)
-
-
-
-
 
 func _make_roof_tile_texture() -> Texture2D:
 	# Atlas procédural compact : tuiles, tôle nervurée et dalle béton.
