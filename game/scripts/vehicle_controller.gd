@@ -274,20 +274,29 @@ func _classify_wheels() -> void:
 		var local_position := _wheel_local_positions[i]
 		var is_front_axle := local_position.z < middle_z
 		_wheel_is_front.append(is_front_axle)
-		# Configuration propulsion arrière : les deux roues arrière reçoivent
-		# le couple moteur. Les roues avant assurent la direction.
+		# Configuration de référence : propulsion arrière et direction avant.
+		# Le déplacement reste calculé par le châssis arcade CharacterBody3D ;
+		# ce tableau identifie l'essieu moteur sans simuler un couple par roue.
 		_wheel_is_driven.append(not is_front_axle)
 		_wheel_is_left.append(local_position.x < 0.0)
 	if _wheel_nodes.size() == 4:
-		var front_count := 0
-		var rear_count := 0
-		for is_front_axle in _wheel_is_front:
-			if is_front_axle:
-				front_count += 1
+		var front_left := 0
+		var front_right := 0
+		var rear_left := 0
+		var rear_right := 0
+		for i in range(_wheel_nodes.size()):
+			if _wheel_is_front[i]:
+				if _wheel_is_left[i]:
+					front_left += 1
+				else:
+					front_right += 1
 			else:
-				rear_count += 1
-		if front_count != 2 or rear_count != 2:
-			push_warning("Véhicule : les 4 roues détectées ne se répartissent pas en deux roues avant et deux roues arrière.")
+				if _wheel_is_left[i]:
+					rear_left += 1
+				else:
+					rear_right += 1
+		if front_left != 1 or front_right != 1 or rear_left != 1 or rear_right != 1:
+			push_warning("Véhicule : les roues détectées ne forment pas exactement une roue gauche et une roue droite sur chaque essieu.")
 	else:
 		push_warning("Véhicule : %d roues détectées au lieu de 4 ; la classification des essieux ne peut pas être considérée comme fiable." % _wheel_nodes.size())
 
