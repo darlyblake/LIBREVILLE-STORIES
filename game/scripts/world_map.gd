@@ -4328,13 +4328,14 @@ func _add_facade_balcony(surface: SurfaceTool, center: Vector3, tangent: Vector3
 func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3, base_y: float = 0.0) -> void:
 	var edge := b - a
 	var edge_length := edge.length()
-	if edge_length < 2.8:
+	var door_parameters := WorldMapBuildingStyleUtils.facade_door_parameters(edge_length)
+	if door_parameters == Vector3.ZERO:
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
-	# Porte ancrée au sol (y ≈ 1.05 = centre d'une porte de 2,1 m).
-	var center := Vector3(a.x, base_y + 1.05, a.y) + tangent * (edge_length * 0.5)
-	var half_width := 0.44
-	var half_height := 1.05
+	# Porte ancrée au sol ; dimensions et hauteur du centre fournies par le helper pur.
+	var center := Vector3(a.x, base_y + door_parameters.z, a.y) + tangent * (edge_length * 0.5)
+	var half_width := door_parameters.x
+	var half_height := door_parameters.y
 	surface.set_color(Color(0.30, 0.22, 0.16))
 	var offset := normal * 0.032
 	_add_quad(surface,
