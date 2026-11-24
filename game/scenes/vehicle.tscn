@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://game/scripts/vehicle_controller.gd" id="1_vehicle"]
-[ext_resource type="PackedScene" path="res://assets/models/vehicles/jeep_wrangler_rubicon_4xe_2024/jeep_wrangler_rubicon_4xe_2024.glb" id="2_jeep"]
+[ext_resource type="PackedScene" path="res://game/scenes/jeep_vehicle_copy.tscn" id="2_jeep"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_jeep"]
 size = Vector3(2.15, 1.6, 4.9)
