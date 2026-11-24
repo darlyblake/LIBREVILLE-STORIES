@@ -491,7 +491,7 @@ func _build_freedom_stele() -> void:
 	# Deux piliers de pierre encadrent la figure, conformément aux descriptions
 	# documentaires de la stèle : reliefs géométriques et motifs sculptés stylisés.
 	for side in [-1.0, 1.0]:
-		var x := side * 4.0
+		var x :float= side * 4.0
 		_box(site, "Pilier_sculpte_%s" % str(side), Vector3(0.95, 7.0, 1.0), Vector3(x, 3.95, -0.15), _stone)
 		_box(site, "Chapiteau_pilier_%s" % str(side), Vector3(1.35, 0.38, 1.35), Vector3(x, 7.62, -0.15), _white)
 		for band in range(5):
