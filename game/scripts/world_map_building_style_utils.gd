@@ -146,3 +146,25 @@ static func building_height(kind: String, osm_id: int, props: Dictionary) -> flo
 			return 6.0 + float(abs(osm_id) % 40) / 10.0
 		_:
 			return 4.0 + float(abs(osm_id) % 40) / 10.0
+
+static func is_baie_des_rois_restaurant_candidate(props: Dictionary, center: Vector2, site_center: Vector2, site_radius: float) -> bool:
+	if center.distance_to(site_center) > site_radius:
+		return false
+	var amenity := str(props.get("amenity", "")).to_lower()
+	var building := str(props.get("building", "")).to_lower()
+	var shop := str(props.get("shop", "")).to_lower()
+	var name := str(props.get("name", "")).to_lower()
+	var osm_id := int(props.get("osm_id", 0))
+	# Ces cinq empreintes OSM sont les petits commerces/kiosques identifiés sur
+	# la promenade nord ; ne pas transformer les immeubles voisins en restaurants.
+	if osm_id in [1070652037, 1070652038, 1070652039, 1070652040, 1070652041]:
+		return true
+	var food_tags := ["restaurant", "cafe", "fast_food", "food_court", "bar"]
+	if amenity in food_tags or building in ["restaurant", "catering"]:
+		return true
+	if building in ["commercial", "retail"] and (shop in ["food", "bakery", "convenience", "restaurant"] or not name.is_empty()):
+		return true
+	for keyword in ["restaurant", "resto", "cafe", "café", "snack", "pavillon"]:
+		if name.contains(keyword):
+			return true
+	return false
