@@ -32,7 +32,7 @@ class_name VehicleController
 @export var maximum_wheel_dimension: float = 1.4
 
 @export_group("Architecture du véhicule")
-@export var vehicle_model_path: NodePath = ^"JeepModel"
+@export var vehicle_model_path: NodePath = ^"VehicleModel"
 @export_enum("Avant", "Arrière", "Aucun") var steering_axle: int = 0
 @export_enum("Avant", "Arrière", "Intégrale", "Aucune") var drive_axle: int = 1
 
