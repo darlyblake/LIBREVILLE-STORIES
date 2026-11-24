@@ -1409,7 +1409,7 @@ func _build_baie_des_rois_seawall() -> void:
 
 func _is_inside_beach(point: Vector2) -> bool:
 	for beach in _beach_polygons:
-		if Geometry2D.isWorldMapGeometryUtils.point_in_polygon(point, beach):
+		if Geometry2D.is_point_in_polygon(point, beach):
 			return true
 	return false
 
@@ -1763,7 +1763,7 @@ func _scatter_trees_in_polygon(points: PackedVector2Array, osm_id: int, output: 
 	while added < desired and attempts < desired * 36:
 		attempts += 1
 		var candidate := Vector2(rng.randf_range(min_x, max_x), rng.randf_range(min_y, max_y))
-		if not Geometry2D.isWorldMapGeometryUtils.point_in_polygon(candidate, points):
+		if not Geometry2D.is_point_in_polygon(candidate, points):
 			continue
 		var has_nearby_tree := false
 		for existing_position in output:
