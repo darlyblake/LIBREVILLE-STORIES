@@ -24,6 +24,18 @@ Ce document est un relevé d'architecture. Il ne modifie aucun comportement du j
 | 4020–4217 | Localités, destinations et POI | chargement, priorités, labels et couleurs |
 | 4218–4813 | Conversion géographique et construction détaillée des bâtiments | conversion coordonnées, filtrage spatial, dimensions, couleurs, toitures, fenêtres, balcons et portes |
 
+## Contrats publics déjà consommés par d'autres scripts
+
+L'inspection de `main.tscn`, `baie_des_rois.gd`, `teleport_panel.gd` et `libreville_landmarks.gd` a révélé trois méthodes publiques qui doivent rester disponibles sur le nœud `WorldMap` :
+
+| Méthode | Consommateur | Usage |
+|---|---|---|
+| `is_terrain_ready()` | `baie_des_rois.gd` | Attend que le relief soit construit avant de placer les éléments du front de mer |
+| `terrain_height_at_world(x, z)` | `baie_des_rois.gd`, `libreville_landmarks.gd` | Récupère l'altitude du terrain pour placer les objets |
+| `get_locality_destinations()` | `teleport_panel.gd` | Fournit les destinations du panneau de téléportation |
+
+Le nœud `WorldMap` est directement référencé dans `game/scenes/main.tscn`. Ces trois méthodes forment donc une API inter-scripts, même sans déclaration formelle. Elles ne doivent ni être renommées ni disparaître lors du découpage. Si leur logique est déplacée, conserver des méthodes relais sur `WorldMap`.
+
 ## Dépendances transversales à préserver
 
 - Le terrain lit les données de dégagement routier avant de créer les chunks : l'ordre de préparation est fonctionnel, pas arbitraire.
