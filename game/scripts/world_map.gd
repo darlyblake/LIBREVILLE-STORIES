@@ -3800,7 +3800,7 @@ func _load_buildings() -> void:
 				continue
 		var building_kind := str(props.get("building", "yes"))
 		var osm_id := int(props.get("osm_id", index))
-		var height := _building_height(building_kind, osm_id, props)
+		var height := WorldMapBuildingStyleUtils.building_height(building_kind, osm_id, props)
 		var added := false
 		for polygon in polygons:
 			if polygon.is_empty() or polygon[0].size() < 4:
@@ -4262,33 +4262,6 @@ func _road_color(kind: String, props: Dictionary = {}) -> Color:
 
 
 
-
-func _building_height(kind: String, osm_id: int, props: Dictionary) -> float:
-	var tagged_height := WorldMapRoadUtils.parse_osm_height(str(props.get("height", "")))
-	if tagged_height >= 2.5 and tagged_height <= 150.0:
-		return tagged_height
-	var levels := str(props.get("building:levels", "")).to_int()
-	if levels > 0 and levels <= 40:
-		return clampf(float(levels) * 3.15, 3.0, 120.0)
-	# Hauteurs différenciées inspirées de Libreville :
-	# cathédrale, bâtiments admin (Bd Triomphal), immeubles, maisons populaires.
-	match kind:
-		"cathedral", "church", "mosque", "temple":
-			return 14.0 + float(abs(osm_id) % 60) / 10.0
-		"government", "public", "civic":
-			return 16.0 + float(abs(osm_id) % 80) / 8.0
-		"university", "hospital", "school", "college":
-			return 11.0 + float(abs(osm_id) % 70) / 10.0
-		"commercial", "office", "retail":
-			return 12.0 + float(abs(osm_id) % 90) / 8.0
-		"apartments", "hotel", "dormitory":
-			return 10.0 + float(abs(osm_id) % 80) / 8.0
-		"house", "detached", "residential", "semidetached_house", "bungalow":
-			return 4.2 + float(abs(osm_id) % 28) / 10.0
-		"warehouse", "industrial", "supermarket", "hangar":
-			return 6.0 + float(abs(osm_id) % 40) / 10.0
-		_:
-			return 4.0 + float(abs(osm_id) % 40) / 10.0
 
 func _make_roof_tile_texture() -> Texture2D:
 	# Atlas procédural compact : tuiles, tôle nervurée et dalle béton.
