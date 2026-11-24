@@ -27,6 +27,10 @@ class_name VehicleController
 @export var wheel_steer_axis: Vector3 = Vector3.UP
 @export var wheel_steer_visual_multiplier: float = 1.0
 
+@export_group("Détection des roues")
+@export var minimum_wheel_dimension: float = 0.18
+@export var maximum_wheel_dimension: float = 1.4
+
 @export_group("Architecture du véhicule")
 @export var vehicle_model_path: NodePath = ^"JeepModel"
 @export_enum("Avant", "Arrière", "Aucun") var steering_axle: int = 0
@@ -81,8 +85,8 @@ func _ready() -> void:
 	else:
 		push_warning("Véhicule : modèle introuvable au chemin configuré (%s)." % str(vehicle_model_path))
 	_classify_wheels()
-	if _wheel_nodes.size() < 4:
-		push_warning("Véhicule : %d pivots de roue détectés. Vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
+	if _wheel_nodes.size() < 2:
+		push_warning("Véhicule : seulement %d pivot(s) de roue détecté(s). Vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
 	_setup_vehicle_cameras()
 	_setup_vehicle_hud()
 	_setup_vehicle_audio()
@@ -218,7 +222,7 @@ func _create_wheel_pivot(wheel_node: Node3D) -> bool:
 	var smallest_dimension := minf(dimensions.x, minf(dimensions.y, dimensions.z))
 	# Une roue individuelle mesure moins d'environ 1,4 m. Les blocs
 	# contenant tout le véhicule et les petites plaques de secours sont exclus.
-	if largest_dimension > 1.4 or smallest_dimension < 0.18:
+	if largest_dimension > maximum_wheel_dimension or smallest_dimension < minimum_wheel_dimension:
 		return false
 	var wheel_center := world_bounds.get_center()
 	var original_global := wheel_node.global_transform
