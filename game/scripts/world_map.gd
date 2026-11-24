@@ -4294,8 +4294,9 @@ func _add_facade_balcony(surface: SurfaceTool, center: Vector3, tangent: Vector3
 	# floor_y est une hauteur mondiale absolue (sous le bas de la fenêtre).
 	# On ignore volontairement center.y pour éviter le double-ajout qui faisait
 	# flotter les balcons au-dessus des toits.
-	var depth := 0.68
-	var width := half_width + 0.18
+	var balcony_parameters := WorldMapBuildingStyleUtils.facade_balcony_parameters(half_width)
+	var depth := balcony_parameters.x
+	var width := balcony_parameters.y
 	var base := Vector3(center.x, floor_y, center.z)
 	var front := base + normal * depth
 	var back_left := base - tangent * width + normal * 0.04
@@ -4306,8 +4307,8 @@ func _add_facade_balcony(surface: SurfaceTool, center: Vector3, tangent: Vector3
 	surface.set_color(Color(0.68, 0.66, 0.60))
 	_add_quad(surface, back_left, back_right, front_right, front_left)
 	# Garde-corps avant + côtés.
-	var rail_bottom := floor_y + 0.06
-	var rail_top := floor_y + 0.88
+	var rail_bottom := floor_y + balcony_parameters.z
+	var rail_top := floor_y + balcony_parameters.w
 	surface.set_color(Color(0.32, 0.34, 0.33))
 	_add_quad(surface,
 		Vector3(front_left.x, rail_bottom, front_left.z),
