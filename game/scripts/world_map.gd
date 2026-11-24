@@ -4180,11 +4180,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		facade_color: Color = Color(0.76, 0.68, 0.56), base_y: float = 0.0) -> void:
 	var longest_edge_index := 0
 	var longest_edge_length := 0.0
-	var signed_area := 0.0
-	for area_index in range(points.size()):
-		var area_a := points[area_index]
-		var area_b := points[(area_index + 1) % points.size()]
-		signed_area += area_a.x * area_b.y - area_b.x * area_a.y
+	var signed_area := WorldMapGeometryUtils.polygon_signed_area(points)
 	# Petite plinthe (0 → 0.12 m) pour ancrer proprement le bâtiment au sol
 	# et éviter l'aspect "flottant" à la base.
 	var plinth_h := 0.12
