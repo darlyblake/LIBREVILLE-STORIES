@@ -1,0 +1,25 @@
+# Godot 4 — fichiers générés et caches locaux
+.godot/
+
+# Exports et builds locaux
+/export.cfg
+/export_presets.cfg
+/build/
+/dist/
+/exports/
+*.tmp
+*.bak
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
