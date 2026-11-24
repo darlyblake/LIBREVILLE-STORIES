@@ -3718,7 +3718,7 @@ func _load_buildings() -> void:
 				continue
 		var props: Dictionary = feature.get("properties", {})
 		var feature_center := _feature_world_center(feature)
-		if not restaurant_scenes.is_empty() and _is_baie_des_rois_restaurant_candidate(props, feature_center):
+		if not restaurant_scenes.is_empty() and WorldMapBuildingStyleUtils.is_baie_des_rois_restaurant_candidate(props, feature_center, BAIE_DES_ROIS_SITE_CENTER, BAIE_DES_ROIS_SITE_RADIUS):
 			if _place_baie_des_rois_restaurant(feature, restaurant_scenes, baie_restaurant_count):
 				baie_restaurant_count += 1
 				continue
@@ -3780,29 +3780,6 @@ func _load_buildings() -> void:
 		_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
 		_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
 
-
-
-func _is_baie_des_rois_restaurant_candidate(props: Dictionary, center: Vector2) -> bool:
-	if center.distance_to(BAIE_DES_ROIS_SITE_CENTER) > BAIE_DES_ROIS_SITE_RADIUS:
-		return false
-	var amenity := str(props.get("amenity", "")).to_lower()
-	var building := str(props.get("building", "")).to_lower()
-	var shop := str(props.get("shop", "")).to_lower()
-	var name := str(props.get("name", "")).to_lower()
-	var osm_id := int(props.get("osm_id", 0))
-	# Ces cinq empreintes OSM sont les petits commerces/kiosques identifiés sur
-	# la promenade nord ; ne pas transformer les immeubles voisins en restaurants.
-	if osm_id in [1070652037, 1070652038, 1070652039, 1070652040, 1070652041]:
-		return true
-	var food_tags := ["restaurant", "cafe", "fast_food", "food_court", "bar"]
-	if amenity in food_tags or building in ["restaurant", "catering"]:
-		return true
-	if building in ["commercial", "retail"] and (shop in ["food", "bakery", "convenience", "restaurant"] or not name.is_empty()):
-		return true
-	for keyword in ["restaurant", "resto", "cafe", "café", "snack", "pavillon"]:
-		if name.contains(keyword):
-			return true
-	return false
 
 
 func _place_baie_des_rois_restaurant(feature: Dictionary, scenes: Array[PackedScene], index: int) -> bool:
