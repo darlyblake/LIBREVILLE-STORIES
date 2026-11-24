@@ -14,6 +14,7 @@ class_name VehicleController
 @export_group("Direction et adhérence")
 @export var wheel_base: float = 3.0
 @export var front_track: float = 1.62
+@export var rear_track: float = 1.48
 @export var max_steering_angle: float = 0.52
 @export var high_speed_steering_angle: float = 0.15
 @export var steering_response: float = 4.8
@@ -26,6 +27,10 @@ class_name VehicleController
 @export var wheel_steer_axis: Vector3 = Vector3.UP
 @export var wheel_steer_visual_multiplier: float = 1.0
 
+@export_group("Architecture du véhicule")
+@export_enum("Avant", "Arrière", "Aucun") var steering_axle: int = 0
+@export_enum("Avant", "Arrière", "Intégrale", "Aucune") var drive_axle: int = 1
+
 var player_driving := false
 var current_speed := 0.0
 var odometer_meters := 0.0
@@ -33,6 +38,7 @@ var _wheel_nodes: Array[Node3D] = []
 var _wheel_base_basis: Array[Basis] = []
 var _wheel_local_positions: Array[Vector3] = []
 var _wheel_is_front: Array[bool] = []
+var _wheel_is_steering: Array[bool] = []
 var _wheel_is_driven: Array[bool] = []
 var _wheel_is_left: Array[bool] = []
 var _wheel_roll_angle := 0.0
@@ -257,6 +263,7 @@ func _get_subtree_world_aabb(root: Node) -> AABB:
 
 func _classify_wheels() -> void:
 	_wheel_is_front.clear()
+	_wheel_is_steering.clear()
 	_wheel_is_driven.clear()
 	_wheel_is_left.clear()
 	if _wheel_nodes.is_empty():
@@ -267,18 +274,35 @@ func _classify_wheels() -> void:
 		min_z = minf(min_z, local_position.z)
 		max_z = maxf(max_z, local_position.z)
 	# Le véhicule regarde vers -Z : les roues les plus en avant ont le Z
-	# le plus faible. La séparation par essieu reste valable quel que soit
-	# l'ordre dans lequel les meshes sont trouvés dans le GLB.
+	# le plus faible. La classification reste indépendante de l'ordre des meshes.
 	var middle_z := (min_z + max_z) * 0.5
-	for i in range(_wheel_nodes.size()):
-		var local_position := _wheel_local_positions[i]
+	for local_position in _wheel_local_positions:
 		var is_front_axle := local_position.z < middle_z
+		var is_steering := false
+		match steering_axle:
+			0:
+				is_steering = is_front_axle
+			1:
+				is_steering = not is_front_axle
+			_:
+				is_steering = false
+		var is_driven := false
+		match drive_axle:
+			0:
+				is_driven = is_front_axle
+			1:
+				is_driven = not is_front_axle
+			2:
+				is_driven = true
+			_:
+				is_driven = false
 		_wheel_is_front.append(is_front_axle)
-		# Configuration de référence : propulsion arrière et direction avant.
-		# Le déplacement reste calculé par le châssis arcade CharacterBody3D ;
-		# ce tableau identifie l'essieu moteur sans simuler un couple par roue.
-		_wheel_is_driven.append(not is_front_axle)
+		_wheel_is_steering.append(is_steering)
+		_wheel_is_driven.append(is_driven)
 		_wheel_is_left.append(local_position.x < 0.0)
+
+	# Les configurations à quatre roues doivent avoir une roue à chaque coin.
+	# Les véhicules à trois roues (certains chariots) restent acceptés.
 	if _wheel_nodes.size() == 4:
 		var front_left := 0
 		var front_right := 0
@@ -296,16 +320,26 @@ func _classify_wheels() -> void:
 				else:
 					rear_right += 1
 		if front_left != 1 or front_right != 1 or rear_left != 1 or rear_right != 1:
-			push_warning("Véhicule : les roues détectées ne forment pas exactement une roue gauche et une roue droite sur chaque essieu.")
+			push_warning("Véhicule : les quatre roues ne forment pas exactement une roue à chaque coin.")
+	elif _wheel_nodes.size() < 2:
+		push_warning("Véhicule : %d roue(s) détectée(s) ; vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
 	else:
-		push_warning("Véhicule : %d roues détectées au lieu de 4 ; la classification des essieux ne peut pas être considérée comme fiable." % _wheel_nodes.size())
+		var front_count := 0
+		var rear_count := 0
+		for is_front_axle in _wheel_is_front:
+			if is_front_axle:
+				front_count += 1
+			else:
+				rear_count += 1
+		if front_count == 0 or rear_count == 0:
+			push_warning("Véhicule : impossible d'identifier les deux essieux à partir des pivots détectés.")
 
-func _ackermann_angle(is_left: bool) -> float:
+func _ackermann_angle(is_left: bool, axle_track: float) -> float:
 	if absf(_steering_angle) < 0.001:
 		return 0.0
 	var radius := wheel_base / maxf(absf(tan(_steering_angle)), 0.001)
-	var inner_radius := maxf(0.5, radius - front_track * 0.5)
-	var outer_radius := radius + front_track * 0.5
+	var inner_radius := maxf(0.5, radius - axle_track * 0.5)
+	var outer_radius := radius + axle_track * 0.5
 	var is_inner := (_steering_angle < 0.0 and is_left) or (_steering_angle > 0.0 and not is_left)
 	var angle := atan(wheel_base / (inner_radius if is_inner else outer_radius))
 	return signf(_steering_angle) * angle
@@ -319,12 +353,15 @@ func _update_wheel_animation() -> void:
 		steer_axis = Vector3.UP
 	for i in range(_wheel_nodes.size()):
 		var steering_angle := 0.0
-		# Seul l'essieu avant braque. L'essieu arrière reste aligné au châssis.
-		if _wheel_is_front[i]:
-			steering_angle = _ackermann_angle(_wheel_is_left[i]) * wheel_steer_visual_multiplier
-		# Les quatre roues tournent visuellement avec le déplacement. La
-		# propulsion, elle, est attribuée aux deux roues arrière dans
-		# _wheel_is_driven ; les roues avant restent libres et directrices.
+		if _wheel_is_steering[i]:
+			var axle_track := front_track if _wheel_is_front[i] else rear_track
+			steering_angle = _ackermann_angle(_wheel_is_left[i], axle_track) * wheel_steer_visual_multiplier
+			# Sur un chariot à direction arrière, les roues arrière braquent
+			# dans le sens opposé à l'angle de référence du châssis.
+			if steering_axle == 1:
+				steering_angle = -steering_angle
+		# Toutes les roues roulent visuellement ; drive_axle décrit l'essieu
+		# moteur pour chaque type, sans simuler un couple physique par roue.
 		var steering_basis := Basis(steer_axis, -steering_angle)
 		var rolling_basis := Basis(spin_axis, _wheel_roll_angle)
 		_wheel_nodes[i].transform.basis = (_wheel_base_basis[i] * steering_basis * rolling_basis).orthonormalized()
