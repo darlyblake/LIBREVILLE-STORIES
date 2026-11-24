@@ -168,3 +168,13 @@ static func is_baie_des_rois_restaurant_candidate(props: Dictionary, center: Vec
 		if name.contains(keyword):
 			return true
 	return false
+
+static func facade_window_parameters(edge_length: float, height: float) -> Vector4:
+	# x = nombre d'étages, y = nombre de fenêtres, z = demi-largeur,
+	# w = demi-hauteur. Les seuils et dimensions reprennent le calcul historique.
+	var floors := clampi(int(ceil(height / 3.05)), 1, 8)
+	var window_count := clampi(int(floor(edge_length / 4.8)), 1, 6)
+	var spacing := edge_length / float(window_count)
+	var window_width := clampf(spacing * 0.36, 0.60, 1.20)
+	var window_height := 0.92 if floors == 1 else 1.10
+	return Vector4(float(floors), float(window_count), window_width * 0.5, window_height * 0.5)
