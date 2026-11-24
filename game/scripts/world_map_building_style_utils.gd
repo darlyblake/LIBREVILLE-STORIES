@@ -169,6 +169,12 @@ static func is_baie_des_rois_restaurant_candidate(props: Dictionary, center: Vec
 			return true
 	return false
 
+
+static func facade_wall_parameters(edge_length: float, height: float) -> Vector3:
+	# x = hauteur de plinthe, y = répétition UV horizontale, z = répétition UV verticale.
+	# Les échelles sont conservées à l'identique du générateur de façades historique.
+	return Vector3(0.12, edge_length / 3.0, height / 3.0)
+
 static func facade_window_parameters(edge_length: float, height: float) -> Vector4:
 	# x = nombre d'étages, y = nombre de fenêtres, z = demi-largeur,
 	# w = demi-hauteur. Les seuils et dimensions reprennent le calcul historique.
