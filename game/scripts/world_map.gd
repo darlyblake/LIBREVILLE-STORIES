@@ -4181,9 +4181,6 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 	var longest_edge_index := 0
 	var longest_edge_length := 0.0
 	var signed_area := WorldMapGeometryUtils.polygon_signed_area(points)
-	# Petite plinthe (0 → 0.12 m) pour ancrer proprement le bâtiment au sol
-	# et éviter l'aspect "flottant" à la base.
-	var plinth_h := 0.12
 	for i in range(points.size()):
 		var a := points[i]
 		var b := points[(i + 1) % points.size()]
@@ -4191,8 +4188,10 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		if edge_length > longest_edge_length:
 			longest_edge_length = edge_length
 			longest_edge_index = i
-		var uv_length := edge_length / 3.0
-		var uv_height := height / 3.0
+		var wall_parameters := WorldMapBuildingStyleUtils.facade_wall_parameters(edge_length, height)
+		var plinth_h := wall_parameters.x
+		var uv_length := wall_parameters.y
+		var uv_height := wall_parameters.z
 		# Mur principal (du haut de la plinthe jusqu'au toit).
 		walls.set_color(facade_color)
 		_add_uv_quad(walls,
