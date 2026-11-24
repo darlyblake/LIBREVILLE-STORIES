@@ -4178,16 +4178,14 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		points: PackedVector2Array, indices: PackedInt32Array, height: float,
 		roof_tint: Color, building_kind: String, osm_id: int, props: Dictionary = {},
 		facade_color: Color = Color(0.76, 0.68, 0.56), base_y: float = 0.0) -> void:
-	var longest_edge_index := 0
-	var longest_edge_length := 0.0
+	var longest_edge_data := WorldMapGeometryUtils.longest_polygon_edge(points)
+	var longest_edge_index := int(longest_edge_data.x)
+	var longest_edge_length := longest_edge_data.y
 	var signed_area := WorldMapGeometryUtils.polygon_signed_area(points)
 	for i in range(points.size()):
 		var a := points[i]
 		var b := points[(i + 1) % points.size()]
 		var edge_length := a.distance_to(b)
-		if edge_length > longest_edge_length:
-			longest_edge_length = edge_length
-			longest_edge_index = i
 		var wall_parameters := WorldMapBuildingStyleUtils.facade_wall_parameters(edge_length, height)
 		var plinth_h := wall_parameters.x
 		var uv_length := wall_parameters.y
