@@ -185,3 +185,7 @@ static func facade_door_parameters(edge_length: float) -> Vector3:
 	if edge_length < 2.8:
 		return Vector3.ZERO
 	return Vector3(0.44, 1.05, 1.05)
+static func facade_balcony_parameters(half_window_width: float) -> Vector4:
+	# x = profondeur, y = demi-largeur totale, z = hauteur basse du garde-corps,
+	# w = hauteur haute du garde-corps, toutes les valeurs relatives au sol du balcon.
+	return Vector4(0.68, half_window_width + 0.18, 0.06, 0.88)
