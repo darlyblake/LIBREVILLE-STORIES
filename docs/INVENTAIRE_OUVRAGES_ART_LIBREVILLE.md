@@ -429,3 +429,25 @@ IAI est désormais documenté comme ouvrage prioritaire avec un historique offic
 - Ces deux clichés sont des références de l'environnement d'assainissement et de l'insalubrité du secteur, pas des vues du tablier. Les points GPS sont les positions des photographes, pas celles du pont. Pour toute réutilisation dans le jeu, conserver l'attribution à Estrella230 et le lien CC BY 4.0, puis indiquer les modifications.
 - L'archive de L'Union du 14 juillet 2021 contient également une photographie de trottoir à IAI avec vendeurs, piétons et circulation : https://lunion-archives.org/web.11/dmdocuments/N13673-14-07-2021-010.pdf
 - L'archive de L'Union du 20 avril 2021 présente une vue de l'échangeur en période de pluie, avec chaussée fortement recouverte d'eau : https://lunion-archives.org/web.11/dmdocuments/N13603-20-04-2021-011.pdf. Référence de presse, réutilisation soumise aux droits de l'éditeur et du photographe.
+
+
+### Échangeur de Lalala à droite et corridor vers le pont Nomba — compléments (25 novembre 2026)
+
+#### Échangeur de Lalala à droite
+- Le décret gabonais de déclaration d'utilité publique définit la route locale n°100 comme l'axe allant de l'échangeur de Lalala à droite au pont du marché d'Oloumi, destiné à être aménagé en 2x2 voies. L'emprise de 20 m de part et d'autre concerne cette route locale, pas la largeur du tablier de l'échangeur : https://journal-officiel.ga/747-0021-pr-mpitpthtat/
+- Le marché public N°90/MTPC/SG/2025 porte sur la réhabilitation de la Voie Express entre l'échangeur des Charbonnages et l'échangeur de Lalala à droite ; approbation le 15 janvier 2026, financement par le budget de l'État : https://lejmp.com/marches_approuves/n90-mtpc-sg-2025/
+- Un reportage de L'Union du 5 juillet 2023 situe l'échangeur en face de Prix-Import et décrit le sens IAI → échangeur de Lalala à droite. Il confirme les directions de circulation et un repère commercial, pas les dimensions de l'ouvrage : https://lunion-archives.org/web.11/dmdocuments/N14269-05-07-2023-011.pdf
+- L'annuaire professionnel local place IPES « à l'échangeur de Lalala à côté de Prix Import » : https://www.lepriveonline.com/entreprises/liste-detaillee/ipes-import-pieces-et-services.html
+- L'entreprise Archemia Gabon utilise également « Échangeur de Lalala à Droite » comme adresse à Libreville : https://www.archemiagabon.com/
+- Le 25 avril 2019, L'Union rapporte une chute d'arbre sur la Voie Express dans le sens IAI–Owendo, à l'échangeur de Lalala ; la déviation passait par Lalala-à-gauche puis ressortait à Lalala-à-droite. Cette source confirme la relation entre les deux voies et le corridor, sans décrire le tablier : https://lunion-archives.org/web.11/dmdocuments/N13003-25-04-2019-009.pdf
+
+#### Pont Nomba et environnement du corridor
+- L'Union rapporte le 8 juillet 2024 un bouchon provoqué par le nettoyage des abords de la chaussée, s'étendant du pont Nomba jusqu'à l'échangeur de Lalala et au-delà. Le texte confirme la continuité de circulation entre ces repères : https://www.union.sonapresse.com/index.php/fr/node/2783
+- Les opérations décrites comprennent le désensablement et le désherbage des abords de la voie. Ces éléments peuvent informer l'environnement routier (accotements, végétation, entretien), mais ne constituent pas des données de géométrie du pont.
+- Le Journal officiel et les articles consultés ne fournissent pas de plan coté du tablier de Lalala à droite ni du pont Nomba. Les dimensions, nombre de piles, hauteur libre et profil des rampes restent à relever sur la géométrie OSM brute et l'imagerie aérienne.
+
+#### Conséquence pour la construction 3D
+- Garder séparés l'échangeur de Lalala à droite, le pont du marché d'Oloumi et le pont Nomba. Les sources confirment des liens routiers entre eux mais pas qu'ils constituent un même ouvrage.
+- La direction IAI → Lalala à droite → Owendo doit être cohérente avec les données de routes et les sens de circulation relevés.
+- Les abords peuvent intégrer Prix-Import comme repère commercial seulement si sa position exacte est vérifiée dans les données OSM / terrain du jeu.
+- Aucun tablier, rampe, pilier ou garde-corps ne sera généré à partir des seules mentions textuelles. Modélisation détaillée en attente des géométries et photos d'angles suffisants.
