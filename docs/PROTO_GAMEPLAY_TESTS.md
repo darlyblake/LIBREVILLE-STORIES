@@ -22,7 +22,7 @@ Le personnage est chargé depuis `assets/models/characters/UAL1_Standard.glb` (Q
 - **C** : changer de caméra.
 - **F** : ouvrir la porte conducteur, s'approcher, monter et refermer ; à l'arrêt, ouvrir pour descendre.
 
-La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction intégrale, braquage sur l'essieu avant, rotation automatique des roues, suspension indépendante et friction des pneus. La carrosserie utilise une collision simple pour rester légère.
+La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction intégrale, braquage sur l'essieu avant, rotation automatique des roues, suspension indépendante et friction des pneus. La carrosserie utilise une collision simple pour rester légère. Les roues visuelles du modèle sont classées par essieu, leur braquage est animé et leur rotation suit la vitesse, y compris en marche arrière.
 
 ## Essais à effectuer dans Godot
 
@@ -38,7 +38,7 @@ La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction
 
 ## Validation
 
-Après récupération de `main`, ouvrir le projet avec Godot 4.3 ou supérieur et laisser l'import des ressources se terminer. La validation automatisée est définie dans `.github/workflows/validate-godot.yml`. Les essais physiques et les animations de porte doivent également être vérifiés en jeu : un parse réussi ne garantit pas le bon réglage de la suspension sur le modèle Jeep.
+Après récupération de `main`, ouvrir le projet avec Godot 4.3 ou supérieur et laisser l'import des ressources se terminer. La validation automatisée est définie dans `.github/workflows/validate-godot.yml`. Les essais physiques, la position de l’arme sur la main et l’animation des portes doivent également être vérifiés en jeu : un parse réussi ne garantit pas le bon réglage de la suspension ni l’alignement des pivots sur le modèle Jeep.
 
 ## Références techniques étudiées
 
