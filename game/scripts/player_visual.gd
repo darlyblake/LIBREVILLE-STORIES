@@ -24,6 +24,7 @@ func _ready() -> void:
 						animation_player.get_animation(animation).loop_mode = Animation.LOOP_LINEAR
 				print("LIBREVILLE STORIES | Animations disponibles : ", animation_player.get_animation_list())
 				play_motion("idle")
+			_create_test_pistol(model)
 			return
 	_build_fallback_humanoid()
 
@@ -104,3 +105,66 @@ func _add_sphere(node_name: String, at: Vector3, dimensions: Vector3, material: 
 	mesh_node.position = at
 	mesh_node.material_override = material
 	add_child(mesh_node)
+
+func _create_test_pistol(model: Node3D) -> void:
+	# Arme provisoire de test : attachée à l'os de la main droite si le squelette le fournit.
+	var attachment: Node3D = model
+	var skeleton := model.find_child("Skeleton3D", true, false) as Skeleton3D
+	if skeleton != null:
+		for bone_index in range(skeleton.get_bone_count()):
+			var bone_name := String(skeleton.get_bone_name(bone_index)).to_lower()
+			var right_hand := bone_name.contains("hand") and (
+				bone_name.contains("right") or bone_name.ends_with(".r")
+				or bone_name.ends_with("_r") or bone_name.contains("handr")
+			)
+			if right_hand:
+				var bone_attachment := BoneAttachment3D.new()
+				bone_attachment.name = "RightHandWeaponAttachment"
+				bone_attachment.bone_name = skeleton.get_bone_name(bone_index)
+				skeleton.add_child(bone_attachment)
+				attachment = bone_attachment
+				print("LIBREVILLE STORIES | Pistolet attaché à l'os : ", bone_name)
+				break
+	if attachment == model:
+		print("LIBREVILLE STORIES | Os de main droite non détecté : arme de test positionnée provisoirement sur le modèle.")
+	var pistol := Node3D.new()
+	pistol.name = "TestPistol"
+	attachment.add_child(pistol)
+	if attachment == model:
+		pistol.position = Vector3(0.34, 1.18, -0.24)
+		pistol.rotation.y = PI
+	else:
+		pistol.position = Vector3(0.035, 0.015, -0.055)
+		pistol.rotation = Vector3(deg_to_rad(-8.0), PI, deg_to_rad(2.0))
+	pistol.scale = Vector3.ONE * 0.72
+	var metal := StandardMaterial3D.new()
+	metal.albedo_color = Color(0.055, 0.065, 0.075)
+	metal.metallic = 0.72
+	metal.roughness = 0.34
+	var grip_material := StandardMaterial3D.new()
+	grip_material.albedo_color = Color(0.12, 0.095, 0.07)
+	grip_material.roughness = 0.82
+	_add_pistol_box(pistol, "Slide", Vector3(0.0, 0.025, -0.045), Vector3(0.105, 0.105, 0.29), metal)
+	_add_pistol_box(pistol, "Grip", Vector3(0.0, -0.105, 0.045), Vector3(0.085, 0.19, 0.105), grip_material, Vector3(deg_to_rad(-12.0), 0.0, 0.0))
+	var barrel := MeshInstance3D.new()
+	barrel.name = "Barrel"
+	var barrel_mesh := CylinderMesh.new()
+	barrel_mesh.top_radius = 0.026
+	barrel_mesh.bottom_radius = 0.026
+	barrel_mesh.height = 0.13
+	barrel.mesh = barrel_mesh
+	barrel.rotation.x = PI * 0.5
+	barrel.position = Vector3(0.0, 0.025, -0.235)
+	barrel.material_override = metal
+	pistol.add_child(barrel)
+
+func _add_pistol_box(parent: Node3D, node_name: String, at: Vector3, dimensions: Vector3, material: Material, tilt := Vector3.ZERO) -> void:
+	var part := MeshInstance3D.new()
+	part.name = node_name
+	var mesh := BoxMesh.new()
+	mesh.size = dimensions
+	part.mesh = mesh
+	part.position = at
+	part.rotation = tilt
+	part.material_override = material
+	parent.add_child(part)
