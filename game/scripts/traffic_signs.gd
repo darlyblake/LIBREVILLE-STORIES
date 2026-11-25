@@ -47,6 +47,24 @@ func _process(delta: float) -> void:
 			lens.emission_energy_multiplier = 1.35 if active else 0.0
 
 
+func is_red_for_vehicle(vehicle_position: Vector3, vehicle_direction: Vector3) -> bool:
+	var direction_2d := Vector2(vehicle_direction.x, vehicle_direction.z).normalized()
+	if direction_2d.length_squared() < 0.1:
+		return false
+	for signal_data in _traffic_lights:
+		var signal_position: Vector3 = signal_data.get("position", Vector3.ZERO)
+		var to_signal := Vector2(signal_position.x - vehicle_position.x, signal_position.z - vehicle_position.z)
+		var distance := to_signal.length()
+		if distance < 2.0 or distance > 19.0:
+			continue
+		if direction_2d.dot(to_signal.normalized()) < 0.35:
+			continue
+		var cycle := fposmod(_traffic_elapsed + float(signal_data.offset), 18.0)
+		if cycle < 6.0 or cycle >= 16.0:
+			return true
+	return false
+
+
 func _build_signage() -> void:
 	if not FileAccess.file_exists(ROADS_PATH):
 		push_warning("Signalisation : données routières OSM absentes.")
@@ -343,7 +361,9 @@ func _add_traffic_light(point: Vector2, ground_y: float, direction: Vector2) -> 
 		signal_materials.append(lens)
 	_traffic_lights.append({
 		"materials": signal_materials,
-		"offset": float(get_child_count()) * 2.7
+		"offset": float(get_child_count()) * 2.7,
+		"position": Vector3(point.x, ground_y, point.y),
+		"direction": Vector3(direction.x, 0.0, direction.y)
 	})
 
 
