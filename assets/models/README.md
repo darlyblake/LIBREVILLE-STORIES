@@ -27,7 +27,7 @@ assets/models/
 - Ajouter pour chaque pack un fichier `README.md` précisant la provenance, l'auteur, la licence, le format, les dépendances et les limites connues.
 - Ne jamais supposer qu'un modèle est libre : vérifier sa licence avant de le publier dans le dépôt.
 - Préférer GLB/glTF avec textures intégrées. Éviter les archives de travail, doublons et textures inutilisées.
-- Cible matérielle : Godot 4.3, renderer Compatibility, 720p, Core i7-2600 / 12 Go RAM / GeForce GT 730 2 Go. Prévoir des textures raisonnables, des collisions simples et des LOD si nécessaire.
+- Ne pas fixer une configuration minimale artificiellement basse comme plafond de qualité. Conserver les textures sources haute résolution et proposer plusieurs niveaux de qualité dans le jeu ; les LOD, mipmaps et options de rendu servent à adapter l'affichage à chaque machine, sans dégrader les assets maîtres.
 
 ## Signalisation routière — premier pack reçu
 
