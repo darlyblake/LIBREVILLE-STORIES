@@ -69,16 +69,19 @@ func _build_facilities() -> void:
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
-		if g.get("type","")!="Point": continue
-		var c: Array=g.get("coordinates",[])
+		var c := _geometry_center(g)
 		if c.size()<2: continue
 		var p: Dictionary=item.get("properties",{})
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
 		if Vector2(pos.x,pos.z).distance_to(origin)>RADIUS: continue
-		var label := str(p.get("name",p.get("name:fr",_default_name(kind))))
-		entries.append({"kind":kind,"label":label,"pos":pos,"id":int(p.get("osm_id",0))})
+		var label := str(p.get("name:fr",""))
+		if label.is_empty(): label=str(p.get("name",""))
+		if label.is_empty(): label=_default_name(kind)
+		var osm_id := int(p.get("osm_id",0))
+		if osm_id == 0: osm_id=int(str(p.get("@id","0")).replace("way/","").replace("node/","").replace("relation/",""))
+		entries.append({"kind":kind,"label":label,"pos":pos,"id":osm_id})
 	entries.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
 		return Vector2(a.pos.x,a.pos.z).distance_squared_to(origin)<Vector2(b.pos.x,b.pos.z).distance_squared_to(origin))
 	var seen:={}
@@ -100,9 +103,9 @@ func _kind(p:Dictionary)->String:
 	if a=="clinic" or h in ["clinic","doctor","health_post"] or b=="clinic": return "clinic"
 	if a=="police" or b=="police": return "police"
 	if a=="fire_station" or b=="fire_station": return "fire"
-	if a=="bus_station" or b=="train_station": return "bus"
+	if a=="bus_station" or b=="train_station" or str(p.get("public_transport",""))=="station": return "bus"
 	if a=="fuel" or s=="fuel": return "fuel"
-	if a=="townhall" or b in ["government","civic","public"]: return "admin"
+	if a=="townhall" or b in ["government","civic","public"] or str(p.get("office","")) in ["government","administrative"]: return "admin"
 	return ""
 
 func _default_name(k:String)->String:
@@ -114,6 +117,30 @@ func _default_name(k:String)->String:
 		"bus": return "Gare routière"
 		"fuel": return "Station-service"
 		_: return "Administration"
+
+func _geometry_center(g:Dictionary)->Array:
+	var kind := str(g.get("type",""))
+	var coords: Variant = g.get("coordinates",[])
+	if kind == "Point" and coords is Array:
+		return coords
+	var ring: Array = []
+	if kind == "Polygon" and coords is Array and not coords.is_empty():
+		ring = coords[0]
+	elif kind == "MultiPolygon" and coords is Array and not coords.is_empty():
+		var largest: Array = []
+		for polygon in coords:
+			if polygon is Array and not polygon.is_empty() and polygon[0] is Array and polygon[0].size()>largest.size():
+				largest = polygon[0]
+		ring = largest
+	if ring.is_empty(): return []
+	var lon := 0.0
+	var lat := 0.0
+	var n := 0
+	for point in ring:
+		if point is Array and point.size()>=2:
+			lon += float(point[0]); lat += float(point[1]); n += 1
+	if n == 0: return []
+	return [lon/n,lat/n]
 
 func _geo(c:Array)->Vector3:
 	var x:=(float(c[0])-CENTER_LON)*111320.0*cos(deg_to_rad(CENTER_LAT))
