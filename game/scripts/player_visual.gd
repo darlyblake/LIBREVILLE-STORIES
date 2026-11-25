@@ -132,8 +132,8 @@ func _create_test_pistol(model: Node3D) -> void:
 	pistol.name = "TestPistol"
 	attachment.add_child(pistol)
 	if attachment == model:
-		pistol.position = Vector3(0.34, 1.18, -0.24)
-		pistol.rotation.y = PI
+		pistol.position = Vector3(0.35, 0.88, -0.20)
+		pistol.rotation = Vector3.ZERO
 	else:
 		pistol.position = Vector3(0.035, 0.015, -0.055)
 		pistol.rotation = Vector3(deg_to_rad(-8.0), PI, deg_to_rad(2.0))
