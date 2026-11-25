@@ -38,7 +38,16 @@ ASSETS = [
     "dirt",
     "grass",
 ]
-MAPS = {"diff", "nor_gl", "rough", "ao", "metal", "disp"}
+MAP_ALIASES = {
+    "diff": "diff", "diffuse": "diff", "color": "diff", "colour": "diff",
+    "albedo": "diff", "basecolor": "diff", "base_color": "diff",
+    "nor_gl": "nor_gl", "normal": "nor_gl", "normal_gl": "nor_gl",
+    "rough": "rough", "roughness": "rough",
+    "ao": "ao", "ambient_occlusion": "ao",
+    "metal": "metal", "metalness": "metal",
+    "disp": "disp", "displacement": "disp", "height": "disp",
+}
+MAPS = set(MAP_ALIASES.keys())
 
 
 def get_json(url: str):
@@ -51,9 +60,9 @@ def collect_map_files(node, path=()):
     found = []
     if isinstance(node, dict):
         if isinstance(node.get("url"), str):
-            map_name = next((part for part in reversed(path) if part in MAPS), None)
-            if map_name:
-                found.append((map_name, path, node))
+            raw_map_name = next((part for part in reversed(path) if part in MAPS), None)
+            if raw_map_name:
+                found.append((MAP_ALIASES[raw_map_name], path, node))
         for key, value in node.items():
             found.extend(collect_map_files(value, path + (str(key).lower(),)))
     elif isinstance(node, list):
@@ -129,6 +138,9 @@ def main():
             if not maps:
                 print("  aucune carte PBR exploitable dans la réponse API")
                 continue
+            print("  cartes disponibles : " + ", ".join(sorted(maps.keys())))
+            if "diff" not in maps:
+                print("  ATTENTION : carte couleur absente de la réponse API, vérifier le format de l'asset")
             print(f"  résolution utilisée : {resolution}")
             folder = DESTINATION / slug
             folder.mkdir(parents=True, exist_ok=True)
