@@ -2529,10 +2529,11 @@ func _load_roads() -> void:
 					keys.append(_road_junction_key(coordinate))
 			if points.size() < 2:
 				continue
-			var bridge_height := WorldMapRoadUtils.road_bridge_height(props)
+			# Les tags OSM bridge/layer ne donnent ni le profil altimétrique,
+			# ni la longueur des rampes, ni l'implantation des piles.
+			# Tant qu'un relevé géométrique propre à cet ouvrage n'existe pas,
+			# on conserve uniquement le tracé cartographique sans inventer de tablier.
 			var road_points: Array[Vector3] = points
-			if bridge_height > 0.0:
-				road_points = _bridge_profile_points(points, bridge_height)
 			var part_index := parts.size()
 			var length := 0.0
 			for i in range(points.size() - 1):
@@ -2563,7 +2564,6 @@ func _load_roads() -> void:
 				"sidewalk": part_sidewalk,
 				"points": _densify_polyline(road_points, ROAD_MAX_STEP),
 				"orig_points": points,
-				"bridge_height": bridge_height,
 				"keys": keys,
 				"length": length,
 				"tint": WorldMapColorUtils.road_tint(kind, props, surface_key),
@@ -2714,77 +2714,6 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 	add_child(body)
 
 
-func _bridge_profile_points(source_points: Array[Vector3], bridge_height: float) -> Array[Vector3]:
-	# Les ponts OSM deviennent de vrais tabliers surélevés, avec des rampes
-	# progressives à chaque extrémité plutôt qu'un saut vertical.
-	var dense: Array[Vector3] = []
-	var total_length := 0.0
-	for segment_index in range(source_points.size() - 1):
-		var a := source_points[segment_index]
-		var b := source_points[segment_index + 1]
-		var segment_length := Vector2(b.x - a.x, b.z - a.z).length()
-		var steps := maxi(1, ceili(segment_length / 6.0))
-		for step in range(steps):
-			var t := float(step) / float(steps)
-			var p := a.lerp(b, t)
-			if not dense.is_empty():
-				total_length += Vector2(p.x - dense[dense.size() - 1].x, p.z - dense[dense.size() - 1].z).length()
-			dense.append(p)
-	var final_point := source_points[source_points.size() - 1]
-	if not dense.is_empty():
-		total_length += Vector2(final_point.x - dense[dense.size() - 1].x, final_point.z - dense[dense.size() - 1].z).length()
-	dense.append(final_point)
-	var travelled := 0.0
-	var result: Array[Vector3] = []
-	for point_index in range(dense.size()):
-		var point := dense[point_index]
-		if point_index > 0:
-			var previous := dense[point_index - 1]
-			travelled += Vector2(point.x - previous.x, point.z - previous.z).length()
-		var ramp_distance := minf(travelled, total_length - travelled)
-		var blend := clampf(ramp_distance / 28.0, 0.0, 1.0)
-		blend = blend * blend * (3.0 - 2.0 * blend)
-		point.y += bridge_height * blend
-		result.append(point)
-	return result
-
-
-func _add_bridge_supports(source_points: Array[Vector3], bridge_height: float, road_width: float) -> void:
-	if source_points.size() < 2 or bridge_height < 3.5:
-		return
-	var total_length := 0.0
-	for i in range(source_points.size() - 1):
-		total_length += Vector2(source_points[i + 1].x - source_points[i].x, source_points[i + 1].z - source_points[i].z).length()
-	if total_length < 38.0:
-		return
-	if _bridge_support_material == null:
-		_bridge_support_material = _make_material(Color(0.48, 0.47, 0.44))
-		_bridge_support_material.roughness = 0.94
-	var support_mesh := CylinderMesh.new()
-	support_mesh.top_radius = 0.58
-	support_mesh.bottom_radius = 0.78
-	support_mesh.height = bridge_height - 0.45
-	var distance_target := 18.0
-	while distance_target < total_length - 12.0:
-		var traversed := 0.0
-		for segment_index in range(source_points.size() - 1):
-			var a := source_points[segment_index]
-			var b := source_points[segment_index + 1]
-			var segment_length := Vector2(b.x - a.x, b.z - a.z).length()
-			if traversed + segment_length >= distance_target and segment_length > 0.01:
-				var t := (distance_target - traversed) / segment_length
-				var point := a.lerp(b, t)
-				var support := MeshInstance3D.new()
-				support.name = "BridgePier"
-				support.mesh = support_mesh
-				support.material_override = _bridge_support_material
-				support.position = Vector3(point.x, point.y + (bridge_height - 0.45) * 0.5, point.z)
-				add_child(support)
-				break
-			traversed += segment_length
-		distance_target += 32.0
-
-
 func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, collision: SurfaceTool, node_registry: Dictionary, patched: Dictionary, all_parts: Array[Dictionary]) -> void:
 	var points: Array[Vector3] = part.points
 	var orig_points: Array[Vector3] = part.orig_points
@@ -2793,9 +2722,6 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 	var kind: String = part.kind
 	var width: float = part.width
 	var surface_key: String = part.surface
-	var bridge_height := float(part.get("bridge_height", 0.0))
-	if bridge_height > 0.0:
-		_add_bridge_supports(orig_points, bridge_height, width)
 	var sidewalk_mode: String = part.sidewalk
 	var road_surface: SurfaceTool = surfaces[surface_key]
 	var half := width * 0.5
