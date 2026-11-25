@@ -14,6 +14,8 @@ const MAX_TRAFFIC_LIGHTS := 10
 
 var _world_map: Node3D
 var _materials: Dictionary = {}
+var _traffic_lights: Array[Dictionary] = []
+var _traffic_elapsed := 0.0
 
 
 func _ready() -> void:
@@ -23,6 +25,26 @@ func _ready() -> void:
 			break
 		await get_tree().process_frame
 	_build_signage()
+
+
+func _process(delta: float) -> void:
+	_traffic_elapsed += delta
+	var colors: Array[Color] = [
+		Color(0.95, 0.035, 0.018),
+		Color(1.0, 0.56, 0.025),
+		Color(0.04, 0.72, 0.18)
+	]
+	for signal_data in _traffic_lights:
+		var cycle := fposmod(_traffic_elapsed + float(signal_data.offset), 18.0)
+		var active_index := 0 if cycle < 6.0 else (2 if cycle < 16.0 else 1)
+		var lenses: Array = signal_data.materials
+		for lens_index in range(lenses.size()):
+			var lens := lenses[lens_index] as StandardMaterial3D
+			var active := lens_index == active_index
+			lens.albedo_color = colors[lens_index] * (0.72 if active else 0.14)
+			lens.emission_enabled = active
+			lens.emission = colors[lens_index]
+			lens.emission_energy_multiplier = 1.35 if active else 0.0
 
 
 func _build_signage() -> void:
@@ -299,6 +321,7 @@ func _add_traffic_light(point: Vector2, ground_y: float, direction: Vector2) -> 
 		Color(1.0, 0.56, 0.025),
 		Color(0.04, 0.72, 0.18)
 	]
+	var signal_materials: Array[StandardMaterial3D] = []
 	for light_index in range(3):
 		var lamp := MeshInstance3D.new()
 		lamp.name = ["Feu_rouge", "Feu_orange", "Feu_vert"][light_index]
@@ -311,12 +334,17 @@ func _add_traffic_light(point: Vector2, ground_y: float, direction: Vector2) -> 
 		lamp.position = Vector3(0, 3.42 - float(light_index) * 0.37, 0.19)
 		var lens := StandardMaterial3D.new()
 		lens.albedo_color = light_colors[light_index] * 0.52
-		lens.emission_enabled = true
+		lens.emission_enabled = false
 		lens.emission = light_colors[light_index]
-		lens.emission_energy_multiplier = 1.15
+		lens.emission_energy_multiplier = 0.0
 		lens.roughness = 0.25
 		lamp.material_override = lens
 		root.add_child(lamp)
+		signal_materials.append(lens)
+	_traffic_lights.append({
+		"materials": signal_materials,
+		"offset": float(get_child_count()) * 2.7
+	})
 
 
 func _add_pedestrian_sign(point: Vector2, ground_y: float, direction: Vector2) -> void:
