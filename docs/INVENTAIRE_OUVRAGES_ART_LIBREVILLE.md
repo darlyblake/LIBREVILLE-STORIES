@@ -293,3 +293,18 @@ Ne pas appliquer un seul modèle à toutes les traversées piétonnes du Grand L
 5. **Beyrouth, Marché Banane, Lycée Djoué Dabany, HIA-OBO, Melen et ENA** : six emplacements cités dans le programme PK5–PK12 ; type et géométrie individuels non encore confirmés.
 
 Cette distinction évite de dupliquer une passerelle générique sur tout le corridor et permet de construire chaque ouvrage à partir de son propre dossier de preuves.
+
+
+### Passerelle du Lycée national Léon-Mba — fiche dimensionnelle officielle
+- Le Ministère des Travaux publics confirme la mise en service de la passerelle piétonne du Lycée national Léon-Mba en novembre 2024. La fiche officielle donne **48 m de longueur**, **2,28 m de largeur**, **6,5 m de tirant d'air**, **13,5 m de hauteur totale** et **44 tonnes de bois assemblé**.
+- Essences citées par le ministère : Padouk, Ozigo, Movingui, Tali et Okan. Ces données officielles remplacent les valeurs approximatives de 54 m / 2,30 m / environ 6 m diffusées par certains articles antérieurs au moment du chantier.
+- La passerelle est au-dessus d'une route de 2×2 voies. Le ministère explique que l'ouvrage vise la sécurité des élèves et la fluidification du trafic.
+- Source officielle et dimensions : https://www.infrastructures.gouv.ga/9-actualites/1227-le-ministre-des-travaux-publics-remet-la-passerelle-du-lycee-national-leon-mba-a-sa-collegue-de-l-education-nationale/ ; version de l'article : https://infrastructures.gouv.ga/2024/11/07/le-ministre-des-travaux-publics-remet-la-passerelle-du-lycee-national-leon-mba-a-sa-collegue-de-leducation-nationale/
+- L'Union, 23 mai 2023, donne une photographie de l'ouvrage presque prêt et parle d'une hauteur de 16 m ; cette valeur de presse diffère de la fiche ministérielle de 13,5 m. Pour le jeu, retenir provisoirement les valeurs officielles du ministère et conserver la divergence comme point à vérifier sur plan d'exécution : https://lunion-archives.org/web.11/dmdocuments/N14234-23-05-2023-004.pdf
+- Conséquence de modélisation : créer une fiche distincte du Lycée d'État (54 m). Ne jamais copier les dimensions de la première passerelle sur celle du Lycée Léon-Mba. Les matériaux, dimensions et tirant d'air ci-dessus sont suffisamment documentés pour définir le gabarit de référence ; les courbes, sections de poutres, escaliers, appuis et détails de garde-corps doivent encore être relevés sur les photos officielles et plans.
+
+### Mise à jour de l'inventaire des passerelles bois des deux lycées
+Les deux ouvrages sont désormais documentés séparément :
+- **Paul-Indjendjet-Gondjout / Lycée d'État** : 54 m de long, franchissement de quatre voies, forme symbolique de deux poissons, poutres courbes lamellées-collées de 52 cm et lames de 40 mm ; source ATIBT, mars 2022.
+- **Lycée national Léon-Mba** : 48 m × 2,28 m, tirant d'air 6,5 m, hauteur totale 13,5 m, bois assemblé 44 t ; source Ministère des Travaux publics, novembre 2024.
+- Ces données permettent de produire deux modèles de passerelles en bois gabonais réellement différenciés. Les photos commerciales ou de presse restent des références uniquement ; aucune image protégée n'est copiée dans le dépôt.
