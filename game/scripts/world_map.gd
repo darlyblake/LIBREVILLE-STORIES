@@ -164,6 +164,7 @@ var _beach_polygons: Array[PackedVector2Array] = []
 var _use_pbr_textures := true
 
 func _ready() -> void:
+	_configure_sky()
 	# Le monde est construit progressivement : empêcher le joueur et le véhicule
 	# de simuler leur gravité avant que le relief et ses collisions soient prêts.
 	var player_during_setup := get_parent().get_node_or_null("Player") as CharacterBody3D
@@ -256,6 +257,100 @@ func _ready() -> void:
 		vehicle_ready.set_physics_process(true)
 	_create_location_hud()
 	print("LIBREVILLE STORIES | zone initiale : environnement %.0f m, routes %.0f m, bâtiments %.0f m | routes: %d | bâtiments: %d | POI: %d" % [WORLD_ENVIRONMENT_RADIUS, WORLD_ROAD_RADIUS, WORLD_BUILDING_RADIUS, _road_count, _building_count, _poi_count])
+
+
+func _configure_sky() -> void:
+	# Ciel tropical de Libreville : horizon humide, voile nuageux côtier et soleil chaud.
+	var world_environment := get_parent().get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if world_environment == null or world_environment.environment == null:
+		return
+	var sky_shader := Shader.new()
+	sky_shader.code = """
+shader_type sky;
+
+uniform vec3 sun_direction = vec3(-0.35, 0.82, 0.44);
+uniform float cloud_coverage = 0.48;
+uniform float cloud_speed = 0.003;
+
+float hash21(vec2 p) {
+	p = fract(p * vec2(123.34, 456.21));
+	p += dot(p, p + 45.32);
+	return fract(p.x * p.y);
+}
+
+float noise21(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	float a = hash21(i);
+	float b = hash21(i + vec2(1.0, 0.0));
+	float c = hash21(i + vec2(0.0, 1.0));
+	float d = hash21(i + vec2(1.0, 1.0));
+	return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+float fbm(vec2 p) {
+	float value = 0.0;
+	float amplitude = 0.5;
+	for (int i = 0; i < 4; i++) {
+		value += noise21(p) * amplitude;
+		p = p * 2.03 + vec2(17.1, 9.2);
+		amplitude *= 0.5;
+	}
+	return value;
+}
+
+void sky() {
+	vec3 direction = normalize(EYEDIR);
+	float elevation = clamp(direction.y, 0.0, 1.0);
+	float horizon = pow(1.0 - elevation, 2.2);
+	vec3 zenith = vec3(0.10, 0.31, 0.54);
+	vec3 upper_sky = vec3(0.22, 0.49, 0.69);
+	vec3 horizon_sky = vec3(0.68, 0.77, 0.79);
+	vec3 sky_color = mix(horizon_sky, upper_sky, smoothstep(0.0, 0.42, elevation));
+	sky_color = mix(sky_color, zenith, smoothstep(0.32, 0.96, elevation) * 0.72);
+
+	vec3 sun_dir = normalize(sun_direction);
+	float sun_dot = max(dot(direction, sun_dir), 0.0);
+	float sun_disk = smoothstep(0.99925, 0.99982, sun_dot);
+	float sun_halo = pow(sun_dot, 20.0) * 0.24 + pow(sun_dot, 5.0) * 0.08;
+	sky_color += vec3(1.0, 0.73, 0.43) * (sun_disk * 2.2 + sun_halo);
+
+	// Nuages tropicaux étirés dans l'axe horizontal, avec bords doux et couches.
+	vec2 cloud_uv = direction.xz / max(direction.y + 0.16, 0.12);
+	cloud_uv = cloud_uv * vec2(1.35, 0.82) + vec2(TIME * cloud_speed, -TIME * cloud_speed * 0.36);
+	float cloud_noise = fbm(cloud_uv * 2.8);
+	float cloud_detail = fbm(cloud_uv * 6.4 + vec2(4.7, 1.9));
+	float cloud_shape = cloud_noise * 0.76 + cloud_detail * 0.24;
+	float horizon_band = smoothstep(0.015, 0.18, elevation) * (1.0 - smoothstep(0.52, 0.82, elevation));
+	float clouds = smoothstep(0.57 - cloud_coverage * 0.20, 0.79, cloud_shape) * horizon_band;
+	float cloud_light = clamp(0.70 + sun_dot * 0.30 + elevation * 0.12, 0.0, 1.0);
+	vec3 cloud_color = mix(vec3(0.57, 0.65, 0.67), vec3(0.96, 0.95, 0.88), cloud_light);
+	sky_color = mix(sky_color, cloud_color, clouds * 0.78);
+
+	// Brume atmosphérique douce sur la ligne de mer.
+	float sea_haze = exp(-pow((direction.y - 0.025) / 0.075, 2.0));
+	sky_color = mix(sky_color, vec3(0.72, 0.79, 0.77), sea_haze * 0.30);
+	COLOR = sky_color;
+}
+"""
+	var sky_material := ShaderMaterial.new()
+	sky_material.shader = sky_shader
+	var sky := Sky.new()
+	sky.sky_material = sky_material
+	var environment := world_environment.environment
+	environment.background_mode = Environment.BG_SKY
+	environment.sky = sky
+	environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	environment.ambient_light_energy = 0.82
+	environment.ambient_light_sky_contribution = 0.72
+	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	var sun := get_parent().get_node_or_null("DirectionalLight3D") as DirectionalLight3D
+	if sun != null:
+		sun.light_color = Color(1.0, 0.91, 0.76)
+		sun.light_energy = 1.28
+		sun.shadow_enabled = true
+		sun.shadow_blur = 1.4
 
 
 func _process(delta: float) -> void:
@@ -838,25 +933,32 @@ void fragment() {
 	vec3 n = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(water_normal, 0.0)).xyz);
 	float fresnel = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 4.0);
 	vec3 sun_direction = normalize(vec3(-0.35, 0.82, 0.44));
-	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 64.0);
-	// Le normal map océan défile à deux échelles et vitesses différentes :
-	// le détail bouge en continu sans former des traits ou des rubans réguliers.
+	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 84.0);
+	// Deux champs de normales déphasés : micro-vagues croisées et reflets mobiles.
 	vec2 ocean_uv = UV * vec2(430.0, 300.0);
 	vec2 drift_a = ocean_uv + vec2(TIME * 0.006, -TIME * 0.004);
 	vec2 drift_b = ocean_uv * 1.63 + vec2(-TIME * 0.003, TIME * 0.005);
 	vec3 normal_a = texture(ocean_normal, drift_a).rgb;
 	vec3 normal_b = texture(ocean_normal, drift_b).rgb;
-	vec3 blended_normal = normalize(mix(normal_a, normal_b, 0.32));
+	vec3 blended_normal = normalize(mix(normal_a, normal_b, 0.38));
 	vec3 ocean_albedo = texture(ocean_base_color, drift_a).rgb;
-	ALBEDO = mix(water_color, ocean_albedo * vec3(0.48, 0.76, 0.86), 0.42);
-	ALBEDO = mix(ALBEDO, vec3(0.34, 0.52, 0.54), fresnel * 0.36);
-	ALBEDO += vec3(0.18, 0.23, 0.22) * glint * 0.12;
-	METALLIC = 0.015;
-	ROUGHNESS = clamp(texture(ocean_roughness, drift_a).r * 0.58 + 0.18, 0.18, 0.62);
+	float crest_phase = sin(water_world_pos.x * 0.014 + TIME * 0.34) * 0.55
+		+ sin(water_world_pos.z * 0.027 - TIME * 0.25) * 0.30
+		+ sin((water_world_pos.x - water_world_pos.z) * 0.043 + TIME * 0.19) * 0.15;
+	float foam_noise = texture(ocean_base_color, drift_b * 2.4).r;
+	float whitecaps = smoothstep(0.82, 0.98, crest_phase + foam_noise * 0.16);
+	float coastal_sheen = smoothstep(0.55, 0.95, foam_noise) * (1.0 - smoothstep(0.88, 1.0, crest_phase));
+	ALBEDO = mix(water_color, ocean_albedo * vec3(0.42, 0.72, 0.84), 0.48);
+	ALBEDO = mix(ALBEDO, vec3(0.38, 0.57, 0.59), fresnel * 0.42);
+	ALBEDO += vec3(0.20, 0.27, 0.25) * glint * 0.16;
+	ALBEDO = mix(ALBEDO, vec3(0.72, 0.82, 0.79), whitecaps * 0.30);
+	ALBEDO = mix(ALBEDO, vec3(0.30, 0.48, 0.48), coastal_sheen * 0.08);
+	METALLIC = 0.01;
+	ROUGHNESS = clamp(texture(ocean_roughness, drift_a).r * 0.52 + 0.16 + whitecaps * 0.42, 0.16, 0.92);
 	AO = texture(ocean_ao, drift_a).r;
-	SPECULAR = 0.58;
+	SPECULAR = 0.66;
 	NORMAL_MAP = blended_normal;
-	NORMAL_MAP_DEPTH = 0.24;
+	NORMAL_MAP_DEPTH = 0.32;
 }
 """
 	var water_material := ShaderMaterial.new()
@@ -2150,6 +2252,8 @@ func _build_road_materials() -> void:
 	sidewalk.vertex_color_use_as_albedo = true
 	sidewalk.albedo_texture = _make_sidewalk_texture()
 	sidewalk.roughness = 0.95
+	_apply_downloaded_pbr(sidewalk, "concrete_floor_01")
+	sidewalk.uv1_scale = Vector3(0.65, 0.65, 1.0)
 	sidewalk.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	_road_materials["sidewalk"] = sidewalk
 	for key in ["curb", "skirt", "marking", "crosswalk", "median", "island"]:
