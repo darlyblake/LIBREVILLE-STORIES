@@ -88,11 +88,11 @@ func _physics_process(delta: float) -> void:
 	var control_rate := acceleration if is_on_floor() else air_control
 
 	if jump_pressed:
-		if is_on_floor():
-			velocity.y = jump_velocity
-		elif _try_start_climb():
+		if _try_start_climb():
 			_process_climb(delta)
 			return
+		if is_on_floor():
+			velocity.y = jump_velocity
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
