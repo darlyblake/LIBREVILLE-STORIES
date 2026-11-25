@@ -46,6 +46,8 @@ var _reloading := false
 var _reload_animation_left := 0.0
 var _jump_animation_left := 0.0
 var _ammo_label: Label
+var _hit_marker: Label
+var _hit_marker_left := 0.0
 
 func _ready() -> void:
 	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
@@ -94,6 +96,9 @@ func _physics_process(delta: float) -> void:
 
 	_shoot_cooldown_left = maxf(0.0, _shoot_cooldown_left - delta)
 	_shoot_animation_left = maxf(0.0, _shoot_animation_left - delta)
+	_hit_marker_left = maxf(0.0, _hit_marker_left - delta)
+	if is_instance_valid(_hit_marker):
+		_hit_marker.visible = _hit_marker_left > 0.0
 	_land_animation_left = maxf(0.0, _land_animation_left - delta)
 	_reload_animation_left = maxf(0.0, _reload_animation_left - delta)
 	_jump_animation_left = maxf(0.0, _jump_animation_left - delta)
@@ -313,6 +318,22 @@ func _create_muzzle_flash() -> void:
 	_aim_reticle.offset_bottom = 18.0
 	_aim_reticle.visible = false
 	overlay.add_child(_aim_reticle)
+	_hit_marker = Label.new()
+	_hit_marker.name = "HitMarker"
+	_hit_marker.text = "×"
+	_hit_marker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hit_marker.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_hit_marker.add_theme_font_size_override("font_size", 30)
+	_hit_marker.add_theme_color_override("font_color", Color(1.0, 0.48, 0.16))
+	_hit_marker.add_theme_color_override("font_outline_color", Color(0.05, 0.05, 0.05, 0.95))
+	_hit_marker.add_theme_constant_override("outline_size", 3)
+	_hit_marker.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_hit_marker.offset_left = -18.0
+	_hit_marker.offset_top = -18.0
+	_hit_marker.offset_right = 18.0
+	_hit_marker.offset_bottom = 18.0
+	_hit_marker.visible = false
+	overlay.add_child(_hit_marker)
 	_ammo_label = Label.new()
 	_ammo_label.name = "AmmoCounter"
 	_ammo_label.text = "12 / 12  |  R : recharger"
@@ -354,7 +375,9 @@ func _fire_weapon() -> void:
 		impact_position = hit.position
 		var target := hit.collider as Node
 		if target != null and target.is_in_group("damageables") and target.has_method("damage"):
-			target.call("damage", hit.position, ray_direction * 18.0)
+				target.call("damage", hit.position, ray_direction * 18.0)
+			_hit_marker_left = 0.14
+			_hit_marker.visible = true
 	_muzzle_light.global_position = player_camera.global_position + (-player_camera.global_transform.basis.z * 0.42) + (player_camera.global_transform.basis.x * 0.28) - (player_camera.global_transform.basis.y * 0.18)
 	_muzzle_light.light_energy = 2.8
 	var flash_tween := create_tween()
