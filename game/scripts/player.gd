@@ -16,6 +16,8 @@ extends CharacterBody3D
 @export var shoot_cooldown: float = 0.22
 @export var shoot_range: float = 90.0
 @export var muzzle_flash_duration: float = 0.055
+@export var magazine_capacity: int = 12
+@export var reload_duration: float = 1.15
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var player_camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
@@ -38,6 +40,11 @@ var _muzzle_light: OmniLight3D
 var _aim_reticle: Label
 var _was_on_floor := false
 var _land_animation_left := 0.0
+var _ammo := 12
+var _reload_time_left := 0.0
+var _reloading := false
+var _reload_animation_left := 0.0
+var _ammo_label: Label
 
 func _ready() -> void:
 	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
@@ -48,6 +55,7 @@ func _ready() -> void:
 	_default_camera_distance = $CameraPivot/SpringArm3D.spring_length
 	_default_camera_offset = camera_pivot.position
 	_register_combat_inputs()
+	_ammo = magazine_capacity
 	_create_muzzle_flash()
 
 func _log_connected_gamepads() -> void:
@@ -86,6 +94,16 @@ func _physics_process(delta: float) -> void:
 	_shoot_cooldown_left = maxf(0.0, _shoot_cooldown_left - delta)
 	_shoot_animation_left = maxf(0.0, _shoot_animation_left - delta)
 	_land_animation_left = maxf(0.0, _land_animation_left - delta)
+	_reload_animation_left = maxf(0.0, _reload_animation_left - delta)
+	if _reloading:
+		_reload_time_left -= delta
+		if _reload_time_left <= 0.0:
+			_reloading = false
+			_ammo = magazine_capacity
+			_reload_animation_left = 0.3
+			_update_ammo_display()
+	if Input.is_action_just_pressed("reload"):
+		_start_reload()
 	_aiming = Input.is_action_pressed("aim")
 	_update_aim_camera(delta)
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -186,7 +204,9 @@ func _process_climb(delta: float) -> void:
 
 func _update_character_animation() -> void:
 	var state := "idle"
-	if _shoot_animation_left > 0.0:
+	if _reload_animation_left > 0.0 or _reloading:
+		state = "reload"
+	elif _shoot_animation_left > 0.0:
 		state = "shoot"
 	elif _aiming:
 		state = "aim_walk" if Vector2(velocity.x, velocity.z).length() > 0.25 else "aim"
@@ -203,6 +223,7 @@ func _update_character_animation() -> void:
 func _register_combat_inputs() -> void:
 	_ensure_action("aim")
 	_ensure_action("shoot")
+	_ensure_action("reload")
 	var aim_mouse := InputEventMouseButton.new()
 	aim_mouse.button_index = MOUSE_BUTTON_RIGHT
 	InputMap.action_add_event("aim", aim_mouse)
@@ -217,6 +238,12 @@ func _register_combat_inputs() -> void:
 	shoot_pad.axis = JOY_AXIS_TRIGGER_RIGHT
 	shoot_pad.axis_value = 0.55
 	InputMap.action_add_event("shoot", shoot_pad)
+	var reload_key := InputEventKey.new()
+	reload_key.physical_keycode = KEY_R
+	InputMap.action_add_event("reload", reload_key)
+	var reload_pad := InputEventJoypadButton.new()
+	reload_pad.button_index = JOY_BUTTON_X
+	InputMap.action_add_event("reload", reload_pad)
 
 func _ensure_action(action_name: StringName) -> void:
 	if not InputMap.has_action(action_name):
@@ -257,10 +284,31 @@ func _create_muzzle_flash() -> void:
 	_aim_reticle.offset_bottom = 18.0
 	_aim_reticle.visible = false
 	overlay.add_child(_aim_reticle)
+	_ammo_label = Label.new()
+	_ammo_label.name = "AmmoCounter"
+	_ammo_label.text = "12 / 12  |  R : recharger"
+	_ammo_label.add_theme_font_size_override("font_size", 17)
+	_ammo_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	_ammo_label.add_theme_color_override("font_outline_color", Color(0.02, 0.02, 0.02, 0.95))
+	_ammo_label.add_theme_constant_override("outline_size", 4)
+	_ammo_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_ammo_label.offset_left = -250.0
+	_ammo_label.offset_top = -52.0
+	_ammo_label.offset_right = -18.0
+	_ammo_label.offset_bottom = -18.0
+	overlay.add_child(_ammo_label)
+	_update_ammo_display()
 
 func _fire_weapon() -> void:
 	_shoot_cooldown_left = shoot_cooldown
-	_shoot_animation_left = 0.16
+	if _reloading:
+		return
+	if _ammo <= 0:
+		_start_reload()
+		return
+	_ammo -= 1
+	_update_ammo_display()
+	_shoot_animation_left = 0.32
 	var viewport_size := get_viewport().get_visible_rect().size
 	var screen_center := viewport_size * 0.5
 	var ray_origin := player_camera.project_ray_origin(screen_center)
@@ -370,3 +418,14 @@ func _update_gamepad_camera(delta: float) -> void:
 	rotate_y(-look_x * gamepad_look_sensitivity * delta)
 	camera_pitch = clampf(camera_pitch - look_y * gamepad_look_sensitivity * delta, -0.85, 0.35)
 	camera_pivot.rotation.x = camera_pitch
+
+func _start_reload() -> void:
+	if _reloading or _ammo >= magazine_capacity:
+		return
+	_reloading = true
+	_reload_time_left = reload_duration
+	print("LIBREVILLE STORIES | Rechargement en cours...")
+
+func _update_ammo_display() -> void:
+	if is_instance_valid(_ammo_label):
+		_ammo_label.text = "%02d / %02d  |  R : recharger" % [_ammo, magazine_capacity]
