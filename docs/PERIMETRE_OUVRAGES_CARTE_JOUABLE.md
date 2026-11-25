@@ -133,3 +133,43 @@ Le point OSM du quartier « Pont-Nomba » est publié à environ 0.33908, 9.4768
 ### État de certitude
 
 Les quatre ouvrages du tableau « confirmés dans l'emprise générale » sont confirmés comme candidats dans l'enveloppe de la carte, pas encore certifiés par intersection complète du tablier avec les polygones de gameplay. Les échangeurs PK5, IAI, Lalala, Démocratie et Lycée d'État restent à relever précisément. Aucun modèle 3D ne doit être construit à partir d'un simple point de quartier.
+
+
+
+## Complément de recherche — secteurs IAI et Lalala (25 novembre 2026)
+
+### IAI — repère local dans l'enveloppe
+
+- Le secteur **I.A.I-Golf** figure explicitement dans la liste des secteurs jouables du 5e arrondissement dans `data/osm/README_LIMITES_GAMEPLAY.md`.
+- Une adresse locale publiée « Échangeur d'IAI, entrée Ozangué » est géolocalisée à **0.3728677, 9.4761053**. Ce repère est à l'intérieur de l'enveloppe principale (0.355–0.445 / 9.400–9.495). Il s'agit toutefois d'une pharmacie / adresse de proximité, **pas du point géométrique du tablier** : ne pas l'utiliser comme origine du modèle.
+- L'AGP décrit, le 21 août 2026, une opération municipale autour de l'échangeur de l'IAI et sur l'axe Carrefour Lalala–Lalala à droite. Cette source confirme l'existence et le contexte urbain récent des deux secteurs, mais ne donne ni les dimensions ni la géométrie du pont.
+- Le dossier Banque mondiale fournit une orthophoto et indique l'échangeur IAI au nord-ouest du site IAI. À utiliser comme référence de contexte spatial, après recalage sur les données OSM du jeu.
+
+**Décision IAI :** candidat maintenu pour relevé et modélisation, car le secteur I.A.I-Golf appartient à la carte et le repère local de proximité est dans l'enveloppe. Le tablier et ses rampes restent à extraire et à intersecter avec le polygone jouable avant validation finale.
+
+### Lalala à droite — secteur jouable, ouvrage à préciser
+
+- **Lalala-Droite** figure dans la correspondance des secteurs jouables du 5e arrondissement.
+- Le marché public N°90/MTPC/SG/2025 porte sur la réhabilitation de la Voie Express entre l'échangeur de Charbonnages et l'échangeur de Lalala à droite.
+- L'AGP du 21 août 2026 documente l'axe Carrefour Lalala–Lalala à droite et les abords de l'échangeur IAI.
+- Ces éléments établissent que Lalala à droite est bien un secteur concerné par le corridor étudié, mais ne prouvent pas que chaque bretelle ou ouvrage du corridor est dans la zone chargée par le jeu.
+
+**Décision Lalala :** maintenir comme candidat dans la zone de recherche. Ne pas construire de modèle ni fixer un point de tablier avant extraction de la géométrie OSM complète.
+
+### PK5 — confirmation du contexte, pas du point exact
+
+Mapcarta répertorie explicitement « Echangeur PK5 » comme pont à proximité des repères PK5, RIO, Bassin du PK5 et des écoles de Sibang. Ces pages confirment l'existence de l'ouvrage et sa proximité avec les secteurs jouables, mais ne donnent pas ici de coordonnées propres au tablier. Le point du quartier PK5 (0.40656, 9.46772) reste un point de localité et ne doit pas être substitué à la géométrie du pont.
+
+### Incohérence documentaire à corriger dans le pipeline SIG
+
+Le fichier `data/osm/README_LIMITES_GAMEPLAY.md` décrit 72 cellules de gameplay, et le fichier `data/osm/neighbourhoods.geojson` du dépôt contient les polygones générés. En revanche, `data/osm/extraction-report.json` annonce `neighbourhoods.geojson` avec **0 feature** et 77 octets. Ce rapport d'extraction ne reflète donc pas l'état actuel du fichier de polygones (probablement un rapport ancien ou issu d'une étape antérieure).
+
+**Action technique requise :** régénérer le rapport d'extraction à partir des fichiers réellement versionnés, puis exécuter le contrôle SIG sur les géométries complètes des ouvrages. Tant que ce rapport n'est pas synchronisé, il ne faut pas le présenter comme une preuve du nombre actuel de secteurs.
+
+### Sources publiques ajoutées
+
+- AGP, 21 août 2026 — intervention autour de l'échangeur IAI et axe Carrefour Lalala–Lalala à droite : https://agpgabon.ga/gabon-municipalite-lancement-de-loperation-liberez-les-trottoirs-dans-le-5e-arrondissement-de-libreville/
+- Repère local près de l'échangeur IAI, adresse et coordonnées publiées : https://ga.near-place.com/pharmacie-nouo-cecile-unnamed-rd-libreville
+- Marchés approuvés, N°90/MTPC/SG/2025 — Voie Express Charbonnages–Lalala à droite : https://lejmp.com/marches-approuves/11/
+- Dossier Banque mondiale — orthophoto et localisation IAI : https://documents1.worldbank.org/curated/en/744961468009995599/pdf/E29250v40FRENC000PUBLIC00Box379870B.pdf
+- Mapcarta / OpenStreetMap — repères PK5 et échangeur à proximité : https://mapcarta.com/fr/N4071487877
