@@ -252,3 +252,18 @@ Source : https://www.eeas.europa.eu/delegations/gabon/communique-de-presse-le-ba
 - Pour les Charbonnages, séparer visuellement les aménagements périphériques du chantier 2026 du tablier existant.
 - Pour Nzeng-Ayong, créer des fiches séparées pour l'échangeur routier, le canal de 2,3 km, les cinq franchissements et les quatre passerelles ; géolocaliser chaque ouvrage avant toute géométrie 3D.
 - Aucune photographie de presse, carte d'inventaire ou description d'usage ne suffit seule à mesurer un tablier, une pile ou une rampe. Les dimensions doivent venir d'un plan, d'un relevé, d'une orthophoto calibrée ou d'une mesure terrain vérifiable.
+
+
+### Passerelles piétonnes — inventaire par sources datées
+Le reportage de L'Union du 8 juillet 2024 sur l'axe PK5–PK12 confirme six passerelles prévues/réalisées dans les secteurs suivants : Beyrouth, Marché Banane, Lycée Djoué Dabany, HIA-OBO, Melen et École nationale d'administration (ENA). La source décrit le programme de travaux et l'élargissement de la chaussée en 2x2 voies ; elle ne fournit pas les coordonnées individuelles ni les dimensions des passerelles. Chacune doit donc être retrouvée sur orthophoto ou OSM avant placement dans le jeu.
+Source : https://www.union.sonapresse.com/fr/infrastructures-routieres-ali-bongo-ondimba-sur-le-terrain-des-pk
+
+L'article d'archive de L'Union du 28 juillet 2020 signale une seule passerelle visible à Plein-Ciel sur le tronçon Cité des Ailes–Owendo, tout en décrivant des trottoirs sur les échangeurs Cité de la Démocratie, PK5, Awendjé et Lalala. Cette information est datée et ne doit pas être considérée comme un inventaire actuel exhaustif. Elle montre surtout que certains échangeurs disposent de cheminements piétons intégrés, tandis que les passerelles sont des ouvrages séparés.
+Source : https://www.lunion-archives.org/web.11/dmdocuments/N13382-28-07-2020-006.pdf
+
+La passerelle de Bizango–PK13 est documentée séparément par le Gouvernement : mise en service le 19 septembre 2025, ouvrage annoncé achevé à 100%, avec compléments de sécurité prévus (barrière centrale, quatre monte-charges, protection des piles et signalisation de gabarit). Ne pas confondre ces équipements prévus avec des équipements nécessairement installés à la date de la photo ou de la scène représentée.
+Source : https://gouvernement.ga/2025/09/20/inauguration-de-la-passerelle-pietonne-de-bizango-pk-13-a-libreville/
+
+### Réseau électrique — sources repérées pour la phase suivante (sans implémentation à ce stade)
+La SEEG décrit la chaîne électrique nationale : transport à 255 kV et 90 kV à Libreville, distribution HTA en 30, 20 ou 5,5 kV, puis transformation vers la basse tension 240/410 V. Une communication SEEG du 27 mars 2026 identifie explicitement une liaison 90 kV entre le poste de répartition de Bisségué et le poste source d'Ambowé, ainsi que les postes sources d'Ambowé et d'Angondjé. Ces noms constituent des points de départ documentés pour la future phase réseau électrique, mais pas encore des coordonnées ni des tracés exploitables.
+Sources : https://www.seeg-gabon.com/activites/gestion-electricite ; https://www.seeg-gabon.com/medias/article/281/contact/ecrire
