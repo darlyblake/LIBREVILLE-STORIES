@@ -38,3 +38,16 @@ La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction
 ## Validation
 
 Après récupération de `main`, ouvrir le projet avec Godot 4.3 ou supérieur et laisser l'import des ressources se terminer. La validation automatisée est définie dans `.github/workflows/validate-godot.yml`. Les essais physiques et les animations de porte doivent également être vérifiés en jeu : un parse réussi ne garantit pas le bon réglage de la suspension sur le modèle Jeep.
+
+## Références techniques étudiées
+
+Ces dépôts ont servi à comparer les architectures et les comportements attendus. Leurs interfaces, personnages et univers ne sont pas repris dans LIBREVILLE STORIES.
+
+- [GDQuest — Godot 4 Third Person Controller](https://github.com/gdquest-demos/godot-4-3d-third-person-controller) : référence pour la visée à l'épaule, le réticule, le tir, les projectiles, le délai de tir et l'organisation des animations. Le code est MIT, mais les modèles et textures sont CC-BY-NC-SA 4.0 ; ils ne sont donc pas importés dans notre jeu.
+- [Godot Engine — TPS Demo](https://github.com/godotengine/tps-demo) : référence pour l'AnimationTree, le root motion, les animations de saut et de déplacement, le point de tir attaché au squelette, le flash de bouche et le recul caméra. Code MIT ; assets CC-BY 3.0.
+- [Jeh3no — Godot Third Person Controller](https://github.com/Jeh3no/Godot-Third-Person-Controller) : référence pour la machine à états, les transitions marche/course/saut, les sons de pas et les effets de saut/atterrissage. Code MIT. Le projet vise surtout Godot 4.4 à 4.7 ; adaptation nécessaire pour notre projet Godot 4.3.
+- [OpenCity](https://github.com/webgl-games/opencity) : référence antérieure pour la locomotion et les véhicules. Le modèle de test Quaternius est importé séparément et accompagné de son attribution/licence.
+
+### Limites actuelles du prototype de tir
+
+Le tir actuel est un tir instantané (hitscan) : il lance un rayon depuis le centre de la caméra, applique les dégâts aux objets du groupe damageables qui exposent une méthode damage, et affiche un flash lumineux ainsi qu'un réticule. Il n'y a pas encore de système complet d'armes, de munitions, de rechargement, de projectiles physiques, d'ennemis ou d'impact visuel dédié. Ces éléments seront développés avec les missions et les PNJ.
