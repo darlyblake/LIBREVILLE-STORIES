@@ -375,7 +375,7 @@ func _fire_weapon() -> void:
 		impact_position = hit.position
 		var target := hit.collider as Node
 		if target != null and target.is_in_group("damageables") and target.has_method("damage"):
-				target.call("damage", hit.position, ray_direction * 18.0)
+			target.call("damage", hit.position, ray_direction * 18.0)
 			_hit_marker_left = 0.14
 			_hit_marker.visible = true
 	_muzzle_light.global_position = player_camera.global_position + (-player_camera.global_transform.basis.z * 0.42) + (player_camera.global_transform.basis.x * 0.28) - (player_camera.global_transform.basis.y * 0.18)
