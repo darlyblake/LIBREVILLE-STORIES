@@ -249,10 +249,33 @@ func _find_door_nodes(root: Node) -> void:
 		var node := child as Node3D
 		var node_name := node.name.to_lower()
 		var is_door := node_name.contains("door") or node_name.contains("porte")
-		if is_door and not node_name.contains("handle") and not node_name.contains("poignee"):
-			_door_nodes.append(node)
+		if is_door and not node_name.contains("handle") and not node_name.contains("poignee") and not node_name.contains("glass") and not node_name.contains("window"):
+			var hinge := _create_door_hinge(node)
+			_door_nodes.append(hinge)
+			print("LIBREVILLE STORIES | Pivot de porte détecté : ", node.get_path(), " -> ", hinge.name)
 			continue
 		_find_door_nodes(node)
+
+
+func _create_door_hinge(door: Node3D) -> Node3D:
+	var parent := door.get_parent()
+	if parent == null:
+		return door
+	var bounds := _get_subtree_world_aabb(door)
+	if bounds.size.length_squared() < 0.0001:
+		return door
+	var side_x := bounds.position.x if bounds.get_center().x < global_position.x else bounds.position.x + bounds.size.x
+	# Le véhicule regarde vers -Z : l'avant de la porte correspond au bord Z le plus faible.
+	var hinge_world_position := Vector3(side_x, bounds.position.y + bounds.size.y * 0.5, bounds.position.z)
+	var original_global_transform := door.global_transform
+	var hinge := Node3D.new()
+	hinge.name = "%s_Hinge" % door.name
+	parent.add_child(hinge)
+	hinge.global_transform = Transform3D(parent.global_transform.basis.orthonormalized(), hinge_world_position)
+	parent.remove_child(door)
+	hinge.add_child(door)
+	door.global_transform = original_global_transform
+	return hinge
 
 func open_driver_door() -> void:
 	await _animate_driver_door(true)
