@@ -199,6 +199,7 @@ func _toggle_vehicle() -> void:
 				nearest_distance = distance
 				nearest = candidate
 	if nearest != null:
+		await _walk_to_driver_door(nearest)
 		await nearest.open_driver_door()
 		_vehicle = nearest
 		nearest.enter_vehicle()
@@ -207,6 +208,18 @@ func _toggle_vehicle() -> void:
 		await nearest.close_driver_door()
 		print("LIBREVILLE STORIES | Installation au volant terminée.")
 	_interaction_busy = false
+
+func _walk_to_driver_door(vehicle: VehicleController) -> void:
+	var side := -vehicle.global_transform.basis.x
+	var front_offset := -vehicle.global_transform.basis.z * 0.35
+	var target := vehicle.global_position + side * 1.72 + front_offset
+	target.y = global_position.y
+	character_visual.call("play_motion", "walk")
+	var walk_tween := create_tween()
+	walk_tween.tween_property(self, "global_position", target, 0.48).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await walk_tween.finished
+	look_at(vehicle.global_position + Vector3.UP * 1.0, Vector3.UP)
+	character_visual.call("play_motion", "idle")
 
 func _update_gamepad_camera(delta: float) -> void:
 	if _vehicle != null:
