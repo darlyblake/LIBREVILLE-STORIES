@@ -39,6 +39,7 @@ class_name VehicleController
 var player_driving := false
 var current_speed := 0.0
 var odometer_meters := 0.0
+var _last_odometer_position := Vector3.ZERO
 var _wheel_nodes: Array[Node3D] = []
 var _wheel_base_basis: Array[Basis] = []
 var _wheel_local_positions: Array[Vector3] = []
@@ -80,6 +81,7 @@ const CAMERA_NAMES := ["EXTÉRIEURE PROCHE", "EXTÉRIEURE ÉLOIGNÉE", "COCKPIT"
 
 func _ready() -> void:
 	add_to_group("drivable_vehicle")
+	_last_odometer_position = global_position
 	mass = 1850.0
 	center_of_mass_mode = 1
 	center_of_mass = Vector3(0.0, 0.28, 0.0)
@@ -119,9 +121,9 @@ func _physics_process(delta: float) -> void:
 	_steering_input = controls.z
 	_update_steering_and_heading(delta)
 
-	var previous_position := global_position
 	current_speed = linear_velocity.dot(-global_transform.basis.z)
-	odometer_meters += Vector2(global_position.x - previous_position.x, global_position.z - previous_position.z).length()
+	odometer_meters += Vector2(global_position.x - _last_odometer_position.x, global_position.z - _last_odometer_position.z).length()
+	_last_odometer_position = global_position
 	_update_vehicle_hud()
 	_update_vehicle_audio(controls.x, controls.y)
 	if _camera_mode == 3:
