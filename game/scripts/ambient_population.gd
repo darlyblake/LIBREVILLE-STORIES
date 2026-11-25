@@ -137,6 +137,9 @@ func _build_car(car_name: String, vehicle_index: int) -> Node3D:
 			# Trait de porte coulissante caractéristique du taxi-bus.
 			var door_line := _material(Color(0.34, 0.35, 0.33), 0.75)
 			_add_box(car, "SlidingDoorSeam", Vector3(0.025, 0.68, 0.025), Vector3(-0.12, 0.96, side * 0.96), door_line)
+	# Les taxis du quotidien ne sortent pas tous du garage : poussière,
+	# peinture ternie, petites rayures et quelques bosses discrètes.
+	_add_vehicle_wear(car, vehicle_index, body_length, body_width, is_clando, is_minibus)
 	var lamp := _material(Color(1.0, 0.86, 0.56), 0.3)
 	var tail := _material(Color(0.72, 0.035, 0.025), 0.35)
 	var brake := _material(Color(0.95, 0.025, 0.012), 0.28)
@@ -172,6 +175,40 @@ func _build_car(car_name: String, vehicle_index: int) -> Node3D:
 			wheel.position = Vector3(axle, 0.38, side * 0.88)
 			car.add_child(wheel)
 	return car
+
+
+func _add_vehicle_wear(car: Node3D, vehicle_index: int, body_length: float, body_width: float, is_clando: bool, is_minibus: bool) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 8300 + vehicle_index * 97
+	var dusty_material := _material(Color(0.39, 0.34, 0.27), 0.96)
+	var scratch_material := _material(Color(0.30, 0.29, 0.26), 0.9)
+	var faded_material := _material(Color(0.68, 0.66, 0.59) if not is_clando else Color(0.43, 0.43, 0.40), 0.88)
+	var wear_level := 0.38 + float(vehicle_index % 4) * 0.16
+	if is_clando:
+		wear_level = 0.72
+	# Bande de poussière et de boue légère au bas des portières.
+	for side in [-1.0, 1.0]:
+		var dirt := _add_box(car, "RoadDust", Vector3(body_length * 0.70, 0.10 + wear_level * 0.06, 0.025), Vector3(0.0, 0.48, side * (body_width * 0.5 + 0.025)), dusty_material)
+		dirt.rotation.x = rng.randf_range(-0.035, 0.035)
+		var marks := 1 + int(wear_level * 3.0)
+		for mark_index in range(marks):
+			var x := rng.randf_range(-body_length * 0.38, body_length * 0.38)
+			var y := rng.randf_range(0.62, 0.91)
+			var length := rng.randf_range(0.10, 0.34)
+			var scratch := _add_box(car, "PaintScuff", Vector3(length, rng.randf_range(0.018, 0.045), 0.018), Vector3(x, y, side * (body_width * 0.5 + 0.027)), faded_material if mark_index % 2 == 0 else scratch_material)
+			scratch.rotation.z = rng.randf_range(-0.12, 0.12)
+	# Quelques impacts de pare-chocs et panneaux légèrement cabossés.
+	if vehicle_index % 3 != 1 or is_clando:
+		var bumper_scuff := _add_box(car, "BumperScuff", Vector3(rng.randf_range(0.30, 0.62), 0.12, 0.025), Vector3(-body_length * 0.5 - 0.035, 0.70, rng.randf_range(-0.48, 0.48)), scratch_material)
+		bumper_scuff.rotation.y = rng.randf_range(-0.18, 0.18)
+	if vehicle_index % 2 == 0 or is_clando:
+		var dent_side := -1.0 if vehicle_index % 2 == 0 else 1.0
+		var dent := _add_box(car, "SmallDentShadow", Vector3(rng.randf_range(0.18, 0.32), 0.07, 0.018), Vector3(rng.randf_range(-0.75, 0.65), rng.randf_range(0.70, 0.88), dent_side * (body_width * 0.5 + 0.03)), scratch_material)
+		dent.rotation.z = rng.randf_range(-0.16, 0.16)
+	# Le taxi-bus ancien peut avoir une carrosserie plus marquée, sans devenir une épave.
+	if is_minibus and vehicle_index % 2 == 1:
+		var faded_panel := _add_box(car, "FadedSlidingDoor", Vector3(0.62, 0.40, 0.02), Vector3(-0.12, 0.90, body_width * 0.5 + 0.035), faded_material)
+		faded_panel.rotation.z = -0.025
 
 func _spawn_pedestrians() -> void:
 	var routes := _load_osm_routes(["footway", "pedestrian", "path", "steps", "living_street"], 22.0, 1100.0)
