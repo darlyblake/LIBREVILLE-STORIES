@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://game/scripts/vehicle_controller.gd" id="1_vehicle"]
 [ext_resource type="PackedScene" path="res://game/scenes/jeep_vehicle_copy.tscn" id="2_jeep"]
@@ -6,14 +6,105 @@
 [sub_resource type="BoxShape3D" id="BoxShape3D_jeep"]
 size = Vector3(2.15, 1.6, 4.9)
 
-[node name="Vehicle" type="CharacterBody3D"]
+[sub_resource type="CylinderMesh" id="CylinderMesh_tire"]
+top_radius = 0.38
+bottom_radius = 0.38
+height = 0.24
+radial_segments = 24
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="Material_tire"]
+albedo_color = Color(0.045, 0.05, 0.055, 1)
+roughness = 0.96
+
+[node name="Vehicle" type="VehicleBody3D"]
+mass = 1850.0
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.28, 0)
+linear_damp = 0.08
+angular_damp = 1.4
+can_sleep = false
 script = ExtResource("1_vehicle")
 vehicle_model_path = NodePath("JeepModel")
 steering_axle = 0
-drive_axle = 1
+drive_axle = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 position = Vector3(0, 0.8, 0)
 shape = SubResource("BoxShape3D_jeep")
+
+[node name="WheelFL" type="VehicleWheel3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, -0.25, -1.42)
+use_as_traction = true
+use_as_steering = true
+wheel_roll_influence = 0.12
+wheel_radius = 0.38
+wheel_rest_length = 0.22
+wheel_friction_slip = 3.8
+suspension_travel = 0.25
+suspension_stiffness = 42.0
+suspension_max_force = 11000.0
+damping_compression = 1.0
+damping_relaxation = 1.4
+
+[node name="TireMesh" type="MeshInstance3D" parent="WheelFL"]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_tire")
+material_override = SubResource("Material_tire")
+
+[node name="WheelFR" type="VehicleWheel3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.82, -0.25, -1.42)
+use_as_traction = true
+use_as_steering = true
+wheel_roll_influence = 0.12
+wheel_radius = 0.38
+wheel_rest_length = 0.22
+wheel_friction_slip = 3.8
+suspension_travel = 0.25
+suspension_stiffness = 42.0
+suspension_max_force = 11000.0
+damping_compression = 1.0
+damping_relaxation = 1.4
+
+[node name="TireMesh" type="MeshInstance3D" parent="WheelFR"]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_tire")
+material_override = SubResource("Material_tire")
+
+[node name="WheelRL" type="VehicleWheel3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.82, -0.25, 1.42)
+use_as_traction = true
+wheel_roll_influence = 0.12
+wheel_radius = 0.38
+wheel_rest_length = 0.22
+wheel_friction_slip = 4.0
+suspension_travel = 0.25
+suspension_stiffness = 42.0
+suspension_max_force = 11000.0
+damping_compression = 1.0
+damping_relaxation = 1.4
+
+[node name="TireMesh" type="MeshInstance3D" parent="WheelRL"]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_tire")
+material_override = SubResource("Material_tire")
+
+[node name="WheelRR" type="VehicleWheel3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.82, -0.25, 1.42)
+use_as_traction = true
+wheel_roll_influence = 0.12
+wheel_radius = 0.38
+wheel_rest_length = 0.22
+wheel_friction_slip = 4.0
+suspension_travel = 0.25
+suspension_stiffness = 42.0
+suspension_max_force = 11000.0
+damping_compression = 1.0
+damping_relaxation = 1.4
+
+[node name="TireMesh" type="MeshInstance3D" parent="WheelRR"]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_tire")
+material_override = SubResource("Material_tire")
 
 [node name="JeepModel" parent="." instance=ExtResource("2_jeep")]
