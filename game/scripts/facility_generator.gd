@@ -14,10 +14,14 @@ var roof: StandardMaterial3D
 var glass: StandardMaterial3D
 var asphalt: StandardMaterial3D
 var count := 0
+var use_pbr_textures := true
 
 func _ready() -> void:
 	map = get_parent().get_node_or_null("WorldMap")
 	if map == null: return
+	var graphics_config := ConfigFile.new()
+	if graphics_config.load("user://graphics_settings.cfg") == OK:
+		use_pbr_textures = bool(graphics_config.get_value("graphics", "pbr_textures", true))
 	_make_materials()
 	for i in range(600):
 		if bool(map.get("_dem_loaded")):
@@ -26,12 +30,12 @@ func _ready() -> void:
 	_build_facilities()
 
 func _make_materials() -> void:
-	concrete = _pbr_mat(Color(0.72,0.71,0.66), "concrete_floor_01", _texture(false))
-	white = _pbr_mat(Color(0.92,0.91,0.84), "white_plaster_02", _texture(false))
-	blue = _pbr_mat(Color(0.12,0.30,0.52), "white_plaster_02", _texture(false))
-	red = _pbr_mat(Color(0.72,0.10,0.09), "red_bricks_04", _texture(false))
-	roof = _pbr_mat(Color(0.78,0.79,0.77), "corrugated_iron_03", _texture(true))
-	asphalt = _pbr_mat(Color(0.24,0.25,0.24), "asphalt_02", _texture(false))
+	concrete = _facility_mat(Color(0.72,0.71,0.66), "concrete_floor_01", _texture(false))
+	white = _facility_mat(Color(0.92,0.91,0.84), "white_plaster_02", _texture(false))
+	blue = _facility_mat(Color(0.12,0.30,0.52), "white_plaster_02", _texture(false))
+	red = _facility_mat(Color(0.72,0.10,0.09), "red_bricks_04", _texture(false))
+	roof = _facility_mat(Color(0.78,0.79,0.77), "corrugated_iron_03", _texture(true))
+	asphalt = _facility_mat(Color(0.24,0.25,0.24), "asphalt_02", _texture(false))
 	glass = StandardMaterial3D.new()
 	glass.albedo_color = Color(0.20,0.40,0.51,0.82)
 	glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -44,6 +48,11 @@ func _mat(tint: Color, tex: Texture2D) -> StandardMaterial3D:
 	m.roughness = 0.86
 	m.uv1_scale = Vector3(2,2,2)
 	return m
+
+func _facility_mat(tint: Color, asset_id: String, fallback: Texture2D) -> StandardMaterial3D:
+	if use_pbr_textures:
+		return _pbr_mat(tint, asset_id, fallback)
+	return _mat(tint, fallback)
 
 func _pbr_mat(tint: Color, asset_id: String, fallback: Texture2D) -> StandardMaterial3D:
 	var material := _mat(tint, fallback)
