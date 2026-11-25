@@ -4,7 +4,10 @@ Le personnage de test utilise le mannequin humanoïde riggé **UAL1_Standard.glb
 
 ## Installation du modèle
 
-Le fichier GLB est un binaire de 7,6 Mo. Il n'a pas été possible de transférer ce binaire avec l'éditeur de fichiers texte GitHub utilisé pour les corrections. Depuis la racine du dépôt, exécuter :
+Le fichier GLB est un binaire de 7,6 Mo. Il n'a pas été possible de transférer ce binaire avec l'éditeur de fichiers texte GitHub utilisé pour les corrections. Deux méthodes sont possibles :
+
+- **Automatique (recommandé)** : ouvrir l'onglet GitHub **Actions**, choisir **Import CC0 test character**, puis cliquer sur **Run workflow** sur la branche `main`. Le workflow télécharge le modèle, vérifie son empreinte Git et le commit dans le dépôt.
+- **Manuelle** : depuis la racine du dépôt, exécuter :
 
 ```bash
 mkdir -p assets/models/characters
