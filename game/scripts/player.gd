@@ -44,6 +44,7 @@ func _ready() -> void:
 		Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	_log_connected_gamepads()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_was_on_floor = is_on_floor()
 	_default_camera_distance = $CameraPivot/SpringArm3D.spring_length
 	_default_camera_offset = camera_pivot.position
 	_register_combat_inputs()
