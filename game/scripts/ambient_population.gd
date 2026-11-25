@@ -100,19 +100,21 @@ func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
 	brake.emission_enabled = true
 	brake.emission = Color(1.0, 0.015, 0.005)
 	brake.emission_energy_multiplier = 0.0
-	var indicator := _material(Color(1.0, 0.32, 0.015), 0.32)
-	indicator.emission_enabled = true
-	indicator.emission = Color(1.0, 0.22, 0.005)
-	indicator.emission_energy_multiplier = 0.0
 	for side in [-1.0, 1.0]:
+		var indicator := _material(Color(1.0, 0.32, 0.015), 0.32)
+		indicator.emission_enabled = true
+		indicator.emission = Color(1.0, 0.22, 0.005)
+		indicator.emission_energy_multiplier = 0.0
 		_add_box(car, "Headlight", Vector3(0.10, 0.20, 0.34), Vector3(2.02, 0.82, side * 0.58), lamp)
 		_add_box(car, "Taillight", Vector3(0.10, 0.20, 0.34), Vector3(-2.02, 0.82, side * 0.58), tail)
 		var brake_lamp := _add_box(car, "BrakeLight_%s" % str(side), Vector3(0.09, 0.14, 0.24), Vector3(-2.075, 0.82, side * 0.58), brake)
 		brake_lamp.set_meta("lamp_material", brake)
 		var front_indicator := _add_box(car, "FrontIndicator_%s" % str(side), Vector3(0.08, 0.10, 0.22), Vector3(2.075, 0.83, side * 0.72), indicator)
 		front_indicator.set_meta("indicator_material", indicator)
+		front_indicator.set_meta("indicator_side", side)
 		var rear_indicator := _add_box(car, "RearIndicator_%s" % str(side), Vector3(0.08, 0.10, 0.22), Vector3(-2.075, 0.83, side * 0.72), indicator)
 		rear_indicator.set_meta("indicator_material", indicator)
+		rear_indicator.set_meta("indicator_side", side)
 		for axle in [-1.25, 1.25]:
 			var wheel := MeshInstance3D.new()
 			wheel.name = "Wheel"
@@ -313,7 +315,7 @@ func _is_vehicle_near(position: Vector3, radius: float) -> bool:
 func _update_vehicle_lights(car: Node3D, previous_speed: float, current_speed: float, current_direction: Vector3, route: Array, distance: float) -> void:
 	var braking := current_speed < previous_speed - 0.025 or current_speed < 0.8
 	var brake_materials: Array[StandardMaterial3D] = []
-	var indicator_materials: Array[StandardMaterial3D] = []
+	var indicator_materials: Array[Dictionary] = []
 	for child in car.get_children():
 		if child is MeshInstance3D:
 			if str(child.name).begins_with("BrakeLight"):
@@ -322,8 +324,10 @@ func _update_vehicle_lights(car: Node3D, previous_speed: float, current_speed: f
 					brake_materials.append(brake_material)
 			elif str(child.name).begins_with("FrontIndicator") or str(child.name).begins_with("RearIndicator"):
 				var indicator_material := child.get_meta("indicator_material", null) as StandardMaterial3D
-				if indicator_material != null and not indicator_materials.has(indicator_material):
-					indicator_materials.append(indicator_material)
+				if indicator_material != null:
+					var indicator_entry := {"material": indicator_material, "side": float(child.get_meta("indicator_side", 0.0))}
+					if not indicator_materials.has(indicator_entry):
+						indicator_materials.append(indicator_entry)
 	for material in brake_materials:
 		material.emission_energy_multiplier = 2.0 if braking else 0.0
 	var next_sample := _sample_route(route, fposmod(distance + 7.0, _route_length(route)))
@@ -332,8 +336,11 @@ func _update_vehicle_lights(car: Node3D, previous_speed: float, current_speed: f
 	var turn_dot := current_direction.dot(next_direction)
 	var turning := absf(turn_cross) > 0.12 and turn_dot > 0.45
 	var flash_on := turning and fposmod(float(Time.get_ticks_msec()) / 1000.0, 0.9) < 0.42
-	for material in indicator_materials:
-		material.emission_energy_multiplier = 1.7 if flash_on else 0.0
+	var turn_side := -1.0 if turn_cross > 0.0 else 1.0
+	for entry in indicator_materials:
+		var material: StandardMaterial3D = entry.material
+		var selected_side := is_equal_approx(float(entry.side), turn_side)
+		material.emission_energy_multiplier = 1.7 if flash_on and selected_side else 0.0
 
 func _sample_route(route: Array, distance: float) -> Dictionary:
 	var remaining := distance
