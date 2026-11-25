@@ -20,7 +20,7 @@ func _ready() -> void:
 				animation_player.playback_default_blend_time = 0.18
 				for animation in animation_player.get_animation_list():
 					var lower_name := String(animation).to_lower()
-					if lower_name.contains("idle") or lower_name.contains("walk") or lower_name.contains("run") or lower_name.contains("jog") or lower_name.contains("sprint"):
+					if lower_name.contains("idle") or lower_name.contains("walk") or lower_name.contains("run") or lower_name.contains("jog") or lower_name.contains("sprint") or lower_name.contains("pistol_aim") or lower_name == "jump_loop":
 						animation_player.get_animation(animation).loop_mode = Animation.LOOP_LINEAR
 				print("LIBREVILLE STORIES | Animations disponibles : ", animation_player.get_animation_list())
 				play_motion("idle")
@@ -42,8 +42,9 @@ func _resolve_animation(state: String) -> StringName:
 		"walk": ["walk_loop", "walk_fwd_loop", "walk", "walking"],
 		"run": ["sprint_loop", "sprint", "jog_fwd_loop", "jog_fwd", "run", "jog"],
 		"jump": ["jump_start", "jump"],
+		"jump_loop": ["jump_loop", "jump"],
 		"aim": ["pistol_aim_neutral", "pistol_aim", "aim", "pistol_idle_loop", "rifle_idle", "shoot_idle"],
-		"aim_walk": ["pistol_aim_neutral", "aim_walk", "walk_aim", "strafe", "walk_loop", "walk"],
+		"aim_walk": ["walk_loop", "walk_fwd_loop", "walk"],
 		"shoot": ["pistol_shoot", "shoot", "fire", "attack", "pistol_fire", "rifle_fire"],
 		"reload": ["pistol_reload", "reload"],
 		"climb": ["climb", "climbup", "safetyvault", "stepup", "jump_loop", "jump"],
