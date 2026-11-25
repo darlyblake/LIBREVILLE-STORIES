@@ -60,6 +60,13 @@ func _build_interface() -> void:
 	subtitle.add_theme_color_override("font_color", Color(0.72, 0.81, 0.9))
 	content.add_child(subtitle)
 
+	var asset_credit := Label.new()
+	asset_credit.text = "Matériaux PBR CC0 : Poly Haven • Ville : OpenStreetMap"
+	asset_credit.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	asset_credit.add_theme_font_size_override("font_size", 11)
+	asset_credit.add_theme_color_override("font_color", Color(0.58, 0.68, 0.76))
+	content.add_child(asset_credit)
+
 	_menu_box = VBoxContainer.new()
 	_menu_box.add_theme_constant_override("separation", 12)
 	content.add_child(_menu_box)
