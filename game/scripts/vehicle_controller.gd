@@ -222,10 +222,20 @@ func _apply_gravity(delta: float) -> void:
 
 func _setup_tire_probes() -> void:
 	_wheel_rays.clear()
-	for index in range(_wheel_local_positions.size()):
+	var probe_positions := _wheel_local_positions.duplicate()
+	if probe_positions.size() < 4:
+		# Géométrie de secours adaptée à l'empattement d'un SUV lorsque le GLB
+		# ne nomme pas ses pneus ou ne les expose pas comme nœuds séparés.
+		probe_positions = [
+			Vector3(-0.82, 0.34, -1.42),
+			Vector3(0.82, 0.34, -1.42),
+			Vector3(-0.82, 0.34, 1.42),
+			Vector3(0.82, 0.34, 1.42)
+		]
+	for index in range(probe_positions.size()):
 		var probe := RayCast3D.new()
 		probe.name = "TireContact_%d" % index
-		probe.position = _wheel_local_positions[index] + Vector3.UP * 0.32
+		probe.position = probe_positions[index] + Vector3.UP * 0.32
 		probe.target_position = Vector3.DOWN * 1.05
 		probe.enabled = true
 		probe.collide_with_bodies = true
