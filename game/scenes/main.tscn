@@ -72,7 +72,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 shape = SubResource("BoxShape3D_ground")
 
 [node name="TrainingTarget" parent="." instance=ExtResource("9_training_target")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1790, 0.0, -580)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1785, 0.0, -570)
 
 [node name="Player" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1790, 2, -570)
