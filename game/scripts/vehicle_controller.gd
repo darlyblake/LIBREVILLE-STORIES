@@ -348,6 +348,15 @@ func _collect_wheel_nodes(root: Node, inside_wheel: bool) -> void:
 				if wheel_name.contains(excluded):
 					is_candidate = false
 					break
+			# Certains GLB donnent des noms génériques aux meshes des pneus.
+			# On les repère aussi par leur forme et leur position basse aux quatre coins.
+			if not is_candidate and node is MeshInstance3D:
+				var bounds := _get_subtree_world_aabb(node)
+				var dimensions := bounds.size
+				var largest := maxf(dimensions.x, maxf(dimensions.y, dimensions.z))
+				var smallest := minf(dimensions.x, minf(dimensions.y, dimensions.z))
+				var center := to_local(bounds.get_center())
+				is_candidate = largest >= 0.34 and largest <= 1.12 and smallest >= 0.12 and smallest <= 0.48 and center.y < 0.85 and absf(center.x) > 0.48 and absf(center.z) > 0.72
 		if is_candidate and _create_wheel_pivot(node):
 			continue
 		# Un parent nommé "wheels" peut contenir plusieurs roues et avoir
