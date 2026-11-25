@@ -308,3 +308,7 @@ Les deux ouvrages sont désormais documentés séparément :
 - **Paul-Indjendjet-Gondjout / Lycée d'État** : 54 m de long, franchissement de quatre voies, forme symbolique de deux poissons, poutres courbes lamellées-collées de 52 cm et lames de 40 mm ; source ATIBT, mars 2022.
 - **Lycée national Léon-Mba** : 48 m × 2,28 m, tirant d'air 6,5 m, hauteur totale 13,5 m, bois assemblé 44 t ; source Ministère des Travaux publics, novembre 2024.
 - Ces données permettent de produire deux modèles de passerelles en bois gabonais réellement différenciés. Les photos commerciales ou de presse restent des références uniquement ; aucune image protégée n'est copiée dans le dépôt.
+
+
+### Correction de la fiche Lycée Léon-Mba — hiérarchie des sources
+Une publication ministérielle du 7 novembre 2024 confirme les dimensions officielles de 48 m × 2,28 m, 6,5 m de tirant d'air et 13,5 m de hauteur totale. Les articles de chantier de 2023 mentionnant environ 50–54 m ou 16 m sont des estimations antérieures et ne doivent pas être mélangés avec la fiche de réception ministérielle. Pour le modèle de référence, retenir les mesures ministérielles et garder les écarts de presse en note d'incertitude.
