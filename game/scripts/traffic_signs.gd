@@ -15,6 +15,7 @@ const MAX_TRAFFIC_LIGHTS := 10
 var _world_map: Node3D
 var _materials: Dictionary = {}
 var _traffic_lights: Array[Dictionary] = []
+var _crossings: Array[Vector3] = []
 var _traffic_elapsed := 0.0
 
 
@@ -62,6 +63,20 @@ func is_red_for_vehicle(vehicle_position: Vector3, vehicle_direction: Vector3) -
 		var cycle := fposmod(_traffic_elapsed + float(signal_data.offset), 18.0)
 		if cycle < 6.0 or cycle >= 16.0:
 			return true
+	return false
+
+
+func should_vehicle_yield(vehicle_position: Vector3, vehicle_direction: Vector3, pedestrian_positions: Array) -> bool:
+	var direction_2d := Vector2(vehicle_direction.x, vehicle_direction.z).normalized()
+	for crossing in _crossings:
+		var to_crossing := Vector2(crossing.x - vehicle_position.x, crossing.z - vehicle_position.z)
+		var distance := to_crossing.length()
+		if distance < 2.0 or distance > 18.0 or direction_2d.dot(to_crossing.normalized()) < 0.45:
+			continue
+		for pedestrian_position in pedestrian_positions:
+			var pedestrian := pedestrian_position as Vector3
+			if Vector2(pedestrian.x - crossing.x, pedestrian.z - crossing.z).length() <= 3.8:
+				return true
 	return false
 
 
@@ -194,8 +209,10 @@ func _build_signage() -> void:
 		if road_direction.length_squared() < 0.1:
 			continue
 		var sign_direction := Vector2(-road_direction.y, road_direction.x).normalized()
-		_add_crosswalk(point, _terrain_height(point), road_direction)
-		_add_pedestrian_sign(point + sign_direction * 3.0, _terrain_height(point), sign_direction)
+		var crossing_y := _terrain_height(point)
+		_crossings.append(Vector3(point.x, crossing_y, point.y))
+		_add_crosswalk(point, crossing_y, road_direction)
+		_add_pedestrian_sign(point + sign_direction * 3.0, crossing_y, sign_direction)
 		crossing_count += 1
 
 	print("LIBREVILLE STORIES | signalisation : %d STOP, %d feux tricolores, %d panneaux piétons issus des données OSM" % [stop_count, traffic_light_count, crossing_count])
