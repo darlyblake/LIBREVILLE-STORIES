@@ -18,9 +18,11 @@ func _ready() -> void:
 			animation_player = model.find_child("AnimationPlayer", true, false) as AnimationPlayer
 			if animation_player != null:
 				animation_player.playback_default_blend_time = 0.18
-				for loop_name in ["Idle", "Walk", "Jog_Fwd", "Sprint"]:
-					if animation_player.has_animation(loop_name):
-						animation_player.get_animation(loop_name).loop_mode = Animation.LOOP_LINEAR
+				for animation in animation_player.get_animation_list():
+					var lower_name := String(animation).to_lower()
+					if lower_name.contains("idle") or lower_name.contains("walk") or lower_name.contains("run") or lower_name.contains("jog") or lower_name.contains("sprint"):
+						animation_player.get_animation(animation).loop_mode = Animation.LOOP_LINEAR
+				print("LIBREVILLE STORIES | Animations disponibles : ", animation_player.get_animation_list())
 				play_motion("idle")
 			return
 	_build_fallback_humanoid()
@@ -28,19 +30,34 @@ func _ready() -> void:
 func play_motion(state: String) -> void:
 	if animation_player == null:
 		return
-	var animation_name := "Idle"
-	match state:
-		"walk":
-			animation_name = "Walk"
-		"run":
-			animation_name = "Sprint" if animation_player.has_animation("Sprint") else "Jog_Fwd"
-		"jump":
-			animation_name = "Jump"
-		_:
-			animation_name = "Idle"
-	if animation_player.has_animation(animation_name) and _last_motion != animation_name:
-		_last_motion = animation_name
-		animation_player.play(animation_name, 0.18)
+	var animation_name := _resolve_animation(state)
+	if animation_name.is_empty() or _last_motion == animation_name:
+		return
+	_last_motion = animation_name
+	animation_player.play(animation_name, 0.16)
+
+func _resolve_animation(state: String) -> StringName:
+	var aliases := {
+		"idle": ["idle", "stand", "breathing"],
+		"walk": ["walk", "walking"],
+		"run": ["sprint", "run", "jog"],
+		"jump": ["jump", "takeoff"],
+		"aim": ["aim", "pistol_idle", "rifle_idle", "shoot_idle"],
+		"shoot": ["shoot", "fire", "attack", "pistol_fire", "rifle_fire"],
+		"climb": ["climb", "vault", "mantle"],
+		"fall": ["fall", "falling", "air"],
+	}
+	var candidates: Array = aliases.get(state, aliases["idle"])
+	var names := animation_player.get_animation_list()
+	for candidate in candidates:
+		for animation in names:
+			if String(animation).to_lower() == String(candidate):
+				return animation
+	for candidate in candidates:
+		for animation in names:
+			if String(animation).to_lower().contains(String(candidate)):
+				return animation
+	return &""
 
 func _build_fallback_humanoid() -> void:
 	_fallback = true
