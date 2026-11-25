@@ -60,6 +60,35 @@ Objectif : reconstruire les ouvrages réellement présents dans LIBREVILLE STORI
 - Pont de la Caisse, OSM way 1395147722 : https://mapcarta.com/fr/W1395147722
 - PK5 (coordonnée du quartier, pas du tablier) : https://mapcarta.com/fr/N4071487877
 
+## Recherche photographique complémentaire — relevés visuels
+
+### Échangeur d'Awendjé
+- Archive de presse du 11 septembre 2017 : photographie explicitement légendée « L'échangeur d'Awendjé », avec le tablier routier et son environnement immédiat : https://lunion-archives.org/web.11/dmdocuments/N12519-12-09-2017-007.pdf
+- Reportage photographique aérien et détails des fondations, fissures du tablier et piliers : https://gabonmediatime.com/libreville-lechangeur-dawendje-etat-degradation-nez-barbe-nkouma-emane/
+- Un second reportage de juillet 2024 confirme les désordres structurels : https://gabonmediatime.com/libreville-faut-il-un-drame-pour-la-rehabilitation-du-pont-dawendje/
+- Conséquence pour le modèle : tablier sur appuis, garde-corps routiers, dessous circulable et piles visibles ; l'état d'usure devra être ajusté à la période représentée dans le jeu.
+
+### Échangeur IAI
+- Reportage du 17 décembre 2025 sur les glissières de sécurité dégradées du pont : https://gabonmediatime.com/libreville-echangeur-diai-le-danger-permanent/
+- Vidéo du même reportage : https://www.dailymotion.com/video/x9vwg44
+- Conséquence pour le modèle : ne pas inventer une architecture complexe ; relever la géométrie réelle du tablier et reproduire les glissières, leurs supports et les raccordements d'approche.
+
+### Échangeur PK5
+- Photo d'archive datée du 27 novembre 2012, prise depuis l'échangeur vers la Voie Express : https://afrikimages.com/photos/gabon-libreville-43bb3bae-7c54-4d44-b6be-afa0298b0c24?locale=fr
+- Cette photographie est une référence visuelle commerciale : elle ne sera pas intégrée au jeu sans licence.
+
+### Échangeur des Charbonnages
+- Article d'archive de L'Union du 11 mars 2021 avec une photographie de l'espace sous le pont, montrant les piliers, les circulations piétonnes et les activités commerciales : https://lunion-archives.org/web.11/dmdocuments/N13571-11-03-2021-006.pdf
+- Vidéo locale de l'échangeur : https://www.dailymotion.com/video/x8jxyko
+
+### Camp de Gaulle
+- Reportage de visite du chantier du 29 octobre 2025 : https://m.gabonews.com/fr/actus/infrastructures/article/visite-de-terrain-sur-le-chantier-d-amenagement
+- Le projet associe un fly-over, un giratoire de 108 m, les raccordements vers la voie de contournement nord et la voie express, et un bassin versant. Les sources gouvernementales annoncent février 2027 comme date de livraison ; le jeu doit pouvoir distinguer les phases de chantier de la version achevée.
+
+## Décision technique sur les hauteurs de pont
+
+L'ancienne règle qui transformait automatiquement `layer=1` en un tablier situé à 5,2 m au-dessus du sol et ajoutait des rampes génériques n'est pas suffisamment fondée. Dans OSM, `layer` indique l'ordre relatif des voies qui se croisent ; ce n'est pas une mesure de hauteur. La fonction de lecture a donc été sécurisée : elle ne fournit plus de hauteur arbitraire. Une hauteur ne sera activée que par une donnée de profil dédiée (`game:deck_height_m`) relevée pour l'ouvrage concerné. Les tabliers, rampes, piles et bretelles seront ensuite définis site par site à partir des géométries et références documentées.
+
 ## Matériaux PBR déjà disponibles dans le dépôt
 
 Le pipeline CC0 déjà présent dans `tools/download_cc0_textures.py` et `.github/workflows/download-cc0-textures.yml` a téléchargé des textures Poly Haven. Avant tout nouveau téléchargement, réutiliser et vérifier les cartes déjà présentes dans `assets/textures/pbr/` et `assets/textures/roads/`.
