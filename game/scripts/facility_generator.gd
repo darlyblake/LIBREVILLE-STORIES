@@ -26,12 +26,12 @@ func _ready() -> void:
 	_build_facilities()
 
 func _make_materials() -> void:
-	concrete = _mat(Color(0.72,0.71,0.66), _texture(false))
-	white = _mat(Color(0.92,0.91,0.84), _texture(false))
-	blue = _mat(Color(0.12,0.30,0.52), _texture(false))
-	red = _mat(Color(0.72,0.10,0.09), _texture(false))
-	roof = _mat(Color(0.65,0.68,0.67), _texture(true))
-	asphalt = _mat(Color(0.24,0.25,0.24), _texture(false))
+	concrete = _pbr_mat(Color(0.72,0.71,0.66), "concrete_floor_01", _texture(false))
+	white = _pbr_mat(Color(0.92,0.91,0.84), "white_plaster_02", _texture(false))
+	blue = _pbr_mat(Color(0.12,0.30,0.52), "white_plaster_02", _texture(false))
+	red = _pbr_mat(Color(0.72,0.10,0.09), "red_bricks_04", _texture(false))
+	roof = _pbr_mat(Color(0.78,0.79,0.77), "corrugated_iron_03", _texture(true))
+	asphalt = _pbr_mat(Color(0.24,0.25,0.24), "asphalt_02", _texture(false))
 	glass = StandardMaterial3D.new()
 	glass.albedo_color = Color(0.20,0.40,0.51,0.82)
 	glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -44,6 +44,36 @@ func _mat(tint: Color, tex: Texture2D) -> StandardMaterial3D:
 	m.roughness = 0.86
 	m.uv1_scale = Vector3(2,2,2)
 	return m
+
+func _pbr_mat(tint: Color, asset_id: String, fallback: Texture2D) -> StandardMaterial3D:
+	var material := _mat(tint, fallback)
+	var folder := "res://assets/textures/pbr/%s/" % asset_id
+	var diffuse := _find_pbr_map(folder, asset_id, "diff")
+	var normal := _find_pbr_map(folder, asset_id, "nor_gl")
+	var roughness := _find_pbr_map(folder, asset_id, "rough")
+	var ao := _find_pbr_map(folder, asset_id, "ao")
+	if diffuse != null:
+		material.albedo_texture = diffuse
+	if normal != null:
+		material.normal_enabled = true
+		material.normal_texture = normal
+		material.normal_scale = 0.8
+	if roughness != null:
+		material.roughness_texture = roughness
+	if ao != null:
+		material.ao_enabled = true
+		material.ao_texture = ao
+	material.uv1_scale = Vector3(2.0, 2.0, 2.0)
+	return material
+
+func _find_pbr_map(folder: String, asset_id: String, map_suffix: String) -> Texture2D:
+	var absolute_folder := ProjectSettings.globalize_path(folder)
+	if not DirAccess.dir_exists_absolute(absolute_folder):
+		return null
+	for filename in DirAccess.get_files_at(absolute_folder):
+		if filename.get_basename().ends_with("_" + map_suffix):
+			return load(folder + filename) as Texture2D
+	return null
 
 func _texture(metal: bool) -> ImageTexture:
 	var img := Image.create(128,128,false,Image.FORMAT_RGBA8)
