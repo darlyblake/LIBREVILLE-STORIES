@@ -196,6 +196,7 @@ func _add_market_vendor(parent: Node3D, index: int) -> void:
 	var shirt := _material("vendor_shirt_%d" % (index % shirt_colors.size()), shirt_colors[index % shirt_colors.size()])
 	var dark := _material("vendor_trousers", Color(0.12, 0.13, 0.15))
 	var torso := MeshInstance3D.new()
+	torso.name = "Torso"
 	var torso_mesh := CapsuleMesh.new()
 	torso_mesh.radius = 0.25
 	torso_mesh.height = 0.92
@@ -204,6 +205,7 @@ func _add_market_vendor(parent: Node3D, index: int) -> void:
 	torso.material_override = shirt
 	vendor.add_child(torso)
 	var head := MeshInstance3D.new()
+	head.name = "Tete"
 	var head_mesh := SphereMesh.new()
 	head_mesh.radius = 0.17
 	head_mesh.height = 0.34
@@ -221,6 +223,7 @@ func _add_market_vendor(parent: Node3D, index: int) -> void:
 		leg.material_override = dark
 		vendor.add_child(leg)
 		var arm := MeshInstance3D.new()
+		arm.name = "BrasGauche" if side < 0.0 else "BrasDroit"
 		var arm_mesh := CapsuleMesh.new()
 		arm_mesh.radius = 0.075
 		arm_mesh.height = 0.68
