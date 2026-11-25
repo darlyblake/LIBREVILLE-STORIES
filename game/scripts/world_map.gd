@@ -4234,14 +4234,17 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var edge_direction := Vector3((b.x - a.x) / maxf(edge_length, 0.001), 0.0, (b.y - a.y) / maxf(edge_length, 0.001))
 		var outward_normal := Vector3(edge_direction.z, 0.0, -edge_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_windows(details, a, b, height, building_kind, osm_id, outward_normal, base_y)
+	var door_a := Vector2.ZERO
+	var door_b := Vector2.ZERO
+	var door_normal := Vector3.ZERO
 	if longest_edge_length >= 2.8 and building_kind not in ["garage", "shed", "roof", "carport"]:
-		var door_a := points[longest_edge_index]
-		var door_b := points[(longest_edge_index + 1) % points.size()]
+		door_a = points[longest_edge_index]
+		door_b = points[(longest_edge_index + 1) % points.size()]
 		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
-		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
+		door_normal = Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_door(details, door_a, door_b, door_normal, base_y)
 	# Marquise de boutique : auvent discret au-dessus des commerces donnant sur rue.
-	if height >= 2.8 and (building_kind in ["commercial", "retail", "supermarket"] or props.has("shop")):
+	if longest_edge_length >= 3.6 and height >= 2.8 and (building_kind in ["commercial", "retail", "supermarket"] or props.has("shop")):
 		_add_shopfront_awning(details, door_a, door_b, door_normal, base_y, height, osm_id)
 	roofs.set_color(roof_tint)
 	var roof_style := WorldMapBuildingStyleUtils.roof_style(building_kind, osm_id, props)
@@ -4255,6 +4258,10 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 			var p2 := points[indices[i + 2]]
 			_add_roof_uv_triangle(roofs, Vector3(p0.x, base_y + height + 0.04, p0.y),
 				Vector3(p1.x, base_y + height + 0.04, p1.y), Vector3(p2.x, base_y + height + 0.04, p2.y), roof_style)
+	# Réservoirs d'eau sur certaines toitures plates d'habitations : détail urbain
+	# discret, cohérent avec les installations domestiques de Libreville.
+	if not pitched_roof and building_kind in ["house", "residential", "detached", "semidetached_house", "bungalow", "apartments"] and abs(osm_id) % 7 == 0:
+		_add_rooftop_water_tank(details, points, height, base_y)
 
 
 func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, base_y: float = 0.0) -> bool:
@@ -4348,6 +4355,52 @@ func _add_facade_balcony(surface: SurfaceTool, center: Vector3, tangent: Vector3
 		Vector3(front_right.x, rail_bottom, front_right.z),
 		Vector3(front_right.x, rail_top, front_right.z),
 		Vector3(back_right.x, rail_top, back_right.z))
+
+func _add_rooftop_water_tank(surface: SurfaceTool, points: PackedVector2Array, height: float, base_y: float) -> void:
+	if points.size() < 3:
+		return
+	var center := Vector2.ZERO
+	for point in points:
+		center += point
+	center /= float(points.size())
+	var radius := 0.48
+	var tank_bottom := base_y + height + 0.18
+	var tank_top := tank_bottom + 1.18
+	var dark_tank := Color(0.12, 0.16, 0.16)
+	var rib_color := Color(0.20, 0.24, 0.23)
+	var support_color := Color(0.34, 0.35, 0.33)
+	# Quatre pieds métalliques sur le toit et cuve cylindrique segmentée.
+	for support_index in range(4):
+		var angle := TAU * float(support_index) / 4.0 + PI * 0.25
+		var support_center := Vector3(center.x + cos(angle) * radius * 0.72, tank_bottom - 0.34,
+			center.y + sin(angle) * radius * 0.72)
+		var half := 0.045
+		surface.set_color(support_color)
+		_add_quad(surface,
+			support_center + Vector3(-half, -0.34, -half),
+			support_center + Vector3(half, -0.34, -half),
+			support_center + Vector3(half, 0.34, -half),
+			support_center + Vector3(-half, 0.34, -half))
+	for segment in range(10):
+		var a0 := TAU * float(segment) / 10.0
+		var a1 := TAU * float(segment + 1) / 10.0
+		var p0 := Vector3(center.x + cos(a0) * radius, tank_bottom, center.y + sin(a0) * radius)
+		var p1 := Vector3(center.x + cos(a1) * radius, tank_bottom, center.y + sin(a1) * radius)
+		var p2 := Vector3(p1.x, tank_top, p1.z)
+		var p3 := Vector3(p0.x, tank_top, p0.z)
+		surface.set_color(dark_tank if segment % 2 == 0 else rib_color)
+		_add_quad(surface, p0, p1, p2, p3)
+	# Couvercle supérieur légèrement bombé et rebord.
+	surface.set_color(rib_color)
+	for segment in range(10):
+		var a0 := TAU * float(segment) / 10.0
+		var a1 := TAU * float(segment + 1) / 10.0
+		_add_quad(surface,
+			Vector3(center.x, tank_top + 0.06, center.y),
+			Vector3(center.x + cos(a0) * radius, tank_top, center.y + sin(a0) * radius),
+			Vector3(center.x + cos(a1) * radius, tank_top, center.y + sin(a1) * radius),
+			Vector3(center.x, tank_top + 0.06, center.y))
+
 
 func _add_shopfront_awning(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3,
 		base_y: float, building_height: float, osm_id: int) -> void:
