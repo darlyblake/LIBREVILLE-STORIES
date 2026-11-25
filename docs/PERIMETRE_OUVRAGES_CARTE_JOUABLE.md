@@ -59,3 +59,26 @@ Les éléments ci-dessous sont des candidats de recherche, pas une validation au
 ## État de validation
 
 À la date de cette note, la correspondance des secteurs de gameplay est documentée, mais les intersections ouvrage-par-ouvrage ne sont pas encore certifiées par un calcul SIG sur les géométries complètes. Aucun candidat de ce tableau ne doit être déclaré « validé dans la carte » avant cette opération.
+
+
+## Recherche documentaire complémentaire — 25 novembre 2026
+
+La recherche publique confirme que plusieurs ouvrages candidats correspondent bien à des secteurs présents dans notre carte. Elle sert à prioriser les relevés, mais ne remplace pas le contrôle SIG des emprises.
+
+### Références utiles dans le périmètre de gameplay
+
+- **PK5 → Awendjé → IAI → Lalala → Pont Nomba** : le dossier d'entretien de la Voie Express décrit explicitement ce corridor et distingue les interventions « sous le pont » / « sur le pont ». Cette source permet de préparer des fiches séparées par ouvrage, sans fusionner les structures. Source : https://www.lejmp.ga/public/file_dossier/676143ae94db7.pdf
+- **Nzeng-Ayong** : reportage du 20 avril 2025 décrivant le tablier, une cavité apparue dans la chaussée et les risques liés à l'érosion. Pour une version de jeu datée de 2025, la surface routière et les réparations provisoires doivent être vérifiées sur des images de la même période : https://www.gabonreview.com/echangeur-de-nzeng-ayong-quand-letat-joue-a-la-roulette-russe-avec-la-vie-des-usagers/
+- **Nzeng-Ayong — abords** : reportage du 1er août 2025 documentant les démolitions de constructions de fortune autour de l'échangeur. Ne pas reproduire automatiquement les anciennes boutiques comme si elles étaient toujours présentes : https://www.gabonreview.com/deguerpissement-chute-de-lhimalaya-et-de-les-retrouvailles-de-lechangeur-de-nzeng-ayong/
+- **Charbonnages — sous le tablier** : reportage photographique de L'Union du 11 mars 2021 montre les piliers, les passages piétons et les installations commerciales informelles sous le pont. Il s'agit d'une référence historique datée, pas d'une preuve de l'état actuel : https://lunion-archives.org/web.11/dmdocuments/N13571-11-03-2021-006.pdf
+- **Charbonnages — jardin** : vidéo de Gabon Télévisions du 5 avril 2025 documente le chantier d'aménagement du jardin de l'échangeur : https://www.youtube.com/watch?v=AAjzBr1c2X4
+- **Awendjé** : article du 21 mars 2025 décrit les traversées piétonnes dangereuses sous l'échangeur ; à utiliser pour observer les flux et l'usage des abords, pas pour inventer les dimensions du tablier : https://www.gabonreview.com/tribune-awendje-un-echangeur-des-dangers-une-solution/
+- **État des grands axes** : article du 22 novembre 2025 cite notamment Nzeng-Ayong, Cité de la Caisse, PK5, Awendjé, Charbonnages et Lycée d'État dans les opérations de remise en état. La présence du Lycée d'État dans l'article ne suffit pas à l'inclure dans notre carte : https://gabonmediatime.com/gabon-cure-de-jouvence-dans-le-grand-libreville/
+
+### Décision de production
+
+1. Prioriser les ouvrages du corridor documenté qui tombent dans les secteurs jouables : PK5, Awendjé, IAI, Lalala et Pont Nomba.
+2. Traiter séparément l'échangeur de Nzeng-Ayong, Charbonnages et la Démocratie, car leurs usages, formes et états documentés diffèrent.
+3. Pour chaque modèle, conserver une date de référence visuelle. Les opérations de déguerpissement, de réhabilitation ou d'aménagement peuvent modifier fortement les abords.
+4. Les pages, vidéos et photos ci-dessus sont des références d'observation. Aucune image protégée n'est intégrée comme texture au jeu.
+5. Aucun ouvrage hors des secteurs de la carte n'est ajouté parce qu'il apparaît dans un dossier couvrant un corridor plus long.
