@@ -91,6 +91,7 @@ func _ready() -> void:
 	var vehicle_model := get_node_or_null(vehicle_model_path) as Node3D
 	if vehicle_model != null:
 		_collect_wheel_nodes(vehicle_model, false)
+		_classify_wheels()
 		_setup_brake_lights(vehicle_model)
 	else:
 		push_warning("Véhicule : modèle introuvable au chemin configuré (%s)." % str(vehicle_model_path))
@@ -106,6 +107,8 @@ func _physics_process(delta: float) -> void:
 		engine_force = 0.0
 		brake = service_brake
 		steering = move_toward(steering, 0.0, steering_response * delta)
+		_steering_angle = move_toward(_steering_angle, 0.0, steering_response * delta)
+		_update_wheel_animation()
 		_last_odometer_position = global_position
 		return
 
@@ -120,6 +123,8 @@ func _physics_process(delta: float) -> void:
 	_update_steering_and_heading(delta)
 
 	current_speed = linear_velocity.dot(-global_transform.basis.z)
+	_wheel_roll_angle = fposmod(_wheel_roll_angle + current_speed * delta / maxf(wheel_radius, 0.1), TAU)
+	_update_wheel_animation()
 	odometer_meters += Vector2(global_position.x - _last_odometer_position.x, global_position.z - _last_odometer_position.z).length()
 	_last_odometer_position = global_position
 	_update_vehicle_hud()
@@ -322,7 +327,6 @@ func _create_wheel_pivot(wheel_node: Node3D) -> bool:
 	pivot.global_transform = Transform3D(global_transform.basis.orthonormalized(), wheel_center)
 	original_parent.remove_child(wheel_node)
 	pivot.add_child(wheel_node)
-	wheel_node.visible = false
 	wheel_node.global_transform = original_global
 	_wheel_nodes.append(pivot)
 	_wheel_base_basis.append(pivot.transform.basis.orthonormalized())
