@@ -474,3 +474,34 @@ IAI est désormais documenté comme ouvrage prioritaire avec un historique offic
 - Pont Nomba : la géométrie est celle d'un pont sur la rivière Lowé, pas un échangeur. Prévoir l'étude séparée du tablier, des appuis, des garde-corps, de l'approche routière et des berges.
 - Démocratie : représenter un espace sous l'échangeur, mais ne pas ajouter de terrains de sport, piles ou voies de service sans relevé visuel supplémentaire. L'éboulement de talus documenté en 2024 appartient à la voie de desserte de Nzeng-Ayong et ne doit pas être confondu avec une défaillance du pont.
 - Les coordonnées du quartier Pont-Nomba ne sont pas celles du pont. Les emprises exactes du pont Nomba et de l'échangeur de la Démocratie restent à extraire des géométries OSM complètes et à confronter aux orthophotos.
+
+
+### Échangeur PK5, échangeur du Lycée d'État et passerelles scolaires — recherche complémentaire (25 novembre 2026)
+
+#### Échangeur PK5
+- Afrikimages conserve une photographie de la Voie Express prise depuis l'échangeur du PK5 le 27 novembre 2012. La légende identifie explicitement le point de vue, mais l'image est une photographie commerciale et ne peut pas être intégrée au jeu sans licence : https://afrikimages.com/photos/gabon-libreville-43bb3bae-7c54-4d44-b6be-afa0298b0c24?locale=fr
+- Cette image constitue une référence d'orientation et de paysage routier datée ; elle ne donne pas à elle seule la géométrie complète du pont ni les dimensions des rampes.
+- Le dossier de marché public d'entretien de la Voie Express décrit le passage « sous le pont » au PK5 dans la Zone A et le passage « sous le pont » au PK5 dans la Zone B, qui se rejoignent au niveau de l'ouvrage. Cela confirme des circulations sous l'échangeur, mais pas la structure exacte ni le nombre de piles : https://www.lejmp.ga/public/file_dossier/676143ae94db7.pdf
+- Le PK5 cartographique précédemment référencé (0.40656, 9.46772) est un point de quartier, pas le centre du tablier. Ne pas l'utiliser pour placer l'ouvrage 3D.
+
+#### Échangeur du Lycée d'État / Lycée Paul Indjendje
+- Afrikimages conserve une photographie nocturne explicitement légendée « échangeur du lycée Paul Indjendje (ex-lycée d'État de l'Estuaire) », prise le 24 novembre 2012 : https://afrikimages.com/photos/gabon-libreville-510c251b-8b17-4c1d-8e6d-2b595a44c227?locale=fr
+- Le dossier de marché public de la Voie Express mentionne le passage sous le pont de l'échangeur du Lycée d'État, distinct du passage sur le pont des Charbonnages. Cette distinction doit être conservée dans la carte et les voies de circulation : https://www.lejmp.ga/public/file_dossier/676143ae94db7.pdf
+- La photographie de 2012 est une référence commerciale soumise à licence ; elle n'est pas un asset libre pour le jeu.
+
+#### Passerelle piétonne du Lycée d'État — ECOWOOD
+- L'ATIBT rapporte le 4 mars 2022 que la première de deux passerelles piétonnes en bois a été posée à hauteur du Lycée d'État, au-dessus du Boulevard de bord de mer / corridor de la Voie Express. Longueur publiée : 54 m ; elle traverse quatre voies.
+- L'ouvrage est conçu comme deux poissons se rencontrant. Le bois gabonais cité comprend Padouk, Movingui, Ozigo et Tali. Des lames de 40 mm ont été assemblées en poutres courbes lamellées-collées de 52 cm d'épaisseur. La livraison était alors prévue pour mi-avril 2022 : https://www.atibt.org/fr/news/13135/une-passerelle-pietonne-en-bois-100-fabrication-locale-a-libreville
+- Ces caractéristiques sont spécifiques à cette passerelle de 2022. Ne pas les transposer à l'échangeur routier voisin ni à la passerelle du Lycée Léon Mba.
+
+#### Passerelle piétonne du Lycée National Léon-Mba — ECOWOOD
+- Le ministère des Travaux publics annonce sa mise en service le 6 novembre 2024. L'ouvrage mesure 48 m de long et 2,28 m de large ; tirant d'air 6,5 m ; hauteur totale 13,5 m ; masse de bois assemblé 44 tonnes.
+- Les essences citées par le ministère sont Padouk, Ozigo, Movengui, Tali et Okan. La passerelle permet de franchir une route de 2x2 voies et répond aux traversées d'élèves qui perturbaient la circulation : https://www.infrastructures.gouv.ga/9-actualites/1227-le-ministre-des-travaux-publics-remet-la-passerelle-du-lycee-national-leon-mba-a-sa-collegue-de-l-education-nationale/
+- ECOWOOD précise que l'ouvrage est constitué de deux portées de 24 m et que les escaliers mesurent 54 m ; la hauteur totale est de 13,5 m : https://www.ecowood.ch/securite-routiere-et-scolaire-la-passerelle-du-complexe-scolaire-leon-mba-inauguree/
+- La longueur de 54 m publiée pour les escaliers par ECOWOOD ne doit pas être confondue avec les 48 m de longueur du franchissement.
+
+#### Décisions de modélisation et de placement
+- Créer deux assets distincts : passerelle_lycee_etat_2022 (54 m, forme symbolique de deux poissons, bois lamellé-collé) et passerelle_lycee_leon_mba_2024 (48 m, largeur 2,28 m, tirant d'air 6,5 m, hauteur 13,5 m, deux portées de 24 m).
+- Ces passerelles sont des ouvrages piétonniers séparés des échangeurs routiers. Les positionner à leur traversée exacte de la chaussée, pas au centre des établissements scolaires.
+- Pour le modèle 3D, les dimensions officielles de la passerelle Léon-Mba peuvent servir de contraintes métriques. Pour la passerelle du Lycée d'État, la longueur de 54 m est connue, mais il faut encore des vues suffisantes pour mesurer les escaliers, appuis, couverture et courbure réelle.
+- Le PK5 et l'échangeur du Lycée d'État disposent de références photo datées, mais leurs géométries routières exactes restent à extraire et vérifier avec l'imagerie aérienne. Aucun tablier routier nouveau n'est construit dans cette étape.
