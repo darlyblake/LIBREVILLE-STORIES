@@ -270,12 +270,6 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 		if right_arm != null:
 			right_arm.rotation.x = leg_swing * 0.55
 
-func _route_length(route: Array) -> float:
-	var total := 0.0
-	for index in range(route.size() - 1):
-		total += (route[index + 1] as Vector3).distance_to(route[index] as Vector3)
-	return total
-
 func _sample_route(route: Array, distance: float) -> Dictionary:
 	var remaining := distance
 	for index in range(route.size() - 1):
