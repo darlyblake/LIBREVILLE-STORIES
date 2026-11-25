@@ -175,6 +175,9 @@ func _try_start_climb() -> bool:
 	var wall_hit := space.intersect_ray(wall_query)
 	if wall_hit.is_empty():
 		return false
+	var wall_normal: Vector3 = wall_hit.normal
+	if wall_normal.dot(forward) > -0.45:
+		return false
 
 	var top_start := global_position + Vector3.UP * (climb_height + 0.35) + forward * (climb_forward_distance + 0.12)
 	var top_end := top_start - Vector3.UP * (climb_height + 0.75)
@@ -183,15 +186,34 @@ func _try_start_climb() -> bool:
 	var top_hit := space.intersect_ray(top_query)
 	if top_hit.is_empty():
 		return false
+	var top_normal: Vector3 = top_hit.normal
+	if top_normal.y < 0.65:
+		return false
 	var height_delta := float(top_hit.position.y) - global_position.y
 	if height_delta < 0.35 or height_delta > climb_height:
 		return false
 
 	_climb_target = Vector3(top_hit.position.x, top_hit.position.y + 0.08, top_hit.position.z) + forward * 0.35
+	if not _has_climb_clearance(_climb_target):
+		return false
 	_climbing = true
 	collision_shape.set_deferred("disabled", true)
 	velocity = Vector3.ZERO
 	character_visual.call("play_motion", "climb")
+	return true
+
+func _has_climb_clearance(target: Vector3) -> bool:
+	# Vérifie trois colonnes au-dessus de la plateforme pour éviter de grimper
+	# sous un plafond ou dans un obstacle situé juste derrière le rebord.
+	var space := get_world_3d().direct_space_state
+	var side := global_transform.basis.x * 0.24
+	for lateral_offset in [Vector3.ZERO, side, -side]:
+		var ray_start := target + lateral_offset + Vector3.UP * 0.12
+		var ray_end := target + lateral_offset + Vector3.UP * 1.85
+		var clearance_query := PhysicsRayQueryParameters3D.create(ray_start, ray_end)
+		clearance_query.exclude = [get_rid()]
+		if not space.intersect_ray(clearance_query).is_empty():
+			return false
 	return true
 
 func _process_climb(delta: float) -> void:
