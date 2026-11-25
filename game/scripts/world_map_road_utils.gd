@@ -17,6 +17,19 @@ static func road_is_oneway(props: Dictionary) -> bool:
 	return value in ["yes", "true", "1", "-1"]
 
 
+static func road_bridge_height(props: Dictionary) -> float:
+	# Les valeurs layer positives indiquent un ouvrage au-dessus du niveau 0.
+	# bridge=yes/viaduct est également pris en compte quand layer manque.
+	var bridge_tag := str(props.get("bridge", "")).to_lower()
+	var layer_value := str(props.get("layer", "0")).to_int()
+	var is_bridge := bridge_tag in ["yes", "true", "1", "viaduct", "aqueduct", "movable"]
+	if layer_value <= 0 and not is_bridge:
+		return 0.0
+	if layer_value > 0:
+		return maxf(5.2, float(layer_value) * 5.2)
+	return 5.2
+
+
 static func parse_osm_height(raw_value: String) -> float:
 	# OSM accepte des hauteurs en mètres, centimètres ou pieds.
 	# Sans unité explicite, la convention OSM est le mètre.
