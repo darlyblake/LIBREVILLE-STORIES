@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends VehicleBody3D
 class_name VehicleController
 ## Conduite arcade, caméras multiples et tableau de bord.
 
@@ -7,7 +7,7 @@ class_name VehicleController
 @export var reverse_acceleration: float = 3.8
 @export var max_speed: float = 42.0
 @export var reverse_speed: float = 12.0
-@export var service_brake: float = 19.0
+@export var service_brake: float = 32.0
 @export var coast_deceleration: float = 1.15
 @export var rolling_resistance: float = 0.12
 
@@ -80,10 +80,12 @@ const CAMERA_NAMES := ["EXTÉRIEURE PROCHE", "EXTÉRIEURE ÉLOIGNÉE", "COCKPIT"
 
 func _ready() -> void:
 	add_to_group("drivable_vehicle")
-	motion_mode = CharacterBody3D.MOTION_MODE_GROUNDED
-	floor_snap_length = 0.38
-	floor_max_angle = deg_to_rad(48.0)
-	floor_stop_on_slope = true
+	mass = 1850.0
+	center_of_mass_mode = 1
+	center_of_mass = Vector3(0.0, 0.28, 0.0)
+	linear_damp = 0.08
+	angular_damp = 1.4
+	can_sleep = false
 	var vehicle_model := get_node_or_null(vehicle_model_path) as Node3D
 	if vehicle_model != null:
 		_collect_wheel_nodes(vehicle_model, false)
@@ -91,7 +93,6 @@ func _ready() -> void:
 	else:
 		push_warning("Véhicule : modèle introuvable au chemin configuré (%s)." % str(vehicle_model_path))
 	_classify_wheels()
-	_setup_tire_probes()
 	_collect_door_nodes(vehicle_model)
 	if _wheel_nodes.size() < 2:
 		push_warning("Véhicule : seulement %d pivot(s) de roue détecté(s). Vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
@@ -101,12 +102,11 @@ func _ready() -> void:
 	_setup_driving_lesson()
 
 func _physics_process(delta: float) -> void:
+	current_speed = linear_velocity.dot(-global_transform.basis.z)
 	if not player_driving:
-		_planar_velocity = _planar_velocity.move_toward(Vector3.ZERO, service_brake * delta)
-		velocity.x = _planar_velocity.x
-		velocity.z = _planar_velocity.z
-		_apply_gravity(delta)
-		move_and_slide()
+		engine_force = 0.0
+		brake = service_brake
+		steering = move_toward(steering, 0.0, steering_response * delta)
 		return
 
 	if Input.is_action_just_pressed("vehicle_camera_next"):
@@ -118,15 +118,10 @@ func _physics_process(delta: float) -> void:
 	_update_brake_lights(controls.y, speed_before_update, delta)
 	_steering_input = controls.z
 	_update_steering_and_heading(delta)
-	_update_planar_motion(delta)
+
 	var previous_position := global_position
-	_apply_gravity(delta)
-	move_and_slide()
-	var travelled := Vector2(global_position.x - previous_position.x, global_position.z - previous_position.z).length()
-	odometer_meters += travelled
-	if wheel_radius > 0.05:
-		_wheel_roll_angle -= signf(current_speed) * travelled / wheel_radius
-	_update_wheel_animation()
+	current_speed = linear_velocity.dot(-global_transform.basis.z)
+	odometer_meters += Vector2(global_position.x - previous_position.x, global_position.z - previous_position.z).length()
 	_update_vehicle_hud()
 	_update_vehicle_audio(controls.x, controls.y)
 	if _camera_mode == 3:
@@ -155,112 +150,40 @@ func _read_trigger(device: int, axis: JoyAxis) -> float:
 		return clampf((raw + 1.0) * 0.5, 0.0, 1.0)
 	return clampf(raw, 0.0, 1.0)
 
-func _update_longitudinal_speed(throttle: float, brake: float, delta: float) -> void:
-	# Le frein doit toujours réduire la vitesse, que le véhicule avance ou recule.
-	# La marche arrière ne s'engage qu'une fois le véhicule pratiquement arrêté.
-	if brake > 0.03:
+func _update_longitudinal_speed(throttle: float, brake_input: float, _delta: float) -> void:
+	current_speed = linear_velocity.dot(-global_transform.basis.z)
+	engine_force = 0.0
+	brake = 0.0
+
+	# Le frein hydraulique ralentit d'abord ; la marche arrière ne s'engage
+	# qu'une fois le véhicule presque arrêté.
+	if brake_input > 0.03:
 		if absf(current_speed) > 0.45:
-			current_speed = move_toward(current_speed, 0.0, service_brake * brake * delta)
+			brake = service_brake * brake_input
 		elif throttle < 0.03:
-			current_speed = move_toward(current_speed, -reverse_speed, reverse_acceleration * brake * delta)
+			engine_force = -reverse_acceleration * mass * brake_input
 	elif throttle > 0.03:
 		if current_speed < -0.45:
-			current_speed = move_toward(current_speed, 0.0, service_brake * throttle * delta)
+			brake = service_brake * throttle
 		else:
 			var speed_ratio := clampf(maxf(current_speed, 0.0) / max_speed, 0.0, 1.0)
 			var torque_factor := 1.0 - 0.48 * pow(speed_ratio, 1.35)
-			current_speed = move_toward(current_speed, max_speed, acceleration * torque_factor * throttle * delta)
-	else:
-		var drag := coast_deceleration + absf(current_speed) * rolling_resistance
-		current_speed = move_toward(current_speed, 0.0, drag * delta)
-	current_speed = clampf(current_speed, -reverse_speed, max_speed)
+			engine_force = acceleration * mass * torque_factor * throttle
+
+	# Limiteur simple pour éviter que le moteur pousse au-delà des vitesses réglées.
+	if current_speed >= max_speed and engine_force > 0.0:
+		engine_force = 0.0
+		brake = maxf(brake, 1.5)
+	elif current_speed <= -reverse_speed and engine_force < 0.0:
+		engine_force = 0.0
+		brake = maxf(brake, 1.5)
 
 func _update_steering_and_heading(delta: float) -> void:
 	var speed_ratio := clampf(absf(current_speed) / max_speed, 0.0, 1.0)
-	# Braquage important à basse vitesse, progressivement réduit sur route rapide.
 	var allowed_angle := lerpf(max_steering_angle, high_speed_steering_angle, pow(speed_ratio, 0.72))
 	_steering_angle = move_toward(_steering_angle, _steering_input * allowed_angle, steering_response * delta)
-	if absf(current_speed) > 0.12 and wheel_base > 0.5:
-		# Modèle vélo : le sens de rotation s'inverse naturellement en marche arrière.
-		var yaw_rate := (current_speed / wheel_base) * tan(_steering_angle)
-		rotation.y -= yaw_rate * delta
-
-func _update_planar_motion(delta: float) -> void:
-	var forward := -global_transform.basis.z
-	var right := global_transform.basis.x
-	var forward_speed := _planar_velocity.dot(forward)
-	var lateral_speed := _planar_velocity.dot(right)
-
-	_sample_tire_contacts()
-	var contact_ratio := 1.0
-	if not _wheel_rays.is_empty():
-		contact_ratio = float(_wheel_grounded_count) / float(_wheel_rays.size())
-
-	# Traction et adhérence sont conditionnées par le contact des pneus au sol.
-	var traction_rate := (11.0 if absf(current_speed) < 8.0 else 7.0) * lerpf(0.35, 1.0, contact_ratio)
-	forward_speed = move_toward(forward_speed, current_speed, traction_rate * delta)
-
-	var speed_factor := clampf(absf(forward_speed) / 24.0, 0.0, 1.0)
-	var grip := maxf(lateral_grip, 1.0) * _average_surface_grip * lerpf(1.15, 0.82, speed_factor)
-	grip *= lerpf(0.28, 1.0, contact_ratio)
-	var lateral_damping := clampf(grip * delta, 0.0, 1.0)
-	lateral_speed *= 1.0 - lateral_damping
-
-	# Une voiture perd de l'adhérence lorsqu'elle n'a plus ses quatre pneus au sol.
-	var max_lateral_speed := maxf(1.2, absf(forward_speed) * lerpf(0.12, 0.22, contact_ratio))
-	lateral_speed = clampf(lateral_speed, -max_lateral_speed, max_lateral_speed)
-
-	_planar_velocity = forward * forward_speed + right * lateral_speed
-	velocity.x = _planar_velocity.x
-	velocity.z = _planar_velocity.z
-
-func _apply_gravity(delta: float) -> void:
-	if not is_on_floor():
-		velocity.y -= float(ProjectSettings.get_setting("physics/3d/default_gravity")) * delta
-	else:
-		velocity.y = -0.2
-
-func _setup_tire_probes() -> void:
-	_wheel_rays.clear()
-	var probe_positions := _wheel_local_positions.duplicate()
-	if probe_positions.size() < 4:
-		# Géométrie de secours adaptée à l'empattement d'un SUV lorsque le GLB
-		# ne nomme pas ses pneus ou ne les expose pas comme nœuds séparés.
-		probe_positions = [
-			Vector3(-0.82, 0.34, -1.42),
-			Vector3(0.82, 0.34, -1.42),
-			Vector3(-0.82, 0.34, 1.42),
-			Vector3(0.82, 0.34, 1.42)
-		]
-	for index in range(probe_positions.size()):
-		var probe := RayCast3D.new()
-		probe.name = "TireContact_%d" % index
-		probe.position = probe_positions[index] + Vector3.UP * 0.32
-		probe.target_position = Vector3.DOWN * 1.05
-		probe.enabled = true
-		probe.collide_with_bodies = true
-		probe.collide_with_areas = false
-		add_child(probe)
-		_wheel_rays.append(probe)
-
-func _sample_tire_contacts() -> void:
-	_wheel_grounded_count = 0
-	_average_surface_grip = 0.0
-	for probe in _wheel_rays:
-		probe.force_raycast_update()
-		if probe.is_colliding():
-			_wheel_grounded_count += 1
-			var grip := 1.0
-			var collider := probe.get_collider()
-			if collider is PhysicsBody3D:
-				var material := (collider as PhysicsBody3D).physics_material_override
-				if material != null:
-					grip = clampf(material.friction, 0.25, 1.8)
-			_average_surface_grip += grip
-	if _wheel_grounded_count > 0:
-		_average_surface_grip /= float(_wheel_grounded_count)
-	else:
-		_average_surface_grip = 0.35
+	# VehicleBody3D transmet cet angle aux deux roues avant réellement directrices.
+	steering = _steering_angle
 
 func _collect_door_nodes(root: Node) -> void:
 	_door_nodes.clear()
@@ -396,6 +319,7 @@ func _create_wheel_pivot(wheel_node: Node3D) -> bool:
 	pivot.global_transform = Transform3D(global_transform.basis.orthonormalized(), wheel_center)
 	original_parent.remove_child(wheel_node)
 	pivot.add_child(wheel_node)
+	wheel_node.visible = false
 	wheel_node.global_transform = original_global
 	_wheel_nodes.append(pivot)
 	_wheel_base_basis.append(pivot.transform.basis.orthonormalized())
@@ -809,10 +733,13 @@ func enter_vehicle() -> void:
 	_starter_audio.play()
 	_show_driving_lesson()
 	current_speed = 0.0
-	_planar_velocity = Vector3.ZERO
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	engine_force = 0.0
+	brake = 0.0
+	steering = 0.0
 	_steering_angle = 0.0
 	_steering_input = 0.0
-	velocity = Vector3.ZERO
 	_set_camera_mode(_camera_mode)
 
 func exit_vehicle() -> void:
@@ -821,7 +748,10 @@ func exit_vehicle() -> void:
 	_hide_driving_lesson()
 	_update_vehicle_audio(0.0, 0.0)
 	current_speed = 0.0
-	_planar_velocity = Vector3.ZERO
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	engine_force = 0.0
+	brake = service_brake
+	steering = 0.0
 	_steering_angle = 0.0
 	_steering_input = 0.0
-	velocity = Vector3.ZERO
