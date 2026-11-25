@@ -1,20 +1,20 @@
 # Personnage de test — LIBREVILLE STORIES
 
-Le personnage de test utilise le mannequin humanoïde riggé **UAL1_Standard.glb** de Quaternius, repris du dépôt OpenCity. Le modèle comprend un squelette et des animations de locomotion. Il est sous licence CC0 1.0 ; voir `LICENSE-Quaternius-UAL.txt`.
+Le personnage de test utilise le mannequin humanoïde riggé **UAL1_Standard.glb** de Quaternius. La bibliothèque **UAL2_Standard.glb** est également incluse pour compléter les animations de locomotion, de combat et de parkour. Les deux ressources sont sous licence CC0 1.0 ; voir `LICENSE-Quaternius-UAL.txt`.
 
-## Installation du modèle
+## Bibliothèques intégrées
 
-Le fichier GLB est un binaire de 7,6 Mo. Il n'a pas été possible de transférer ce binaire avec l'éditeur de fichiers texte GitHub utilisé pour les corrections. Deux méthodes sont possibles :
+- `UAL1_Standard.glb` : mannequin et clips de base déjà utilisés par `player_visual.gd`.
+- `UAL2_Standard.glb` : bibliothèque complémentaire importée depuis la distribution officielle Quaternius. Les clips ne sont pas encore activés dans le contrôleur du joueur : le diagnostic Godot doit d'abord confirmer leurs noms et la compatibilité exacte des squelettes.
 
-- **Automatique (recommandé)** : ouvrir l'onglet GitHub **Actions**, choisir **Import CC0 test character**, puis cliquer sur **Run workflow** sur la branche `main`. Le workflow télécharge le modèle, vérifie son empreinte Git et le commit dans le dépôt.
-- **Manuelle** : depuis la racine du dépôt, exécuter :
+## Import dans Godot
 
-```bash
-mkdir -p assets/models/characters
-curl -L --fail "https://raw.githubusercontent.com/webgl-games/opencity/main/assets/characters/UAL1_Standard.glb" -o assets/models/characters/UAL1_Standard.glb
-```
+Les deux fichiers GLB sont versionnés dans le dépôt. Ouvrir le projet avec Godot 4.3 ou supérieur et laisser l'import des ressources se terminer. Le script `tools/inspect_character_animations.gd` liste les clips disponibles et compare les os des deux squelettes. La validation GitHub Actions exécute ce diagnostic automatiquement après l'import du projet.
 
-Ouvrir ensuite le projet avec Godot 4.3 ou supérieur et laisser l'import GLB se terminer. La scène principale charge automatiquement le mannequin et utilise Idle, Walk, Jog_Fwd/Sprint et Jump. En attendant le téléchargement, un mannequin humain provisoire est généré à la place du tube bleu.
+Si UAL1 n'est pas disponible, `player_visual.gd` génère un mannequin humain provisoire à la place du tube bleu.
 
-Source du modèle : https://github.com/webgl-games/opencity
-Licence : CC0 1.0 Universal.
+## Sources et licences
+
+- UAL1 : https://quaternius.itch.io/universal-animation-library
+- UAL2 : https://quaternius.itch.io/universal-animation-library-2
+- Licence des deux ressources : CC0 1.0 Universal.
