@@ -269,6 +269,8 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 	if not is_pedestrian and is_instance_valid(_traffic_signs) and _traffic_signs.has_method("is_red_for_vehicle"):
 		if bool(_traffic_signs.call("is_red_for_vehicle", current_position, current_direction)):
 			desired_speed = 0.0
+	elif is_pedestrian and _is_vehicle_near(current_position, 5.0):
+		desired_speed = 0.0
 	var acceleration := 10.0 if desired_speed < float(actor["speed"]) else 2.0
 	var previous_speed := float(actor["speed"])
 	actor["speed"] = move_toward(previous_speed, desired_speed, acceleration * delta)
@@ -299,6 +301,14 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 		if right_arm != null:
 			right_arm.rotation.x = leg_swing * 0.55
 
+
+
+func _is_vehicle_near(position: Vector3, radius: float) -> bool:
+	for vehicle in _traffic:
+		var vehicle_node := vehicle.get("node") as Node3D
+		if is_instance_valid(vehicle_node) and vehicle_node.global_position.distance_to(position) < radius:
+			return true
+	return false
 
 func _update_vehicle_lights(car: Node3D, previous_speed: float, current_speed: float, current_direction: Vector3, route: Array, distance: float) -> void:
 	var braking := current_speed < previous_speed - 0.025 or current_speed < 0.8
