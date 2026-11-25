@@ -312,3 +312,24 @@ Les deux ouvrages sont désormais documentés séparément :
 
 ### Correction de la fiche Lycée Léon-Mba — hiérarchie des sources
 Une publication ministérielle du 7 novembre 2024 confirme les dimensions officielles de 48 m × 2,28 m, 6,5 m de tirant d'air et 13,5 m de hauteur totale. Les articles de chantier de 2023 mentionnant environ 50–54 m ou 16 m sont des estimations antérieures et ne doivent pas être mélangés avec la fiche de réception ministérielle. Pour le modèle de référence, retenir les mesures ministérielles et garder les écarts de presse en note d'incertitude.
+
+
+### Actualisation du corridor Voie Express — marchés publics et niveaux de circulation (janvier 2026)
+- Le marché approuvé **N°90/MTPC/SG/2025**, daté du **15 janvier 2026**, porte sur la réhabilitation de la Voie Express entre l'échangeur de Charbonnages et l'échangeur de Lalala « à droite ». Cette référence confirme une opération de réhabilitation du corridor, mais la fiche publique consultée ne donne ni plan d'exécution, ni métrés, ni coupe type, ni dimensions des ouvrages. Ne pas en déduire un changement de géométrie des ponts.
+- La même page DGMP publie le marché **N°101/MTPC/SG/2025**, approuvé le 19 janvier 2026, pour la conception et la réalisation de l'échangeur de la Route Protocole. Il s'agit d'un ouvrage distinct des échangeurs existants du corridor PK5–Lalala ; sa géométrie reste à documenter à partir du dossier de résultats/plans.
+- Source DGMP : https://lejmp.com/marches-approuves/11/
+- Le dossier d'entretien de la Commune décrit les relations de niveau le long de la Voie Express : Lycée d'État (passage sous le pont), Charbonnages (sur le pont), Démocratie (sous l'échangeur), Nzeng-Ayong (sur le pont), PK5 (sous le pont), Awendjé (sous le pont), IAI (sur le pont), Lalala (sous le pont), puis Pont Nomba. C'est une source utile pour le réseau de circulation et les niveaux relatifs, mais pas une coupe topographique.
+- Source : https://www.lejmp.ga/public/file_dossier/676143ae94db7.pdf
+- Règle de production : séparer dans le jeu la chaussée principale, les bretelles, les voies inférieures, les voies de desserte et les tabliers. La mention « sur/sous le pont » qualifie le parcours d'entretien, elle ne donne pas à elle seule les hauteurs libres ou les altitudes.
+
+### Camp de Gaulle — programme officiel confirmé
+- La communication gouvernementale du 14 août 2025 confirme que le projet du Camp de Gaulle comprend un pont, un rond-point élargi, des voies réaménagées, des passerelles piétonnes et un éclairage solaire, porté par Mika Services.
+- La visite gouvernementale du 29 octobre 2025 précise le programme du Fly-Over : pont et giratoire de 108 m de diamètre reliant la voie de contournement nord à la Voie Express, avec routes de jonction entre le pont de Gué-Gué et le bas de Gué-Gué vers Prix-import, ainsi qu'un projet hydraulique du bassin versant de Gué-Gué.
+- Sources : https://gouvernement.ga/2025/08/14/%F0%9D%90%80%F0%9D%90%82%F0%9D%90%93%F0%9D%90%88%F0%9D%90%8E%F0%9D%90%8D-%F0%9D%90%83%F0%9D%90%94-%F0%9D%90%86%F0%9D%90%8E%F0%9D%90%94%F0%9D%90%95%F0%9D%90%84%F0%9D%90%91%F0%9D%90%8D%F0%9D%90%84/ ; https://gouvernement.ga/2025/10/29/terrain/
+- Ces sources confirment la composition du programme et le diamètre du giratoire, mais pas les rayons des bretelles, les pentes, les sections du tablier, les piles ni les dimensions des passerelles. Le chantier doit être représenté selon une date de référence : ne pas mélanger les phases de construction 2025 avec l'ouvrage achevé.
+- Visuel de chantier et données de presse peuvent servir de références d'apparence, pas de plans de construction.
+
+### PK5–PK12 — confirmation du programme de six passerelles
+- L'Union confirme le 8 juillet 2024 que le projet de corridor PK5–PK12 comprend l'élargissement en 2×2 voies et six passerelles aux secteurs Beyrouth, Marché Banane, Lycée Djoué Dabany, HIA-OBO, Melen et ENA.
+- Source : https://union.sonapresse.com/index.php/fr/infrastructures-routieres-ali-bongo-ondimba-sur-le-terrain-des-pk
+- Cette source confirme les emplacements fonctionnels et le programme, mais ne décrit pas chaque ouvrage séparément. Il faut relever pour chaque passerelle le type de structure, la largeur, la hauteur, les accès et les appuis avant de créer six modèles individualisés.
