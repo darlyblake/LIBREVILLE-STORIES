@@ -89,8 +89,23 @@ func _spawn_traffic() -> void:
 func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
 	var car := Node3D.new()
 	car.name = car_name
-	_add_box(car, "Body", Vector3(4.0, 0.82, 1.78), Vector3(0.0, 0.82, 0.0), paint)
-	_add_box(car, "Cabin", Vector3(2.05, 0.78, 1.55), Vector3(-0.18, 1.55, 0.0), paint)
+	var vehicle_index := int(car_name.get_slice("_", 1))
+	var is_minibus := vehicle_index % 3 == 1
+	var body_length := 4.8 if is_minibus else 4.0
+	var cabin_length := 2.75 if is_minibus else 2.05
+	_add_box(car, "Body", Vector3(body_length, 0.82, 1.88 if is_minibus else 1.78), Vector3(0.0, 0.82, 0.0), paint)
+	_add_box(car, "Cabin", Vector3(cabin_length, 0.95 if is_minibus else 0.78, 1.62 if is_minibus else 1.55), Vector3(-0.12, 1.62 if is_minibus else 1.55, 0.0), paint)
+	if vehicle_index % 3 == 0:
+		var taxi_sign_material := _material(Color(0.95, 0.82, 0.10), 0.52)
+		var taxi_sign := _add_box(car, "TaxiRoofSign", Vector3(0.62, 0.18, 0.34), Vector3(-0.18, 2.08, 0.0), taxi_sign_material)
+		var taxi_label := Label3D.new()
+		taxi_label.name = "TaxiLabel"
+		taxi_label.text = "TAXI"
+		taxi_label.font_size = 24
+		taxi_label.pixel_size = 0.004
+		taxi_label.position = Vector3(0.0, 2.08, 0.18)
+		taxi_label.modulate = Color(0.08, 0.08, 0.06)
+		taxi_sign.add_child(taxi_label)
 	var glass := _material(Color(0.09, 0.17, 0.22), 0.18)
 	_add_box(car, "Windshield", Vector3(0.06, 0.55, 1.42), Vector3(0.88, 1.57, 0.0), glass)
 	_add_box(car, "RearWindow", Vector3(0.06, 0.52, 1.38), Vector3(-1.22, 1.57, 0.0), glass)
@@ -115,7 +130,7 @@ func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
 		var rear_indicator := _add_box(car, "RearIndicator_%s" % str(side), Vector3(0.08, 0.10, 0.22), Vector3(-2.075, 0.83, side * 0.72), indicator)
 		rear_indicator.set_meta("indicator_material", indicator)
 		rear_indicator.set_meta("indicator_side", side)
-		for axle in [-1.25, 1.25]:
+		for axle in ([-1.55, 1.55] if is_minibus else [-1.25, 1.25]):
 			var wheel := MeshInstance3D.new()
 			wheel.name = "Wheel"
 			var mesh := CylinderMesh.new()
