@@ -18,6 +18,9 @@ func _ready() -> void:
 			animation_player = model.find_child("AnimationPlayer", true, false) as AnimationPlayer
 			if animation_player != null:
 				animation_player.playback_default_blend_time = 0.18
+				for loop_name in ["Idle", "Walk", "Jog_Fwd", "Sprint"]:
+					if animation_player.has_animation(loop_name):
+						animation_player.get_animation(loop_name).loop_mode = Animation.LOOP_LINEAR
 				play_motion("idle")
 			return
 	_build_fallback_humanoid()
