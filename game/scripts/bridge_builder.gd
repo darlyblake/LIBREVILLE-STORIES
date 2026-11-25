@@ -3,7 +3,7 @@ extends Node3D
 ## Les dimensions non renseignées par OSM restent des paramètres provisoires, à recaler par ouvrage.
 
 const DEFAULT_CLEARANCE := 4.5
-const RAMP_LENGTH := 18.0
+const RAMP_LENGTH := 65.0
 const MAX_SAMPLE_STEP := 6.0
 const SUPPORT_SPACING := 22.0
 
@@ -117,7 +117,7 @@ func _build_span(source_points: Array[Vector3], width: float, clearance: float, 
 		var right_a := Vector3(a.x - side.x, a.y, a.z - side.y)
 		var left_b := Vector3(b.x + side.x, b.y, b.z + side.y)
 		var right_b := Vector3(b.x - side.x, b.y, b.z - side.y)
-		_add_quad(deck, left_a + Vector3.UP * 0.12, right_a + Vector3.UP * 0.12, right_b + Vector3.UP * 0.12, left_b + Vector3.UP * 0.12)
+		_add_deck_quad(deck, left_a + Vector3.UP * 0.12, right_a + Vector3.UP * 0.12, right_b + Vector3.UP * 0.12, left_b + Vector3.UP * 0.12)
 		_add_quad(underside, left_a - Vector3.UP * 0.34, left_b - Vector3.UP * 0.34, right_b - Vector3.UP * 0.34, right_a - Vector3.UP * 0.34)
 		_add_box_strip(rails, left_a + Vector3.UP * 0.62, left_b + Vector3.UP * 0.62, 0.16)
 		_add_box_strip(rails, right_a + Vector3.UP * 0.62, right_b + Vector3.UP * 0.62, 0.16)
@@ -178,6 +178,30 @@ func _densify(source: Array[Vector3]) -> Array[Vector3]:
 		for step in range(1, steps + 1):
 			result.append(a.lerp(b, float(step) / float(steps)))
 	return result
+
+
+
+func _add_deck_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
+	# Le shader bitume attend des UV métriques et UV2 pour ses traces de pneus.
+	surface.set_color(Color.WHITE)
+	surface.set_uv(Vector2(a.x / 4.0, a.z / 4.0))
+	surface.set_uv2(Vector2(1.0, -1.0))
+	surface.add_vertex(a)
+	surface.set_uv(Vector2(b.x / 4.0, b.z / 4.0))
+	surface.set_uv2(Vector2(1.0, 1.0))
+	surface.add_vertex(b)
+	surface.set_uv(Vector2(c.x / 4.0, c.z / 4.0))
+	surface.set_uv2(Vector2(1.0, 1.0))
+	surface.add_vertex(c)
+	surface.set_uv(Vector2(a.x / 4.0, a.z / 4.0))
+	surface.set_uv2(Vector2(1.0, -1.0))
+	surface.add_vertex(a)
+	surface.set_uv(Vector2(c.x / 4.0, c.z / 4.0))
+	surface.set_uv2(Vector2(1.0, 1.0))
+	surface.add_vertex(c)
+	surface.set_uv(Vector2(d.x / 4.0, d.z / 4.0))
+	surface.set_uv2(Vector2(1.0, -1.0))
+	surface.add_vertex(d)
 
 
 func _add_quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
