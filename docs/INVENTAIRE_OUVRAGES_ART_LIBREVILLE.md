@@ -505,3 +505,14 @@ IAI est désormais documenté comme ouvrage prioritaire avec un historique offic
 - Ces passerelles sont des ouvrages piétonniers séparés des échangeurs routiers. Les positionner à leur traversée exacte de la chaussée, pas au centre des établissements scolaires.
 - Pour le modèle 3D, les dimensions officielles de la passerelle Léon-Mba peuvent servir de contraintes métriques. Pour la passerelle du Lycée d'État, la longueur de 54 m est connue, mais il faut encore des vues suffisantes pour mesurer les escaliers, appuis, couverture et courbure réelle.
 - Le PK5 et l'échangeur du Lycée d'État disposent de références photo datées, mais leurs géométries routières exactes restent à extraire et vérifier avec l'imagerie aérienne. Aucun tablier routier nouveau n'est construit dans cette étape.
+
+
+### Passerelle(s) de promenade de la Baie des Rois — ouvrage bois 2023
+
+- La fiche de l'ingénieur bois Charpente Concept identifie un ouvrage de franchissement à Libreville, commandé par la Façade Maritime du Champ Triomphal (FMCT), réalisé par ECOWOOD en 2023.
+- Dimensions publiées : portée 27 m, largeur 4,2 m. Système structurel : arc et tirant (bow-string). Padouk pour la structure principale et Tuli pour la structure secondaire.
+- Fiche technique et galerie : https://www.charpente-concept.com/realisations/passerelles-a-libreville-gabon/
+- La galerie officielle d'ECOWOOD distingue explicitement « Passerelle à la Baie des Rois — Passerelles pour une promenade au bord de mer » et fournit une photographie directe du site : https://www.ecowood.ch/ (image source : https://www.ecowood.ch/wp-content/uploads/2025/06/IMG_9364-1.jpg)
+- La photo montre un tablier piéton, des arcs courbes en bois sombre, des suspentes/liaisons métalliques, des garde-corps et des appuis intégrés au parcours paysager côtier. Elle permet de confirmer la silhouette et les matériaux apparents, mais pas de mesurer le nombre exact d'arcs, les fondations ou les détails d'assemblage.
+- Consigne jeu : modéliser une passerelle piétonne de promenade, sans circulation automobile, avec structure bow-string en Padouk, pièces secondaires en Tuli, garde-corps et raccordement au chemin paysager. Utiliser la portée de 27 m et la largeur de 4,2 m comme dimensions de référence de la fiche ; vérifier sur place/aérien le nombre et la position des passerelles avant de dupliquer le modèle.
+- Ne pas traiter la fiche technique comme preuve que toutes les passerelles visibles sur la promenade ont exactement ces dimensions : la source décrit une réalisation/projet et la galerie emploie le pluriel pour le secteur.
