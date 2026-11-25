@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://bx5jcd23fjq5s"]
+[gd_scene load_steps=20 format=3 uid="uid://bx5jcd23fjq5s"]
 
 [ext_resource type="Script" path="res://game/scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://game/scripts/world_map.gd" id="2_map"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://game/scripts/ambient_population.gd" id="12_population"]
 [ext_resource type="Script" path="res://game/scripts/libreville_districts.gd" id="13_districts"]
 [ext_resource type="Script" path="res://game/scripts/facility_generator.gd" id="14_facilities"]
+[ext_resource type="Script" path="res://game/scripts/traffic_signs.gd" id="15_traffic_signs"]
 
 [sub_resource type="Environment" id="Environment_world"]
 background_mode = 1
@@ -64,6 +65,9 @@ script = ExtResource("13_districts")
 
 [node name="FacilityGenerator" type="Node3D" parent="."]
 script = ExtResource("14_facilities")
+
+[node name="TrafficSigns" type="Node3D" parent="."]
+script = ExtResource("15_traffic_signs")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_world")
