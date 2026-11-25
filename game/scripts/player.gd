@@ -205,7 +205,7 @@ func _toggle_vehicle() -> void:
 		await _walk_to_driver_door(nearest)
 		await nearest.open_driver_door()
 		collision_shape.set_deferred("disabled", true)
-		var seat_position := nearest.global_position - nearest.global_transform.basis.x * 0.35 + Vector3.UP * 0.95
+		var seat_position := nearest.global_position - nearest.global_transform.basis.x * 0.35 + Vector3.UP * 0.25
 		var enter_tween := create_tween()
 		enter_tween.tween_property(self, "global_position", seat_position, 0.32).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		await enter_tween.finished
