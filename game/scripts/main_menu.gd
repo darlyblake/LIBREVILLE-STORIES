@@ -79,9 +79,10 @@ func _build_interface() -> void:
 
 	_add_label(_settings_box, "Qualité graphique")
 	_quality = OptionButton.new()
-	_quality.add_item("Économique — carte graphique 2 Go")
+	_quality.add_item("Performance")
 	_quality.add_item("Équilibrée")
-	_quality.add_item("Élevée")
+	_quality.add_item("Élevée — haute fidélité")
+	_quality.add_item("Ultra — qualité maximale")
 	_quality.item_selected.connect(_on_quality_selected)
 	_settings_box.add_child(_quality)
 
@@ -202,34 +203,37 @@ func _show_controls() -> void:
 	_status.text = "Les commandes clavier sont enregistrées automatiquement."
 
 func _on_quality_selected(index: int) -> void:
-	if index == 0:
-		_shadows.button_pressed = false
-		_buildings.button_pressed = false
-		_vegetation.button_pressed = false
-		_extra_textures.button_pressed = false
-	elif index == 1:
-		_shadows.button_pressed = false
-		_buildings.button_pressed = true
-		_vegetation.button_pressed = false
-		_extra_textures.button_pressed = false
-	else:
-		_shadows.button_pressed = true
-		_buildings.button_pressed = true
-		_vegetation.button_pressed = true
-		_extra_textures.button_pressed = true
+	match index:
+		0:
+			_shadows.button_pressed = false
+			_buildings.button_pressed = false
+			_vegetation.button_pressed = false
+			_extra_textures.button_pressed = false
+		1:
+			_shadows.button_pressed = false
+			_buildings.button_pressed = true
+			_vegetation.button_pressed = false
+			_extra_textures.button_pressed = false
+		2, 3:
+			_shadows.button_pressed = true
+			_buildings.button_pressed = true
+			_vegetation.button_pressed = true
+			_extra_textures.button_pressed = true
 
 func _load_settings() -> void:
 	var config := ConfigFile.new()
 	var error := config.load(SETTINGS_PATH)
 	if error != OK:
-		_quality.select(0)
-		_shadows.button_pressed = false
-		_buildings.button_pressed = false
-		_vegetation.button_pressed = false
-		_extra_textures.button_pressed = false
+		# Première ouverture : proposer la fidélité visuelle élevée.
+		# Les profils plus légers restent disponibles à tout moment.
+		_quality.select(2)
+		_shadows.button_pressed = true
+		_buildings.button_pressed = true
+		_vegetation.button_pressed = true
+		_extra_textures.button_pressed = true
 		_fullscreen.button_pressed = false
 		return
-	_quality.select(int(config.get_value("graphics", "quality", 0)))
+	_quality.select(int(config.get_value("graphics", "quality", 2)))
 	_shadows.button_pressed = bool(config.get_value("graphics", "shadows", false))
 	_buildings.button_pressed = bool(config.get_value("graphics", "buildings", false))
 	_vegetation.button_pressed = bool(config.get_value("graphics", "vegetation", false))
