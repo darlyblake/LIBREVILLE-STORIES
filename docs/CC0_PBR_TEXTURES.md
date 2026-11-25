@@ -37,13 +37,13 @@ Depuis la racine du dépôt :
 python3 tools/download_cc0_textures.py
 ```
 
-Par défaut, il télécharge les cartes en 2K. Pour une bibliothèque de qualité supérieure :
+Par défaut, il télécharge les cartes en 4K. Pour réduire volontairement le poids du dépôt, la résolution peut être ajustée :
 
 ```bash
-python3 tools/download_cc0_textures.py --resolution 4k
+python3 tools/download_cc0_textures.py --resolution 2k
 ```
 
-Les fichiers sont rangés dans `assets/textures/pbr/<asset_id>/`. Le script conserve les cartes disponibles (diffuse, normal OpenGL, roughness, AO, metalness, displacement) et un fichier `asset.json` contenant la provenance, les auteurs et la licence.
+Les fichiers sont rangés dans `assets/textures/pbr/<asset_id>/`. Une HDRI côtière CC0 est également téléchargée dans `assets/sky/`. Le script met à niveau les cartes déjà présentes lorsqu'une résolution supérieure est demandée. Le script conserve les cartes disponibles (diffuse, normal OpenGL, roughness, AO, metalness, displacement) et un fichier `asset.json` contenant la provenance, les auteurs et la licence.
 
 ## Règles d'intégration
 
