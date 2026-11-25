@@ -8,6 +8,7 @@ var _shadows: CheckButton
 var _buildings: CheckButton
 var _vegetation: CheckButton
 var _extra_textures: CheckButton
+var _pbr_textures: CheckButton
 var _fullscreen: CheckButton
 var _status: Label
 var _menu_box: VBoxContainer
@@ -88,8 +89,7 @@ func _build_interface() -> void:
 	_quality = OptionButton.new()
 	_quality.add_item("Performance")
 	_quality.add_item("Équilibrée")
-	_quality.add_item("Élevée — haute fidélité")
-	_quality.add_item("Ultra — qualité maximale")
+	_quality.add_item("Élevée — qualité maximale")
 	_quality.item_selected.connect(_on_quality_selected)
 	_settings_box.add_child(_quality)
 
@@ -97,6 +97,7 @@ func _build_interface() -> void:
 	_buildings = _add_check(_settings_box, "Afficher les bâtiments")
 	_vegetation = _add_check(_settings_box, "Végétation et herbe 3D")
 	_extra_textures = _add_check(_settings_box, "Textures de routes supplémentaires")
+	_pbr_textures = _add_check(_settings_box, "Matériaux PBR photoréalistes")
 	_fullscreen = _add_check(_settings_box, "Plein écran")
 
 	_add_button(_settings_box, "ENREGISTRER ET RETOUR", _save_and_back)
@@ -216,16 +217,19 @@ func _on_quality_selected(index: int) -> void:
 			_buildings.button_pressed = false
 			_vegetation.button_pressed = false
 			_extra_textures.button_pressed = false
+			_pbr_textures.button_pressed = false
 		1:
 			_shadows.button_pressed = false
 			_buildings.button_pressed = true
 			_vegetation.button_pressed = false
 			_extra_textures.button_pressed = false
-		2, 3:
+			_pbr_textures.button_pressed = false
+		2:
 			_shadows.button_pressed = true
 			_buildings.button_pressed = true
 			_vegetation.button_pressed = true
 			_extra_textures.button_pressed = true
+			_pbr_textures.button_pressed = true
 
 func _load_settings() -> void:
 	var config := ConfigFile.new()
@@ -238,13 +242,15 @@ func _load_settings() -> void:
 		_buildings.button_pressed = true
 		_vegetation.button_pressed = true
 		_extra_textures.button_pressed = true
+		_pbr_textures.button_pressed = true
 		_fullscreen.button_pressed = false
 		return
 	_quality.select(int(config.get_value("graphics", "quality", 2)))
 	_shadows.button_pressed = bool(config.get_value("graphics", "shadows", false))
 	_buildings.button_pressed = bool(config.get_value("graphics", "buildings", false))
 	_vegetation.button_pressed = bool(config.get_value("graphics", "vegetation", false))
-	_extra_textures.button_pressed = bool(config.get_value("graphics", "extra_textures", false))
+	_extra_textures.button_pressed = bool(config.get_value("graphics", "extra_textures", true))
+	_pbr_textures.button_pressed = bool(config.get_value("graphics", "pbr_textures", true))
 	_fullscreen.button_pressed = bool(config.get_value("display", "fullscreen", false))
 	_apply_display_mode()
 
@@ -255,6 +261,7 @@ func _save_and_back() -> void:
 	config.set_value("graphics", "buildings", _buildings.button_pressed)
 	config.set_value("graphics", "vegetation", _vegetation.button_pressed)
 	config.set_value("graphics", "extra_textures", _extra_textures.button_pressed)
+	config.set_value("graphics", "pbr_textures", _pbr_textures.button_pressed)
 	config.set_value("display", "fullscreen", _fullscreen.button_pressed)
 	var error := config.save(SETTINGS_PATH)
 	if error != OK:
