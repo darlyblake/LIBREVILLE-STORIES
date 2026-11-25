@@ -60,6 +60,8 @@ func _physics_process(delta: float) -> void:
 		global_position = _vehicle.global_position + Vector3.UP * 1.05
 		velocity = Vector3.ZERO
 		return
+	if _interaction_busy:
+		return
 
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var jump_pressed := Input.is_action_just_pressed("jump")
@@ -183,6 +185,7 @@ func _toggle_vehicle() -> void:
 		exiting_vehicle.exit_vehicle()
 		_vehicle = null
 		global_position = exit_position
+		collision_shape.set_deferred("disabled", false)
 		visible = true
 		player_camera.make_current()
 		await get_tree().create_timer(0.35).timeout
@@ -201,6 +204,11 @@ func _toggle_vehicle() -> void:
 	if nearest != null:
 		await _walk_to_driver_door(nearest)
 		await nearest.open_driver_door()
+		collision_shape.set_deferred("disabled", true)
+		var seat_position := nearest.global_position - nearest.global_transform.basis.x * 0.35 + Vector3.UP * 0.95
+		var enter_tween := create_tween()
+		enter_tween.tween_property(self, "global_position", seat_position, 0.32).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		await enter_tween.finished
 		_vehicle = nearest
 		nearest.enter_vehicle()
 		visible = false
