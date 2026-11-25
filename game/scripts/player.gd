@@ -48,6 +48,8 @@ var _jump_animation_left := 0.0
 var _ammo_label: Label
 var _hit_marker: Label
 var _hit_marker_left := 0.0
+var _interaction_prompt: Label
+var _nearby_interactable: Node
 
 func _ready() -> void:
 	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
@@ -79,6 +81,8 @@ func _input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if event is InputEventMouseButton and event.pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	if event.is_action_pressed("interact") or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_B):
+		_try_interact()
 	if event.is_action_pressed("enter_exit_vehicle") or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_Y):
 		if not _interaction_busy:
 			_toggle_vehicle()
@@ -94,6 +98,7 @@ func _physics_process(delta: float) -> void:
 	if _interaction_busy:
 		return
 
+	_update_interaction_target()
 	_shoot_cooldown_left = maxf(0.0, _shoot_cooldown_left - delta)
 	_shoot_animation_left = maxf(0.0, _shoot_animation_left - delta)
 	_hit_marker_left = maxf(0.0, _hit_marker_left - delta)
@@ -171,6 +176,39 @@ func _physics_process(delta: float) -> void:
 	if _aiming and not _reloading and Input.is_action_pressed("shoot") and _shoot_cooldown_left <= 0.0 and is_on_floor():
 		_fire_weapon()
 	_update_character_animation()
+
+func _update_interaction_target() -> void:
+	if not is_instance_valid(_interaction_prompt):
+		return
+	_nearby_interactable = null
+	var viewport_size := get_viewport().get_visible_rect().size
+	var screen_center := viewport_size * 0.5
+	var ray_origin := player_camera.project_ray_origin(screen_center)
+	var ray_direction := player_camera.project_ray_normal(screen_center)
+	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_direction * 3.4)
+	query.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty():
+		var candidate := hit.get("collider") as Node
+		while candidate != null:
+			if candidate.is_in_group("world_interactables") and candidate.has_method("interact"):
+				_nearby_interactable = candidate
+				break
+			candidate = candidate.get_parent()
+	if is_instance_valid(_nearby_interactable):
+		var prompt_text := "E : interagir"
+		if _nearby_interactable.has_method("get_interaction_prompt"):
+			prompt_text = str(_nearby_interactable.call("get_interaction_prompt"))
+		_interaction_prompt.text = prompt_text
+		_interaction_prompt.visible = true
+	else:
+		_interaction_prompt.visible = false
+
+func _try_interact() -> void:
+	if _interaction_busy or _vehicle != null or not is_instance_valid(_nearby_interactable):
+		return
+	if _nearby_interactable.has_method("interact"):
+		_nearby_interactable.call("interact", self)
 
 func _try_start_climb() -> bool:
 	var space := get_world_3d().direct_space_state
@@ -258,6 +296,7 @@ func _register_combat_inputs() -> void:
 	_ensure_action("aim")
 	_ensure_action("shoot")
 	_ensure_action("reload")
+	_ensure_action("interact")
 	var aim_mouse := InputEventMouseButton.new()
 	aim_mouse.button_index = MOUSE_BUTTON_RIGHT
 	InputMap.action_add_event("aim", aim_mouse)
@@ -278,6 +317,12 @@ func _register_combat_inputs() -> void:
 	var reload_pad := InputEventJoypadButton.new()
 	reload_pad.button_index = JOY_BUTTON_X
 	InputMap.action_add_event("reload", reload_pad)
+	var interact_key := InputEventKey.new()
+	interact_key.physical_keycode = KEY_E
+	InputMap.action_add_event("interact", interact_key)
+	var interact_pad := InputEventJoypadButton.new()
+	interact_pad.button_index = JOY_BUTTON_B
+	InputMap.action_add_event("interact", interact_pad)
 
 func _ensure_action(action_name: StringName) -> void:
 	if not InputMap.has_action(action_name):
@@ -334,6 +379,21 @@ func _create_muzzle_flash() -> void:
 	_hit_marker.offset_bottom = 18.0
 	_hit_marker.visible = false
 	overlay.add_child(_hit_marker)
+	_interaction_prompt = Label.new()
+	_interaction_prompt.name = "InteractionPrompt"
+	_interaction_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_interaction_prompt.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_interaction_prompt.add_theme_font_size_override("font_size", 18)
+	_interaction_prompt.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	_interaction_prompt.add_theme_color_override("font_outline_color", Color(0.02, 0.02, 0.02, 0.95))
+	_interaction_prompt.add_theme_constant_override("outline_size", 4)
+	_interaction_prompt.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_interaction_prompt.offset_left = -230.0
+	_interaction_prompt.offset_top = -92.0
+	_interaction_prompt.offset_right = 230.0
+	_interaction_prompt.offset_bottom = -56.0
+	_interaction_prompt.visible = false
+	overlay.add_child(_interaction_prompt)
 	_ammo_label = Label.new()
 	_ammo_label.name = "AmmoCounter"
 	_ammo_label.text = "12 / 12  |  R : recharger"
