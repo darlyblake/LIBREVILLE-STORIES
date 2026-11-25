@@ -98,7 +98,8 @@ func _physics_process(delta: float) -> void:
 	_reload_animation_left = maxf(0.0, _reload_animation_left - delta)
 	_jump_animation_left = maxf(0.0, _jump_animation_left - delta)
 	if _reloading:
-		_reload_time_left -= delta
+		_reload_time_left = maxf(0.0, _reload_time_left - delta)
+		_update_ammo_display()
 		if _reload_time_left <= 0.0:
 			_reloading = false
 			_ammo = magazine_capacity
@@ -162,7 +163,7 @@ func _physics_process(delta: float) -> void:
 	if not _was_on_floor and is_on_floor():
 		_land_animation_left = 0.22
 	_was_on_floor = is_on_floor()
-	if _aiming and Input.is_action_pressed("shoot") and _shoot_cooldown_left <= 0.0 and is_on_floor():
+	if _aiming and not _reloading and Input.is_action_pressed("shoot") and _shoot_cooldown_left <= 0.0 and is_on_floor():
 		_fire_weapon()
 	_update_character_animation()
 
@@ -459,5 +460,11 @@ func _start_reload() -> void:
 	print("LIBREVILLE STORIES | Rechargement en cours...")
 
 func _update_ammo_display() -> void:
-	if is_instance_valid(_ammo_label):
+	if not is_instance_valid(_ammo_label):
+		return
+	if _reloading:
+		_ammo_label.text = "RECHARGEMENT  %.1f s" % _reload_time_left
+	elif _ammo <= 0:
+		_ammo_label.text = "CHARGEUR VIDE  |  R : recharger"
+	else:
 		_ammo_label.text = "%02d / %02d  |  R : recharger" % [_ammo, magazine_capacity]
