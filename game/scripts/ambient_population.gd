@@ -96,9 +96,23 @@ func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
 	_add_box(car, "RearWindow", Vector3(0.06, 0.52, 1.38), Vector3(-1.22, 1.57, 0.0), glass)
 	var lamp := _material(Color(1.0, 0.86, 0.56), 0.3)
 	var tail := _material(Color(0.72, 0.035, 0.025), 0.35)
+	var brake := _material(Color(0.95, 0.025, 0.012), 0.28)
+	brake.emission_enabled = true
+	brake.emission = Color(1.0, 0.015, 0.005)
+	brake.emission_energy_multiplier = 0.0
+	var indicator := _material(Color(1.0, 0.32, 0.015), 0.32)
+	indicator.emission_enabled = true
+	indicator.emission = Color(1.0, 0.22, 0.005)
+	indicator.emission_energy_multiplier = 0.0
 	for side in [-1.0, 1.0]:
 		_add_box(car, "Headlight", Vector3(0.10, 0.20, 0.34), Vector3(2.02, 0.82, side * 0.58), lamp)
 		_add_box(car, "Taillight", Vector3(0.10, 0.20, 0.34), Vector3(-2.02, 0.82, side * 0.58), tail)
+		var brake_lamp := _add_box(car, "BrakeLight_%s" % str(side), Vector3(0.09, 0.14, 0.24), Vector3(-2.075, 0.82, side * 0.58), brake)
+		brake_lamp.set_meta("lamp_material", brake)
+		var front_indicator := _add_box(car, "FrontIndicator_%s" % str(side), Vector3(0.08, 0.10, 0.22), Vector3(2.075, 0.83, side * 0.72), indicator)
+		front_indicator.set_meta("indicator_material", indicator)
+		var rear_indicator := _add_box(car, "RearIndicator_%s" % str(side), Vector3(0.08, 0.10, 0.22), Vector3(-2.075, 0.83, side * 0.72), indicator)
+		rear_indicator.set_meta("indicator_material", indicator)
 		for axle in [-1.25, 1.25]:
 			var wheel := MeshInstance3D.new()
 			wheel.name = "Wheel"
@@ -256,7 +270,10 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 		if bool(_traffic_signs.call("is_red_for_vehicle", current_position, current_direction)):
 			desired_speed = 0.0
 	var acceleration := 10.0 if desired_speed < float(actor["speed"]) else 2.0
-	actor["speed"] = move_toward(float(actor["speed"]), desired_speed, acceleration * delta)
+	var previous_speed := float(actor["speed"])
+	actor["speed"] = move_toward(previous_speed, desired_speed, acceleration * delta)
+	if not is_pedestrian:
+		_update_vehicle_lights(node, previous_speed, float(actor["speed"]), current_direction, route, float(actor["distance"]))
 	var distance := fposmod(float(actor["distance"]) + float(actor["speed"]) * delta, route_length)
 	actor["distance"] = distance
 	var sample := _sample_route(route, distance)
@@ -281,6 +298,32 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 			left_arm.rotation.x = -leg_swing * 0.55
 		if right_arm != null:
 			right_arm.rotation.x = leg_swing * 0.55
+
+
+func _update_vehicle_lights(car: Node3D, previous_speed: float, current_speed: float, current_direction: Vector3, route: Array, distance: float) -> void:
+	var braking := current_speed < previous_speed - 0.025 or current_speed < 0.8
+	var brake_materials: Array[StandardMaterial3D] = []
+	var indicator_materials: Array[StandardMaterial3D] = []
+	for child in car.get_children():
+		if child is MeshInstance3D:
+			if str(child.name).begins_with("BrakeLight"):
+				var brake_material := child.get_meta("lamp_material", null) as StandardMaterial3D
+				if brake_material != null and not brake_materials.has(brake_material):
+					brake_materials.append(brake_material)
+			elif str(child.name).begins_with("FrontIndicator") or str(child.name).begins_with("RearIndicator"):
+				var indicator_material := child.get_meta("indicator_material", null) as StandardMaterial3D
+				if indicator_material != null and not indicator_materials.has(indicator_material):
+					indicator_materials.append(indicator_material)
+	for material in brake_materials:
+		material.emission_energy_multiplier = 2.0 if braking else 0.0
+	var next_sample := _sample_route(route, fposmod(distance + 7.0, _route_length(route)))
+	var next_direction: Vector3 = next_sample.direction
+	var turn_cross := current_direction.x * next_direction.z - current_direction.z * next_direction.x
+	var turn_dot := current_direction.dot(next_direction)
+	var turning := absf(turn_cross) > 0.12 and turn_dot > 0.45
+	var flash_on := turning and fposmod(float(Time.get_ticks_msec()) / 1000.0, 0.9) < 0.42
+	for material in indicator_materials:
+		material.emission_energy_multiplier = 1.7 if flash_on else 0.0
 
 func _sample_route(route: Array, distance: float) -> Dictionary:
 	var remaining := distance
