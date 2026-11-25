@@ -1959,6 +1959,51 @@ func _make_foliage_cluster(clumps: Array[Dictionary]) -> ArrayMesh:
 	return generated
 
 
+func _make_palm_canopy() -> ArrayMesh:
+	# Huit palmes en rubans triangulés, avec retombée naturelle des folioles.
+	var frond_tool := SurfaceTool.new()
+	frond_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	const SEGMENTS := 9
+	for segment in range(SEGMENTS):
+		var t0 := float(segment) / float(SEGMENTS)
+		var t1 := float(segment + 1) / float(SEGMENTS)
+		var z0 := t0 * 4.3
+		var z1 := t1 * 4.3
+		var y0 := -sin(t0 * PI * 0.86) * 0.72 - t0 * 0.38
+		var y1 := -sin(t1 * PI * 0.86) * 0.72 - t1 * 0.38
+		var w0 := 0.035 + sin(t0 * PI) * 0.42
+		var w1 := 0.025 + sin(t1 * PI) * 0.42
+		var left0 := Vector3(-w0, y0, z0)
+		var right0 := Vector3(w0, y0, z0)
+		var left1 := Vector3(-w1, y1, z1)
+		var right1 := Vector3(w1, y1, z1)
+		frond_tool.set_uv(Vector2(0.0, t0))
+		frond_tool.add_vertex(left0)
+		frond_tool.set_uv(Vector2(1.0, t0))
+		frond_tool.add_vertex(right0)
+		frond_tool.set_uv(Vector2(0.0, t1))
+		frond_tool.add_vertex(left1)
+		frond_tool.set_uv(Vector2(1.0, t0))
+		frond_tool.add_vertex(right0)
+		frond_tool.set_uv(Vector2(1.0, t1))
+		frond_tool.add_vertex(right1)
+		frond_tool.set_uv(Vector2(0.0, t1))
+		frond_tool.add_vertex(left1)
+	var frond := frond_tool.commit()
+	if frond == null:
+		return ArrayMesh.new()
+	var crown := SurfaceTool.new()
+	crown.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for leaf_index in range(8):
+		var yaw := float(leaf_index) * TAU / 8.0
+		var pitch := -0.12 + float(leaf_index % 3) * 0.055
+		var basis := Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch)
+		crown.append_from(frond, 0, Transform3D(basis, Vector3(0, 0.0, 0)))
+	crown.generate_normals()
+	var result := crown.commit()
+	return result if result != null else ArrayMesh.new()
+
+
 func _commit_tree_instances(positions: Array[Vector3]) -> void:
 	if positions.is_empty():
 		return
@@ -1989,7 +2034,8 @@ func _commit_tree_instances(positions: Array[Vector3]) -> void:
 			{"offset": Vector3(-0.30, -0.22, 0.12), "scale": Vector3(0.43, 0.62, 0.43)},
 			{"offset": Vector3(0.32, -0.18, -0.10), "scale": Vector3(0.42, 0.60, 0.44)},
 			{"offset": Vector3(0.04, 0.48, 0.26), "scale": Vector3(0.42, 0.54, 0.42)}
-		])
+		]),
+		_make_palm_canopy()
 	]
 	var trunk_material := _make_material(Color.WHITE)
 	trunk_material.vertex_color_use_as_albedo = true
@@ -2036,7 +2082,7 @@ func _build_tree_tile_instances(tile_key: Vector2i, positions: Array, trunk_mesh
 	trunks.mesh = trunk_mesh
 	trunks.instance_count = positions.size()
 	var canopy_multimeshes: Array[MultiMesh] = []
-	var canopy_counts: Array[int] = [0, 0, 0]
+	var canopy_counts: Array[int] = [0, 0, 0, 0]
 	for mesh in canopy_meshes:
 		var batch := MultiMesh.new()
 		batch.transform_format = MultiMesh.TRANSFORM_3D
@@ -2051,17 +2097,21 @@ func _build_tree_tile_instances(tile_key: Vector2i, positions: Array, trunk_mesh
 		var height_scale := rng.randf_range(0.82, 1.34)
 		var width_scale := rng.randf_range(0.82, 1.24)
 		var yaw := rng.randf_range(0.0, TAU)
-		var trunk_scale := Vector3(rng.randf_range(0.88, 1.12), height_scale, rng.randf_range(0.88, 1.12))
+		var canopy_type := rng.randi_range(0, canopy_meshes.size() - 1)
+		var is_palm := canopy_type == 3
+		var trunk_height_scale := height_scale * (2.05 if is_palm else 1.0)
+		var trunk_scale := Vector3(rng.randf_range(0.88, 1.12), trunk_height_scale, rng.randf_range(0.88, 1.12))
 		var trunk_basis := Basis(Vector3.UP, yaw).scaled(trunk_scale)
-		var trunk_position := position + Vector3.UP * (0.95 * height_scale) - tile_origin
+		var trunk_position := position + Vector3.UP * (0.95 * trunk_height_scale) - tile_origin
 		trunks.set_instance_transform(i, Transform3D(trunk_basis, trunk_position))
 		trunks.set_instance_color(i, Color(0.43, 0.30, 0.18).lerp(Color(0.20, 0.15, 0.10), rng.randf()))
-		var canopy_type := rng.randi_range(0, canopy_meshes.size() - 1)
 		var canopy_index := canopy_counts[canopy_type]
 		var canopy_height := (2.65 if canopy_type != 1 else 2.55) * height_scale
 		if canopy_type == 2:
 			canopy_height = 2.95 * height_scale
-		var canopy_basis := Basis(Vector3.UP, yaw).scaled(Vector3(width_scale, height_scale, width_scale))
+		if is_palm:
+			canopy_height = 4.25 * height_scale
+		var canopy_basis := Basis(Vector3.UP, yaw).scaled(Vector3(width_scale * (1.12 if is_palm else 1.0), height_scale, width_scale * (1.12 if is_palm else 1.0)))
 		var canopy_position := position + Vector3.UP * canopy_height - tile_origin
 		canopy_multimeshes[canopy_type].set_instance_transform(canopy_index, Transform3D(canopy_basis, canopy_position))
 		canopy_multimeshes[canopy_type].set_instance_color(canopy_index, foliage_palette[rng.randi_range(0, foliage_palette.size() - 1)])
