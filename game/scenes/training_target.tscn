@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://game/scripts/training_target.gd" id="1_script"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_target"]
+radius = 0.42
+height = 1.7
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_target"]
+radius = 0.42
+height = 1.7
+radial_segments = 16
+rings = 8
+
+[node name="TrainingTarget" type="StaticBody3D"]
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.85, 0)
+shape = SubResource("CapsuleShape3D_target")
+
+[node name="TargetMesh" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.85, 0)
+mesh = SubResource("CapsuleMesh_target")
+
+[node name="Head" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.72, 0)
+mesh = SphereMesh.new()
