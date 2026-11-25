@@ -42,14 +42,16 @@ func trigger_weapon_recoil() -> void:
 	_weapon_recoil_tween.tween_property(_weapon_node, "rotation", _weapon_rest_rotation + Vector3(deg_to_rad(-11.0), 0.0, 0.0), 0.045).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_weapon_recoil_tween.tween_property(_weapon_node, "rotation", _weapon_rest_rotation, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
-func play_motion(state: String) -> void:
+func play_motion(state: String, restart: bool = false) -> void:
 	if animation_player == null:
 		return
 	var animation_name := _resolve_animation(state)
-	if animation_name.is_empty() or _last_motion == animation_name:
+	if animation_name.is_empty() or (_last_motion == animation_name and not restart):
 		return
 	_last_motion = animation_name
-	animation_player.play(animation_name, 0.16)
+	animation_player.play(animation_name, 0.06 if restart else 0.16)
+	if restart:
+		animation_player.seek(0.0, true)
 
 func _resolve_animation(state: String) -> StringName:
 	var aliases := {
