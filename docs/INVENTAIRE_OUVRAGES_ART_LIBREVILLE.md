@@ -451,3 +451,26 @@ IAI est désormais documenté comme ouvrage prioritaire avec un historique offic
 - La direction IAI → Lalala à droite → Owendo doit être cohérente avec les données de routes et les sens de circulation relevés.
 - Les abords peuvent intégrer Prix-Import comme repère commercial seulement si sa position exacte est vérifiée dans les données OSM / terrain du jeu.
 - Aucun tablier, rampe, pilier ou garde-corps ne sera généré à partir des seules mentions textuelles. Modélisation détaillée en attente des géométries et photos d'angles suffisants.
+
+
+### Pont Nomba et échangeur de la Démocratie — compléments (25 novembre 2026)
+
+#### Pont Nomba
+- Le ministère des Travaux publics a annoncé le 25 mars 2019 la réhabilitation du pont Nomba à partir du 27 mars, après un accident mortel survenu le 23 mars. Les interventions annoncées portaient sur le renforcement des glissières de sécurité et des garde-corps, ainsi que la pose de ralentisseurs à l'approche du pont : https://infrastructures.gouv.ga/9-actualites/675-rehabilitation-du-pont-nomba/
+- Le même communiqué est repris sur le site ministériel : https://infrastructures.gouv.ga/2019/03/26/pont-nomba-1/
+- La mairie de Libreville décrit la limite occidentale du 5e arrondissement comme allant du pont d'Oloumi sur l'Ogombiè jusqu'au pont de la Nomba sur la rivière Lowé : https://libreville.ga/municipalite/cinquieme-arrondissement/
+- Mapcarta donne un point de localité « Pont-Nomba » (OSM node 5115327801) à 0.33908, 9.47685. Il s'agit du quartier, pas de l'axe exact du pont. Une station OILIBYA à proximité est cartographiée à 0.33942, 9.47854 ; ce point n'est pas non plus le tablier : https://mapcarta.com/fr/N5115327801 ; https://mapcarta.com/fr/N6456813088
+- L'Union décrit en juillet 2024 un nettoyage des abords de la Voie Express qui a provoqué un bouchon du pont Nomba jusqu'à l'échangeur de Lalala et au-delà : https://www.union.sonapresse.com/index.php/fr/node/2783
+- Conséquence visuelle documentée : glissières métalliques et garde-corps routiers, ralentisseurs en approche, contexte de rivière Lowé et corridor très fréquenté. Les matériaux et leur état doivent être datés ; ne pas reprendre automatiquement l'état de 2019.
+
+#### Échangeur de la Démocratie
+- Une archive de L'Union du 24 juillet 2018 décrit une aire de jeu improvisée sous l'échangeur de la Démocratie, à proximité de la Voie Express. Cela confirme l'existence d'un espace sous l'ouvrage et sa proximité avec des espaces de vie, mais ne donne ni dimensions ni nombre de piles : https://lunion-archives.org/web.11/dmdocuments/N12779-24-07-2018-008.pdf
+- Le 9 juillet 2024, L'Union rapporte des travaux d'urgence entre le PK5 et l'échangeur de la Démocratie, après un éboulement du talus qui soutient la voie de desserte de Nzeng-Ayong. Les pluies diluviennes sont citées comme facteur aggravant : https://union.sonapresse.com/index.php/fr/node/15213
+- Le dossier de marché public sur l'entretien de la Voie Express liste le passage « sous l'échangeur Démocratie » dans le lot de la Zone A, entre les repères routiers du secteur nord : https://www.lejmp.ga/public/file_dossier/676143ae94db7.pdf
+- Un article d'archive de 2019 décrit une dégradation de la Voie Express entre Nzeng-Ayong et Démocratie ; cette chaussée est à distinguer de la structure de l'échangeur lui-même : https://lunion-archives.org/web.11/dmdocuments/N13103-28-08-2019-005.pdf
+- Un article de juillet 2020 rappelle que les échangeurs de la Cité de la Démocratie, du PK5, d'Awendjé et de Lalala comportent des trottoirs, et souligne le manque de passerelles sur d'autres portions de la Voie Express : https://www.lunion-archives.org/web.11/dmdocuments/N13382-28-07-2020-006.pdf
+
+#### Décisions de modélisation
+- Pont Nomba : la géométrie est celle d'un pont sur la rivière Lowé, pas un échangeur. Prévoir l'étude séparée du tablier, des appuis, des garde-corps, de l'approche routière et des berges.
+- Démocratie : représenter un espace sous l'échangeur, mais ne pas ajouter de terrains de sport, piles ou voies de service sans relevé visuel supplémentaire. L'éboulement de talus documenté en 2024 appartient à la voie de desserte de Nzeng-Ayong et ne doit pas être confondu avec une défaillance du pont.
+- Les coordonnées du quartier Pont-Nomba ne sont pas celles du pont. Les emprises exactes du pont Nomba et de l'échangeur de la Démocratie restent à extraire des géométries OSM complètes et à confronter aux orthophotos.
