@@ -7,6 +7,7 @@ const RADIUS := 2600.0
 const MAX_FACILITIES := 60
 var map: Node
 var concrete: StandardMaterial3D
+var structural_concrete: StandardMaterial3D
 var white: StandardMaterial3D
 var blue: StandardMaterial3D
 var red: StandardMaterial3D
@@ -31,6 +32,7 @@ func _ready() -> void:
 
 func _make_materials() -> void:
 	concrete = _facility_mat(Color(0.72,0.71,0.66), "concrete_floor_01", _texture(false))
+	structural_concrete = _facility_mat(Color(0.66,0.65,0.61), "concrete_wall_009", _texture(false))
 	white = _facility_mat(Color(0.92,0.91,0.84), "white_plaster_02", _texture(false))
 	blue = _facility_mat(Color(0.12,0.30,0.52), "white_plaster_02", _texture(false))
 	red = _facility_mat(Color(0.72,0.10,0.09), "red_bricks_04", _texture(false))
@@ -204,7 +206,7 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 	var w:=20.0
 	var d:=15.0
 	var h:=6.5
-	var wall:=concrete
+	var wall:=structural_concrete
 	match k:
 		"hospital": w=34; d=25; h=13; wall=white
 		"clinic": w=17; d=13; h=6; wall=white
