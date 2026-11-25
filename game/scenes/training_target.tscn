@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://game/scripts/training_target.gd" id="1_script"]
 
@@ -11,6 +11,10 @@ radius = 0.42
 height = 1.7
 radial_segments = 16
 rings = 8
+
+[sub_resource type="StandardMaterial3D" id="Material_target"]
+albedo_color = Color(0.72, 0.22, 0.12, 1)
+roughness = 0.78
 
 [sub_resource type="SphereMesh" id="SphereMesh_head"]
 radius = 0.23
@@ -26,7 +30,9 @@ shape = SubResource("CapsuleShape3D_target")
 [node name="TargetMesh" type="MeshInstance3D" parent="."]
 position = Vector3(0, 0.85, 0)
 mesh = SubResource("CapsuleMesh_target")
+material_override = SubResource("Material_target")
 
 [node name="Head" type="MeshInstance3D" parent="."]
 position = Vector3(0, 1.72, 0)
 mesh = SubResource("SphereMesh_head")
+material_override = SubResource("Material_target")
