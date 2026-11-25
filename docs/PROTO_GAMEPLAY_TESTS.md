@@ -12,7 +12,7 @@
 - **F** : entrer dans le véhicule proche ou en sortir lorsqu'il est presque arrêté.
 - **Manette** : gâchette gauche pour viser, gâchette droite pour tirer ; stick droit pour la caméra.
 
-Le personnage est chargé depuis `assets/models/characters/UAL1_Standard.glb` (Quaternius, CC0 1.0). Si le fichier n'est pas encore présent, `player_visual.gd` affiche un mannequin humanoïde de secours. Les clips d'animation sont résolus par alias (Idle/Walk/Run/Jump/Fall/Aim/Shoot/Climb) selon les noms réellement présents dans le GLB ; les états sans clip compatible restent à compléter avec un pack d'animations adapté. Le téléchargement est automatisé par GitHub Actions : **Import CC0 test character**.
+Le personnage est chargé depuis `assets/models/characters/UAL1_Standard.glb` (Quaternius, CC0 1.0). Si le fichier n'est pas encore présent, `player_visual.gd` affiche un mannequin humanoïde de secours. Le GLB UAL1 fournit notamment `Idle_Loop`, `Walk_Loop`, `Jog_Fwd_Loop`, `Sprint_Loop`, `Jump_Start`, `Jump_Loop`, `Jump_Land`, `Pistol_Aim_Neutral`, `Pistol_Shoot` et `Pistol_Reload`. Le script associe ces noms aux états du gameplay. Le téléchargement est automatisé par GitHub Actions : **Import CC0 test character**.
 
 ## Jeep
 
@@ -51,4 +51,4 @@ Ces dépôts ont servi à comparer les architectures et les comportements attend
 
 ### Limites actuelles du prototype de tir
 
-Le tir actuel est un tir instantané (hitscan) : il lance un rayon depuis le centre de la caméra, applique les dégâts aux objets du groupe damageables qui exposent une méthode damage, et affiche un flash lumineux, un réticule et un compteur de chargeur avec rechargement. Il n'y a pas encore de système complet d'inventaire d'armes, de projectiles physiques, d'ennemis ou d'impact visuel dédié. Ces éléments seront développés avec les missions et les PNJ.
+Le tir actuel est un tir instantané (hitscan) : il lance un rayon depuis le centre de la caméra, applique les dégâts aux objets du groupe damageables qui exposent une méthode damage, et affiche un flash lumineux, un réticule et un compteur de chargeur avec rechargement. Il n'y a pas encore de système complet d'inventaire d'armes, de projectiles physiques, d'ennemis, de modèle d'arme attaché à la main ou d'impact visuel dédié. Ces éléments seront développés avec les missions et les PNJ.
