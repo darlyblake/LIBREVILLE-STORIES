@@ -170,7 +170,7 @@ def download_hdris(requested_resolution: str):
                 "downloaded_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             }
             (HDRI_DESTINATION / f"{slug}_{resolution}.json").write_text(
-                json.dumps(metadata, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8"
+                json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
             )
             downloaded += 1
         except (urllib.error.URLError, TimeoutError, ValueError, RuntimeError) as error:
