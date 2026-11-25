@@ -40,9 +40,11 @@ var _skin_materials: Array[StandardMaterial3D] = []
 var _clothing_materials: Array[StandardMaterial3D] = []
 var _wheel_material: StandardMaterial3D
 var _world_map: Node
+var _traffic_signs: Node
 
 func _ready() -> void:
 	_world_map = get_parent().get_node_or_null("WorldMap")
+	_traffic_signs = get_parent().get_node_or_null("TrafficSigns")
 	_create_materials()
 	_spawn_traffic()
 	_spawn_pedestrians()
@@ -81,7 +83,7 @@ func _spawn_traffic() -> void:
 		var car := _build_car("TrafficCar_%02d" % index, _road_materials[index])
 		add_child(car)
 		var length := _route_length(route)
-		_traffic.append({"node": car, "route": route, "distance": fposmod(float(index) * 31.0, maxf(length, 1.0)), "speed": 5.8 + float(index % 3) * 0.7, "phase": float(index) * 0.8})
+		_traffic.append({"node": car, "route": route, "distance": fposmod(float(index) * 31.0, maxf(length, 1.0)), "speed": 5.8 + float(index % 3) * 0.7, "cruise_speed": 5.8 + float(index % 3) * 0.7, "phase": float(index) * 0.8})
 
 
 func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
@@ -244,10 +246,20 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 	var route_length := _route_length(route)
 	if route_length <= 0.1:
 		return
+	var node: Node3D = actor["node"]
+	var current_sample := _sample_route(route, float(actor["distance"]))
+	var current_position: Vector3 = current_sample["position"]
+	var current_direction: Vector3 = current_sample["direction"]
+	var cruise_speed := float(actor.get("cruise_speed", actor["speed"]))
+	var desired_speed := cruise_speed
+	if not is_pedestrian and is_instance_valid(_traffic_signs) and _traffic_signs.has_method("is_red_for_vehicle"):
+		if bool(_traffic_signs.call("is_red_for_vehicle", current_position, current_direction)):
+			desired_speed = 0.0
+	var acceleration := 10.0 if desired_speed < float(actor["speed"]) else 2.0
+	actor["speed"] = move_toward(float(actor["speed"]), desired_speed, acceleration * delta)
 	var distance := fposmod(float(actor["distance"]) + float(actor["speed"]) * delta, route_length)
 	actor["distance"] = distance
 	var sample := _sample_route(route, distance)
-	var node: Node3D = actor["node"]
 	var position: Vector3 = sample["position"]
 	position.y = _ground_height(position.x, position.z) + (0.04 if not is_pedestrian else 0.02)
 	node.global_position = position
