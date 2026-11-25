@@ -148,17 +148,19 @@ func _read_trigger(device: int, axis: JoyAxis) -> float:
 	return clampf(raw, 0.0, 1.0)
 
 func _update_longitudinal_speed(throttle: float, brake: float, delta: float) -> void:
+	# Le frein doit toujours réduire la vitesse, que le véhicule avance ou recule.
+	# La marche arrière ne s'engage qu'une fois le véhicule pratiquement arrêté.
 	if brake > 0.03:
-		if current_speed > 0.35:
+		if absf(current_speed) > 0.45:
 			current_speed = move_toward(current_speed, 0.0, service_brake * brake * delta)
 		elif throttle < 0.03:
 			current_speed = move_toward(current_speed, -reverse_speed, reverse_acceleration * brake * delta)
 	elif throttle > 0.03:
-		if current_speed < -0.35:
+		if current_speed < -0.45:
 			current_speed = move_toward(current_speed, 0.0, service_brake * throttle * delta)
 		else:
-			var speed_ratio := clampf(current_speed / max_speed, 0.0, 1.0)
-			var torque_factor := 1.0 - 0.62 * pow(speed_ratio, 1.55)
+			var speed_ratio := clampf(maxf(current_speed, 0.0) / max_speed, 0.0, 1.0)
+			var torque_factor := 1.0 - 0.48 * pow(speed_ratio, 1.35)
 			current_speed = move_toward(current_speed, max_speed, acceleration * torque_factor * throttle * delta)
 	else:
 		var drag := coast_deceleration + absf(current_speed) * rolling_resistance
@@ -167,19 +169,37 @@ func _update_longitudinal_speed(throttle: float, brake: float, delta: float) -> 
 
 func _update_steering_and_heading(delta: float) -> void:
 	var speed_ratio := clampf(absf(current_speed) / max_speed, 0.0, 1.0)
-	var allowed_angle := lerpf(max_steering_angle, high_speed_steering_angle, speed_ratio)
+	# Braquage important à basse vitesse, progressivement réduit sur route rapide.
+	var allowed_angle := lerpf(max_steering_angle, high_speed_steering_angle, pow(speed_ratio, 0.72))
 	_steering_angle = move_toward(_steering_angle, _steering_input * allowed_angle, steering_response * delta)
-	if absf(current_speed) > 0.08 and wheel_base > 0.5:
-		rotation.y += -(current_speed / wheel_base) * tan(_steering_angle) * delta
+	if absf(current_speed) > 0.12 and wheel_base > 0.5:
+		# Modèle vélo : le sens de rotation s'inverse naturellement en marche arrière.
+		var yaw_rate := (current_speed / wheel_base) * tan(_steering_angle)
+		rotation.y -= yaw_rate * delta
 
 func _update_planar_motion(delta: float) -> void:
 	var forward := -global_transform.basis.z
 	var right := global_transform.basis.x
 	var forward_speed := _planar_velocity.dot(forward)
 	var lateral_speed := _planar_velocity.dot(right)
-	var lateral_limit := lateral_grip * (0.72 if absf(current_speed) > 28.0 else 1.0)
-	lateral_speed = move_toward(lateral_speed, 0.0, lateral_limit * delta)
-	forward_speed = move_toward(forward_speed, current_speed, 28.0 * delta)
+
+	# La vitesse longitudinale suit progressivement le moteur, sans téléportation
+	# de la voiture d'une vitesse à l'autre.
+	var traction_rate := 11.0 if absf(current_speed) < 8.0 else 7.0
+	forward_speed = move_toward(forward_speed, current_speed, traction_rate * delta)
+
+	# Adhérence latérale : plus forte à vitesse normale, légèrement réduite
+	# lors d'un virage rapide pour conserver un peu de transfert de masse.
+	var speed_factor := clampf(absf(forward_speed) / 24.0, 0.0, 1.0)
+	var grip := maxf(lateral_grip, 1.0) * lerpf(1.15, 0.82, speed_factor)
+	var lateral_damping := minf(grip * delta, 1.0)
+	lateral_speed *= 1.0 - lateral_damping
+
+	# Évite qu'une collision ou un virage brutal conserve une dérive latérale
+	# irréaliste pendant plusieurs secondes.
+	var max_lateral_speed := maxf(1.8, absf(forward_speed) * 0.24)
+	lateral_speed = clampf(lateral_speed, -max_lateral_speed, max_lateral_speed)
+
 	_planar_velocity = forward * forward_speed + right * lateral_speed
 	velocity.x = _planar_velocity.x
 	velocity.z = _planar_velocity.z
