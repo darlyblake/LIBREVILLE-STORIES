@@ -233,3 +233,22 @@ Le dossier d'appel d'offres ouvert N°004-AOO/2024/PE/CL/SG/DGF/PRESTATION D'HYG
 14. Fly-over du Camp de Gaulle : chantier évolutif distinct, dont la livraison est annoncée pour 2027 dans les sources officielles consultées.
 
 Aucun de ces points ne doit être traité comme un modèle 3D « terminé » sur la seule base de ce tableau. La priorité immédiate reste de récupérer et contrôler les ways/relations OSM complets, les orthophotos et les vues multi-angles, puis de créer les fiches géométriques individuelles.
+
+
+### Charbonnages — usages réels sous le tablier et évolution des abords
+La photographie et le reportage de L'Union du 11 mars 2021 documentent l'espace sous l'échangeur comme un lieu simultanément traversé par les piétons, utilisé comme abri et occupé par des vendeurs informels. Les images décrivent des étals au sol et sur supports, des marchandises, une foule dense, des piliers et murs portant des affiches, ainsi qu'une chaussée au premier plan. Cette observation est utile pour l'ambiance urbaine et la circulation piétonne du jeu, pas pour déduire la structure porteuse.
+Source : https://lunion-archives.org/web.11/dmdocuments/N13571-11-03-2021-006.pdf
+
+Un article de L'Union du 28 août 2026 décrit un chantier de neuf mois autour de l'échangeur, avec mur de sécurisation, réorganisation des abords et amélioration du stationnement/embarquement des transports informels. Il faut donc distinguer l'ouvrage lui-même de ses aménagements périphériques récents : la scène du jeu devra pouvoir représenter une période choisie et ne pas mélanger automatiquement la configuration 2021 avec les travaux 2026.
+Source : https://union.sonapresse.com/index.php/fr/node/27547
+
+### Nzeng-Ayong — ouvrages hydrauliques à ne pas confondre avec le flyover
+Le communiqué officiel de la Délégation de l'Union européenne du 9 novembre 2021 confirme un bassin versant aménagé avec un canal en béton de 2,3 km entre l'échangeur de Nzeng-Ayong et le pont Nouvelle Cité, cinq ponts/ouvrages annexes et quatre passerelles raccordées aux chemins piétons. Ce réseau est une infrastructure de drainage et de franchissement locale, distincte de l'échangeur routier de Nzeng-Ayong. Les cinq ponts ne doivent pas être assimilés à cinq échangeurs ni recevoir des dimensions supposées.
+Source : https://www.eeas.europa.eu/delegations/gabon/communique-de-presse-le-bassin-versant-de-nzeng-ayong-am%C3%A9nag%C3%A9-et-livr%C3%A9-aux-populations-riveraines_und_en
+
+### Règles de mise en scène pour les ouvrages
+- Conserver les circulations « sur » et « sous » les ouvrages telles que documentées par le dossier communal de nettoyage ; vérifier ensuite le sens, les bretelles et les connexions sur la cartographie et les vues aériennes.
+- Ajouter sous les échangeurs les usages observés (passage, abri, commerces, affichage) uniquement lorsque les sources les attestent pour le site et la période retenue.
+- Pour les Charbonnages, séparer visuellement les aménagements périphériques du chantier 2026 du tablier existant.
+- Pour Nzeng-Ayong, créer des fiches séparées pour l'échangeur routier, le canal de 2,3 km, les cinq franchissements et les quatre passerelles ; géolocaliser chaque ouvrage avant toute géométrie 3D.
+- Aucune photographie de presse, carte d'inventaire ou description d'usage ne suffit seule à mesurer un tablier, une pile ou une rampe. Les dimensions doivent venir d'un plan, d'un relevé, d'une orthophoto calibrée ou d'une mesure terrain vérifiable.
