@@ -7,7 +7,8 @@
 - **Espace** : sauter ; si un rebord accessible est détecté devant le personnage, tenter de grimper.
 - **Souris** : orienter la caméra et le personnage.
 - **Clic droit maintenu** : viser à l'épaule.
-- **Clic gauche maintenu pendant la visée** : tirer (tir hitscan avec portée limitée et délai entre les tirs).
+- **Clic gauche maintenu pendant la visée** : tirer (tir hitscan, chargeur de 12 balles et délai entre les tirs).
+- **R** : recharger ; le compteur de munitions est affiché en bas à droite.
 - **F** : entrer dans le véhicule proche ou en sortir lorsqu'il est presque arrêté.
 - **Manette** : gâchette gauche pour viser, gâchette droite pour tirer ; stick droit pour la caméra.
 
@@ -29,11 +30,11 @@ La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction
 2. Sauter sur terrain plat, vérifier la transition montée/chute/atterrissage, puis essayer un rebord bas et un rebord trop haut.
 3. Maintenir le clic droit : vérifier le zoom, le décalage caméra à l'épaule, l'orientation du personnage et le réticule.
 4. En visant, maintenir le clic gauche : vérifier le délai de tir, l'éclair de bouche et les impacts sur les objets/cibles du groupe `damageables`.
-5. Approcher la Jeep à pied : vérifier l'approche côté conducteur, l'ouverture, l'entrée et la fermeture de porte.
-6. Accélérer progressivement, relâcher l'accélérateur, freiner puis passer en marche arrière.
-7. Faire des virages lents puis rapides ; vérifier que le braquage diminue à vitesse élevée.
-8. Rouler sur une pente, monter un trottoir et franchir une petite irrégularité pour observer les suspensions.
-9. Vérifier que la sortie est refusée tant que la Jeep roule, puis ouvrir la porte et descendre à l'arrêt.
+6. Approcher la Jeep à pied : vérifier l'approche côté conducteur, l'ouverture, l'entrée et la fermeture de porte.
+7. Accélérer progressivement, relâcher l'accélérateur, freiner puis passer en marche arrière.
+8. Faire des virages lents puis rapides ; vérifier que le braquage diminue à vitesse élevée.
+9. Rouler sur une pente, monter un trottoir et franchir une petite irrégularité pour observer les suspensions.
+10. Vérifier que la sortie est refusée tant que la Jeep roule, puis ouvrir la porte et descendre à l'arrêt.
 
 ## Validation
 
@@ -50,4 +51,4 @@ Ces dépôts ont servi à comparer les architectures et les comportements attend
 
 ### Limites actuelles du prototype de tir
 
-Le tir actuel est un tir instantané (hitscan) : il lance un rayon depuis le centre de la caméra, applique les dégâts aux objets du groupe damageables qui exposent une méthode damage, et affiche un flash lumineux ainsi qu'un réticule. Il n'y a pas encore de système complet d'armes, de munitions, de rechargement, de projectiles physiques, d'ennemis ou d'impact visuel dédié. Ces éléments seront développés avec les missions et les PNJ.
+Le tir actuel est un tir instantané (hitscan) : il lance un rayon depuis le centre de la caméra, applique les dégâts aux objets du groupe damageables qui exposent une méthode damage, et affiche un flash lumineux, un réticule et un compteur de chargeur avec rechargement. Il n'y a pas encore de système complet d'inventaire d'armes, de projectiles physiques, d'ennemis ou d'impact visuel dédié. Ces éléments seront développés avec les missions et les PNJ.
