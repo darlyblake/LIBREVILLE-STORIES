@@ -23,6 +23,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DESTINATION = ROOT / "assets" / "textures" / "pbr"
+HDRI_DESTINATION = ROOT / "assets" / "sky"
 USER_AGENT = "LibrevilleStoriesAssetPipeline/1.0 (CC0 game materials)"
 ASSETS = [
     "asphalt_02",
@@ -37,7 +38,14 @@ ASSETS = [
     "gravel_01",
     "dirt",
     "grass",
-]
+    "dirty_concrete",
+    "concrete_pavement_03",
+    "leafy_grass",
+    "bark_brown_02",
+    "brown_mud_leaves_01",
+    "coast_sand_rocks_02",
+] 
+HDRI_ASSETS = ["the_sky_is_on_fire"]
 MAP_ALIASES = {
     "diff": "diff", "diffuse": "diff", "color": "diff", "colour": "diff",
     "albedo": "diff", "basecolor": "diff", "base_color": "diff",
@@ -107,6 +115,69 @@ def download(url: str, destination: Path):
     print(f"  téléchargé : {destination.name} ({len(data) // 1024} Ko)")
 
 
+def collect_hdri_files(node, path=()):
+    found = []
+    if isinstance(node, dict):
+        url = node.get("url")
+        if isinstance(url, str):
+            extension = Path(urllib.parse.urlparse(url).path).suffix.lower()
+            if extension in {".hdr", ".exr"}:
+                found.append((path, node, extension))
+        for key, value in node.items():
+            found.extend(collect_hdri_files(value, path + (str(key).lower(),)))
+    elif isinstance(node, list):
+        for index, value in enumerate(node):
+            found.extend(collect_hdri_files(value, path + (str(index),)))
+    return found
+
+
+def download_hdris(requested_resolution: str):
+    try:
+        catalogue = get_json("https://api.polyhaven.com/assets?type=hdris")
+    except Exception as error:
+        print(f"Catalogue HDRI indisponible : {error}")
+        return 0
+    downloaded = 0
+    for slug in HDRI_ASSETS:
+        if slug not in catalogue:
+            print(f"[HDRI ignorée] Asset absent du catalogue : {slug}")
+            continue
+        try:
+            files = get_json(f"https://api.polyhaven.com/files/{urllib.parse.quote(slug)}")
+            candidates = collect_hdri_files(files)
+            selected = None
+            for resolution in (requested_resolution, "2k", "1k", "4k", "8k", "16k"):
+                matching = [item for item in candidates if resolution in item[0]]
+                if matching:
+                    # Préférer HDR compact pour Godot ; EXR reste un secours.
+                    matching.sort(key=lambda item: (0 if item[2] == ".hdr" else 1, len(item[0])))
+                    selected = (resolution, matching[0])
+                    break
+            if selected is None:
+                print(f"[HDRI] Aucun fichier HDR/EXR exploitable pour {slug}")
+                continue
+            resolution, (path, item, extension) = selected
+            HDRI_DESTINATION.mkdir(parents=True, exist_ok=True)
+            target = HDRI_DESTINATION / f"{slug}_{resolution}{extension}"
+            download(item["url"], target)
+            metadata = {
+                "name": catalogue[slug].get("name", slug),
+                "source": f"https://polyhaven.com/a/{slug}",
+                "license": "CC0",
+                "authors": catalogue[slug].get("authors", {}),
+                "resolution_downloaded": resolution,
+                "format": extension.lstrip("."),
+                "downloaded_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            }
+            (HDRI_DESTINATION / f"{slug}_{resolution}.json").write_text(
+                json.dumps(metadata, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8"
+            )
+            downloaded += 1
+        except (urllib.error.URLError, TimeoutError, ValueError, RuntimeError) as error:
+            print(f"[HDRI] Erreur {slug}: {error}", file=sys.stderr)
+    return downloaded
+
+
 def main():
     parser = argparse.ArgumentParser(description="Télécharger des matériaux PBR CC0 Poly Haven")
     parser.add_argument("--resolution", choices=("1k", "2k", "4k", "8k"), default="2k")
@@ -114,6 +185,7 @@ def main():
 
     print("LIBREVILLE STORIES — bibliothèque de matériaux PBR CC0")
     print("Source : Poly Haven | Licence des assets : CC0")
+    print("HDRI côtier CC0 : The Sky Is On Fire")
     print(f"Résolution demandée : {args.resolution}")
     DESTINATION.mkdir(parents=True, exist_ok=True)
 
@@ -171,7 +243,7 @@ def main():
     print(f"\nCartes téléchargées : {downloaded}")
     if missing:
         print("Assets non trouvés (ils seront simplement ignorés) : " + ", ".join(missing))
-    print("Les textures sont dans assets/textures/pbr/.")
+    print("Les textures sont dans assets/textures/pbr/ et les HDRI dans assets/sky/.")
     return 0
 
 
