@@ -172,6 +172,9 @@ func _update_longitudinal_speed(throttle: float, brake_input: float, _delta: flo
 			var speed_ratio := clampf(maxf(current_speed, 0.0) / max_speed, 0.0, 1.0)
 			var torque_factor := 1.0 - 0.48 * pow(speed_ratio, 1.35)
 			engine_force = acceleration * mass * torque_factor * throttle
+	else:
+		# Frein moteur et résistance au roulement lorsque l'accélérateur est relâché.
+		brake = coast_deceleration + absf(current_speed) * rolling_resistance
 
 	# Limiteur simple pour éviter que le moteur pousse au-delà des vitesses réglées.
 	if current_speed >= max_speed and engine_force > 0.0:
