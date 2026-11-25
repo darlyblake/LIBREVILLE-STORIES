@@ -83,6 +83,7 @@ func _build_signage() -> void:
 		origin = Vector2(player.global_position.x, player.global_position.z)
 	var junctions: Dictionary = {}
 	var crossing_points: Array[Vector2] = []
+	var road_segments: Array[Dictionary] = []
 	var features: Array = parsed.get("features", [])
 	for feature_index in range(features.size()):
 		var feature: Dictionary = features[feature_index]
@@ -112,6 +113,12 @@ func _build_signage() -> void:
 		for line in lines:
 			if line.size() < 2:
 				continue
+			for segment_index in range(line.size() - 1):
+				var segment_start := _geo_to_world(line[segment_index])
+				var segment_end := _geo_to_world(line[segment_index + 1])
+				var segment_midpoint := (segment_start + segment_end) * 0.5
+				if segment_midpoint.distance_to(origin) <= SEARCH_RADIUS:
+					road_segments.append({"start": segment_start, "end": segment_end})
 			for point_index in range(line.size()):
 				var coordinate: Array = line[point_index]
 				var world_point := _geo_to_world(coordinate)
@@ -183,8 +190,12 @@ func _build_signage() -> void:
 	for point in crossing_points:
 		if crossing_count >= MAX_CROSSING_SIGNS:
 			break
-		var direction := Vector2.RIGHT if crossing_count % 2 == 0 else Vector2.LEFT
-		_add_pedestrian_sign(point + direction * 3.0, _terrain_height(point), direction)
+		var road_direction := _nearest_road_direction(point, road_segments)
+		if road_direction.length_squared() < 0.1:
+			continue
+		var sign_direction := Vector2(-road_direction.y, road_direction.x).normalized()
+		_add_crosswalk(point, _terrain_height(point), road_direction)
+		_add_pedestrian_sign(point + sign_direction * 3.0, _terrain_height(point), sign_direction)
 		crossing_count += 1
 
 	print("LIBREVILLE STORIES | signalisation : %d STOP, %d feux tricolores, %d panneaux piétons issus des données OSM" % [stop_count, traffic_light_count, crossing_count])
@@ -366,6 +377,43 @@ func _add_traffic_light(point: Vector2, ground_y: float, direction: Vector2) -> 
 		"direction": Vector3(direction.x, 0.0, direction.y)
 	})
 
+
+
+func _nearest_road_direction(point: Vector2, segments: Array[Dictionary]) -> Vector2:
+	var best_distance := INF
+	var best_direction := Vector2.ZERO
+	for segment in segments:
+		var start: Vector2 = segment.start
+		var finish: Vector2 = segment.end
+		var delta := finish - start
+		var length_squared := delta.length_squared()
+		if length_squared < 0.01:
+			continue
+		var weight := clampf((point - start).dot(delta) / length_squared, 0.0, 1.0)
+		var closest := start + delta * weight
+		var distance := point.distance_to(closest)
+		if distance < best_distance:
+			best_distance = distance
+			best_direction = delta.normalized()
+	return best_direction if best_distance <= 14.0 else Vector2.ZERO
+
+
+func _add_crosswalk(point: Vector2, ground_y: float, road_direction: Vector2) -> void:
+	var root := Node3D.new()
+	root.name = "Passage_pieton_%02d" % get_child_count()
+	root.position = Vector3(point.x, ground_y + 0.045, point.y)
+	root.rotation.y = atan2(road_direction.x, road_direction.y)
+	add_child(root)
+	var stripe_material := _material("crosswalk_white", Color(0.92, 0.93, 0.88), 0.0, 0.88)
+	for stripe_index in range(7):
+		var stripe := MeshInstance3D.new()
+		stripe.name = "Bande_blanche_%02d" % stripe_index
+		var mesh := BoxMesh.new()
+		mesh.size = Vector3(0.34, 0.025, 4.8)
+		stripe.mesh = mesh
+		stripe.position = Vector3(-1.35 + float(stripe_index) * 0.45, 0.0, 0.0)
+		stripe.material_override = stripe_material
+		root.add_child(stripe)
 
 func _add_pedestrian_sign(point: Vector2, ground_y: float, direction: Vector2) -> void:
 	var root := Node3D.new()
