@@ -177,7 +177,19 @@ func _add_market_vendor(parent: Node3D, index: int) -> void:
 	var vendor := Node3D.new()
 	vendor.name = "Vendeur_%02d" % index
 	vendor.position = Vector3(0.0, 0.0, -0.65)
+	vendor.set_script(preload("res://game/scripts/market_vendor.gd"))
+	vendor.set("vendor_index", index)
 	parent.add_child(vendor)
+	var interaction_body := StaticBody3D.new()
+	interaction_body.name = "ZoneInteraction"
+	var interaction_shape := CollisionShape3D.new()
+	var interaction_capsule := CapsuleShape3D.new()
+	interaction_capsule.radius = 0.42
+	interaction_capsule.height = 1.9
+	interaction_shape.shape = interaction_capsule
+	interaction_shape.position = Vector3(0.0, 1.0, 0.0)
+	interaction_body.add_child(interaction_shape)
+	vendor.add_child(interaction_body)
 	var skin_colors: Array[Color] = [Color(0.28, 0.16, 0.10), Color(0.42, 0.25, 0.16), Color(0.55, 0.34, 0.22)]
 	var shirt_colors: Array[Color] = [Color(0.12, 0.30, 0.52), Color(0.66, 0.18, 0.12), Color(0.14, 0.38, 0.24), Color(0.78, 0.62, 0.20)]
 	var skin := _material("vendor_skin_%d" % (index % skin_colors.size()), skin_colors[index % skin_colors.size()])
