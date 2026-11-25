@@ -16,6 +16,7 @@ extends CharacterBody3D
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var player_camera: Camera3D = $CameraPivot/SpringArm3D/Camera3D
 @onready var character_visual: Node3D = $Visual
+@onready var collision_shape: CollisionShape3D = $CollisionShape3D
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var camera_pitch: float = -0.18
 var _vehicle: VehicleController
@@ -110,7 +111,7 @@ func _try_start_climb() -> bool:
 	var forward := -global_transform.basis.z
 	var chest := global_position + Vector3.UP * 1.0
 	var wall_query := PhysicsRayQueryParameters3D.create(chest, chest + forward * climb_forward_distance)
-	wall_query.exclude = [self]
+	wall_query.exclude = [get_rid()]
 	var wall_hit := space.intersect_ray(wall_query)
 	if wall_hit.is_empty():
 		return false
@@ -118,7 +119,7 @@ func _try_start_climb() -> bool:
 	var top_start := global_position + Vector3.UP * (climb_height + 0.35) + forward * (climb_forward_distance + 0.12)
 	var top_end := top_start - Vector3.UP * (climb_height + 0.75)
 	var top_query := PhysicsRayQueryParameters3D.create(top_start, top_end)
-	top_query.exclude = [self]
+	top_query.exclude = [get_rid()]
 	var top_hit := space.intersect_ray(top_query)
 	if top_hit.is_empty():
 		return false
@@ -128,6 +129,7 @@ func _try_start_climb() -> bool:
 
 	_climb_target = Vector3(top_hit.position.x, top_hit.position.y + 0.08, top_hit.position.z) + forward * 0.35
 	_climbing = true
+	collision_shape.set_deferred("disabled", true)
 	velocity = Vector3.ZERO
 	character_visual.call("play_motion", "jump")
 	return true
@@ -138,6 +140,7 @@ func _process_climb(delta: float) -> void:
 		global_position = _climb_target
 		velocity = Vector3.ZERO
 		_climbing = false
+		collision_shape.set_deferred("disabled", false)
 		return
 	velocity = offset.normalized() * minf(4.0, offset.length() * 7.0)
 	move_and_slide()
@@ -188,7 +191,7 @@ func _toggle_vehicle() -> void:
 		return
 
 	var nearest: VehicleController
-	var nearest_distance := 3.6
+	var nearest_distance := 5.5
 	for candidate in get_tree().get_nodes_in_group("drivable_vehicle"):
 		if candidate is VehicleController:
 			var distance := global_position.distance_to(candidate.global_position)
