@@ -83,7 +83,7 @@ func _spawn_traffic() -> void:
 		var car := _build_car("TrafficCar_%02d" % index, _road_materials[index])
 		add_child(car)
 		var length := _route_length(route)
-		_traffic.append({"node": car, "route": route, "distance": fposmod(float(index) * 31.0, maxf(length, 1.0)), "speed": 5.8 + float(index % 3) * 0.7, "cruise_speed": 5.8 + float(index % 3) * 0.7, "lane_offset": 1.25 if index % 2 == 0 else -1.25, "phase": float(index) * 0.8})
+		_traffic.append({"node": car, "route": route, "distance": fposmod(float(index) * 31.0, maxf(length, 1.0)), "speed": 5.8 + float(index % 3) * 0.7, "cruise_speed": 5.8 + float(index % 3) * 0.7, "lane_offset": -1.25, "phase": float(index) * 0.8})
 
 
 func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
