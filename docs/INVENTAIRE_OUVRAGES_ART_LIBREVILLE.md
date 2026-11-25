@@ -394,3 +394,30 @@ Une publication ministérielle du 7 novembre 2024 confirme les dimensions offici
 - Un document Scribd indexé comme « PLAN EXECUTION MDS-BRETELLE - KC » a été contrôlé. Malgré son titre/description mentionnant Kalikak-Charbonnages, le cartouche extrait indique explicitement « AMENAGEMENT D'UN PONT ET D'UN GIRATOIRE AU CARREFOUR MDS — CAMP DE GAULLE — LIBREVILLE », daté du 04.05.2024. Il s'agit donc d'un document relatif au projet Camp de Gaulle (ou d'un document mal indexé), et non d'une preuve dimensionnelle pour l'échangeur des Charbonnages. Ses cotes de mur, caniveau et chaussée sont exclues de la modélisation de Charbonnages. Référence de contrôle : https://www.scribd.com/document/844820170/PLAN-EXECUTION-MDS-BRETELLE-KC
 - Pour Charbonnages, séparer dans le jeu : (1) géométrie du pont/échangeur existant ; (2) mur et soutènements des abords ; (3) voiries et stationnement du chantier 2026 ; (4) jardin sous l'ouvrage (état 2025) ; (5) commerces/arrêts de transport. Ne pas fusionner ces états temporels en une seule version supposée.
 - Aucun plan de structure vérifié pour le tablier de l'échangeur de Charbonnages n'a été trouvé dans cette passe. Les dimensions et l'implantation des appuis restent à relever avant reconstruction 3D.
+
+
+### Échangeur IAI — compléments de recherche (25 novembre 2026)
+
+#### Historique et forme documentée
+- Le ministère des Travaux publics indique que l'échangeur du carrefour IAI a été provisoirement ouvert à la circulation le 15 janvier 2012, avant sa livraison définitive annoncée pour mars 2012. L'ouverture provisoire était limitée aux véhicules de petit et moyen tonnage : https://infrastructures.gouv.ga/9-actualites/261-travaux-routiers-l-echangeur-du-carrefour-iai-provisoirement-livre/
+- L'Union, le 20 avril 2021, décrit les inondations récurrentes au droit de l'ouvrage, avec stagnation d'eau sur la chaussée, voies d'écoulement étroites et bassins-versants encombrés : https://lunion-archives.org/web.11/dmdocuments/N13603-20-04-2021-011.pdf
+- Le 20 mai 2021, la mairie a lancé le curage du canal jouxtant l'échangeur. Les bassins-versants concernés s'étendent sur environ 2 km ; cette mesure décrit le réseau d'assainissement et non le tablier : https://gabonactu.com/blog/2021/05/20/lutte-contre-les-inondations-la-mairie-de-libreville-lance-les-travaux-de-curage-des-caniveaux/
+- En juillet 2024, L'Union signale que les canaux d'évacuation autour d'IAI restent encombrés par les déchets, constructions et commerces : https://www.union.sonapresse.com/fr/domaine-public-routier-libere-les-trottoirs
+- Le reportage de Gabon Media Time du 17 décembre 2025 montre des glissières de sécurité du pont affaissées ou détruites, ainsi que des passages informels ouverts par les piétons : https://gabonmediatime.com/libreville-echangeur-diai-le-danger-permanent/
+- Vidéo associée au reportage (Gabon Media Time) : https://www.dailymotion.com/video/x9vwg44
+
+#### Localisation — précautions
+- Un point d'adresse à l'entrée Ozangué, près de l'échangeur, est publié à 0.3728677, 9.4761053 : https://ga.near-place.com/pharmacie-nouo-cecile-unnamed-rd-libreville
+- Cette coordonnée désigne la pharmacie / entrée Ozangué, PAS le centre du tablier. Elle ne doit donc pas être utilisée comme géométrie exacte du pont.
+- Le répertoire cartographique des rues OSM de Libreville nomme « Echangeur IAI » comme voie trunk d'environ 0,5 km. Cette longueur est l'étendue cartographique de la voie nommée, pas la longueur du pont : https://sivrce.com/cities/libreville/streets
+- Un document de la Banque mondiale avec orthophoto et schéma de localisation place l'échangeur IAI au nord-ouest du site étudié et distingue les directions Sogatel, Mindoubé et Lalala. Source cartographique à exploiter pour l'orientation générale, sans en déduire les dimensions du tablier : https://documents1.worldbank.org/curated/en/744961468009995599/pdf/E29250v40FRENC000PUBLIC00Box379870B.pdf
+
+#### Relevé visuel à reproduire après extraction de la géométrie
+- Structure : pont routier de la Voie Express, avec chaussée supérieure et circulations inférieures à documenter précisément.
+- Sécurité : glissières métalliques latérales et supports, avec dégradations observées dans le reportage de décembre 2025. La représentation dépendra de l'époque retenue dans le jeu ; ne pas conserver automatiquement l'état dégradé si l'époque du jeu est antérieure ou si l'ouvrage est réparé.
+- Sol et hydraulique : canal de drainage majeur, avaloirs, caniveaux, zones susceptibles d'être inondées sous fortes pluies, dépôts de boue et déchets signalés dans les reportages de 2021.
+- Contexte : carrefour urbain dense du 5e arrondissement, commerces et cheminements piétons proches ; le reportage de 2025 montre des traversées informelles dangereuses. Le jeu doit représenter des passages piétons sûrs lorsqu'ils sont attestés, pas transformer les brèches des glissières en cheminements officiels.
+- Les sources consultées ne fournissent pas encore de plan coté fiable du tablier, des piles, de la largeur des voies ou des rampes. Aucune dimension ne doit être inventée. La modélisation finale reste bloquée jusqu'à l'extraction de la géométrie OSM complète et la confrontation à une orthophoto / plusieurs vues photographiques.
+
+#### Décision
+IAI est désormais documenté comme ouvrage prioritaire avec un historique officiel d'ouverture, un dossier hydraulique et un reportage récent sur l'état des garde-corps. Le point Ozangué est seulement un repère voisin. Le modèle 3D final n'est pas encore autorisé : il manque l'axe exact du tablier et des vues suffisantes pour relever sa géométrie.
