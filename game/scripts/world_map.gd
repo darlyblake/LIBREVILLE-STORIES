@@ -1142,6 +1142,14 @@ func _apply_downloaded_pbr(material: StandardMaterial3D, asset_id: String) -> vo
 			material.ao_enabled = true
 			material.ao_texture = texture
 
+func _load_pbr_map(asset_id: String, map_suffix: String) -> Texture2D:
+	if not _use_pbr_textures:
+		return null
+	var path := "res://assets/textures/pbr/%s/%s_%s.jpg" % [asset_id, asset_id, map_suffix]
+	if not ResourceLoader.exists(path):
+		return null
+	return load(path) as Texture2D
+
 func _read_geojson(path: String) -> Dictionary:
 	# Pour les couches de détail, préférer la nouvelle extraction régionale
 	# lorsqu'elle existe ; conserver les quartiers historiques en secours.
@@ -2265,24 +2273,26 @@ func _make_asphalt_shader_material() -> ShaderMaterial:
 	var shader := Shader.new()
 	shader.code = ROAD_SHADER_CODE
 	material.shader = shader
-	var albedo_a := _find_road_texture("asphalt_02_4k.gltf", "asphalt_02_diff_4k")
-	var normal_a := _find_road_texture("asphalt_02_4k.gltf", "asphalt_02_nor_gl_4k")
-	var rough_a := _find_road_texture("asphalt_02_4k.gltf", "asphalt_02_rough_4k")
+	# Textures photographiques Poly Haven CC0 téléchargées dans le dépôt.
+	# L'asphalte principal, les reprises et les zones poussiéreuses utilisent des
+	# cartes distinctes pour éviter le rendu répétitif d'une texture procédurale.
+	var albedo_a := _load_pbr_map("asphalt_03", "diff")
+	var normal_a := _load_pbr_map("asphalt_03", "nor_gl")
+	var rough_a := _load_pbr_map("asphalt_03", "rough")
 	if albedo_a != null:
-		print("LIBREVILLE STORIES | textures 4K chargées : asphalt_02_4k.gltf")
+		print("LIBREVILLE STORIES | PBR photographique chargé : asphalt_03 (Poly Haven CC0)")
 	else:
 		albedo_a = _make_asphalt_texture()
 	if normal_a == null:
 		normal_a = _make_asphalt_normal_texture()
-	var albedo_b: Texture2D = null
-	var albedo_c: Texture2D = null
-	if load_extra_road_textures:
-		albedo_b = _find_road_texture("asphalt_floor_4k.gltf", "asphalt_floor_diff_4k")
-		albedo_c = _find_road_texture("worn_asphalt_4k.gltf", "worn_asphalt_diff_4k")
+	var albedo_b := _load_pbr_map("asphalt_02", "diff")
+	var albedo_c := _load_pbr_map("dirty_concrete", "diff") if load_extra_road_textures else null
 	if albedo_b == null:
 		albedo_b = _make_ground_texture(Color(0.55, 0.55, 0.55), 20261125)
 	if albedo_c == null:
 		albedo_c = _make_ground_texture(Color(0.46, 0.31, 0.21), 20261126)
+	if rough_a == null:
+		rough_a = _make_ground_texture(Color(0.88, 0.88, 0.88), 20261128)
 	var noise := FastNoiseLite.new()
 	noise.seed = 20261127
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
