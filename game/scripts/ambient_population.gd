@@ -141,7 +141,7 @@ func _spawn_pedestrians() -> void:
 		var pedestrian := _build_pedestrian("Pedestrian_%02d" % index, index)
 		add_child(pedestrian)
 		var length := _route_length(route)
-		_pedestrians.append({"node": pedestrian, "route": route, "distance": fposmod(float(index) * 13.0, maxf(length, 1.0)), "speed": 0.72 + float(index % 3) * 0.16, "phase": float(index) * 1.3})
+		_pedestrians.append({"node": pedestrian, "route": route, "distance": fposmod(float(index) * 13.0, maxf(length, 1.0)), "speed": 0.72 + float(index % 3) * 0.16, "cruise_speed": 0.72 + float(index % 3) * 0.16, "phase": float(index) * 1.3})
 
 func _load_osm_routes(highway_types: Array, minimum_length: float, maximum_distance: float) -> Array[Dictionary]:
 	var path := "res://data/osm/extended/roads.geojson"
