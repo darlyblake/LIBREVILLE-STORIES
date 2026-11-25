@@ -12,6 +12,9 @@ Ce document sert de rappel de conception. Avant de commencer à programmer les s
 - [Population, vie sociale et diversité religieuse](POPULATION_VIE_SOCIALE_ET_RELIGIONS.md)
 - [Marchés, commerce de rue et circulation](MARCHES_COMMERCE_DE_RUE_ET_CIRCULATION.md)
 - [Mont-Bouët : secteurs, axes et passages](MONT_BOUET_SECTEURS_AXES_ET_PASSAGES.md)
+- [Fonctionnaires, retraités et journée du 25](FONCTIONNAIRES_RETRAITES_ET_JOURNEE_DU_25.md)
+- [Personnes en errance et situations de crise dans l’espace public](PERSONNES_EN_ERRANCE_ET_SITUATIONS_DE_CRise_DANS_LESPACE_PUBLIC.md)
+- [Déchets ménagers, collecte et points de dépôt](DECHETS_MENAGERS_COLLECTE_ET_POINTS_DE_DEPOT.md)
 
 ## Éléments à ne pas oublier
 
@@ -23,6 +26,9 @@ Ce document sert de rappel de conception. Avant de commencer à programmer les s
 - Les pratiques religieuses, les bars, les lieux de braise, les commerces et les espaces publics doivent coexister dans la ville.
 - Les comportements individuels doivent rester variés : aucun groupe de population ne doit être représenté comme uniforme.
 - Les détails encore incertains doivent être validés avec le créateur ou par un repérage fiable, jamais inventés pour combler les trous.
+- Le 25 du mois peut produire une forte affluence autour de certaines banques ; distinguer agents publics en activité et retraités, et ne pas supposer que tous passent au guichet.
+- Représenter les personnes en errance ou en situation de détresse avec dignité : ne pas assimiler automatiquement précarité, trouble psychique et dangerosité.
+- Faire coexister l'ancien système de bacs/bennes collectifs et les formes plus récentes de collecte de proximité selon le quartier et la période ; vérifier les horaires et circuits avant de les simuler.
 
 ## Étape de reprise
 
