@@ -354,3 +354,15 @@ Une publication ministérielle du 7 novembre 2024 confirme les dimensions offici
 - Les interventions annoncées concernaient le renforcement des glissières de sécurité et des garde-corps, ainsi que la pose de ralentisseurs à l'approche du pont.
 - Cette source confirme la présence et l'importance des équipements de retenue et de sécurité, mais ne fournit ni longueur, ni largeur, ni hauteur, ni plan de tablier ou d'appuis. Le modèle 3D doit donc rester en attente de relevés géométriques ; ne pas déduire les dimensions de la seule mention des garde-corps.
 - Source ministérielle : https://infrastructures.gouv.ga/2019/03/26/pont-nomba-1/ et https://infrastructures.gouv.ga/9-actualites/675-rehabilitation-du-pont-nomba/
+
+
+### Pont Nomba — configuration historique et contexte de l'ouvrage
+- Une archive de L'Union du 30–31 mars 2019 décrit le pont Nomba comme un **« double pont »** sur une voie à grande circulation, entre Libreville et Owendo. L'article rapporte la perte des garde-fous du côté Libreville–Owendo, rongés par l'air marin ou détruits par des véhicules, et rappelle plusieurs accidents antérieurs.
+- Cette mention constitue un indice important : il ne faut pas réduire automatiquement le site à un simple tablier unique. Il faut vérifier sur orthophoto et vues récentes si les deux franchissements sont toujours distincts et comment les chaussées se répartissent avant de modéliser.
+- Le ministère confirme l'inspection de mars 2019 et les travaux annoncés sur glissières et garde-corps. Sources : https://lunion-archives.org/web.11/dmdocuments/N12983-30-31-03-2019-008.pdf ; https://infrastructures.gouv.ga/9-actualites/675-rehabilitation-du-pont-nomba/
+
+### Sources officielles de travaux routiers (2012–2013) — contexte, pas plans de pont
+- La synthèse ministérielle au 1er février 2013 documente les opérations sur le secteur PK5 : « Échangeur du PK5–Belle Peinture », « Échangeur de la Caisse–Échangeur du PK5 » et les bretelles Belle Peinture–station Total PK6. Elle donne des états d'avancement et des montants, mais aucun profil altimétrique ni plan de tablier.
+- Le relevé ministériel d'avancement au 1er février 2013 identifie notamment une bretelle de 200 m à l'échangeur de la Cité de la Caisse, ainsi que des travaux routiers distincts dans les secteurs Lalala, Awendjé et PK6–PK12. Ces linéaires concernent les itinéraires de voirie indiqués et ne doivent pas être réinterprétés comme la longueur des ponts ou des tabliers.
+- Ces documents anciens sont utiles pour comprendre les accès, les bretelles et la chronologie des aménagements. Ils ne remplacent pas un plan d'exécution ou un relevé actuel.
+- Sources : https://infrastructures.gouv.ga/object.getObject.do?id=367&mime=file-mime&object=file ; https://infrastructures.gouv.ga/object.getObject.do?id=363&mime=file-mime&object=file
