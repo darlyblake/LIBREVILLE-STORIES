@@ -173,3 +173,27 @@ Le fichier `data/osm/README_LIMITES_GAMEPLAY.md` décrit 72 cellules de gameplay
 - Marchés approuvés, N°90/MTPC/SG/2025 — Voie Express Charbonnages–Lalala à droite : https://lejmp.com/marches-approuves/11/
 - Dossier Banque mondiale — orthophoto et localisation IAI : https://documents1.worldbank.org/curated/en/744961468009995599/pdf/E29250v40FRENC000PUBLIC00Box379870B.pdf
 - Mapcarta / OpenStreetMap — repères PK5 et échangeur à proximité : https://mapcarta.com/fr/N4071487877
+
+
+### Références visuelles IAI — tablier, dessous, drainage et usages
+
+Les sources publiques apportent désormais des observations complémentaires utiles au futur modèle :
+
+- **17 décembre 2025 — glissières et piétons :** reportage de Gabon Media Time et sa vidéo Dailymotion montrent des glissières de sécurité affaissées ou ouvertes, des passages improvisés de piétons et les circulations sur/au-dessous du pont. Ce sont des observations datées de 2025 ; elles ne doivent être reproduites que si la période choisie pour le jeu correspond à cet état.
+- **20 avril 2021 — inondation et assainissement :** L'Union décrit la stagnation d'eau sur la chaussée à l'amorce de l'échangeur, l'étroitesse de la voie, l'encombrement des bassins-versants et l'obstruction des caniveaux. La photo d'archive montre un grand canal d'évacuation. Pour le décor, cela justifie de relever les fossés, avaloirs, caniveaux, buses et niveaux de chaussée au lieu de poser seulement une dalle de béton.
+- **12 septembre 2018 — services sous l'échangeur :** une archive de L'Union mentionne des toilettes publiques au carrefour IAI. Ce détail peut guider l'observation des petits équipements de proximité, mais ne doit pas être ajouté au modèle sans vérification visuelle de la période retenue.
+- **Novembre 2026 — récurrence des eaux pluviales :** un article récent rapporte que les pluies continuent de perturber la circulation à IAI et mentionne une intervention d'assainissement ainsi que l'actualisation des études du bassin-versant Lowé–IAI. Cela confirme que la gestion de l'eau fait partie du caractère réel du site, sans fournir de plan technique coté.
+
+**Consignes de modélisation IAI (à appliquer après acquisition de la géométrie) :**
+1. Séparer le tablier supérieur, les voies inférieures, les piles, culées, rampes et bretelles.
+2. Relever la section des glissières et leur implantation ; ne pas inventer leur profil ni leur nombre.
+3. Modéliser les dispositifs d'évacuation des eaux réellement visibles : caniveaux, avaloirs, buses, fossés et canal, avec raccordement au relief.
+4. Construire les abords avec les trottoirs, les traversées piétonnes et les usages commerciaux observés, en gardant une date de référence.
+5. Ne pas utiliser les photos de presse comme textures. Elles servent de références d'observation ; créer les matériaux du jeu à partir de textures CC0 ou de matériaux procéduraux.
+
+Sources :
+- Gabon Media Time, 17 décembre 2025 : https://gabonmediatime.com/libreville-echangeur-diai-le-danger-permanent/
+- Reportage vidéo Dailymotion, 2025 : https://www.dailymotion.com/video/x9vwg44
+- L'Union, 20 avril 2021 : https://lunion-archives.org/web.11/dmdocuments/N13603-20-04-2021-011.pdf
+- L'Union, 12 septembre 2018 : https://lunion-archives.org/web.11/dmdocuments/N12818-12-09-2018-008.pdf
+- Gabon Quotidien, novembre 2026 : https://gabon-quotidien.com/inondations-a-iai-libreville-face-aux-limites-de-ses-reponses-durgence/
