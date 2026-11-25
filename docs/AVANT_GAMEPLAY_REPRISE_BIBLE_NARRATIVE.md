@@ -15,6 +15,10 @@ Ce document sert de rappel de conception. Avant de commencer à programmer les s
 - [Fonctionnaires, retraités et journée du 25](FONCTIONNAIRES_RETRAITES_ET_JOURNEE_DU_25.md)
 - [Personnes en errance et situations de crise dans l’espace public](PERSONNES_EN_ERRANCE_ET_SITUATIONS_DE_CRise_DANS_LESPACE_PUBLIC.md)
 - [Déchets ménagers, collecte et points de dépôt](DECHETS_MENAGERS_COLLECTE_ET_POINTS_DE_DEPOT.md)
+- [Séances de course des militaires et policiers et chants collectifs](SEANCES_COURSE_MILITAIRES_POLICIERS_ET_CHANTS.md)
+- [Embouteillages, trafic et circulation urbaine](EMBOUTEILLAGES_TRAFIC_ET_CIRCULATION_URBAINE.md)
+- [SEEG, coupures d'électricité et vie des quartiers](SEEG_COUPURES_ELECTRICITE_ET_VIE_DES_QUARTIERS.md)
+- [Zones marécageuses, crabes de terre et récolte nocturne](ZONES_MARECAGEUSES_CRABES_DE_TERRE_ET_RECOLTE_NOCTURNE.md)
 
 ## Éléments à ne pas oublier
 
@@ -28,6 +32,10 @@ Ce document sert de rappel de conception. Avant de commencer à programmer les s
 - Les détails encore incertains doivent être validés avec le créateur ou par un repérage fiable, jamais inventés pour combler les trous.
 - Le 25 du mois peut produire une forte affluence autour de certaines banques ; distinguer agents publics en activité et retraités, et ne pas supposer que tous passent au guichet.
 - Représenter les personnes en errance ou en situation de détresse avec dignité : ne pas assimiler automatiquement précarité, trouble psychique et dangerosité.
+- Les exercices collectifs des forces en tenue sportive peuvent inclure un meneur, un groupe qui suit et des chants scandés ; créer des voix originales et vérifier les détails avant de les figer.
+- La circulation doit connaître des heures de congestion et des périodes plus fluides ; prévoir taxis, piétons, carrefours, incidents et régulation.
+- Les coupures électriques peuvent interrompre des activités collectives, comme un match projeté dans un bar ; distinguer une panne locale d'un délestage plus large.
+- Les zones marécageuses doivent être identifiées avec précision ; les activités de récolte des crabes et leurs méthodes varient et ne doivent pas être généralisées sans validation.
 - Faire coexister l'ancien système de bacs/bennes collectifs et les formes plus récentes de collecte de proximité selon le quartier et la période ; vérifier les horaires et circuits avant de les simuler.
 
 ## Étape de reprise
