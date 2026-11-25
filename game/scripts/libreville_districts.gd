@@ -63,8 +63,44 @@ func _material(key: String, color: Color, roughness: float = 0.86, metallic: flo
 	material.albedo_color = color
 	material.roughness = roughness
 	material.metallic = metallic
+	var pbr_asset := ""
+	if key == "market_concrete":
+		pbr_asset = "concrete_floor_01"
+	elif key == "market_tole":
+		pbr_asset = "corrugated_iron_03"
+	elif key == "market_structure":
+		pbr_asset = "rusty_metal_02"
+	elif key in ["market_wood", "market_crate"]:
+		pbr_asset = "rough_wood"
+	if not pbr_asset.is_empty():
+		_apply_market_pbr(material, pbr_asset)
 	_materials[key] = material
 	return material
+
+
+func _apply_market_pbr(material: StandardMaterial3D, asset_id: String) -> void:
+	var folder := "res://assets/textures/pbr/%s/" % asset_id
+	var absolute_folder := ProjectSettings.globalize_path(folder)
+	if not DirAccess.dir_exists_absolute(absolute_folder):
+		return
+	for filename in DirAccess.get_files_at(absolute_folder):
+		var base_name := filename.get_basename()
+		var texture := load(folder + filename) as Texture2D
+		if texture == null:
+			continue
+		if base_name.ends_with("_diff"):
+			material.albedo_texture = texture
+		elif base_name.ends_with("_nor_gl"):
+			material.normal_enabled = true
+			material.normal_texture = texture
+			material.normal_scale = 0.72
+		elif base_name.ends_with("_rough"):
+			material.roughness_texture = texture
+		elif base_name.ends_with("_ao"):
+			material.ao_enabled = true
+			material.ao_texture = texture
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	material.uv1_scale = Vector3(1.4, 1.4, 1.0)
 
 
 func _box(parent: Node3D, node_name: String, size: Vector3, position: Vector3, material: Material) -> MeshInstance3D:
