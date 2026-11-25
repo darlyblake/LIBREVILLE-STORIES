@@ -55,5 +55,13 @@ jobs:
             exit 0
           fi
           git commit -m "assets: add Poly Haven CC0 PBR materials"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push concurrent détecté, nouvelle tentative ($attempt/5)."
+            sleep 3
+          done
+          echo "Impossible de publier les textures après cinq tentatives."
+          exit 1
