@@ -179,7 +179,6 @@ func _add_market_vendor(parent: Node3D, index: int) -> void:
 	vendor.position = Vector3(0.0, 0.0, -0.65)
 	vendor.set_script(preload("res://game/scripts/market_vendor.gd"))
 	vendor.set("vendor_index", index)
-	parent.add_child(vendor)
 	var interaction_body := StaticBody3D.new()
 	interaction_body.name = "ZoneInteraction"
 	var interaction_shape := CollisionShape3D.new()
@@ -232,3 +231,4 @@ func _add_market_vendor(parent: Node3D, index: int) -> void:
 		arm.rotation.x = -0.45
 		arm.material_override = skin
 		vendor.add_child(arm)
+	parent.add_child(vendor)
