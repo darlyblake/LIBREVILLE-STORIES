@@ -180,7 +180,7 @@ def download_hdris(requested_resolution: str):
 
 def main():
     parser = argparse.ArgumentParser(description="Télécharger des matériaux PBR CC0 Poly Haven")
-    parser.add_argument("--resolution", choices=("1k", "2k", "4k", "8k"), default="2k")
+    parser.add_argument("--resolution", choices=("1k", "2k", "4k", "8k"), default="4k")
     args = parser.parse_args()
 
     print("LIBREVILLE STORIES — bibliothèque de matériaux PBR CC0")
