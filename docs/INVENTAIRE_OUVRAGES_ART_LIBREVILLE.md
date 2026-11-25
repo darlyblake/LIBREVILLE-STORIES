@@ -528,3 +528,21 @@ IAI est désormais documenté comme ouvrage prioritaire avec un historique offic
 - Attention : plusieurs articles rapportent ensuite des flaques d'eau après pluie et des trous/dégradations sur le grillage de protection. Ces éléments décrivent l'état observé en 2020-2021, pas nécessairement l'état actuel. Sources : https://gabonmediatime.com/libreville-la-passerelle-de-plein-ciel-inondee-a-la-moindre-pluie/ ; https://www.lunion-archives.org/web.11/dmdocuments/N13377-22-07-2020-010.pdf
 - Consigne de modélisation : créer un asset de passerelle piétonne métallique distinct des deux passerelles bois ECOWOOD. Contraintes métriques confirmées : portée/longueur publiée 42,90 m, hauteur libre 6 m, masse historique 30 t. Reproduire le treillis acier, le tablier, les garde-corps, les accès et les rampes accessibles visibles sur les photos. Ne pas inventer largeur, profil exact du treillis, nombre de marches ou fondations ; ces mesures restent à relever sur vues supplémentaires.
 - L'ouvrage se distingue de la passerelle de Plein-Ciel Bisségué (ouvrage ancien de 2005 au-dessus d'un lac, 100 m de long, réhabilité en 2017 avec Tali). Ne pas fusionner ces deux passerelles malgré la proximité des noms de quartier.
+
+
+## Bibliothèque PBR complémentaire pour les ouvrages d'art — ajout du 25 novembre 2026
+
+Le script `tools/download_cc0_textures.py` a été étendu pour inclure cinq matériaux Poly Haven supplémentaires. Le commit déclenche le workflow GitHub Actions de téléchargement ; le téléchargement effectif doit être confirmé par la fin du workflow et par la présence des fichiers dans le dépôt.
+
+| Asset Poly Haven | Usage prévu dans LIBREVILLE STORIES | Licence / source |
+|---|---|---|
+| `asphalt_03` | Couche de roulement usée, raccords et zones de freinage sur tabliers routiers | CC0 — https://polyhaven.com/a/asphalt_03 |
+| `concrete_wall_009` | Béton coffré des piles, culées, murs de soutènement et sous-faces | CC0 — https://polyhaven.com/a/concrete_wall_009 |
+| `brushed_concrete` | Béton taloché/brossé pour surfaces secondaires et zones piétonnes en béton | CC0 — https://polyhaven.com/a/brushed_concrete |
+| `metal_plate_02` | Acier peint/oxydé pour éléments métalliques secondaires, plaques et détails d'ouvrages | CC0 — https://polyhaven.com/a/metal_plate_02 |
+| `rusty_metal_05` | Corrosion localisée sur pièces anciennes, grillages et éléments exposés (usage mesuré, pas sur acier neuf) | CC0 — https://polyhaven.com/a/rusty_metal_05 |
+
+- Les assets sont téléchargés via l'API officielle Poly Haven en résolution 4K par défaut, avec cartes couleur, normale OpenGL, roughness et AO si disponibles. Les cartes displacement/metal ne sont utilisées que lorsqu'elles existent.
+- Les textures sont des matériaux génériques CC0 : elles ne constituent pas des scans de béton, acier ou asphalte prélevés sur les ouvrages de Libreville. Les teintes, salissures et niveaux de corrosion devront être ajustés à chaque site à partir des photos de référence.
+- Ne pas appliquer une texture rouillée uniformément à tous les garde-corps : Plein-Ciel, les passerelles ECOWOOD et les ouvrages récents doivent garder des matériaux propres quand les photos les montrent ainsi.
+- Pour les structures bois des passerelles ECOWOOD, les textures bois déjà présentes dans la bibliothèque PBR sont à réutiliser en attendant un matériau CC0 plus adapté aux essences gabonaises. Ne pas présenter une texture de chêne générique comme un scan de Padouk, Tali, Ozigo, Movingui ou Tuli.
