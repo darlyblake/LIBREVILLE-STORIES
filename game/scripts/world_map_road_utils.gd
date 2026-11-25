@@ -1,7 +1,6 @@
 class_name WorldMapRoadUtils
 extends RefCounted
 ## Fonctions déterministes de lecture des tags OSM liés aux chaussées.
-## Ce script ne dépend d'aucun nœud de scène ni de l'état du monde.
 
 static func road_lane_count(props: Dictionary) -> int:
 	# lanes:both_ways décrit une voie centrale partagée, pas le total des voies.
@@ -17,17 +16,24 @@ static func road_is_oneway(props: Dictionary) -> bool:
 	return value in ["yes", "true", "1", "-1"]
 
 
-static func road_bridge_height(props: Dictionary) -> float:
-	# Les valeurs layer positives indiquent un ouvrage au-dessus du niveau 0.
-	# bridge=yes/viaduct est également pris en compte quand layer manque.
+static func road_has_bridge_structure(props: Dictionary) -> bool:
+	# layer décrit une relation topologique, pas une hauteur mesurée.
+	# Une voie n'est reconnue comme ouvrage que si bridge/man_made le confirme.
 	var bridge_tag := str(props.get("bridge", "")).to_lower()
-	var layer_value := str(props.get("layer", "0")).to_int()
-	var is_bridge := bridge_tag in ["yes", "true", "1", "viaduct", "aqueduct", "movable"]
-	if layer_value <= 0 and not is_bridge:
-		return 0.0
-	if layer_value > 0:
-		return maxf(5.2, float(layer_value) * 5.2)
-	return 5.2
+	var structure_tag := str(props.get("man_made", "")).to_lower()
+	return bridge_tag in ["yes", "true", "1", "viaduct", "aqueduct", "movable"] or structure_tag == "bridge"
+
+
+static func road_bridge_height(props: Dictionary) -> float:
+	# Aucune hauteur générique ne doit être inventée à partir de layer=1.
+	# Les tags OSM bridge/layer identifient l'ouvrage, mais ne donnent pas
+	# l'altitude du tablier par rapport au terrain local.
+	# La hauteur n'est activée que par une mesure dédiée, ajoutée après
+	# relevé du profil longitudinal de l'ouvrage concerné.
+	var measured_profile_height := str(props.get("game:deck_height_m", "")).to_float()
+	if measured_profile_height > 0.0 and road_has_bridge_structure(props):
+		return measured_profile_height
+	return 0.0
 
 
 static func parse_osm_height(raw_value: String) -> float:
