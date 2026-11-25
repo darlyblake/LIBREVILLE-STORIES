@@ -27,6 +27,11 @@ HDRI_DESTINATION = ROOT / "assets" / "sky"
 USER_AGENT = "LibrevilleStoriesAssetPipeline/1.0 (CC0 game materials)"
 ASSETS = [
     "asphalt_02",
+    "asphalt_03",
+    "concrete_wall_009",
+    "brushed_concrete",
+    "metal_plate_02",
+    "rusty_metal_05",
     "concrete_floor_01",
     "white_plaster_02",
     "red_bricks_04",
