@@ -36,6 +36,8 @@ var _default_camera_distance: float
 var _default_camera_offset := Vector3.ZERO
 var _muzzle_light: OmniLight3D
 var _aim_reticle: Label
+var _was_on_floor := false
+var _land_animation_left := 0.0
 
 func _ready() -> void:
 	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
@@ -82,6 +84,7 @@ func _physics_process(delta: float) -> void:
 
 	_shoot_cooldown_left = maxf(0.0, _shoot_cooldown_left - delta)
 	_shoot_animation_left = maxf(0.0, _shoot_animation_left - delta)
+	_land_animation_left = maxf(0.0, _land_animation_left - delta)
 	_aiming = Input.is_action_pressed("aim")
 	_update_aim_camera(delta)
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -134,6 +137,9 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0.0, acceleration * delta)
 
 	move_and_slide()
+	if not _was_on_floor and is_on_floor():
+		_land_animation_left = 0.22
+	_was_on_floor = is_on_floor()
 	if _aiming and Input.is_action_pressed("shoot") and _shoot_cooldown_left <= 0.0 and is_on_floor():
 		_fire_weapon()
 	_update_character_animation()
@@ -182,7 +188,9 @@ func _update_character_animation() -> void:
 	if _shoot_animation_left > 0.0:
 		state = "shoot"
 	elif _aiming:
-		state = "aim"
+		state = "aim_walk" if Vector2(velocity.x, velocity.z).length() > 0.25 else "aim"
+	elif _land_animation_left > 0.0:
+		state = "land"
 	elif _climbing:
 		state = "climb"
 	elif not is_on_floor():
