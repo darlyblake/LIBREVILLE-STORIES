@@ -35,6 +35,7 @@ var _shoot_animation_left := 0.0
 var _default_camera_distance: float
 var _default_camera_offset := Vector3.ZERO
 var _muzzle_light: OmniLight3D
+var _aim_reticle: Label
 
 func _ready() -> void:
 	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
@@ -216,6 +217,8 @@ func _update_aim_camera(delta: float) -> void:
 	var target_offset := _default_camera_offset + (Vector3(0.42, 0.0, 0.0) if _aiming else Vector3.ZERO)
 	spring_arm.spring_length = lerpf(spring_arm.spring_length, target_distance, minf(10.0 * delta, 1.0))
 	camera_pivot.position = camera_pivot.position.lerp(target_offset, minf(10.0 * delta, 1.0))
+	if is_instance_valid(_aim_reticle):
+		_aim_reticle.visible = _aiming
 
 func _create_muzzle_flash() -> void:
 	_muzzle_light = OmniLight3D.new()
@@ -224,6 +227,25 @@ func _create_muzzle_flash() -> void:
 	_muzzle_light.light_energy = 0.0
 	_muzzle_light.omni_range = 4.0
 	add_child(_muzzle_light)
+	var overlay := CanvasLayer.new()
+	overlay.name = "CombatOverlay"
+	add_child(overlay)
+	_aim_reticle = Label.new()
+	_aim_reticle.name = "AimReticle"
+	_aim_reticle.text = "+"
+	_aim_reticle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_aim_reticle.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_aim_reticle.add_theme_font_size_override("font_size", 28)
+	_aim_reticle.add_theme_color_override("font_color", Color(1.0, 0.94, 0.78))
+	_aim_reticle.add_theme_color_override("font_outline_color", Color(0.05, 0.05, 0.05, 0.9))
+	_aim_reticle.add_theme_constant_override("outline_size", 3)
+	_aim_reticle.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_aim_reticle.offset_left = -18.0
+	_aim_reticle.offset_top = -18.0
+	_aim_reticle.offset_right = 18.0
+	_aim_reticle.offset_bottom = 18.0
+	_aim_reticle.visible = false
+	overlay.add_child(_aim_reticle)
 
 func _fire_weapon() -> void:
 	_shoot_cooldown_left = shoot_cooldown
