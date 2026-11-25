@@ -242,6 +242,36 @@ func _create_fallback_driver_door() -> void:
 	_driver_door_nodes.append(hinge)
 	_door_closed_rotations.append(hinge.rotation)
 
+
+func _get_subtree_vehicle_local_aabb(root: Node) -> AABB:
+	var result := AABB()
+	var found := false
+	if root is MeshInstance3D:
+		var mesh_node := root as MeshInstance3D
+		if mesh_node.mesh != null:
+			var local_bounds := mesh_node.mesh.get_aabb()
+			for corner_index in range(8):
+				var corner := Vector3(
+					local_bounds.position.x + (local_bounds.size.x if (corner_index & 1) != 0 else 0.0),
+					local_bounds.position.y + (local_bounds.size.y if (corner_index & 2) != 0 else 0.0),
+					local_bounds.position.z + (local_bounds.size.z if (corner_index & 4) != 0 else 0.0)
+				)
+				var vehicle_corner := to_local(mesh_node.global_transform * corner)
+				if not found:
+					result = AABB(vehicle_corner, Vector3.ZERO)
+					found = true
+				else:
+					result = result.expand(vehicle_corner)
+	for child in root.get_children():
+		var child_bounds := _get_subtree_vehicle_local_aabb(child)
+		if child_bounds.size.length_squared() > 0.0001:
+			if not found:
+				result = child_bounds
+				found = true
+			else:
+				result = result.merge(child_bounds)
+	return result
+
 func _find_door_nodes(root: Node) -> void:
 	for child in root.get_children():
 		if not child is Node3D:
@@ -261,17 +291,19 @@ func _create_door_hinge(door: Node3D) -> Node3D:
 	var parent := door.get_parent()
 	if parent == null:
 		return door
-	var bounds := _get_subtree_world_aabb(door)
+	var bounds := _get_subtree_vehicle_local_aabb(door)
 	if bounds.size.length_squared() < 0.0001:
 		return door
-	var side_x := bounds.position.x if bounds.get_center().x < global_position.x else bounds.position.x + bounds.size.x
+	var center := bounds.get_center()
+	var side_x := bounds.position.x if center.x < 0.0 else bounds.position.x + bounds.size.x
 	# Le véhicule regarde vers -Z : l'avant de la porte correspond au bord Z le plus faible.
-	var hinge_world_position := Vector3(side_x, bounds.position.y + bounds.size.y * 0.5, bounds.position.z)
+	var hinge_local_position := Vector3(side_x, center.y, bounds.position.z)
+	var hinge_world_position := to_global(hinge_local_position)
 	var original_global_transform := door.global_transform
 	var hinge := Node3D.new()
 	hinge.name = "%s_Hinge" % door.name
 	parent.add_child(hinge)
-	hinge.global_transform = Transform3D(parent.global_transform.basis.orthonormalized(), hinge_world_position)
+	hinge.global_transform = Transform3D(global_transform.basis.orthonormalized(), hinge_world_position)
 	parent.remove_child(door)
 	hinge.add_child(door)
 	door.global_transform = original_global_transform
