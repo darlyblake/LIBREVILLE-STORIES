@@ -265,7 +265,41 @@ func _collect_door_nodes(root: Node) -> void:
 		if door_name.contains("left") or door_name.contains("driver") or door_name.contains("conducteur") or door_name.contains("fl"):
 			_driver_door_nodes.append(door)
 	if _door_nodes.is_empty():
-		push_warning("Véhicule : aucune porte animable détectée dans le modèle GLB.")
+		_create_fallback_driver_door()
+		push_warning("Véhicule : porte provisoire créée, le modèle GLB ne fournit pas de porte animable.")
+
+func _create_fallback_driver_door() -> void:
+	var hinge := Node3D.new()
+	hinge.name = "DriverDoor_Test"
+	hinge.position = Vector3(-1.08, 0.92, -1.05)
+	add_child(hinge)
+	var panel := MeshInstance3D.new()
+	panel.name = "DoorPanel"
+	var panel_mesh := BoxMesh.new()
+	panel_mesh.size = Vector3(0.09, 0.76, 1.22)
+	panel.mesh = panel_mesh
+	panel.position = Vector3(-0.015, 0.0, 0.58)
+	var body_material := StandardMaterial3D.new()
+	body_material.albedo_color = Color(0.10, 0.17, 0.24)
+	body_material.metallic = 0.28
+	body_material.roughness = 0.48
+	panel.material_override = body_material
+	hinge.add_child(panel)
+	var window := MeshInstance3D.new()
+	window.name = "DoorWindow"
+	var window_mesh := BoxMesh.new()
+	window_mesh.size = Vector3(0.07, 0.36, 1.08)
+	window.mesh = window_mesh
+	window.position = Vector3(-0.01, 0.22, 0.58)
+	var glass_material := StandardMaterial3D.new()
+	glass_material.albedo_color = Color(0.035, 0.075, 0.11, 0.82)
+	glass_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_material.roughness = 0.16
+	window.material_override = glass_material
+	hinge.add_child(window)
+	_door_nodes.append(hinge)
+	_driver_door_nodes.append(hinge)
+	_door_closed_rotations.append(hinge.rotation)
 
 func _find_door_nodes(root: Node) -> void:
 	for child in root.get_children():
@@ -296,7 +330,7 @@ func _animate_driver_door(open: bool) -> void:
 		if index < 0:
 			continue
 		var closed := _door_closed_rotations[index]
-		var side := -1.0 if door.position.x < 0.0 else 1.0
+		var side := -1.0 if to_local(door.global_position).x < 0.0 else 1.0
 		var open_rotation := Vector3(closed.x, closed.y + deg_to_rad(64.0) * side, closed.z)
 		tween.tween_property(door, "rotation", open_rotation if open else closed, 0.42).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished
