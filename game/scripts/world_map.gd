@@ -161,6 +161,7 @@ var _terrain_stream_material: StandardMaterial3D
 var _ocean_water_material: ShaderMaterial
 var _coastline_paths: Array[PackedVector2Array] = []
 var _beach_polygons: Array[PackedVector2Array] = []
+var _use_pbr_textures := true
 
 func _ready() -> void:
 	# Le monde est construit progressivement : empêcher le joueur et le véhicule
@@ -176,6 +177,7 @@ func _ready() -> void:
 	var graphics_config := ConfigFile.new()
 	if graphics_config.load("user://graphics_settings.cfg") == OK:
 		show_buildings = bool(graphics_config.get_value("graphics", "buildings", true))
+		_use_pbr_textures = bool(graphics_config.get_value("graphics", "pbr_textures", true))
 		render_green_areas = bool(graphics_config.get_value("graphics", "vegetation", false))
 		load_extra_road_textures = bool(graphics_config.get_value("graphics", "extra_textures", false))
 		var sun := get_parent().get_node_or_null("DirectionalLight3D") as DirectionalLight3D
@@ -228,6 +230,8 @@ func _ready() -> void:
 	_roof_material.albedo_texture = _make_roof_tile_texture()
 	_roof_material.roughness = 0.78
 	_roof_material.metallic = 0.08
+	_apply_downloaded_pbr(_building_material, "white_plaster_02")
+	_apply_downloaded_pbr(_roof_material, "corrugated_iron_03")
 	_facade_detail_material = _make_material(Color.WHITE)
 	_facade_detail_material.vertex_color_use_as_albedo = true
 	_facade_detail_material.roughness = 0.85
@@ -1000,6 +1004,30 @@ func _make_material(color: Color) -> StandardMaterial3D:
 	# Évite le z-fighting trop visible entre façades et détails décalés.
 	material.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_OPAQUE_ONLY
 	return material
+
+func _apply_downloaded_pbr(material: StandardMaterial3D, asset_id: String) -> void:
+	if not _use_pbr_textures:
+		return
+	var folder := "res://assets/textures/pbr/%s/" % asset_id
+	var absolute_folder := ProjectSettings.globalize_path(folder)
+	if not DirAccess.dir_exists_absolute(absolute_folder):
+		return
+	for filename in DirAccess.get_files_at(absolute_folder):
+		var base_name := filename.get_basename()
+		var texture := load(folder + filename) as Texture2D
+		if texture == null:
+			continue
+		if base_name.ends_with("_diff"):
+			material.albedo_texture = texture
+		elif base_name.ends_with("_nor_gl"):
+			material.normal_enabled = true
+			material.normal_texture = texture
+			material.normal_scale = 0.75
+		elif base_name.ends_with("_rough"):
+			material.roughness_texture = texture
+		elif base_name.ends_with("_ao"):
+			material.ao_enabled = true
+			material.ao_texture = texture
 
 func _read_geojson(path: String) -> Dictionary:
 	# Pour les couches de détail, préférer la nouvelle extraction régionale
