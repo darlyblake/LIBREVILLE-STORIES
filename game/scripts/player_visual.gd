@@ -43,9 +43,11 @@ func _resolve_animation(state: String) -> StringName:
 		"run": ["sprint", "run", "jog"],
 		"jump": ["jump", "takeoff"],
 		"aim": ["aim", "pistol_idle", "rifle_idle", "shoot_idle"],
+		"aim_walk": ["aim_walk", "walk_aim", "strafe", "walk"],
 		"shoot": ["shoot", "fire", "attack", "pistol_fire", "rifle_fire"],
 		"climb": ["climb", "vault", "mantle"],
 		"fall": ["fall", "falling", "air"],
+		"land": ["land", "landing"],
 	}
 	var candidates: Array = aliases.get(state, aliases["idle"])
 	var names := animation_player.get_animation_list()
