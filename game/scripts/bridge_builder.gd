@@ -154,7 +154,7 @@ func _build_supports(points: Array[Vector3], width: float, deck_y: float, terrai
 		travelled += segment
 
 
-func _add_pier(point: Vector3, height: float, deck_width: float) -> void:
+func _add_pier(point: Vector3, height: float, deck_width: float, ground_y: float) -> void:
 	var pier := MeshInstance3D.new()
 	pier.name = "OSM_Bridge_Pier"
 	var mesh := CylinderMesh.new()
@@ -164,7 +164,7 @@ func _add_pier(point: Vector3, height: float, deck_width: float) -> void:
 	mesh.radial_segments = 10
 	pier.mesh = mesh
 	pier.material_override = _concrete_material
-	pier.position = Vector3(point.x, point.y - height * 0.5 - 0.20, point.z)
+	pier.position = Vector3(point.x, ground_y + height * 0.5, point.z)
 	add_child(pier)
 
 
