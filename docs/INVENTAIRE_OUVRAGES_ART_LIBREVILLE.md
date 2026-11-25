@@ -347,3 +347,10 @@ Une publication ministérielle du 7 novembre 2024 confirme les dimensions offici
 - **IAI** : le reportage du 17 décembre 2025 montre des glissières de sécurité affaissées ou manquantes sur le tablier, ainsi que des ouvertures utilisées par des piétons. Ce détail peut alimenter une variante d'état dégradé si le jeu représente cette période ; il ne constitue pas une preuve du profil ou des dimensions du pont. Sources : https://gabonmediatime.com/libreville-echangeur-diai-le-danger-permanent/ ; https://www.dailymotion.com/video/x9vwg44
 - **Lalala** : des images de presse publiées en 2022 montrent l'échangeur, mais elles ne donnent pas de métrés. Elles restent des références visuelles protégées, à ne pas intégrer directement aux ressources du jeu sans autorisation : https://gabonmediatime.com/libreville-il-se-suicide-en-se-jettant-du-haut-de-lechangeur-de-lalala/
 - **IAI–Lalala Dakar** : le projet annoncé en mars 2026 concerne un axe de 411 m avec une chaussée de 8 m entre la Mosquée IAI et Lalala Dakar/Boucherie. Il s'agit d'un aménagement de voirie local, à distinguer du tablier de l'échangeur IAI et de celui de Lalala. Source : https://gabonmediatime.com/libreville-lancement-des-travaux-damenagement-de-laxe-iai-lalala-dakar/
+
+
+### Pont Nomba — interventions officielles documentées (2019)
+- Le Ministère des Travaux publics indique qu'après l'accident du 23 mars 2019, une inspection du Pont Nomba a été suivie de travaux de réhabilitation annoncés à partir du 27 mars 2019.
+- Les interventions annoncées concernaient le renforcement des glissières de sécurité et des garde-corps, ainsi que la pose de ralentisseurs à l'approche du pont.
+- Cette source confirme la présence et l'importance des équipements de retenue et de sécurité, mais ne fournit ni longueur, ni largeur, ni hauteur, ni plan de tablier ou d'appuis. Le modèle 3D doit donc rester en attente de relevés géométriques ; ne pas déduire les dimensions de la seule mention des garde-corps.
+- Source ministérielle : https://infrastructures.gouv.ga/2019/03/26/pont-nomba-1/ et https://infrastructures.gouv.ga/9-actualites/675-rehabilitation-du-pont-nomba/
