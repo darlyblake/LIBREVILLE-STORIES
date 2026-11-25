@@ -10,6 +10,19 @@ var _message: Label
 func _ready() -> void:
 	add_to_group("world_interactables")
 	_build_notice_ui()
+	_build_board_sign()
+
+func _build_board_sign() -> void:
+	var sign_label := Label3D.new()
+	sign_label.name = "BoardSign"
+	sign_label.text = "OFFRES\nCHANTIER"
+	sign_label.position = Vector3(0.0, 1.45, -0.071)
+	sign_label.font_size = 64
+	sign_label.pixel_size = 0.0045
+	sign_label.modulate = Color(1.0, 0.88, 0.58)
+	sign_label.outline_size = 8
+	sign_label.outline_modulate = Color(0.08, 0.055, 0.035)
+	add_child(sign_label)
 
 func get_interaction_prompt() -> String:
 	return interaction_prompt
