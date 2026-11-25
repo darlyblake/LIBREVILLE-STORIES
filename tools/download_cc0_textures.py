@@ -252,10 +252,12 @@ def main():
         except (urllib.error.URLError, TimeoutError, ValueError, RuntimeError) as error:
             print(f"  ERREUR : {error}", file=sys.stderr)
 
-    print(f"\nCartes téléchargées : {downloaded}")
+    hdri_downloaded = download_hdris(args.resolution)
+    print(f"\nCartes PBR téléchargées : {downloaded}")
+    print(f"HDRI téléchargés : {hdri_downloaded}")
     if missing:
         print("Assets non trouvés (ils seront simplement ignorés) : " + ", ".join(missing))
-    print("Les textures sont dans assets/textures/pbr/ et les HDRI dans assets/sky/.")
+    print("Les textures sont dans assets/textures/pbr/ et les HDRI dans assets/sky/ lorsqu'ils sont disponibles.")
     return 0
 
 
