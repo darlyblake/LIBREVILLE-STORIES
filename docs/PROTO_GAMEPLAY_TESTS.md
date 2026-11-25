@@ -27,7 +27,7 @@ La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction
 ## Essais à effectuer dans Godot
 
 1. Marcher en ligne droite, changer de direction et courir ; écouter/observer les animations de locomotion.
-2. Sauter sur terrain plat, vérifier la transition montée/chute/atterrissage, puis essayer un rebord bas et un rebord trop haut.
+2. Sauter sur terrain plat, vérifier la transition montée/chute/atterrissage, puis essayer un rebord bas, un rebord trop haut, un mur non franchissable et un rebord avec plafond bas : l'escalade doit être refusée si la face du mur ou la surface supérieure n'est pas valide, ou si l'espace au-dessus du point d'arrivée est obstrué.
 3. Maintenir le clic droit : vérifier le zoom, le décalage caméra à l'épaule, l'orientation du personnage et le réticule.
 4. En visant, maintenir le clic gauche : vérifier le délai de tir, l'éclair de bouche et les impacts sur les objets/cibles du groupe `damageables`.
 5. Tourner vers la cible d’entraînement placée à droite du point de départ et tirer plusieurs fois : vérifier les PV affichés, l’effet d’impact et la réapparition après destruction.
