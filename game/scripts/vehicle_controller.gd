@@ -46,6 +46,12 @@ var _wheel_is_front: Array[bool] = []
 var _wheel_is_steering: Array[bool] = []
 var _wheel_is_driven: Array[bool] = []
 var _wheel_is_left: Array[bool] = []
+var _wheel_rays: Array[RayCast3D] = []
+var _wheel_grounded_count := 0
+var _average_surface_grip := 1.0
+var _door_nodes: Array[Node3D] = []
+var _driver_door_nodes: Array[Node3D] = []
+var _door_closed_rotations: Array[Vector3] = []
 var _wheel_roll_angle := 0.0
 var _steering_input := 0.0
 var _steering_angle := 0.0
@@ -85,6 +91,8 @@ func _ready() -> void:
 	else:
 		push_warning("Véhicule : modèle introuvable au chemin configuré (%s)." % str(vehicle_model_path))
 	_classify_wheels()
+	_setup_tire_probes()
+	_collect_door_nodes(vehicle_model)
 	if _wheel_nodes.size() < 2:
 		push_warning("Véhicule : seulement %d pivot(s) de roue détecté(s). Vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
 	_setup_vehicle_cameras()
@@ -183,21 +191,23 @@ func _update_planar_motion(delta: float) -> void:
 	var forward_speed := _planar_velocity.dot(forward)
 	var lateral_speed := _planar_velocity.dot(right)
 
-	# La vitesse longitudinale suit progressivement le moteur, sans téléportation
-	# de la voiture d'une vitesse à l'autre.
-	var traction_rate := 11.0 if absf(current_speed) < 8.0 else 7.0
+	_sample_tire_contacts()
+	var contact_ratio := 1.0
+	if not _wheel_rays.is_empty():
+		contact_ratio = float(_wheel_grounded_count) / float(_wheel_rays.size())
+
+	# Traction et adhérence sont conditionnées par le contact des pneus au sol.
+	var traction_rate := (11.0 if absf(current_speed) < 8.0 else 7.0) * lerpf(0.35, 1.0, contact_ratio)
 	forward_speed = move_toward(forward_speed, current_speed, traction_rate * delta)
 
-	# Adhérence latérale : plus forte à vitesse normale, légèrement réduite
-	# lors d'un virage rapide pour conserver un peu de transfert de masse.
 	var speed_factor := clampf(absf(forward_speed) / 24.0, 0.0, 1.0)
-	var grip := maxf(lateral_grip, 1.0) * lerpf(1.15, 0.82, speed_factor)
-	var lateral_damping := minf(grip * delta, 1.0)
+	var grip := maxf(lateral_grip, 1.0) * _average_surface_grip * lerpf(1.15, 0.82, speed_factor)
+	grip *= lerpf(0.28, 1.0, contact_ratio)
+	var lateral_damping := clampf(grip * delta, 0.0, 1.0)
 	lateral_speed *= 1.0 - lateral_damping
 
-	# Évite qu'une collision ou un virage brutal conserve une dérive latérale
-	# irréaliste pendant plusieurs secondes.
-	var max_lateral_speed := maxf(1.8, absf(forward_speed) * 0.24)
+	# Une voiture perd de l'adhérence lorsqu'elle n'a plus ses quatre pneus au sol.
+	var max_lateral_speed := maxf(1.2, absf(forward_speed) * lerpf(0.12, 0.22, contact_ratio))
 	lateral_speed = clampf(lateral_speed, -max_lateral_speed, max_lateral_speed)
 
 	_planar_velocity = forward * forward_speed + right * lateral_speed
@@ -209,6 +219,87 @@ func _apply_gravity(delta: float) -> void:
 		velocity.y -= float(ProjectSettings.get_setting("physics/3d/default_gravity")) * delta
 	else:
 		velocity.y = -0.2
+
+func _setup_tire_probes() -> void:
+	_wheel_rays.clear()
+	for index in range(_wheel_local_positions.size()):
+		var probe := RayCast3D.new()
+		probe.name = "TireContact_%d" % index
+		probe.position = _wheel_local_positions[index] + Vector3.UP * 0.32
+		probe.target_position = Vector3.DOWN * 1.05
+		probe.enabled = true
+		probe.collide_with_bodies = true
+		probe.collide_with_areas = false
+		add_child(probe)
+		_wheel_rays.append(probe)
+
+func _sample_tire_contacts() -> void:
+	_wheel_grounded_count = 0
+	_average_surface_grip = 0.0
+	for probe in _wheel_rays:
+		probe.force_raycast_update()
+		if probe.is_colliding():
+			_wheel_grounded_count += 1
+			var grip := 1.0
+			var collider := probe.get_collider()
+			if collider is PhysicsBody3D:
+				var material := (collider as PhysicsBody3D).physics_material_override
+				if material != null:
+					grip = clampf(material.friction, 0.25, 1.8)
+			_average_surface_grip += grip
+	if _wheel_grounded_count > 0:
+		_average_surface_grip /= float(_wheel_grounded_count)
+	else:
+		_average_surface_grip = 0.35
+
+func _collect_door_nodes(root: Node) -> void:
+	_door_nodes.clear()
+	_driver_door_nodes.clear()
+	_door_closed_rotations.clear()
+	if root == null:
+		return
+	_find_door_nodes(root)
+	for door in _door_nodes:
+		_door_closed_rotations.append(door.rotation)
+		var door_name := door.name.to_lower()
+		if door_name.contains("left") or door_name.contains("driver") or door_name.contains("conducteur") or door_name.contains("fl"):
+			_driver_door_nodes.append(door)
+	if _door_nodes.is_empty():
+		push_warning("Véhicule : aucune porte animable détectée dans le modèle GLB.")
+
+func _find_door_nodes(root: Node) -> void:
+	for child in root.get_children():
+		if not child is Node3D:
+			continue
+		var node := child as Node3D
+		var node_name := node.name.to_lower()
+		var is_door := node_name.contains("door") or node_name.contains("porte")
+		if is_door and not node_name.contains("handle") and not node_name.contains("poignee"):
+			_door_nodes.append(node)
+			continue
+		_find_door_nodes(node)
+
+func open_driver_door() -> void:
+	await _animate_driver_door(true)
+
+func close_driver_door() -> void:
+	await _animate_driver_door(false)
+
+func _animate_driver_door(open: bool) -> void:
+	var targets := _driver_door_nodes if not _driver_door_nodes.is_empty() else _door_nodes
+	if targets.is_empty():
+		return
+	var tween := create_tween()
+	tween.set_parallel(true)
+	for door in targets:
+		var index := _door_nodes.find(door)
+		if index < 0:
+			continue
+		var closed := _door_closed_rotations[index]
+		var side := -1.0 if door.position.x < 0.0 else 1.0
+		var open_rotation := Vector3(closed.x, closed.y + deg_to_rad(64.0) * side, closed.z)
+		tween.tween_property(door, "rotation", open_rotation if open else closed, 0.42).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await tween.finished
 
 func _collect_wheel_nodes(root: Node, inside_wheel: bool) -> void:
 	for child in root.get_children():
