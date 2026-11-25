@@ -27,6 +27,7 @@ func _ready() -> void:
 			_create_test_pistol(model)
 			return
 	_build_fallback_humanoid()
+	_create_test_pistol(self)
 
 func play_motion(state: String) -> void:
 	if animation_player == null:
