@@ -9,10 +9,12 @@ Créer progressivement une ville explorable en 3D, avec une ambiance semi-réali
 ## Technologie et cible
 
 - **Moteur :** Godot 4
-- **Rendu :** Compatibility (OpenGL), pour les cartes graphiques modestes
-- **Résolution de travail initiale :** 1280 × 720
+- **Rendu actuel :** Compatibility (OpenGL), avec une architecture de qualité graphique réglable
+- **Qualité par défaut :** élevée ; profils Performance, Équilibrée, Élevée et Ultra
+- **Affichage :** résolution de fenêtre 1280 × 720 par défaut, plein écran configurable
 - **Carte :** géométries OpenStreetMap converties en meshes 3D regroupés
-- **Optimisation :** matériaux simples, meshes regroupés et possibilité de limiter le nombre de bâtiments affichés
+- **Graphismes :** options indépendantes pour ombres, bâtiments, végétation et textures de routes
+- **Objectif visuel :** conserver les assets et textures de haute qualité ; les joueurs choisissent le niveau adapté à leur matériel
 
 ## Première zone prévue
 
