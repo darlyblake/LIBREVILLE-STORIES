@@ -60,6 +60,10 @@ func is_red_for_vehicle(vehicle_position: Vector3, vehicle_direction: Vector3) -
 			continue
 		if direction_2d.dot(to_signal.normalized()) < 0.35:
 			continue
+		var signal_direction: Vector3 = signal_data.get("direction", Vector3.ZERO)
+		var controlled_approach := Vector2(-signal_direction.x, -signal_direction.z).normalized()
+		if controlled_approach.length_squared() > 0.1 and direction_2d.dot(controlled_approach) < 0.55:
+			continue
 		var cycle := fposmod(_traffic_elapsed + float(signal_data.offset), 18.0)
 		if cycle < 6.0 or cycle >= 16.0:
 			return true
