@@ -30,12 +30,13 @@ La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction
 2. Sauter sur terrain plat, vérifier la transition montée/chute/atterrissage, puis essayer un rebord bas, un rebord trop haut, un mur non franchissable et un rebord avec plafond bas : l'escalade doit être refusée si la face du mur ou la surface supérieure n'est pas valide, ou si l'espace au-dessus du point d'arrivée est obstrué.
 3. Maintenir le clic droit : vérifier le zoom, le décalage caméra à l'épaule, l'orientation du personnage et le réticule.
 4. En visant, maintenir le clic gauche : vérifier que chaque coup relance l'animation de tir et le recul du pistolet, avec le délai de tir, l'éclair de bouche et les impacts sur les objets/cibles du groupe `damageables`.
-5. Tourner vers la cible d’entraînement placée à droite du point de départ et tirer plusieurs fois : vérifier les PV affichés, l’effet d’impact et la réapparition après destruction.
-6. Approcher la Jeep à pied : vérifier l'approche côté conducteur, l'ouverture, l'entrée et la fermeture de porte.
-7. Accélérer progressivement, relâcher l'accélérateur, freiner puis passer en marche arrière.
-8. Faire des virages lents puis rapides ; vérifier que le braquage diminue à vitesse élevée.
-9. Rouler sur une pente, monter un trottoir et franchir une petite irrégularité pour observer les suspensions.
-10. Vérifier que la sortie est refusée tant que la Jeep roule, puis ouvrir la porte et descendre à l'arrêt.
+5. Dépenser les 12 balles : vérifier que le chargeur vide est signalé, que le rechargement affiche un compte à rebours et qu'aucun tir ne part pendant cette opération. Vérifier le retour à 12 / 12 à la fin du rechargement.
+6. Tourner vers la cible d’entraînement placée à droite du point de départ et tirer plusieurs fois : vérifier les PV affichés, l’effet d’impact et la réapparition après destruction.
+7. Approcher la Jeep à pied : vérifier l'approche côté conducteur, l'ouverture, l'entrée et la fermeture de porte.
+8. Accélérer progressivement, relâcher l'accélérateur, freiner puis passer en marche arrière.
+9. Faire des virages lents puis rapides ; vérifier que le braquage diminue à vitesse élevée.
+10. Rouler sur une pente, monter un trottoir et franchir une petite irrégularité pour observer les suspensions.
+11. Vérifier que la sortie est refusée tant que la Jeep roule, puis ouvrir la porte et descendre à l'arrêt.
 
 ## Validation
 
