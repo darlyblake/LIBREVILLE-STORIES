@@ -336,6 +336,11 @@ void sky() {
 """
 	var sky_material := ShaderMaterial.new()
 	sky_material.shader = sky_shader
+	var sun := get_parent().get_node_or_null("DirectionalLight3D") as DirectionalLight3D
+	var sun_direction := Vector3(-0.35, 0.82, 0.44)
+	if sun != null:
+		sun_direction = sun.global_transform.basis.z.normalized()
+		sky_material.set_shader_parameter("sun_direction", sun_direction)
 	var sky := Sky.new()
 	sky.sky_material = sky_material
 	var environment := world_environment.environment
@@ -345,7 +350,6 @@ void sky() {
 	environment.ambient_light_energy = 0.82
 	environment.ambient_light_sky_contribution = 0.72
 	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	var sun := get_parent().get_node_or_null("DirectionalLight3D") as DirectionalLight3D
 	if sun != null:
 		sun.light_color = Color(1.0, 0.91, 0.76)
 		sun.light_energy = 1.28
@@ -892,6 +896,7 @@ func _add_ocean_plane() -> void:
 shader_type spatial;
 render_mode cull_disabled, diffuse_burley, specular_schlick_ggx;
 
+uniform vec3 sun_direction = vec3(-0.35, 0.82, 0.44);
 uniform sampler2D ocean_base_color : source_color, filter_linear_mipmap, repeat_enable;
 uniform sampler2D ocean_normal : hint_normal, filter_linear_mipmap, repeat_enable;
 uniform sampler2D ocean_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
@@ -932,8 +937,8 @@ void fragment() {
 	vec3 water_color = mix(deep_water, mid_water, 0.48 + broad * 0.10);
 	vec3 n = normalize((VIEW_MATRIX * MODEL_MATRIX * vec4(water_normal, 0.0)).xyz);
 	float fresnel = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 4.0);
-	vec3 sun_direction = normalize(vec3(-0.35, 0.82, 0.44));
-	float glint = pow(max(dot(reflect(-sun_direction, n), VIEW), 0.0), 84.0);
+	vec3 sun_dir = normalize(sun_direction);
+	float glint = pow(max(dot(reflect(-sun_dir, n), VIEW), 0.0), 84.0);
 	// Deux champs de normales déphasés : micro-vagues croisées et reflets mobiles.
 	vec2 ocean_uv = UV * vec2(430.0, 300.0);
 	vec2 drift_a = ocean_uv + vec2(TIME * 0.006, -TIME * 0.004);
@@ -963,6 +968,9 @@ void fragment() {
 """
 	var water_material := ShaderMaterial.new()
 	water_material.shader = water_shader
+	var sun_for_water := get_parent().get_node_or_null("DirectionalLight3D") as DirectionalLight3D
+	if sun_for_water != null:
+		water_material.set_shader_parameter("sun_direction", sun_for_water.global_transform.basis.z.normalized())
 	var ocean_texture_root := "res://assets/textures/water/ocean_1k/"
 	var ocean_base := load(ocean_texture_root + "baseColor.png") as Texture2D
 	var ocean_normal_map := load(ocean_texture_root + "normal.png") as Texture2D
@@ -1076,8 +1084,11 @@ void fragment() {
 """
 	var material := ShaderMaterial.new()
 	material.shader = shader
+	var grass_texture_path := "res://assets/textures/pbr/leafy_grass/leafy_grass_diff.jpg"
+	if not FileAccess.file_exists(grass_texture_path):
+		grass_texture_path = "res://assets/textures/vegetation/Grass001_4K-JPG/Grass001_4K-JPG_Color.jpg"
 	var texture_paths := {
-		"grass_albedo": "res://assets/textures/vegetation/Grass001_4K-JPG/Grass001_4K-JPG_Color.jpg",
+		"grass_albedo": grass_texture_path,
 		"wet_sand_albedo": "res://assets/textures/ground/Ground061_4K-JPG/Ground061_4K-JPG_Color.jpg",
 		"dry_sand_albedo": "res://assets/textures/ground/Ground093C_4K-JPG/Ground093C_4K-JPG_Color.jpg",
 		"wet_sand_roughness": "res://assets/textures/ground/Ground061_4K-JPG/Ground061_4K-JPG_Roughness.jpg",
