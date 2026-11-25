@@ -11,7 +11,7 @@ on:
       resolution:
         description: Texture resolution
         required: true
-        default: "2k"
+        default: "4k"
         type: choice
         options:
           - "1k"
@@ -43,7 +43,7 @@ jobs:
 
       - name: Download Poly Haven CC0 materials
         run: |
-          python tools/download_cc0_textures.py --resolution "${{ github.event.inputs.resolution || '2k' }}"
+          python tools/download_cc0_textures.py --resolution "${{ github.event.inputs.resolution || '4k' }}"
 
       - name: Commit downloaded materials
         run: |
