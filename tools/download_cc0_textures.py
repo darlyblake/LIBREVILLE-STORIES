@@ -216,6 +216,18 @@ def main():
             print(f"  résolution utilisée : {resolution}")
             folder = DESTINATION / slug
             folder.mkdir(parents=True, exist_ok=True)
+            metadata_path = folder / "asset.json"
+            resolution_rank = {"1k": 1, "2k": 2, "4k": 3, "8k": 4}
+            previous_resolution = ""
+            if metadata_path.exists():
+                try:
+                    previous_resolution = json.loads(metadata_path.read_text(encoding="utf-8")).get("resolution_downloaded", "")
+                except (OSError, ValueError):
+                    previous_resolution = ""
+            if resolution_rank.get(resolution, 0) > resolution_rank.get(previous_resolution, 0):
+                for old_file in folder.iterdir():
+                    if old_file.is_file() and old_file.name != "asset.json":
+                        old_file.unlink()
             saved = 0
             for map_name in sorted(MAPS):
                 item = maps.get(map_name)
