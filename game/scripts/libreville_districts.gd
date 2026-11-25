@@ -150,7 +150,7 @@ func _build_market_stall(parent: Node3D, index: int, center: Vector3, awning: Ma
 	for side_x in [-2.45, 2.45]:
 		for side_z in [-1.8, 1.8]:
 			_box(stall, "Poteau", Vector3(0.13, 3.6, 0.13), Vector3(side_x, 1.8, side_z), frame_material)
-	_box(stall, "Tole_ondულee", Vector3(6.1, 0.18, 5.1), Vector3(0, 3.72, 0), roof_material)
+	_box(stall, "Tole_ondulee", Vector3(6.1, 0.18, 5.1), Vector3(0, 3.72, 0), roof_material)
 	_box(stall, "Bache_facade", Vector3(5.8, 1.05, 0.12), Vector3(0, 2.92, -2.47), awning)
 	_box(stall, "Bache_laterale", Vector3(0.12, 1.0, 4.7), Vector3(-3.02, 2.9, 0), awning)
 
@@ -158,6 +158,7 @@ func _build_market_stall(parent: Node3D, index: int, center: Vector3, awning: Ma
 	for crate_index in range(2):
 		var crate_x := -1.7 + float(crate_index) * 3.0
 		_box(stall, "Caisse_%d" % crate_index, Vector3(1.0, 0.72, 0.86), Vector3(crate_x, 0.42, -1.25), crate_material)
+	var fruit_materials: Array[Material] = [fruit_red, fruit_green, fruit_yellow]
 	for fruit_index in range(3):
 		var fruit := MeshInstance3D.new()
 		fruit.name = "Produit_%d" % fruit_index
@@ -165,6 +166,6 @@ func _build_market_stall(parent: Node3D, index: int, center: Vector3, awning: Ma
 		sphere.radius = 0.22
 		sphere.height = 0.44
 		fruit.mesh = sphere
-		fruit.material_override = [fruit_red, fruit_green, fruit_yellow][(index + fruit_index) % 3]
+		fruit.material_override = fruit_materials[(index + fruit_index) % fruit_materials.size()]
 		fruit.position = Vector3(-1.8 + float(fruit_index) * 0.55, 1.08, 1.1)
 		stall.add_child(fruit)
