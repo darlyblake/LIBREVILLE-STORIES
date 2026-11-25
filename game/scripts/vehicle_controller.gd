@@ -109,6 +109,7 @@ func _physics_process(delta: float) -> void:
 		engine_force = 0.0
 		brake = service_brake
 		steering = move_toward(steering, 0.0, steering_response * delta)
+		_last_odometer_position = global_position
 		return
 
 	if Input.is_action_just_pressed("vehicle_camera_next"):
@@ -737,6 +738,7 @@ func enter_vehicle() -> void:
 	current_speed = 0.0
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
+	_last_odometer_position = global_position
 	engine_force = 0.0
 	brake = 0.0
 	steering = 0.0
