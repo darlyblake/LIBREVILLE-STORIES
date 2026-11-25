@@ -47,29 +47,41 @@ def get_json(url: str):
         return json.loads(response.read().decode("utf-8"))
 
 
-def find_maps(node, path=()):
-    found = {}
+def collect_map_files(node, path=()):
+    found = []
     if isinstance(node, dict):
         if isinstance(node.get("url"), str):
             map_name = next((part for part in reversed(path) if part in MAPS), None)
             if map_name:
-                found[map_name] = node
+                found.append((map_name, path, node))
         for key, value in node.items():
-            found.update(find_maps(value, path + (str(key).lower(),)))
+            found.extend(collect_map_files(value, path + (str(key).lower(),)))
     elif isinstance(node, list):
         for index, value in enumerate(node):
-            found.update(find_maps(value, path + (str(index),)))
+            found.extend(collect_map_files(value, path + (str(index),)))
     return found
 
 
 def pick_resolution(files: dict, requested: str):
-    for resolution in (requested, "2k", "1k", "4k", "8k"):
-        if resolution in files:
-            maps = find_maps(files[resolution])
-            if maps:
-                return resolution, maps
-    maps = find_maps(files)
-    return ("API fallback", maps) if maps else (None, {})
+    all_maps = collect_map_files(files)
+    for resolution in dict.fromkeys((requested, "2k", "1k", "4k", "8k")):
+        candidates = [entry for entry in all_maps if resolution in entry[1]]
+        if candidates:
+            selected = {}
+            for map_name, path, item in candidates:
+                # Prefer JPG where available; otherwise retain the API's original format.
+                score = 0 if "jpg" in path else 1 if "png" in path else 2
+                previous = selected.get(map_name)
+                if previous is None or score < previous[0]:
+                    selected[map_name] = (score, item)
+            return resolution, {key: value[1] for key, value in selected.items()}
+    selected = {}
+    for map_name, path, item in all_maps:
+        score = 0 if "2k" in path else 1 if "1k" in path else 2
+        previous = selected.get(map_name)
+        if previous is None or score < previous[0]:
+            selected[map_name] = (score, item)
+    return ("API fallback", {key: value[1] for key, value in selected.items()}) if selected else (None, {})
 
 
 def download(url: str, destination: Path):
