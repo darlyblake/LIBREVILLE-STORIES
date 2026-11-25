@@ -7,6 +7,9 @@ const MODEL_PATH := "res://assets/models/characters/UAL1_Standard.glb"
 var animation_player: AnimationPlayer
 var _fallback := false
 var _last_motion := ""
+var _weapon_node: Node3D
+var _weapon_rest_rotation := Vector3.ZERO
+var _weapon_recoil_tween: Tween
 
 func _ready() -> void:
 	if ResourceLoader.exists(MODEL_PATH):
@@ -28,6 +31,16 @@ func _ready() -> void:
 			return
 	_build_fallback_humanoid()
 	_create_test_pistol(self)
+
+func trigger_weapon_recoil() -> void:
+	if not is_instance_valid(_weapon_node):
+		return
+	if _weapon_recoil_tween != null and _weapon_recoil_tween.is_valid():
+		_weapon_recoil_tween.kill()
+	_weapon_node.rotation = _weapon_rest_rotation
+	_weapon_recoil_tween = create_tween()
+	_weapon_recoil_tween.tween_property(_weapon_node, "rotation", _weapon_rest_rotation + Vector3(deg_to_rad(-11.0), 0.0, 0.0), 0.045).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_weapon_recoil_tween.tween_property(_weapon_node, "rotation", _weapon_rest_rotation, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func play_motion(state: String) -> void:
 	if animation_player == null:
@@ -130,6 +143,7 @@ func _create_test_pistol(model: Node3D) -> void:
 		print("LIBREVILLE STORIES | Os de main droite non détecté : arme de test positionnée provisoirement sur le modèle.")
 	var pistol := Node3D.new()
 	pistol.name = "TestPistol"
+	_weapon_node = pistol
 	attachment.add_child(pistol)
 	if attachment == model:
 		pistol.position = Vector3(0.35, 0.88, -0.20)
@@ -138,6 +152,7 @@ func _create_test_pistol(model: Node3D) -> void:
 		pistol.position = Vector3(0.035, 0.015, -0.055)
 		pistol.rotation = Vector3(deg_to_rad(-8.0), PI, deg_to_rad(2.0))
 	pistol.scale = Vector3.ONE * 0.72
+	_weapon_rest_rotation = pistol.rotation
 	var metal := StandardMaterial3D.new()
 	metal.albedo_color = Color(0.055, 0.065, 0.075)
 	metal.metallic = 0.72
