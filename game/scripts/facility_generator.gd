@@ -4,6 +4,7 @@ const CENTER_LAT := 0.400
 const CENTER_LON := 9.4475
 const DATA_PATH := "res://data/osm/extended/pois.geojson"
 const RADIUS := 2600.0
+const MAX_FACILITIES := 60
 var map: Node
 var concrete: StandardMaterial3D
 var white: StandardMaterial3D
@@ -85,12 +86,20 @@ func _build_facilities() -> void:
 	entries.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
 		return Vector2(a.pos.x,a.pos.z).distance_squared_to(origin)<Vector2(b.pos.x,b.pos.z).distance_squared_to(origin))
 	var seen:={}
+	var placed: Array[Dictionary] = []
 	for e in entries:
-		if count>=90: break
+		if count>=MAX_FACILITIES: break
 		var key:=str(e.id) if e.id!=0 else str(e.kind)+str(e.label)
 		if seen.has(key): continue
+		var duplicate := false
+		for prior in placed:
+			if prior.kind == e.kind and Vector2(prior.pos.x,prior.pos.z).distance_to(Vector2(e.pos.x,e.pos.z)) < 18.0:
+				duplicate = true
+				break
+		if duplicate: continue
 		seen[key]=true
 		_create_one(e.kind,e.label,e.pos,count)
+		placed.append({"kind":e.kind,"pos":e.pos})
 		count+=1
 	print("INFRASTRUCTURES LIBREVILLE | ",count," sites spécialisés")
 
