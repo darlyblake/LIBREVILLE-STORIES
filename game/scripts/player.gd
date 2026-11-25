@@ -337,6 +337,8 @@ func _fire_weapon() -> void:
 	_ammo -= 1
 	_update_ammo_display()
 	_shoot_animation_left = 0.32
+	if character_visual.has_method("play_motion"):
+		character_visual.call("play_motion", "shoot", true)
 	if character_visual.has_method("trigger_weapon_recoil"):
 		character_visual.call("trigger_weapon_recoil")
 	var viewport_size := get_viewport().get_visible_rect().size
