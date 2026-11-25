@@ -22,7 +22,7 @@ Le personnage est chargé depuis `assets/models/characters/UAL1_Standard.glb` (Q
 - **C** : changer de caméra.
 - **F** : ouvrir la porte conducteur, s'approcher, monter et refermer ; à l'arrêt, ouvrir pour descendre.
 
-La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction intégrale, braquage sur l'essieu avant, rotation automatique des roues, suspension indépendante et friction des pneus. La carrosserie utilise une collision simple pour rester légère. Les roues visuelles du modèle sont classées par essieu, leur braquage est animé et leur rotation suit la vitesse, y compris en marche arrière.
+La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction intégrale, braquage sur l'essieu avant, rotation automatique des roues, suspension indépendante et friction des pneus. La carrosserie utilise une collision simple pour rester légère. Les roues visuelles du modèle sont classées par essieu, leur braquage est animé et leur rotation suit la vitesse, y compris en marche arrière. Les portes détectées dans le GLB reçoivent maintenant un pivot calculé au bord avant de leur géométrie, dans le repère local du véhicule ; si aucune porte n'est reconnue, une porte de test est générée.
 
 ## Essais à effectuer dans Godot
 
