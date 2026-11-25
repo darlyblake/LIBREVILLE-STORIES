@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://bx5jcd23fjq5s"]
+[gd_scene load_steps=16 format=3 uid="uid://bx5jcd23fjq5s"]
 
 [ext_resource type="Script" path="res://game/scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://game/scripts/world_map.gd" id="2_map"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://game/scripts/player_visual.gd" id="8_player_visual"]
 [ext_resource type="PackedScene" path="res://game/scenes/training_target.tscn" id="9_training_target"]
 [ext_resource type="PackedScene" path="res://game/scenes/work_notice_board.tscn" id="10_work_board"]
+[ext_resource type="PackedScene" path="res://game/scenes/cement_sack.tscn" id="11_cement_sack"]
 
 [sub_resource type="Environment" id="Environment_world"]
 background_mode = 1
@@ -77,6 +78,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1785, 0.0, -570)
 
 [node name="WorkNoticeBoard" parent="." instance=ExtResource("10_work_board")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1790, 0, -573)
+
+[node name="CementSackA" parent="." instance=ExtResource("11_cement_sack")]
+position = Vector3(-1792.0, 0.25, -568.0)
+
+[node name="CementSackB" parent="." instance=ExtResource("11_cement_sack")]
+position = Vector3(-1788.5, 0.25, -568.5)
+
+[node name="CementSackC" parent="." instance=ExtResource("11_cement_sack")]
+position = Vector3(-1793.0, 0.25, -575.0)
 
 [node name="Player" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1790, 2, -570)
