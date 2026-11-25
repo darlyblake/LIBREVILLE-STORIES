@@ -103,7 +103,7 @@ func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
 		taxi_label.text = "TAXI"
 		taxi_label.font_size = 24
 		taxi_label.pixel_size = 0.004
-		taxi_label.position = Vector3(0.0, 2.08, 0.18)
+		taxi_label.position = Vector3(0.0, 0.0, 0.18)
 		taxi_label.modulate = Color(0.08, 0.08, 0.06)
 		taxi_sign.add_child(taxi_label)
 	var glass := _material(Color(0.09, 0.17, 0.22), 0.18)
