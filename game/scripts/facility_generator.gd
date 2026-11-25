@@ -12,6 +12,7 @@ var white: StandardMaterial3D
 var blue: StandardMaterial3D
 var red: StandardMaterial3D
 var roof: StandardMaterial3D
+var steel: StandardMaterial3D
 var glass: StandardMaterial3D
 var asphalt: StandardMaterial3D
 var count := 0
@@ -37,6 +38,8 @@ func _make_materials() -> void:
 	blue = _facility_mat(Color(0.12,0.30,0.52), "white_plaster_02", _texture(false))
 	red = _facility_mat(Color(0.72,0.10,0.09), "red_bricks_04", _texture(false))
 	roof = _facility_mat(Color(0.78,0.79,0.77), "corrugated_iron_03", _texture(true))
+	steel = _facility_mat(Color(0.72,0.73,0.72), "metal_plate_02", _texture(true))
+	steel.metallic = 0.72
 	asphalt = _facility_mat(Color(0.24,0.25,0.24), "asphalt_02", _texture(false))
 	glass = StandardMaterial3D.new()
 	glass.albedo_color = Color(0.20,0.40,0.51,0.82)
@@ -63,6 +66,7 @@ func _pbr_mat(tint: Color, asset_id: String, fallback: Texture2D) -> StandardMat
 	var normal := _find_pbr_map(folder, asset_id, "nor_gl")
 	var roughness := _find_pbr_map(folder, asset_id, "rough")
 	var ao := _find_pbr_map(folder, asset_id, "ao")
+	var metal_map := _find_pbr_map(folder, asset_id, "metal")
 	if diffuse != null:
 		material.albedo_texture = diffuse
 	if normal != null:
@@ -74,6 +78,9 @@ func _pbr_mat(tint: Color, asset_id: String, fallback: Texture2D) -> StandardMat
 	if ao != null:
 		material.ao_enabled = true
 		material.ao_texture = ao
+	if metal_map != null:
+		material.metallic = 1.0
+		material.metallic_texture = metal_map
 	material.uv1_scale = Vector3(2.0, 2.0, 2.0)
 	return material
 
@@ -250,10 +257,15 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 		"fire":
 			_sign(root,"SAPEURS-POMPIERS",Vector3(0,h+1,d/2+0.3),red)
 			for i in range(2):
-				_box(root,Vector3(-6+i*12,2,d/2+0.16),Vector3(8,4,0.2),asphalt)
+				var bay_x := -6.0 + i * 12.0
+				_box(root,Vector3(bay_x,2,d/2+0.16),Vector3(8,4,0.2),asphalt)
+				# Rideau métallique réaliste : tôle photographique PBR, encadrement peint.
+				_box(root,Vector3(bay_x,2,d/2+0.29),Vector3(7.45,3.65,0.12),steel)
+				for slat in range(9):
+					_box(root,Vector3(bay_x,0.35+slat*0.41,d/2+0.37),Vector3(7.35,0.045,0.035),concrete)
 				_box(root,Vector3(-10+i*12,2,d/2+0.3),Vector3(0.35,4.3,0.45),red)
 				_box(root,Vector3(-2+i*12,2,d/2+0.3),Vector3(0.35,4.3,0.45),red)
-				_box(root,Vector3(-6+i*12,4.15,d/2+0.3),Vector3(8.3,0.35,0.45),red)
+				_box(root,Vector3(bay_x,4.15,d/2+0.3),Vector3(8.3,0.35,0.45),red)
 		"bus":
 			_sign(root,"GARE ROUTIÈRE",Vector3(0,h+1,d/2+0.3),blue)
 			_box(root,Vector3(0,4.3,0),Vector3(w+9,0.35,d+9),roof)
