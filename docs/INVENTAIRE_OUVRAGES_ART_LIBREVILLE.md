@@ -183,3 +183,15 @@ Les pages publiques indexées de YouTube, Facebook et TikTok peuvent apporter de
 3. Les dimensions d'un canal ou d'un ouvrage voisin ne doivent jamais être transférées à l'échangeur.
 4. Chaque structure 3D doit porter une fiche de provenance : géométrie OSM, coordonnées vérifiées, sources visuelles, mesures confirmées et incertitudes.
 5. En l'absence de relevé, conserver la route au niveau cartographique et différer le tablier/piles plutôt que générer une structure trompeuse.
+
+
+### Complément Awendjé — archives, réparation et état de la voirie (25 novembre 2026)
+- Gabon Media Time, 28 janvier 2025 : annonce de fermeture nocturne de l'échangeur de 20 h à 6 h pendant cinq jours pour des réparations : https://gabonmediatime.com/gabon-les-tp-annoncent-la-fermeture-nocturne-de-lechangeur-dawendje/
+- Agence Gabonaise de Presse, 28 janvier 2025 : confirme le démarrage des réparations et la durée de cinq jours : https://agpgabon.ga/gabon-5-jours-de-perturbation-sur-le-pont-dawendje/
+- Gabon Media Time, 5 février 2026 : décrit la réhabilitation de l'axe Awendjé–Plein-Ciel et l'amélioration de la chaussée sur cette voie express ; cela concerne le corridor routier et ne donne pas les cotes du tablier de l'échangeur : https://gabonmediatime.com/gabon-laxe-awendje-plein-ciel-enfin-un-nouveau-visage-se-dessine/
+- Gabon Media Time, 22 novembre 2025 : mentionne une opération de remise en état/peinture d'échangeurs et du rond-point Awendjé dans une campagne plus large de voirie : https://gabonmediatime.com/gabon-cure-de-jouvence-dans-le-grand-libreville/
+- L'archive photographique L'Union du 12 septembre 2017 identifie clairement une vue de l'échangeur d'Awendjé ; l'image peut servir à comprendre la silhouette générale et le contexte routier historique, sans être considérée comme un plan coté : https://lunion-archives.org/web.11/dmdocuments/N12519-12-09-2017-007.pdf
+- Une page cartographique basée sur OSM identifie le way 1435825401 comme « Pont Awendje », à 0.3864° N, 9.47466° E, avec le tag man_made=bridge : https://mapcarta.com/fr/W1435825401
+- Une seconde entrée cartographique place le point nommé « Echangeur Awendje » à 0.3868° N, 9.47493° E ; ce point est un repère, pas le contour complet de l'ouvrage : https://mapcarta.com/fr/N11378140442
+- Une source d'images d'archives indexe plusieurs vues nocturnes du rond-point d'Awendjé datées des 23 et 26 novembre 2012. Elles sont intéressantes pour l'éclairage et l'ambiance historique, mais leur licence et leur résolution doivent être vérifiées avant toute intégration : https://www.afrikimages.com/recherche/ville?locale=fr
+- Décision pour le jeu : ne pas figer des fissures de 2023 dans une version censée représenter 2026 après réparations. Conserver ces défauts dans une variante historique documentée, ou modéliser un état rénové si des photos post-travaux suffisamment détaillées le confirment. La forme exacte des travées, la hauteur du tablier, les sections de piles et les rayons du giratoire restent à mesurer sur orthophoto/plans ou vues multi-angles.
