@@ -70,17 +70,19 @@ func _material(color: Color, roughness_value: float) -> StandardMaterial3D:
 	return material
 
 func _spawn_traffic() -> void:
-	var lanes: Array[float] = [-2.15, 2.15, -2.15, 2.15, 0.0]
-	var speeds: Array[float] = [7.2, 6.5, 8.0, 5.8, 6.8]
-	for index in range(5):
-		var route: Array[Vector3] = []
-		for point in ROAD_PATH_A:
-			route.append(Vector3(point.x, point.y, point.z + lanes[index]))
+	var routes := _load_osm_routes(["motorway", "trunk", "primary", "secondary", "tertiary", "residential", "unclassified", "service"], 75.0, 1500.0)
+	if routes.is_empty():
+		push_warning("Routes OSM absentes dans le secteur : circulation non instanciée.")
+		return
+	for index in range(mini(5, routes.size())):
+		var route: Array[Vector3] = routes[index]["points"].duplicate()
 		if index % 2 == 1:
 			route.reverse()
 		var car := _build_car("TrafficCar_%02d" % index, _road_materials[index])
 		add_child(car)
-		_traffic.append({"node": car, "route": route, "distance": float(index) * 34.0, "speed": speeds[index], "phase": float(index) * 0.8})
+		var length := _route_length(route)
+		_traffic.append({"node": car, "route": route, "distance": fposmod(float(index) * 31.0, maxf(length, 1.0)), "speed": 5.8 + float(index % 3) * 0.7, "phase": float(index) * 0.8})
+
 
 func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
 	var car := Node3D.new()
@@ -111,13 +113,82 @@ func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
 	return car
 
 func _spawn_pedestrians() -> void:
+	var routes := _load_osm_routes(["footway", "pedestrian", "path", "steps", "living_street"], 22.0, 1100.0)
+	if routes.is_empty():
+		routes = [{"points": PEDESTRIAN_PATH_A}, {"points": PEDESTRIAN_PATH_B}]
 	for index in range(8):
-		var route: Array[Vector3] = PEDESTRIAN_PATH_A.duplicate() if index < 4 else PEDESTRIAN_PATH_B.duplicate()
+		var route: Array[Vector3] = routes[index % routes.size()]["points"].duplicate()
 		if index % 2 == 1:
 			route.reverse()
 		var pedestrian := _build_pedestrian("Pedestrian_%02d" % index, index)
 		add_child(pedestrian)
-		_pedestrians.append({"node": pedestrian, "route": route, "distance": float(index) * 17.0, "speed": 0.85 + float(index % 3) * 0.18, "phase": float(index) * 1.3})
+		var length := _route_length(route)
+		_pedestrians.append({"node": pedestrian, "route": route, "distance": fposmod(float(index) * 13.0, maxf(length, 1.0)), "speed": 0.72 + float(index % 3) * 0.16, "phase": float(index) * 1.3})
+
+func _load_osm_routes(highway_types: Array, minimum_length: float, maximum_distance: float) -> Array[Dictionary]:
+	var path := "res://data/osm/extended/roads.geojson"
+	if not FileAccess.file_exists(path):
+		path = "res://data/osm/roads.geojson"
+	if not FileAccess.file_exists(path):
+		return []
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if not parsed is Dictionary or not parsed.has("features"):
+		push_warning("GeoJSON des routes illisible.")
+		return []
+	var candidates: Array[Dictionary] = []
+	for feature in parsed["features"]:
+		var properties: Dictionary = feature.get("properties", {})
+		if not highway_types.has(str(properties.get("highway", ""))):
+			continue
+		var geometry: Dictionary = feature.get("geometry", {})
+		var lines: Array = []
+		if geometry.get("type", "") == "LineString":
+			lines.append(geometry.get("coordinates", []))
+		elif geometry.get("type", "") == "MultiLineString":
+			lines = geometry.get("coordinates", [])
+		for coordinates in lines:
+			var points: Array[Vector3] = []
+			var nearest := INF
+			for coordinate in coordinates:
+				if coordinate.size() < 2:
+					continue
+				var x := (float(coordinate[0]) - 9.4475) * 111320.0 * cos(deg_to_rad(0.400))
+				var z := (0.400 - float(coordinate[1])) * 111320.0
+				points.append(Vector3(x, 0.0, z))
+				nearest = minf(nearest, Vector2(x, z).length())
+			if points.size() < 2 or nearest > maximum_distance or _route_length(points) < minimum_length:
+				continue
+			var sampled: Array[Vector3] = []
+			var stride := maxi(1, int(ceil(float(points.size()) / 24.0)))
+			for point_index in range(0, points.size(), stride):
+				sampled.append(points[point_index])
+			if sampled.back() != points.back():
+				sampled.append(points.back())
+			candidates.append({"points": sampled, "score": nearest})
+	candidates.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return float(left["score"]) < float(right["score"]))
+	var selected: Array[Dictionary] = []
+	for candidate in candidates:
+		var center: Vector3 = candidate["points"][candidate["points"].size() / 2]
+		var duplicate := false
+		for chosen in selected:
+			var chosen_center: Vector3 = chosen["points"][chosen["points"].size() / 2]
+			if center.distance_to(chosen_center) < 18.0:
+				duplicate = true
+				break
+		if not duplicate:
+			selected.append(candidate)
+		if selected.size() >= 8:
+			break
+	return selected
+
+func _route_length(route: Array) -> float:
+	var total := 0.0
+	for index in range(route.size() - 1):
+		var first: Vector3 = route[index]
+		var second: Vector3 = route[index + 1]
+		total += first.distance_to(second)
+	return total
+
 
 func _build_pedestrian(actor_name: String, index: int) -> Node3D:
 	var actor := Node3D.new()
