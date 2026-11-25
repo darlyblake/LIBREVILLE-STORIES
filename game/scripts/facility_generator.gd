@@ -174,11 +174,11 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 	_name(root,label,Vector3(0,h+2,-d/2-1))
 
 func _windows(root:Node3D,w:float,d:float,h:float)->void:
-	var floors:=1 if h<8 else 3
+	var floors:=maxi(1, int(ceil(h / 3.2)))
 	for floor in range(floors):
 		var y:=1.7+floor*3.0
-		for col in range(4):
-			var x:=-w*0.34+col*w*0.22
+		for col in range(5):
+			var x:=-w*0.36+col*w*0.18
 			_box(root,Vector3(x,y,d/2+0.05),Vector3(2.2,1.35,0.08),glass)
 			_box(root,Vector3(x,y,-d/2-0.05),Vector3(2.2,1.35,0.08),glass)
 
