@@ -10,6 +10,7 @@ const METERS_PER_DEG := 111320.0
 const SEARCH_RADIUS := 1850.0
 const MAX_STOP_SIGNS := 28
 const MAX_CROSSING_SIGNS := 18
+const MAX_TRAFFIC_LIGHTS := 10
 
 var _world_map: Node3D
 var _materials: Dictionary = {}
@@ -102,6 +103,7 @@ func _build_signage() -> void:
 			await get_tree().process_frame
 
 	var stop_count := 0
+	var traffic_light_count := 0
 	for key in junctions:
 		if stop_count >= MAX_STOP_SIGNS:
 			break
@@ -130,8 +132,12 @@ func _build_signage() -> void:
 		var side := Vector2(-direction.y, direction.x)
 		var sign_position := intersection + direction * 6.5 + side * 3.0
 		var terrain_y := _terrain_height(sign_position)
-		_add_stop_sign(sign_position, terrain_y, direction, str(selected.name))
-		stop_count += 1
+		if way_count >= 4 and selected_score >= 2 and traffic_light_count < MAX_TRAFFIC_LIGHTS:
+			_add_traffic_light(intersection + direction * 5.0 + side * 4.0, terrain_y, direction)
+			traffic_light_count += 1
+		else:
+			_add_stop_sign(sign_position, terrain_y, direction, str(selected.name))
+			stop_count += 1
 
 	var crossing_count := 0
 	for point in crossing_points:
@@ -141,7 +147,7 @@ func _build_signage() -> void:
 		_add_pedestrian_sign(point + direction * 3.0, _terrain_height(point), direction)
 		crossing_count += 1
 
-	print("LIBREVILLE STORIES | signalisation : %d panneaux STOP et %d panneaux piétons issus des données OSM" % [stop_count, crossing_count])
+	print("LIBREVILLE STORIES | signalisation : %d STOP, %d feux tricolores, %d panneaux piétons issus des données OSM" % [stop_count, traffic_light_count, crossing_count])
 
 
 func _road_priority(kind: String) -> int:
@@ -260,6 +266,57 @@ func _add_stop_sign(point: Vector2, ground_y: float, direction: Vector2, street_
 		street_label.outline_size = 3
 		street_label.outline_modulate = Color(0.02, 0.08, 0.16)
 		root.add_child(street_label)
+
+
+func _add_traffic_light(point: Vector2, ground_y: float, direction: Vector2) -> void:
+	var root := Node3D.new()
+	root.name = "Feu_tricolore_%02d" % get_child_count()
+	root.position = Vector3(point.x, ground_y, point.y)
+	root.rotation.y = atan2(direction.x, direction.y)
+	add_child(root)
+
+	var pole := MeshInstance3D.new()
+	var pole_mesh := CylinderMesh.new()
+	pole_mesh.top_radius = 0.055
+	pole_mesh.bottom_radius = 0.09
+	pole_mesh.height = 3.75
+	pole.mesh = pole_mesh
+	pole.position.y = 1.87
+	pole.material_override = _material("traffic_pole", Color(0.18, 0.20, 0.21), 0.58, 0.42)
+	root.add_child(pole)
+
+	var housing := MeshInstance3D.new()
+	housing.name = "Boitier_feu"
+	var housing_mesh := BoxMesh.new()
+	housing_mesh.size = Vector3(0.42, 1.16, 0.30)
+	housing.mesh = housing_mesh
+	housing.position = Vector3(0, 3.05, 0.02)
+	housing.material_override = _material("traffic_housing", Color(0.055, 0.065, 0.07), 0.22, 0.58)
+	root.add_child(housing)
+
+	var light_colors: Array[Color] = [
+		Color(0.95, 0.035, 0.018),
+		Color(1.0, 0.56, 0.025),
+		Color(0.04, 0.72, 0.18)
+	]
+	for light_index in range(3):
+		var lamp := MeshInstance3D.new()
+		lamp.name = ["Feu_rouge", "Feu_orange", "Feu_vert"][light_index]
+		var sphere := SphereMesh.new()
+		sphere.radius = 0.115
+		sphere.height = 0.23
+		sphere.radial_segments = 12
+		sphere.rings = 6
+		lamp.mesh = sphere
+		lamp.position = Vector3(0, 3.42 - float(light_index) * 0.37, 0.19)
+		var lens := StandardMaterial3D.new()
+		lens.albedo_color = light_colors[light_index] * 0.52
+		lens.emission_enabled = true
+		lens.emission = light_colors[light_index]
+		lens.emission_energy_multiplier = 1.15
+		lens.roughness = 0.25
+		lamp.material_override = lens
+		root.add_child(lamp)
 
 
 func _add_pedestrian_sign(point: Vector2, ground_y: float, direction: Vector2) -> void:
