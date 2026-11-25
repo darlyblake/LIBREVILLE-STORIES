@@ -82,3 +82,54 @@ La recherche publique confirme que plusieurs ouvrages candidats correspondent bi
 3. Pour chaque modèle, conserver une date de référence visuelle. Les opérations de déguerpissement, de réhabilitation ou d'aménagement peuvent modifier fortement les abords.
 4. Les pages, vidéos et photos ci-dessus sont des références d'observation. Aucune image protégée n'est intégrée comme texture au jeu.
 5. Aucun ouvrage hors des secteurs de la carte n'est ajouté parce qu'il apparaît dans un dossier couvrant un corridor plus long.
+
+
+## Vérification géographique complémentaire — candidats et exclusions
+
+### Emprise de référence
+
+L'extraction OSM principale du projet utilise la boîte :
+- latitude : 0.355 à 0.445 ;
+- longitude : 9.400 à 9.495.
+
+Cette boîte est une première limite technique de la carte, pas une preuve suffisante à elle seule : les ouvrages doivent aussi être présents dans les routes/données réellement chargées par le jeu. Les secteurs Voronoï sont des limites de gameplay à faible confiance, non des frontières administratives.
+
+### Ouvrages confirmés dans l'emprise générale de la carte
+
+| Ouvrage | Référence OSM / position publiée | Contrôle spatial disponible | Décision |
+|---|---|---|---|
+| Échangeur des Charbonnages | way 1443840888 ; point publié 0.43650, 9.44087 | Dans la boîte de l'extraction ; le point tombe dans le polygone de gameplay « Charbonnages » | Retenu pour relevé détaillé |
+| Pont Awendjé | way 1435825401 ; point publié 0.38640, 9.47466 | Dans la boîte ; le point tombe dans le polygone « Awendjé » | Retenu pour relevé détaillé |
+| Échangeur de Nzeng-Ayong | way 169184393 ; axe publié autour de 0.42124, 9.46594 | Dans la boîte ; ce point tombe dans le polygone généré « Cité de la Caisse », ce qui signale une limite Voronoï à contrôler, mais ne le place pas hors carte | Retenu, géométrie à superposer précisément |
+| Pont de la Caisse | way 1395147722 ; point publié 0.41447, 9.46781 | Dans la boîte ; le point tombe dans le polygone « Cité Mébiame » | Retenu pour relevé détaillé |
+
+Sources cartographiques des références OSM : Mapcarta / OpenStreetMap pour l'Échangeur des Charbonnages, le Pont Awendjé et le Pont de la Caisse. Les coordonnées publiées sont des repères de carte et ne remplacent pas les géométries complètes des ways.
+
+### Candidats présents dans les secteurs couverts, mais dont le tablier doit encore être localisé
+
+- Échangeur PK5 : les sources cartographiques le placent à proximité du quartier PK5 et du Pont de la Caisse. Le point du quartier PK5 (0.40656, 9.46772) n'est pas le point du tablier. Le tablier reste à identifier par son way OSM.
+- Échangeur IAI : le dossier Banque mondiale situe l'échangeur au nord-ouest du site IAI et fournit une orthophoto de référence ; une source de décembre 2025 documente les glissières de sécurité du pont. Il reste à extraire la géométrie du tablier.
+- Échangeur de Lalala à droite : le marché N°90/MTPC/SG/2025 porte sur la Voie Express entre les échangeurs de Charbonnages et de Lalala à droite. Le way exact de l'ouvrage doit être identifié avant construction.
+- Échangeur de la Démocratie : le dossier d'entretien de la Voie Express le situe entre Charbonnages et Nzeng-Ayong ; une publication de juillet 2024 documente les travaux sur la section PK5–Démocratie. La géométrie exacte reste à extraire.
+- Échangeur du Lycée d'État : le marché d'entretien le cite sur la Voie Express. Il reste à vérifier par le tracé OSM et son intersection avec les secteurs chargés.
+
+### Exclusion corrigée : Pont Nomba
+
+Le point OSM du quartier « Pont-Nomba » est publié à environ 0.33908, 9.47685, et la station « OILIBYA Pont Nomba » à environ 0.33942, 9.47854. Ces deux repères sont au sud de la limite de latitude 0.355 de l'extraction principale. Le dossier d'entretien de la Voie Express mentionne bien un lot qui va jusqu'au Pont Nomba, mais ce lot couvre un corridor plus long que notre carte.
+
+**Décision : Pont Nomba exclu de la liste de modélisation actuelle.** Il ne sera réintégré que si une extension officielle de l'emprise du jeu vers le sud est décidée et que les données de carte sont mises à jour. Ne pas confondre le nom du quartier avec un pont situé dans notre emprise.
+
+### Références documentaires complémentaires
+
+- Marché d'entretien de la Voie Express, qui distingue les interventions sur/sous les échangeurs et mentionne plusieurs secteurs du corridor : https://www.lejmp.ga/public/file_dossier/676143ae94db7.pdf
+- Pont de la Caisse, way OSM 1395147722 et coordonnées publiées : https://mapcarta.com/fr/W1395147722
+- Pont Awendjé, way OSM 1435825401 et coordonnées publiées : https://mapcarta.com/fr/W1435825401
+- Échangeur des Charbonnages, way OSM 1443840888 et coordonnées publiées : https://mapcarta.com/fr/W1443840888
+- Échangeur de Nzeng-Ayong, way OSM 169184393, tags bridge=viaduct, layer=1, lanes=2 : https://ga.geoview.info/echangeur_de_nzeng_ayong%2C169184393w
+- Dossier Banque mondiale : localisation IAI/Charbonnages et orthophoto : https://documents1.worldbank.org/curated/en/744961468009995599/pdf/E29250v40FRENC000PUBLIC00Box379870B.pdf
+- État des glissières de l'échangeur IAI, 17 décembre 2025 : https://gabonmediatime.com/libreville-echangeur-diai-le-danger-permanent/
+- Marché de réhabilitation Charbonnages–Lalala, approuvé le 15 janvier 2026 : https://lejmp.com/marches-approuves/11/
+
+### État de certitude
+
+Les quatre ouvrages du tableau « confirmés dans l'emprise générale » sont confirmés comme candidats dans l'enveloppe de la carte, pas encore certifiés par intersection complète du tablier avec les polygones de gameplay. Les échangeurs PK5, IAI, Lalala, Démocratie et Lycée d'État restent à relever précisément. Aucun modèle 3D ne doit être construit à partir d'un simple point de quartier.
