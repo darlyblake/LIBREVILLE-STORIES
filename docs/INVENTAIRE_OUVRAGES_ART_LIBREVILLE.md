@@ -421,3 +421,11 @@ Une publication ministérielle du 7 novembre 2024 confirme les dimensions offici
 
 #### Décision
 IAI est désormais documenté comme ouvrage prioritaire avec un historique officiel d'ouverture, un dossier hydraulique et un reportage récent sur l'état des garde-corps. Le point Ozangué est seulement un repère voisin. Le modèle 3D final n'est pas encore autorisé : il manque l'axe exact du tablier et des vues suffisantes pour relever sa géométrie.
+
+
+#### Références photographiques locales complémentaires — licence vérifiée
+- Wikimedia Commons, « Eaux usées à IAI.jpg », photo personnelle publiée sous CC BY 4.0 ; prise de vue géolocalisée à 0.372944, 9.475744 le 24 janvier 2026 : https://commons.wikimedia.org/wiki/File:Eaux_us%C3%A9es_%C3%A0_IAI.jpg
+- Wikimedia Commons, « Canal d'Iai.jpg », photo personnelle publiée sous CC BY 4.0 ; prise de vue géolocalisée à 0.371458, 9.476617 le 19 janvier 2026 : https://commons.wikimedia.org/wiki/File:Canal_d%27Iai.jpg
+- Ces deux clichés sont des références de l'environnement d'assainissement et de l'insalubrité du secteur, pas des vues du tablier. Les points GPS sont les positions des photographes, pas celles du pont. Pour toute réutilisation dans le jeu, conserver l'attribution à Estrella230 et le lien CC BY 4.0, puis indiquer les modifications.
+- L'archive de L'Union du 14 juillet 2021 contient également une photographie de trottoir à IAI avec vendeurs, piétons et circulation : https://lunion-archives.org/web.11/dmdocuments/N13673-14-07-2021-010.pdf
+- L'archive de L'Union du 20 avril 2021 présente une vue de l'échangeur en période de pluie, avec chaussée fortement recouverte d'eau : https://lunion-archives.org/web.11/dmdocuments/N13603-20-04-2021-011.pdf. Référence de presse, réutilisation soumise aux droits de l'éditeur et du photographe.
