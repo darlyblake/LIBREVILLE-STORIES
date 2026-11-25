@@ -204,3 +204,32 @@ Les pages publiques indexées de YouTube, Facebook et TikTok peuvent apporter de
 - La page 7 de L'Union du 12 septembre 2017 comporte une photo au niveau du sol légendée « L'échangeur d'Awendje ». Elle permet de comparer l'aspect du pont dans son environnement, mais reste une seule perspective : https://lunion-archives.org/web.11/dmdocuments/N12519-12-09-2017-007.pdf
 - Les articles de janvier 2025 annoncent cinq nuits de réparations, mais ne détaillent pas les travaux structurels ni les parties remplacées. Il ne faut donc pas considérer que le tablier a été entièrement reconstruit : https://gabonmediatime.com/gabon-les-tp-annoncent-la-fermeture-nocturne-de-lechangeur-dawendje/ et https://agpgabon.ga/gabon-5-jours-de-perturbation-sur-le-pont-dawendje/
 - Pour la maquette, retenir uniquement les éléments visuellement certains (tablier transversal, voie divisée inférieure, garde-corps et contexte arboré/commercial) comme guide de recherche. Avant de construire le modèle définitif, recouper le tracé avec la géométrie OSM complète et une orthophoto récente ; les proportions devront rester provisoires tant qu'elles ne sont pas mesurées.
+
+
+### Vérification du corridor Voie Express — dossier officiel de prestations d'hygiène (25 novembre 2026)
+Le dossier d'appel d'offres ouvert N°004-AOO/2024/PE/CL/SG/DGF/PRESTATION D'HYGIENE de la Commune de Libreville décrit les lots de nettoyage par séquences de voirie et nomme explicitement les ouvrages traversés. Il fournit une preuve administrative utile pour établir l'inventaire et la relation « sur le pont / sous le pont », mais ce n'est ni un plan d'exécution ni un relevé topographique.
+
+- Zone A de la Voie Express : rond-point Crf Gigi → rond-point Cité des Ailes → échangeur du Lycée d'État (sous le pont) → échangeur Charbonnages (sur le pont) → échangeur Démocratie (sous l'échangeur) → échangeur Nzeng-Ayong (sur le pont) → échangeur PK5 (sous le pont), avec passerelles piétonnes.
+- Zone B de la Voie Express : échangeur PK5 (sous le pont) → échangeur Awendjé (sous le pont) → échangeur IAI (sur le pont) → échangeur Lalala (sous le pont) → Pont Nomba, avec passerelles piétonnes.
+- Le même dossier mentionne aussi le pont de l'échangeur du Lycée d'État sur la voie de contournement, le pont du marché de Lalala et le pont de la Cité de la Caisse dans les itinéraires d'entretien.
+- Source : dossier complet de l'appel d'offres communal, pages/paragraphes autour des lots 1 à 5 et 12 à 14 : https://www.lejmp.ga/public/file_dossier/676143ae94db7.pdf
+
+**Interprétation prudente :** les expressions « sur le pont » et « sous le pont » indiquent la position du parcours de nettoyage par rapport à l'ouvrage. Elles aident à comprendre la superposition des voies et à éviter d'inverser les circulations dans le jeu. Elles ne donnent pas les hauteurs, largeurs, rayons, portées, nombre de piles ni la forme des rampes. Ces mesures restent à obtenir séparément.
+
+### Liste de travail consolidée avant modélisation
+1. Échangeur du Lycée d'État / Paul-Indjendjet-Gondjout.
+2. Échangeur des Charbonnages.
+3. Échangeur de la Démocratie.
+4. Échangeur de Nzeng-Ayong.
+5. Échangeur PK5.
+6. Échangeur d'Awendjé.
+7. Échangeur IAI.
+8. Échangeur de Lalala.
+9. Pont Nomba.
+10. Pont du marché de Lalala.
+11. Pont de la Cité de la Caisse.
+12. Pont de la Nouvelle Cité et franchissements du canal de Mébangué (fiche hydraulique séparée).
+13. Passerelles piétonnes du corridor PK5–PK12 et Bizango–PK13, à géolocaliser individuellement.
+14. Fly-over du Camp de Gaulle : chantier évolutif distinct, dont la livraison est annoncée pour 2027 dans les sources officielles consultées.
+
+Aucun de ces points ne doit être traité comme un modèle 3D « terminé » sur la seule base de ce tableau. La priorité immédiate reste de récupérer et contrôler les ways/relations OSM complets, les orthophotos et les vues multi-angles, puis de créer les fiches géométriques individuelles.
