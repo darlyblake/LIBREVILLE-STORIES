@@ -83,7 +83,7 @@ func _spawn_traffic() -> void:
 		var car := _build_car("TrafficCar_%02d" % index, _road_materials[index])
 		add_child(car)
 		var length := _route_length(route)
-		_traffic.append({"node": car, "route": route, "distance": fposmod(float(index) * 31.0, maxf(length, 1.0)), "speed": 5.8 + float(index % 3) * 0.7, "cruise_speed": 5.8 + float(index % 3) * 0.7, "phase": float(index) * 0.8})
+		_traffic.append({"node": car, "route": route, "distance": fposmod(float(index) * 31.0, maxf(length, 1.0)), "speed": 5.8 + float(index % 3) * 0.7, "cruise_speed": 5.8 + float(index % 3) * 0.7, "lane_offset": 1.25 if index % 2 == 0 else -1.25, "phase": float(index) * 0.8})
 
 
 func _build_car(car_name: String, paint: StandardMaterial3D) -> Node3D:
@@ -282,11 +282,18 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 	actor["distance"] = distance
 	var sample := _sample_route(route, distance)
 	var position: Vector3 = sample["position"]
+	var direction: Vector3 = sample["direction"]
+	if not is_pedestrian and direction.length_squared() > 0.001:
+		var lateral := Vector3(-direction.z, 0.0, direction.x)
+		position += lateral * float(actor.get("lane_offset", 0.0))
 	position.y = _ground_height(position.x, position.z) + (0.04 if not is_pedestrian else 0.02)
 	node.global_position = position
-	var direction: Vector3 = sample["direction"]
 	if direction.length_squared() > 0.001:
 		node.rotation.y = atan2(direction.x, direction.z)
+	if not is_pedestrian:
+		for wheel in node.get_children():
+			if wheel is MeshInstance3D and wheel.name == "Wheel":
+				wheel.rotation.x += float(actor["speed"]) * delta / 0.38
 	if is_pedestrian:
 		var phase := float(actor["phase"]) + distance * 0.65
 		var leg_swing := sin(phase) * 0.42
