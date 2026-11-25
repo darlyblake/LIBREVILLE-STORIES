@@ -18,7 +18,9 @@ func _ready() -> void:
 	map = get_parent().get_node_or_null("WorldMap")
 	if map == null: return
 	_make_materials()
-	for i in range(30):
+	for i in range(600):
+		if bool(map.get("_dem_loaded")):
+			break
 		await get_tree().process_frame
 	_build_facilities()
 
