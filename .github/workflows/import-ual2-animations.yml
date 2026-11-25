@@ -1,0 +1,54 @@
+name: Import Quaternius UAL2 climbing animations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-ual2-animations.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  import-ual2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download and verify official Quaternius UAL2 Standard archive
+        run: |
+          set -euo pipefail
+          curl -fsSL -X POST "https://quaternius.itch.io/universal-animation-library-2/file/17958478?source=game_download&as_props=1" -o /tmp/itch-download.json
+          DOWNLOAD_URL="$(jq -r '.url // empty' /tmp/itch-download.json)"
+          test -n "$DOWNLOAD_URL"
+          curl -fL --retry 3 "$DOWNLOAD_URL" -o /tmp/ual2.zip
+          echo "4008ea208a604773a2b2177d965f0f5d3195498b5bf838c3f5785d68e95f2a68  /tmp/ual2.zip" | sha256sum --check
+          unzip -Z1 /tmp/ual2.zip | grep -E '(^|/)UAL2_Standard\.glb$'
+          mkdir -p assets/models/characters
+          unzip -p /tmp/ual2.zip '*/UAL2_Standard.glb' > assets/models/characters/UAL2_Standard.glb
+          test "$(stat -c %s assets/models/characters/UAL2_Standard.glb)" -gt 1000000
+          file assets/models/characters/UAL2_Standard.glb
+
+      - name: Create a pull request for the verified CC0 animation library
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c assets/import-quaternius-ual2
+          git add assets/models/characters/UAL2_Standard.glb
+          if git diff --cached --quiet; then
+            echo "UAL2 is already present."
+            exit 0
+          fi
+          git commit -m "assets: add Quaternius UAL2 CC0 animation library"
+          git push --force-with-lease origin assets/import-quaternius-ual2
+          gh pr create --base main --head assets/import-quaternius-ual2 --title "assets: add Quaternius UAL2 CC0 animation library" --body "Ajoute UAL2 Standard de Quaternius, vérifié par SHA-256 de l'archive officielle. Cette bibliothèque complète UAL1 ; les clips disponibles seront listés par la validation Godot avant activation dans le gameplay."
