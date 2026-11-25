@@ -46,3 +46,6 @@ jobs:
 
       - name: Import project and parse scripts
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --editor --path . --verbose --quit
+
+      - name: Inspect UAL1 and UAL2 animation clips and skeletons
+        run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --script tools/inspect_character_animations.gd
