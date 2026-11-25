@@ -268,9 +268,17 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 	var current_direction: Vector3 = current_sample["direction"]
 	var cruise_speed := float(actor.get("cruise_speed", actor["speed"]))
 	var desired_speed := cruise_speed
-	if not is_pedestrian and is_instance_valid(_traffic_signs) and _traffic_signs.has_method("is_red_for_vehicle"):
-		if bool(_traffic_signs.call("is_red_for_vehicle", current_position, current_direction)):
+	if not is_pedestrian and is_instance_valid(_traffic_signs):
+		if _traffic_signs.has_method("is_red_for_vehicle") and bool(_traffic_signs.call("is_red_for_vehicle", current_position, current_direction)):
 			desired_speed = 0.0
+		elif _traffic_signs.has_method("should_vehicle_yield"):
+			var pedestrian_positions: Array = []
+			for pedestrian_actor in _pedestrians:
+				var pedestrian_node := pedestrian_actor.get("node") as Node3D
+				if is_instance_valid(pedestrian_node):
+					pedestrian_positions.append(pedestrian_node.global_position)
+			if bool(_traffic_signs.call("should_vehicle_yield", current_position, current_direction, pedestrian_positions)):
+				desired_speed = 0.0
 	elif is_pedestrian and _is_vehicle_near(current_position, 5.0):
 		desired_speed = 0.0
 	var acceleration := 10.0 if desired_speed < float(actor["speed"]) else 2.0
