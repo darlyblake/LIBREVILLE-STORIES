@@ -163,7 +163,7 @@ func _try_start_climb() -> bool:
 	_climbing = true
 	collision_shape.set_deferred("disabled", true)
 	velocity = Vector3.ZERO
-	character_visual.call("play_motion", "jump")
+	character_visual.call("play_motion", "climb")
 	return true
 
 func _process_climb(delta: float) -> void:
@@ -183,8 +183,10 @@ func _update_character_animation() -> void:
 		state = "shoot"
 	elif _aiming:
 		state = "aim"
-	elif not is_on_floor() or _climbing:
-		state = "jump"
+	elif _climbing:
+		state = "climb"
+	elif not is_on_floor():
+		state = "fall" if velocity.y < -0.25 else "jump"
 	elif Vector2(velocity.x, velocity.z).length() > 0.25:
 		state = "run" if _running else "walk"
 	character_visual.call("play_motion", state)
