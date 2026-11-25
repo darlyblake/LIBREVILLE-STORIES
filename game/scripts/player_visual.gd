@@ -38,16 +38,16 @@ func play_motion(state: String) -> void:
 
 func _resolve_animation(state: String) -> StringName:
 	var aliases := {
-		"idle": ["idle", "stand", "breathing"],
-		"walk": ["walk", "walking"],
-		"run": ["sprint", "run", "jog"],
-		"jump": ["jump", "takeoff"],
-		"aim": ["aim", "pistol_idle", "rifle_idle", "shoot_idle"],
-		"aim_walk": ["aim_walk", "walk_aim", "strafe", "walk"],
-		"shoot": ["shoot", "fire", "attack", "pistol_fire", "rifle_fire"],
-		"climb": ["climb", "vault", "mantle"],
-		"fall": ["fall", "falling", "air"],
-		"land": ["land", "landing"],
+		"idle": ["idle_loop", "idle", "stand", "breathing"],
+		"walk": ["walk_loop", "walk_fwd_loop", "walk", "walking"],
+		"run": ["sprint_loop", "sprint", "jog_fwd_loop", "jog_fwd", "run", "jog"],
+		"jump": ["jump_start", "jump"],
+		"aim": ["pistol_aim_neutral", "pistol_aim", "aim", "pistol_idle_loop", "rifle_idle", "shoot_idle"],
+		"aim_walk": ["pistol_aim_neutral", "aim_walk", "walk_aim", "strafe", "walk_loop", "walk"],
+		"shoot": ["pistol_shoot", "shoot", "fire", "attack", "pistol_fire", "rifle_fire"],
+		"climb": ["climb", "climbup", "safetyvault", "stepup", "jump_loop", "jump"],
+		"fall": ["jump_loop", "fall", "falling", "air"],
+		"land": ["jump_land", "land", "landing"],
 	}
 	var candidates: Array = aliases.get(state, aliases["idle"])
 	var names := animation_player.get_animation_list()
