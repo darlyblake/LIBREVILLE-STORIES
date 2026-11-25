@@ -157,3 +157,29 @@ Les données OpenStreetMap sont © contributeurs OpenStreetMap et sont publiées
 
 ### Méthode de lecture des sources sociales
 Les pages publiques indexées de YouTube, Facebook et TikTok peuvent apporter des vidéos de chantier et des vues récentes, mais une publication sociale isolée ne prouve pas une dimension ou une localisation. Les sources officielles, les plans, les données OSM/orthophotos et plusieurs vues convergentes restent nécessaires. Les liens commerciaux ou contenus protégés restent des références visuelles uniquement, sans copie des images dans les assets.
+
+
+## Mise à jour documentaire — vérifications supplémentaires du 25 novembre 2026
+
+### Nzeng-Ayong : distinguer l'échangeur de l'axe mairie
+- Le Ministère des Travaux publics indique le 16 mai 2026 la réouverture de l'axe rond-point–mairie de Nzeng-Ayong, avec environ 95 % de réalisation à la date du communiqué ; l'enrobé et une partie de l'assainissement restaient à achever. Le curage des caniveaux était signalé comme réalisé : https://infrastructures.gouv.ga/le-ministre-edgard-moukoumbi-sur-le-terrain-pour-la-reouverture-de-laxe-rond-point-mairie-de-nzeng-ayong/
+- Cette opération concerne l'axe vers la mairie et ne constitue pas un relevé dimensionnel de l'échangeur OSM way 169184393. Ne pas fusionner les deux emprises.
+- La fiche cartographique secondaire de l'échangeur OSM way 169184393 donne une longueur d'environ 203 m et les tags trunk, bridge=viaduct, lanes=2, layer=1, oneway=yes, surface=asphalt : https://ga.geoview.info/echangeur_de_nzeng_ayong%2C169184393w
+- Ces attributs identifient un tronçon et sa topologie, mais ne décrivent ni la largeur réelle du tablier, ni la hauteur libre, ni la forme des culées, ni le nombre/position des piles. Les conserver comme métadonnées, pas comme géométrie 3D.
+
+### Canal aménagé de Nzeng-Ayong / Mébangué : données d'ouvrage distinctes
+- Une étude publiée en 2024 décrit une section aménagée de 2,3 km, un canal bétonné de 8 à 15 m de largeur et de 1,70 à 2,20 m de profondeur, une piste de service de 3,25 m, 120 places de stationnement, cinq ponts et quatre passerelles piétonnes : https://brainajournal.com/manuscripts/107-115%20F.pdf
+- Ces mesures concernent la section du canal de Mébangué étudiée, pas l'échangeur routier de Nzeng-Ayong. Elles pourront servir à créer une fiche séparée pour le réseau hydraulique et ses franchissements, après géolocalisation des cinq ponts et quatre passerelles.
+- Ne pas placer ces ponts à des coordonnées arbitraires : les localiser par les données cartographiques et les plans de l'étude avant toute modélisation.
+
+### Awendjé : vues historiques et état matériel
+- Un reportage de 2023 fournit une vue aérienne et des vues rapprochées de l'échangeur ; il décrit des fissures sur fondations, piliers et tablier, des infiltrations près des panneaux publicitaires et une chaussée dégradée : https://gabonmediatime.com/libreville-lechangeur-dawendje-etat-degradation-nez-barbe-nkouma-emane/
+- Une archive de L'Union de septembre 2017 contient également une photographie légendée de l'échangeur d'Awendjé : https://lunion-archives.org/web.11/dmdocuments/N12519-12-09-2017-007.pdf
+- Les photos de 2017 et 2023 sont des références historiques, pas une preuve de l'état actuel en 2026. Le jeu devra choisir explicitement une période visuelle ou documenter une rénovation avant de reproduire les fissures.
+
+### Règles de modélisation renforcées
+1. Les centres de voies OSM servent à retrouver les axes, pas à déduire les sections de béton.
+2. La longueur d'un way OSM ne suffit pas à déduire le nombre de travées, la hauteur ou les appuis.
+3. Les dimensions d'un canal ou d'un ouvrage voisin ne doivent jamais être transférées à l'échangeur.
+4. Chaque structure 3D doit porter une fiche de provenance : géométrie OSM, coordonnées vérifiées, sources visuelles, mesures confirmées et incertitudes.
+5. En l'absence de relevé, conserver la route au niveau cartographique et différer le tablier/piles plutôt que générer une structure trompeuse.
