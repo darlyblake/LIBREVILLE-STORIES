@@ -113,3 +113,47 @@ Ne pas télécharger de texture depuis un site sans licence claire. Les photos d
 ## Attribution cartographique
 
 Les données OpenStreetMap sont © contributeurs OpenStreetMap et sont publiées sous ODbL 1.0. Toute redistribution de données dérivées doit conserver l'attribution et respecter les obligations ODbL.
+
+
+## Compléments de recherche web, vidéos et réseaux sociaux — 25 novembre 2026
+
+### Charbonnages : évolution récente des abords
+- L'Union, 28 août 2026 : chantier de neuf mois autour de l'échangeur, mur de sécurisation, réorganisation du stationnement, des voies et des arrêts informels : https://union.sonapresse.com/index.php/fr/node/27547
+- Biba241, 28 août 2026 : confirmation des objectifs de fluidification, stationnement et réorganisation des abords : https://www.biba241.com/charbonnages-un-nouveau-visage-se-dessine-autour-de-l-changeur
+- Groupe Gabon Télévisions, vidéo YouTube du 5 avril 2025 : visite du chantier du jardin de l'échangeur : https://www.youtube.com/watch?v=AAjzBr1c2X4
+- TikTok relayé/indexé, Groupe Gabon Télévisions, 19 novembre 2026 : intervention SEEG de maintenance à l'échangeur : https://ttanon.com/%40groupe_gabon_televisions/video/7709878947160263937
+- Conséquence de modélisation : l'espace sous le tablier, les accès, le mur de sécurisation, les places de stationnement et le jardin doivent être traités comme un ensemble urbain évolutif. Ne pas figer des boutiques ou stationnements au milieu des voies réorganisées.
+
+### Camp de Gaulle : chantier et architecture du nouveau fly-over
+- Gouvernement, visite de chantier du 29 octobre 2025 : pont, giratoire de 108 m, liaison entre voie de contournement nord et voie express, routes de jonction et bassin versant de Gué-Gué : https://gouvernement.ga/2025/10/29/terrain/
+- Ministère des Travaux publics, visite du 4 octobre 2025 : taux de réalisation rapporté à cette date et livraison annoncée en février 2027 : https://www.infrastructures.gouv.ga/9-actualites/1332-edgard-moukoumbi-en-visite-ce-samedi-04-octobre-2025-sur-les-chantiers-du-camp-de-gaulle-et-de-l-esplanade-georges-damas-aleka/
+- Gabon Media Time, septembre 2024 : description du principe de liaison depuis Kalikak, giratoire, bretelles vers Charbonnages et l'aéroport : https://gabonmediatime.com/libreville-la-tente-du-jardin-botanique-demantelee-pour-cause-dutilite-publique/
+- Conséquence : construire la maquette à partir des axes réels et du plan de chantier, avec un giratoire et plusieurs bretelles ; ne pas reprendre un échangeur trèfle générique trouvé dans une vidéo conceptuelle.
+
+### Passerelles piétonnes : Bizango-PK13 comme référence de construction
+- Groupe Gabon Télévisions, vidéo YouTube du 4 août 2025 : opération de levage et pose du tablier de la passerelle de Bizango-PK13 après deux jours de travaux : https://www.youtube.com/watch?v=-kdx22S8jp0
+- Gouvernement, inauguration du 19 septembre 2025 : ouvrage achevé, barrière centrale, quatre monte-charges prévus, protection des piles et signalisation de gabarit à compléter : https://gouvernement.ga/2025/09/20/inauguration-de-la-passerelle-pietonne-de-bizango-pk-13-a-libreville/
+- L'Union, 20 juillet 2026 : passerelles signalées au lycée Léon-Mba, Paul-Indjendjet-Gondjout et Plein-Ciel : https://www.union.sonapresse.com/fr/libreville-le-casse-tete-de-la-traversee-pietonne
+- Conséquence : référence concrète pour la séquence de construction (grue, levage du tablier, appuis, garde-corps, accès, dispositifs PMR). Ne pas supposer que toutes les passerelles de Libreville ont exactement le même dessin.
+
+### Awendjé : détails d'usure observés
+- Gabon Media Time, 30 avril 2023 : pont construit en 1996 ; fissures décrites sur fondations, piliers et tablier, infiltrations au droit de panneaux publicitaires et chaussée dégradée : https://gabonmediatime.com/libreville-lechangeur-dawendje-etat-degradation-nez-barbe-nkouma-emane/
+- Reportage vidéo Dailymotion : https://www.dailymotion.com/video/x91vzge
+- Conséquence : les défauts ne doivent pas être appliqués comme simple bruit de texture ; ils doivent être placés sur les zones rapportées et rester cohérents avec l'état temporel choisi pour le jeu.
+
+### Nzeng-Ayong : talus, drainage et sécurité
+- GabonReview, 20 avril 2025 : cavité de chaussée et érosion signalées sur la voie de desserte ; https://www.gabonreview.com/echangeur-de-nzeng-ayong-quand-letat-joue-a-la-roulette-russe-avec-la-vie-des-usagers/
+- Médias241, 29 avril 2022 : fermeture de la voie après glissement de talus, travaux de confortement et protection d'une conduite SEEG : https://medias241.ga/nzeng-ayong-le-ministere-des-tp-ferme-la-circulation-sur-une-partie-de-lechangeur/
+- Conséquence : la modélisation doit inclure les talus, ouvrages de soutènement, drainage et caniveaux selon les emprises documentées, et pas uniquement le pont.
+
+### Jeanne-Ebori et Route Protocole : projets distincts
+- GabonReview, 26 août 2026 : travaux du futur échangeur de Jeanne-Ebori et déviations temporaires : https://www.gabonreview.com/embouteillages-dans-libreville-en-travaux-comment-eviter-la-thrombose-a-la-rentree/
+- Marché approuvé N°101/MTPC/SG/2025, échangeur de la Route Protocole, 19 janvier 2026 : https://lejmp.com/marches-approuves/11/
+- Ces projets sont suivis séparément ; leur statut et leurs emprises doivent être confirmés avant insertion dans la carte jouable.
+
+### Sources vidéo à ne pas confondre avec des relevés du réel
+- YouTube « LIBREVILLE CLOVERLEAF INTERCHANGE DESIGN PROPOSAL » est une proposition conceptuelle d'échangeur trèfle, et non une preuve de la géométrie d'un ouvrage construit : https://www.youtube.com/watch?v=FLrNhwJKRxY
+- Les vidéos d'ingénierie génériques peuvent expliquer les séquences de construction, mais ne fournissent ni les dimensions ni la forme des échangeurs de Libreville.
+
+### Méthode de lecture des sources sociales
+Les pages publiques indexées de YouTube, Facebook et TikTok peuvent apporter des vidéos de chantier et des vues récentes, mais une publication sociale isolée ne prouve pas une dimension ou une localisation. Les sources officielles, les plans, les données OSM/orthophotos et plusieurs vues convergentes restent nécessaires. Les liens commerciaux ou contenus protégés restent des références visuelles uniquement, sans copie des images dans les assets.
