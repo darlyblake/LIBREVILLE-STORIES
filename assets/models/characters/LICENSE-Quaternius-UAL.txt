@@ -1,0 +1,7 @@
+Quaternius — Universal Animation Library mannequin (UAL1_Standard.glb)
+License: CC0 1.0 Universal (public domain dedication)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Original asset source:
+https://github.com/webgl-games/opencity/tree/main/assets/characters
+Model author: Quaternius (@Quaternius)
