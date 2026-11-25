@@ -193,6 +193,8 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 			_sign(root,"✚",Vector3(-w/2+2,h+1.4,0),red)
 			_sign(root,"URGENCES",Vector3(0,2.4,d/2+0.4),blue)
 			_box(root,Vector3(0,2.1,d/2+2.2),Vector3(10,0.35,4),blue)
+			_box(root,Vector3(0,1.25,d/2+0.09),Vector3(3.2,2.5,0.12),glass)
+			_box(root,Vector3(0,0.25,d/2+3.8),Vector3(7,0.5,5.5),concrete)
 			if k=="hospital":
 				_box(root,Vector3(w*0.28,h+2.4,-d*0.12),Vector3(maxf(12.0,w*0.34),4.8,d*0.7),white)
 				_box(root,Vector3(w*0.28,h+4.9,-d*0.12),Vector3(maxf(12.0,w*0.35),0.25,d*0.72),roof)
@@ -207,15 +209,24 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 		"fire":
 			_sign(root,"SAPEURS-POMPIERS",Vector3(0,h+1,d/2+0.3),red)
 			for i in range(2):
-				_box(root,Vector3(-6+i*12,2,d/2+0.16),Vector3(8,4,0.2),red)
+				_box(root,Vector3(-6+i*12,2,d/2+0.16),Vector3(8,4,0.2),asphalt)
+				_box(root,Vector3(-10+i*12,2,d/2+0.3),Vector3(0.35,4.3,0.45),red)
+				_box(root,Vector3(-2+i*12,2,d/2+0.3),Vector3(0.35,4.3,0.45),red)
+				_box(root,Vector3(-6+i*12,4.15,d/2+0.3),Vector3(8.3,0.35,0.45),red)
 		"bus":
 			_sign(root,"GARE ROUTIÈRE",Vector3(0,h+1,d/2+0.3),blue)
 			_box(root,Vector3(0,4.3,0),Vector3(w+9,0.35,d+9),roof)
+			for x in [-w*0.42,w*0.42]:
+				for z in [-d*0.38,d*0.38]:
+					_box(root,Vector3(x,2.15,z),Vector3(0.65,4.3,0.65),blue)
 			for i in range(4):
 				_box(root,Vector3(-12+i*8,0.08,d/2+6),Vector3(6,0.12,9),white)
 		"fuel":
 			_sign(root,"STATION-SERVICE",Vector3(0,h+1,d/2+0.3),red)
 			_box(root,Vector3(0,5,-1),Vector3(w+8,0.35,13),roof)
+			for x in [-w*0.42,w*0.42]:
+				for z in [-5.5,3.5]:
+					_box(root,Vector3(x,2.5,z),Vector3(0.55,5,0.55),red)
 			for i in range(3):
 				var x:=-8.0+i*8.0
 				_box(root,Vector3(x,1.25,0),Vector3(1.2,2.5,0.9),red)
