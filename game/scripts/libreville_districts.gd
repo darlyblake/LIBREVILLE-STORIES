@@ -169,3 +169,51 @@ func _build_market_stall(parent: Node3D, index: int, center: Vector3, awning: Ma
 		fruit.material_override = fruit_materials[(index + fruit_index) % fruit_materials.size()]
 		fruit.position = Vector3(-1.8 + float(fruit_index) * 0.55, 1.08, 1.1)
 		stall.add_child(fruit)
+	if index % 3 == 0:
+		_add_market_vendor(stall, index)
+
+
+func _add_market_vendor(parent: Node3D, index: int) -> void:
+	var vendor := Node3D.new()
+	vendor.name = "Vendeur_%02d" % index
+	vendor.position = Vector3(0.0, 0.0, -0.65)
+	parent.add_child(vendor)
+	var skin_colors: Array[Color] = [Color(0.28, 0.16, 0.10), Color(0.42, 0.25, 0.16), Color(0.55, 0.34, 0.22)]
+	var shirt_colors: Array[Color] = [Color(0.12, 0.30, 0.52), Color(0.66, 0.18, 0.12), Color(0.14, 0.38, 0.24), Color(0.78, 0.62, 0.20)]
+	var skin := _material("vendor_skin_%d" % (index % skin_colors.size()), skin_colors[index % skin_colors.size()])
+	var shirt := _material("vendor_shirt_%d" % (index % shirt_colors.size()), shirt_colors[index % shirt_colors.size()])
+	var dark := _material("vendor_trousers", Color(0.12, 0.13, 0.15))
+	var torso := MeshInstance3D.new()
+	var torso_mesh := CapsuleMesh.new()
+	torso_mesh.radius = 0.25
+	torso_mesh.height = 0.92
+	torso.mesh = torso_mesh
+	torso.position = Vector3(0, 1.22, 0)
+	torso.material_override = shirt
+	vendor.add_child(torso)
+	var head := MeshInstance3D.new()
+	var head_mesh := SphereMesh.new()
+	head_mesh.radius = 0.17
+	head_mesh.height = 0.34
+	head.mesh = head_mesh
+	head.position = Vector3(0, 1.86, 0)
+	head.material_override = skin
+	vendor.add_child(head)
+	for side in [-1.0, 1.0]:
+		var leg := MeshInstance3D.new()
+		var leg_mesh := CapsuleMesh.new()
+		leg_mesh.radius = 0.105
+		leg_mesh.height = 0.78
+		leg.mesh = leg_mesh
+		leg.position = Vector3(side * 0.12, 0.42, 0)
+		leg.material_override = dark
+		vendor.add_child(leg)
+		var arm := MeshInstance3D.new()
+		var arm_mesh := CapsuleMesh.new()
+		arm_mesh.radius = 0.075
+		arm_mesh.height = 0.68
+		arm.mesh = arm_mesh
+		arm.position = Vector3(side * 0.31, 1.20, 0.16)
+		arm.rotation.x = -0.45
+		arm.material_override = skin
+		vendor.add_child(arm)
