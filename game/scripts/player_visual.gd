@@ -45,6 +45,7 @@ func _resolve_animation(state: String) -> StringName:
 		"aim": ["pistol_aim_neutral", "pistol_aim", "aim", "pistol_idle_loop", "rifle_idle", "shoot_idle"],
 		"aim_walk": ["pistol_aim_neutral", "aim_walk", "walk_aim", "strafe", "walk_loop", "walk"],
 		"shoot": ["pistol_shoot", "shoot", "fire", "attack", "pistol_fire", "rifle_fire"],
+		"reload": ["pistol_reload", "reload"],
 		"climb": ["climb", "climbup", "safetyvault", "stepup", "jump_loop", "jump"],
 		"fall": ["jump_loop", "fall", "falling", "air"],
 		"land": ["jump_land", "land", "landing"],
