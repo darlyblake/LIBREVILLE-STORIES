@@ -366,3 +366,15 @@ Une publication ministérielle du 7 novembre 2024 confirme les dimensions offici
 - Le relevé ministériel d'avancement au 1er février 2013 identifie notamment une bretelle de 200 m à l'échangeur de la Cité de la Caisse, ainsi que des travaux routiers distincts dans les secteurs Lalala, Awendjé et PK6–PK12. Ces linéaires concernent les itinéraires de voirie indiqués et ne doivent pas être réinterprétés comme la longueur des ponts ou des tabliers.
 - Ces documents anciens sont utiles pour comprendre les accès, les bretelles et la chronologie des aménagements. Ils ne remplacent pas un plan d'exécution ou un relevé actuel.
 - Sources : https://infrastructures.gouv.ga/object.getObject.do?id=367&mime=file-mime&object=file ; https://infrastructures.gouv.ga/object.getObject.do?id=363&mime=file-mime&object=file
+
+
+### Pont Setrag — ouvrage distinct du pont Nomba
+- Le ministère a inspecté séparément le **pont Setrag** et le **pont Nomba** le 25 mars 2019. Le programme d'urgence portait sur la sécurisation et la protection des deux ponts.
+- Le communiqué du 2 avril 2019 précise que des Glissières en Béton Adhérent (GBA) ont été posées provisoirement sur les ponts Nomba et Setrag, avant la pose annoncée de glissières définitives et de bandes rugueuses. Le calendrier annoncé était de deux mois et les interventions devaient se dérouler en deux phases.
+- Ne pas fusionner le pont Setrag avec le pont Nomba dans la carte ou dans le modèle 3D : ce sont deux ouvrages nommés séparément par le ministère. Les sources consultées ne donnent pas encore les dimensions ou les profils longitudinaux.
+- Sources : https://infrastructures.gouv.ga/9-actualites/676-visite-d-inspection-dans-les-zones-du-pont-setrag-pont-nomba-i-a-i-carrefour-f-o-p-i-et-cocotiers/ ; https://www.gabonreview.com/communique-du-ministere-de-lequipement-des-infrastructures-et-des-travaux-publics/
+
+### IAI — séparer le franchissement du traitement des voiries
+- Lors de la visite ministérielle du 25 mars 2019, les interventions à IAI étaient décrites comme des travaux d'assainissement des voiries, tandis que la sécurisation des ponts concernait explicitement les ponts Setrag et Nomba.
+- Le reportage du 17 décembre 2025 documente l'état des glissières du tablier de l'échangeur IAI, mais ne fournit pas la géométrie de celui-ci. Les deux séries de sources ne doivent pas être mélangées : drainage/voirie 2019 d'une part, équipements de sécurité du pont en 2025 d'autre part.
+- Sources : https://infrastructures.gouv.ga/9-actualites/676-visite-d-inspection-dans-les-zones-du-pont-setrag-pont-nomba-i-a-i-carrefour-f-o-p-i-et-cocotiers/ ; https://gabonmediatime.com/libreville-echangeur-diai-le-danger-permanent/
