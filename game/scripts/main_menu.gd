@@ -283,6 +283,7 @@ func _start_game() -> void:
 	config.set_value("graphics", "buildings", _buildings.button_pressed)
 	config.set_value("graphics", "vegetation", _vegetation.button_pressed)
 	config.set_value("graphics", "extra_textures", _extra_textures.button_pressed)
+	config.set_value("graphics", "pbr_textures", _pbr_textures.button_pressed)
 	config.set_value("display", "fullscreen", _fullscreen.button_pressed)
 	var error := config.save(SETTINGS_PATH)
 	if error != OK:
