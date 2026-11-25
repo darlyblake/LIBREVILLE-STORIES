@@ -23,7 +23,7 @@ const TERRAIN_STREAM_MAX_BUILDS_PER_UPDATE := 2
 # Les fichiers GeoJSON restent des données compactes ; les meshes hors zone ne sont pas créés.
 const WORLD_ENVIRONMENT_RADIUS := 1800.0
 const WORLD_ROAD_RADIUS := 2400.0
-const WORLD_BUILDING_RADIUS := 1400.0
+const WORLD_BUILDING_RADIUS := 1750.0
 const WORLD_POI_RADIUS := 1800.0
 const WORLD_LOCALITY_RADIUS := 3500.0
 const BAIE_DES_ROIS_WATER_LEVEL := -0.12
@@ -42,8 +42,8 @@ const BAIE_DES_ROIS_SITE_RADIUS := 190.0
 ## Charge aussi les packs 4K worn_asphalt (pistes en terre) et asphalt_floor (béton/pavés).
 @export var load_extra_road_textures := true
 
-const ROAD_LIFT := 0.035
-const MARKING_LIFT := 0.085
+const ROAD_LIFT := 0.070
+const MARKING_LIFT := 0.120
 const ROAD_MAX_STEP := 15.0
 const ROAD_HIT_CELL := 32.0
 const MEDIAN_MAX_GAP := 18.0
@@ -175,7 +175,7 @@ func _ready() -> void:
 	# Lire le profil avant de construire le monde 3D.
 	var graphics_config := ConfigFile.new()
 	if graphics_config.load("user://graphics_settings.cfg") == OK:
-		show_buildings = bool(graphics_config.get_value("graphics", "buildings", false))
+		show_buildings = bool(graphics_config.get_value("graphics", "buildings", true))
 		render_green_areas = bool(graphics_config.get_value("graphics", "vegetation", false))
 		load_extra_road_textures = bool(graphics_config.get_value("graphics", "extra_textures", false))
 		var sun := get_parent().get_node_or_null("DirectionalLight3D") as DirectionalLight3D
@@ -580,15 +580,30 @@ func _build_terrain_chunk(key: Vector2i) -> void:
 			for piece in terrain_pieces:
 				if piece.size() < 3:
 					continue
-				var indices := Geometry2D.triangulate_polygon(piece)
-				if indices.is_empty():
-					continue
-				for i in range(0, indices.size(), 3):
-					for vertex_index in range(3):
-						var point: Vector2 = piece[indices[i + vertex_index]]
-						var height: float = _terrain_height_at_world(point.x, point.y)
-						surface.set_color(_terrain_color(height))
-						surface.add_vertex(Vector3(point.x, height, point.y))
+				# Le relief et les routes doivent partager exactement la même diagonale
+				# de triangulation. Sinon un quad de terrain peut bomber au-dessus du bitume.
+				var is_full_cell := piece.size() == 4
+				if is_full_cell:
+					for corner in cell:
+						var found_corner := false
+						for point in piece:
+							if corner.distance_squared_to(point) < 0.0001:
+								found_corner = true
+								break
+						if not found_corner:
+							is_full_cell = false
+							break
+				if is_full_cell:
+					# Même diagonale (x0,z0) -> (x1,z1) que _terrain_mesh_height().
+					_add_terrain_triangle(surface, cell[0], cell[1], cell[2])
+					_add_terrain_triangle(surface, cell[0], cell[2], cell[3])
+				else:
+					var indices := Geometry2D.triangulate_polygon(piece)
+					if indices.is_empty():
+						continue
+					for i in range(0, indices.size(), 3):
+						for vertex_index in range(3):
+							_add_terrain_vertex(surface, piece[indices[i + vertex_index]])
 	surface.generate_normals()
 	var mesh := surface.commit()
 	if mesh == null or mesh.get_surface_count() == 0:
@@ -616,6 +631,18 @@ func _build_terrain_chunk(key: Vector2i) -> void:
 	body.add_child(shape)
 	add_child(body)
 	_terrain_stream_chunks[key] = {"mesh": chunk, "collision": body}
+
+
+func _add_terrain_triangle(surface: SurfaceTool, a: Vector2, b: Vector2, c: Vector2) -> void:
+	_add_terrain_vertex(surface, a)
+	_add_terrain_vertex(surface, b)
+	_add_terrain_vertex(surface, c)
+
+
+func _add_terrain_vertex(surface: SurfaceTool, point: Vector2) -> void:
+	var height := _terrain_mesh_height(point.x, point.y)
+	surface.set_color(_terrain_color(height))
+	surface.add_vertex(Vector3(point.x, height, point.y))
 
 
 func _create_terrain_boundary_walls() -> void:
@@ -4213,6 +4240,9 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
 		var door_normal := Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_door(details, door_a, door_b, door_normal, base_y)
+	# Marquise de boutique : auvent discret au-dessus des commerces donnant sur rue.
+	if height >= 2.8 and (building_kind in ["commercial", "retail", "supermarket"] or props.has("shop")):
+		_add_shopfront_awning(details, door_a, door_b, door_normal, base_y, height, osm_id)
 	roofs.set_color(roof_tint)
 	var roof_style := WorldMapBuildingStyleUtils.roof_style(building_kind, osm_id, props)
 	var pitched_roof := false
@@ -4318,6 +4348,40 @@ func _add_facade_balcony(surface: SurfaceTool, center: Vector3, tangent: Vector3
 		Vector3(front_right.x, rail_bottom, front_right.z),
 		Vector3(front_right.x, rail_top, front_right.z),
 		Vector3(back_right.x, rail_top, back_right.z))
+
+func _add_shopfront_awning(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3,
+		base_y: float, building_height: float, osm_id: int) -> void:
+	var edge := b - a
+	var edge_length := edge.length()
+	if edge_length < 3.6:
+		return
+	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
+	var half_width := minf(edge_length * 0.38, 3.6)
+	var center := Vector3((a.x + b.x) * 0.5, 0.0, (a.y + b.y) * 0.5)
+	var wall_y := base_y + minf(3.0, building_height * 0.62)
+	var back_left := center - tangent * half_width + Vector3.UP * wall_y
+	var back_right := center + tangent * half_width + Vector3.UP * wall_y
+	var front_left := back_left + normal * 0.92 - Vector3.UP * 0.24
+	var front_right := back_right + normal * 0.92 - Vector3.UP * 0.24
+	var awning_color := Color(0.78, 0.57, 0.34) if abs(osm_id) % 3 == 0 else Color(0.82, 0.79, 0.68)
+	surface.set_color(awning_color)
+	_add_quad(surface, back_left, back_right, front_right, front_left)
+	# Bandeau frontal et deux potelets, tous intégrés au lot de façades.
+	var fascia_drop := 0.18
+	surface.set_color(Color(0.28, 0.31, 0.30))
+	_add_quad(surface, front_left, front_right,
+		front_right - Vector3.UP * fascia_drop, front_left - Vector3.UP * fascia_drop)
+	for side in [-1.0, 1.0]:
+		var post_center := center + Vector3.UP * base_y + tangent * half_width * side + normal * 0.84
+		var post_half := 0.045
+		var post_top := wall_y - base_y - 0.24
+		var p0 := post_center - tangent * post_half
+		var p1 := post_center + tangent * post_half
+		var p2 := p1 + Vector3.UP * post_top
+		var p3 := p0 + Vector3.UP * post_top
+		surface.set_color(Color(0.34, 0.35, 0.33))
+		_add_quad(surface, p0, p1, p2, p3)
+
 
 func _add_facade_door(surface: SurfaceTool, a: Vector2, b: Vector2, normal: Vector3, base_y: float = 0.0) -> void:
 	var edge := b - a
