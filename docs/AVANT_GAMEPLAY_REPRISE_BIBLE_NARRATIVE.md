@@ -1,0 +1,29 @@
+# POINT DE REPRISE OBLIGATOIRE AVANT LE GAMEPLAY
+## Bible narrative de LIBREVILLE STORIES
+
+Ce document sert de rappel de conception. Avant de commencer à programmer les systèmes de foule, de commerce, de déplacement ou les comportements des personnages, relire et reprendre les documents narratifs ci-dessous.
+
+**Règle :** ne pas considérer une description narrative comme un système déjà implémenté. La bible décrit ce que le jeu devra raconter et représenter ; la conception du gameplay et le développement viendront ensuite.
+
+## Documents à relire
+
+- [Histoire générale et univers](HISTOIRE_LIBREVILLE_STORIES.md)
+- [Fonctionnement de la police dans l'univers](FONCTIONNEMENT_POLICE_UNIVERS.md)
+- [Population, vie sociale et diversité religieuse](POPULATION_VIE_SOCIALE_ET_RELIGIONS.md)
+- [Marchés, commerce de rue et circulation](MARCHES_COMMERCE_DE_RUE_ET_CIRCULATION.md)
+- [Mont-Bouët : secteurs, axes et passages](MONT_BOUET_SECTEURS_AXES_ET_PASSAGES.md)
+
+## Éléments à ne pas oublier
+
+- La ville doit continuer à vivre même lorsque le protagoniste n'est pas présent.
+- Les catégories de personnages seront détaillées séparément après la description générale de la société.
+- Les marchés doivent être denses et vivants : étals, boutiques, vente au sol, vendeurs qui interpellent, négociations, brouettiers, marchandises et circulation difficile.
+- Le parcours décrit par le créateur — Gare routière, Carrefour Léon-Mba, Petit-Paris, ruelle de liaison, Péri — doit être repris lors du travail de carte et vérifié avant de fixer les rues et distances.
+- La Tour doit rester un repère du secteur de Mont-Bouët.
+- Les pratiques religieuses, les bars, les lieux de braise, les commerces et les espaces publics doivent coexister dans la ville.
+- Les comportements individuels doivent rester variés : aucun groupe de population ne doit être représenté comme uniforme.
+- Les détails encore incertains doivent être validés avec le créateur ou par un repérage fiable, jamais inventés pour combler les trous.
+
+## Étape de reprise
+
+Au lancement du travail gameplay, commencer par une revue de cette liste avec le créateur. Transformer ensuite les descriptions validées en règles de comportement, cas d'usage, priorités de simulation et critères de test. Ne pas passer directement au code sans cette revue.
