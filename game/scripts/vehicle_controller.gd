@@ -14,6 +14,7 @@ class_name VehicleController
 @export_group("Direction et adhérence")
 @export var wheel_base: float = 3.0
 @export var front_track: float = 1.62
+@export var rear_track: float = 1.48
 @export var max_steering_angle: float = 0.52
 @export var high_speed_steering_angle: float = 0.15
 @export var steering_response: float = 4.8
@@ -26,6 +27,15 @@ class_name VehicleController
 @export var wheel_steer_axis: Vector3 = Vector3.UP
 @export var wheel_steer_visual_multiplier: float = 1.0
 
+@export_group("Détection des roues")
+@export var minimum_wheel_dimension: float = 0.18
+@export var maximum_wheel_dimension: float = 1.4
+
+@export_group("Architecture du véhicule")
+@export var vehicle_model_path: NodePath = ^"VehicleModel"
+@export_enum("Avant", "Arrière", "Aucun") var steering_axle: int = 0
+@export_enum("Avant", "Arrière", "Intégrale", "Aucune") var drive_axle: int = 1
+
 var player_driving := false
 var current_speed := 0.0
 var odometer_meters := 0.0
@@ -33,6 +43,8 @@ var _wheel_nodes: Array[Node3D] = []
 var _wheel_base_basis: Array[Basis] = []
 var _wheel_local_positions: Array[Vector3] = []
 var _wheel_is_front: Array[bool] = []
+var _wheel_is_steering: Array[bool] = []
+var _wheel_is_driven: Array[bool] = []
 var _wheel_is_left: Array[bool] = []
 var _wheel_roll_angle := 0.0
 var _steering_input := 0.0
@@ -66,13 +78,15 @@ func _ready() -> void:
 	floor_snap_length = 0.38
 	floor_max_angle = deg_to_rad(48.0)
 	floor_stop_on_slope = true
-	var jeep := get_node_or_null("JeepModel")
-	if jeep != null:
-		_collect_wheel_nodes(jeep, false)
-		_setup_brake_lights(jeep)
+	var vehicle_model := get_node_or_null(vehicle_model_path) as Node3D
+	if vehicle_model != null:
+		_collect_wheel_nodes(vehicle_model, false)
+		_setup_brake_lights(vehicle_model)
+	else:
+		push_warning("Véhicule : modèle introuvable au chemin configuré (%s)." % str(vehicle_model_path))
 	_classify_wheels()
-	if _wheel_nodes.size() < 4:
-		push_warning("Jeep : %d éléments de roue détectés. Les pivots du GLB doivent être vérifiés avant de corriger les axes." % _wheel_nodes.size())
+	if _wheel_nodes.size() < 2:
+		push_warning("Véhicule : seulement %d pivot(s) de roue détecté(s). Vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
 	_setup_vehicle_cameras()
 	_setup_vehicle_hud()
 	_setup_vehicle_audio()
@@ -185,24 +199,31 @@ func _collect_wheel_nodes(root: Node, inside_wheel: bool) -> void:
 		var is_candidate := false
 		if not inside_wheel:
 			is_candidate = wheel_name.contains("wheel") or wheel_name.contains("tire") or wheel_name.contains("tyre") or wheel_name.contains("roue") or wheel_name.contains("pneu")
-			for excluded in ["arch", "flare", "well", "fender", "mudguard", "cover", "guard"]:
+			for excluded in ["arch", "flare", "well", "fender", "mudguard", "cover", "guard", "plate", "spare"]:
 				if wheel_name.contains(excluded):
 					is_candidate = false
 					break
-		if is_candidate:
-			_create_wheel_pivot(node)
+		if is_candidate and _create_wheel_pivot(node):
 			continue
+		# Un parent nommé "wheels" peut contenir plusieurs roues et avoir
+		# une boîte englobante de la taille du véhicule : on explore ses enfants.
 		_collect_wheel_nodes(node, inside_wheel)
 
 
-func _create_wheel_pivot(wheel_node: Node3D) -> void:
+func _create_wheel_pivot(wheel_node: Node3D) -> bool:
 	var original_parent := wheel_node.get_parent()
 	if original_parent == null:
-		return
+		return false
 	var world_bounds := _get_subtree_world_aabb(wheel_node)
 	if world_bounds.size.length_squared() < 0.0001:
-		push_warning("Pivot roue ignoré : géométrie introuvable pour %s" % wheel_node.name)
-		return
+		return false
+	var dimensions := world_bounds.size
+	var largest_dimension := maxf(dimensions.x, maxf(dimensions.y, dimensions.z))
+	var smallest_dimension := minf(dimensions.x, minf(dimensions.y, dimensions.z))
+	# Une roue individuelle mesure moins d'environ 1,4 m. Les blocs
+	# contenant tout le véhicule et les petites plaques de secours sont exclus.
+	if largest_dimension > maximum_wheel_dimension or smallest_dimension < minimum_wheel_dimension:
+		return false
 	var wheel_center := world_bounds.get_center()
 	var original_global := wheel_node.global_transform
 	var pivot := Node3D.new()
@@ -215,6 +236,7 @@ func _create_wheel_pivot(wheel_node: Node3D) -> void:
 	_wheel_nodes.append(pivot)
 	_wheel_base_basis.append(pivot.transform.basis.orthonormalized())
 	_wheel_local_positions.append(to_local(wheel_center))
+	return true
 
 
 func _get_subtree_world_aabb(root: Node) -> AABB:
@@ -247,6 +269,10 @@ func _get_subtree_world_aabb(root: Node) -> AABB:
 	return result
 
 func _classify_wheels() -> void:
+	_wheel_is_front.clear()
+	_wheel_is_steering.clear()
+	_wheel_is_driven.clear()
+	_wheel_is_left.clear()
 	if _wheel_nodes.is_empty():
 		return
 	var min_z := INF
@@ -254,18 +280,73 @@ func _classify_wheels() -> void:
 	for local_position in _wheel_local_positions:
 		min_z = minf(min_z, local_position.z)
 		max_z = maxf(max_z, local_position.z)
+	# Le véhicule regarde vers -Z : les roues les plus en avant ont le Z
+	# le plus faible. La classification reste indépendante de l'ordre des meshes.
 	var middle_z := (min_z + max_z) * 0.5
-	for i in range(_wheel_nodes.size()):
-		var local_position := _wheel_local_positions[i]
-		_wheel_is_front.append(local_position.z < middle_z)
+	for local_position in _wheel_local_positions:
+		var is_front_axle := local_position.z < middle_z
+		var is_steering := false
+		match steering_axle:
+			0:
+				is_steering = is_front_axle
+			1:
+				is_steering = not is_front_axle
+			_:
+				is_steering = false
+		var is_driven := false
+		match drive_axle:
+			0:
+				is_driven = is_front_axle
+			1:
+				is_driven = not is_front_axle
+			2:
+				is_driven = true
+			_:
+				is_driven = false
+		_wheel_is_front.append(is_front_axle)
+		_wheel_is_steering.append(is_steering)
+		_wheel_is_driven.append(is_driven)
 		_wheel_is_left.append(local_position.x < 0.0)
 
-func _ackermann_angle(is_left: bool) -> float:
+	# Les configurations à quatre roues doivent avoir une roue à chaque coin.
+	# Les véhicules à trois roues (certains chariots) restent acceptés.
+	if _wheel_nodes.size() == 4:
+		var front_left := 0
+		var front_right := 0
+		var rear_left := 0
+		var rear_right := 0
+		for i in range(_wheel_nodes.size()):
+			if _wheel_is_front[i]:
+				if _wheel_is_left[i]:
+					front_left += 1
+				else:
+					front_right += 1
+			else:
+				if _wheel_is_left[i]:
+					rear_left += 1
+				else:
+					rear_right += 1
+		if front_left != 1 or front_right != 1 or rear_left != 1 or rear_right != 1:
+			push_warning("Véhicule : les quatre roues ne forment pas exactement une roue à chaque coin.")
+	elif _wheel_nodes.size() < 2:
+		push_warning("Véhicule : %d roue(s) détectée(s) ; vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
+	else:
+		var front_count := 0
+		var rear_count := 0
+		for is_front_axle in _wheel_is_front:
+			if is_front_axle:
+				front_count += 1
+			else:
+				rear_count += 1
+		if front_count == 0 or rear_count == 0:
+			push_warning("Véhicule : impossible d'identifier les deux essieux à partir des pivots détectés.")
+
+func _ackermann_angle(is_left: bool, axle_track: float) -> float:
 	if absf(_steering_angle) < 0.001:
 		return 0.0
 	var radius := wheel_base / maxf(absf(tan(_steering_angle)), 0.001)
-	var inner_radius := maxf(0.5, radius - front_track * 0.5)
-	var outer_radius := radius + front_track * 0.5
+	var inner_radius := maxf(0.5, radius - axle_track * 0.5)
+	var outer_radius := radius + axle_track * 0.5
 	var is_inner := (_steering_angle < 0.0 and is_left) or (_steering_angle > 0.0 and not is_left)
 	var angle := atan(wheel_base / (inner_radius if is_inner else outer_radius))
 	return signf(_steering_angle) * angle
@@ -279,8 +360,25 @@ func _update_wheel_animation() -> void:
 		steer_axis = Vector3.UP
 	for i in range(_wheel_nodes.size()):
 		var steering_angle := 0.0
-		if _wheel_is_front[i]:
-			steering_angle = _ackermann_angle(_wheel_is_left[i]) * wheel_steer_visual_multiplier
+		if _wheel_is_steering[i]:
+			var axle_wheel_count := 0
+			for j in range(_wheel_nodes.size()):
+				if _wheel_is_front[j] == _wheel_is_front[i]:
+					axle_wheel_count += 1
+			var axle_track := front_track if _wheel_is_front[i] else rear_track
+			# Une roue centrale seule (tricycle ou transpalette) n'a pas
+			# besoin de correction Ackermann gauche/droite.
+			if axle_wheel_count > 1:
+				steering_angle = _ackermann_angle(_wheel_is_left[i], axle_track)
+			else:
+				steering_angle = _steering_angle
+			steering_angle *= wheel_steer_visual_multiplier
+			# Sur un chariot à direction arrière, les roues arrière braquent
+			# dans le sens opposé à l'angle de référence du châssis.
+			if steering_axle == 1:
+				steering_angle = -steering_angle
+		# Toutes les roues roulent visuellement ; drive_axle décrit l'essieu
+		# moteur pour chaque type, sans simuler un couple physique par roue.
 		var steering_basis := Basis(steer_axis, -steering_angle)
 		var rolling_basis := Basis(spin_axis, _wheel_roll_angle)
 		_wheel_nodes[i].transform.basis = (_wheel_base_basis[i] * steering_basis * rolling_basis).orthonormalized()
@@ -289,7 +387,7 @@ func _setup_brake_lights(model_root: Node3D) -> void:
 	# Le véhicule avance vers -Z : l'arrière se trouve du côté +Z.
 	var bounds := _get_subtree_world_aabb(model_root)
 	if bounds.size.length_squared() < 0.01:
-		push_warning("Feux stop : dimensions du modèle Jeep indisponibles.")
+		push_warning("Feux stop : dimensions du modèle indisponibles.")
 		return
 	var center := to_local(bounds.get_center())
 	var rear_world_z := bounds.position.z + bounds.size.z
@@ -426,7 +524,7 @@ func _update_vehicle_audio(throttle: float, brake: float) -> void:
 
 func _setup_driving_lesson() -> void:
 	_tutorial_steps = [
-		"1 / DÉMARRER\nAppuie sur W (clavier) ou RT (manette) progressivement pour lancer la Jeep. La vitesse s'affiche en km/h.",
+		"1 / DÉMARRER\nAppuie sur W (clavier) ou RT (manette) progressivement pour démarrer le véhicule. La vitesse s'affiche en km/h.",
 		"2 / ACCÉLÉRER\nMaintiens W ou RT. La vitesse augmente progressivement : relâche pour laisser le véhicule ralentir.",
 		"3 / TOURNER\nUtilise A et D ou le stick gauche. À grande vitesse, braque moins fort pour garder le contrôle.",
 		"4 / FREINER\nMaintiens S ou LT pour ralentir. À l'arrêt, maintenir S ou LT engage la marche arrière.",
@@ -445,7 +543,7 @@ func _setup_driving_lesson() -> void:
 	column.add_theme_constant_override("separation", 8)
 	panel.add_child(column)
 	var heading := Label.new()
-	heading.text = "ÉCOLE DE CONDUITE — JEEP WRANGLER"
+	heading.text = "ÉCOLE DE CONDUITE — VÉHICULE"
 	heading.add_theme_font_size_override("font_size", 17)
 	column.add_child(heading)
 	_tutorial_label = Label.new()
