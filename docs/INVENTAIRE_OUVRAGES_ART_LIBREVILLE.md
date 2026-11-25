@@ -267,3 +267,29 @@ Source : https://gouvernement.ga/2025/09/20/inauguration-de-la-passerelle-pieton
 ### Réseau électrique — sources repérées pour la phase suivante (sans implémentation à ce stade)
 La SEEG décrit la chaîne électrique nationale : transport à 255 kV et 90 kV à Libreville, distribution HTA en 30, 20 ou 5,5 kV, puis transformation vers la basse tension 240/410 V. Une communication SEEG du 27 mars 2026 identifie explicitement une liaison 90 kV entre le poste de répartition de Bisségué et le poste source d'Ambowé, ainsi que les postes sources d'Ambowé et d'Angondjé. Ces noms constituent des points de départ documentés pour la future phase réseau électrique, mais pas encore des coordonnées ni des tracés exploitables.
 Sources : https://www.seeg-gabon.com/activites/gestion-electricite ; https://www.seeg-gabon.com/medias/article/281/contact/ecrire
+
+
+### Passerelle du Lycée d'État / Paul-Indjendjet-Gondjout — dimensions et matériaux publiés
+- L'article technique de l'ATIBT du 4 mars 2022 indique qu'une passerelle piétonne en bois a été posée au niveau du Lycée d'État, au-dessus du boulevard de bord de mer / voie express. La longueur publiée est de **54 m** et elle franchit **quatre voies**.
+- La structure est décrite comme deux formes de poissons qui se rencontrent. Les essences citées pour la construction locale sont Padouk, Movingui, Ozigo et Tali. Les lames de 40 mm sont assemblées en poutres courbes lamellées-collées de 52 cm d'épaisseur.
+- À la date de l'article, les éléments de sécurité et les toitures des escaliers étaient encore en cours de pose ; livraison annoncée pour mi-avril 2022. Ne pas considérer automatiquement ces finitions comme visibles dans les premières photos de chantier.
+- L'article annonce une seconde passerelle au niveau du Lycée Léon-Mba, traversant quatre voies ainsi que les voies d'arrêt de bus et taxi. Il ne donne pas sa longueur ni ses matériaux : ne pas lui transférer les 54 m ou le dessin « deux poissons ».
+- Source technique : https://www.atibt.org/fr/news/13135/une-passerelle-pietonne-en-bois-100-fabrication-locale-a-libreville
+- Conséquence de modélisation : la passerelle du Lycée d'État peut recevoir une fiche paramétrique documentée (longueur 54 m, franchissement 4 voies, poutres courbes en bois lamellé-collé, garde-corps et escaliers). Les hauteurs, largeurs, rayons exacts et détails d'appuis restent à relever sur plans ou vues calibrées avant le modèle final.
+
+### Références photographiques complémentaires — PK5, Lycée d'État et Awendjé
+- Afrikimages indexe une vue de la Voie Express prise depuis l'échangeur PK5 le 27 novembre 2012 : https://afrikimages.com/photos/gabon-libreville-43bb3bae-7c54-4d44-b6be-afa0298b0c24?locale=fr
+- Afrikimages indexe une vue nocturne de l'échangeur du lycée Paul Indjendje (ancien lycée d'État) datée du 24 novembre 2012 : https://afrikimages.com/photos/gabon-libreville-510c251b-8b17-4c1d-8e6d-2b595a44c227?locale=fr
+- L'Union, édition du 12 septembre 2017, page 7 : une photographie identifie explicitement la passerelle métallique de Plein-Ciel et une autre photographie identifie l'échangeur d'Awendjé. Le document permet de distinguer visuellement une passerelle en treillis métallique de la passerelle bois du Lycée d'État : https://lunion-archives.org/web.11/dmdocuments/N12519-12-09-2017-007.pdf
+- Gabon Media Time, 17 décembre 2025 : la photographie de l'échangeur IAI et le reportage vidéo montrent l'état des glissières de sécurité du tablier, mais pas les dimensions ni le profil complet de l'ouvrage : https://gabonmediatime.com/libreville-echangeur-diai-le-danger-permanent/ ; vidéo : https://www.dailymotion.com/video/x9vwg44
+- Droits : les images Afrikimages sont commerciales et les archives de presse sont protégées. Elles sont conservées comme références d'observation uniquement ; elles ne doivent pas être copiées dans `assets/` sans autorisation ou licence explicite.
+
+### Distinction des types de passerelles dans le jeu
+Ne pas appliquer un seul modèle à toutes les traversées piétonnes du Grand Libreville :
+1. **Lycée d'État** : passerelle bois de 54 m, architecture courbe symbolique en forme de poissons, documentée par l'ATIBT.
+2. **Plein-Ciel** : passerelle métallique en treillis, attestée par la photographie de L'Union de septembre 2017.
+3. **Bizango–PK13** : passerelle piétonne inaugurée en septembre 2025 ; équipements d'accessibilité et de sécurité décrits par le Gouvernement.
+4. **Lycée Léon-Mba** : seconde passerelle annoncée en 2022 ; caractéristiques propres à relever.
+5. **Beyrouth, Marché Banane, Lycée Djoué Dabany, HIA-OBO, Melen et ENA** : six emplacements cités dans le programme PK5–PK12 ; type et géométrie individuels non encore confirmés.
+
+Cette distinction évite de dupliquer une passerelle générique sur tout le corridor et permet de construire chaque ouvrage à partir de son propre dossier de preuves.
