@@ -44,6 +44,7 @@ var _ammo := 12
 var _reload_time_left := 0.0
 var _reloading := false
 var _reload_animation_left := 0.0
+var _jump_animation_left := 0.0
 var _ammo_label: Label
 
 func _ready() -> void:
@@ -95,6 +96,7 @@ func _physics_process(delta: float) -> void:
 	_shoot_animation_left = maxf(0.0, _shoot_animation_left - delta)
 	_land_animation_left = maxf(0.0, _land_animation_left - delta)
 	_reload_animation_left = maxf(0.0, _reload_animation_left - delta)
+	_jump_animation_left = maxf(0.0, _jump_animation_left - delta)
 	if _reloading:
 		_reload_time_left -= delta
 		if _reload_time_left <= 0.0:
@@ -136,6 +138,7 @@ func _physics_process(delta: float) -> void:
 			return
 		if is_on_floor():
 			velocity.y = jump_velocity
+			_jump_animation_left = 0.32
 
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -215,7 +218,10 @@ func _update_character_animation() -> void:
 	elif _climbing:
 		state = "climb"
 	elif not is_on_floor():
-		state = "fall" if velocity.y < -0.25 else "jump"
+		if velocity.y < -0.25:
+			state = "fall"
+		else:
+			state = "jump" if _jump_animation_left > 0.0 else "jump_loop"
 	elif Vector2(velocity.x, velocity.z).length() > 0.25:
 		state = "run" if _running else "walk"
 	character_visual.call("play_motion", state)
