@@ -2511,6 +2511,10 @@ func _load_roads() -> void:
 			_:
 				continue
 		var props: Dictionary = feature.get("properties", {})
+		# Les ways de pont sont construits séparément en hauteur ; ne pas les draper sur le terrain.
+		if _is_osm_bridge_road(props):
+			road_feature_index += 1
+			continue
 		var kind := str(props.get("highway", "residential"))
 		var width := WorldMapRoadUtils.road_width(kind, props)
 		var surface_key := WorldMapColorUtils.road_surface_key(kind, props)
@@ -2602,8 +2606,18 @@ func _load_roads() -> void:
 		_commit_lamps("%03d" % tile_counter)
 		tile_counter += 1
 		await get_tree().process_frame
+	var bridge_builder := preload("res://game/scripts/bridge_builder.gd").new()
+	bridge_builder.name = "OSM_Procedural_Bridges"
+	add_child(bridge_builder)
+	bridge_builder.build(features, Callable(self, "_geo_to_world"), Callable(self, "_terrain_height_at_world"), _road_material)
 	_road_hit_grid.clear()
 	print("LIBREVILLE STORIES | VERSION v7 · décor vert OSM %s | réseau routier : %d tronçons, %d zones, %d lampadaires, %d ms" % ["ACTIVÉ" if render_green_areas else "MASQUÉ", parts.size(), tile_counter, _lamp_count, Time.get_ticks_msec() - started_ms])
+
+
+func _is_osm_bridge_road(props: Dictionary) -> bool:
+	var bridge := str(props.get("bridge", "")).to_lower()
+	var man_made := str(props.get("man_made", "")).to_lower()
+	return str(props.get("highway", "")).strip_edges() != "" and (bridge not in ["", "no", "false", "0"] or man_made == "bridge")
 
 
 func _add_road_name_labels(features: Array) -> void:
