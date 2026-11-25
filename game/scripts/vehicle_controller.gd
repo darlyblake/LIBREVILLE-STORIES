@@ -94,10 +94,7 @@ func _ready() -> void:
 		_setup_brake_lights(vehicle_model)
 	else:
 		push_warning("Véhicule : modèle introuvable au chemin configuré (%s)." % str(vehicle_model_path))
-	_classify_wheels()
 	_collect_door_nodes(vehicle_model)
-	if _wheel_nodes.size() < 2:
-		push_warning("Véhicule : seulement %d pivot(s) de roue détecté(s). Vérifiez la hiérarchie du modèle 3D." % _wheel_nodes.size())
 	_setup_vehicle_cameras()
 	_setup_vehicle_hud()
 	_setup_vehicle_audio()
