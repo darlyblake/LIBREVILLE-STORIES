@@ -30,7 +30,7 @@ La Jeep utilise désormais `VehicleBody3D` et quatre `VehicleWheel3D` : traction
 2. Sauter sur terrain plat, vérifier la transition montée/chute/atterrissage, puis essayer un rebord bas et un rebord trop haut.
 3. Maintenir le clic droit : vérifier le zoom, le décalage caméra à l'épaule, l'orientation du personnage et le réticule.
 4. En visant, maintenir le clic gauche : vérifier le délai de tir, l'éclair de bouche et les impacts sur les objets/cibles du groupe `damageables`.
-5. Viser la cible d’entraînement placée devant le joueur et tirer plusieurs fois : vérifier les PV affichés, l’effet d’impact et la réapparition après destruction.\n6. Approcher la Jeep à pied : vérifier l'approche côté conducteur, l'ouverture, l'entrée et la fermeture de porte.
+5. Tourner vers la cible d’entraînement placée à droite du point de départ et tirer plusieurs fois : vérifier les PV affichés, l’effet d’impact et la réapparition après destruction.\n6. Approcher la Jeep à pied : vérifier l'approche côté conducteur, l'ouverture, l'entrée et la fermeture de porte.
 7. Accélérer progressivement, relâcher l'accélérateur, freiner puis passer en marche arrière.
 8. Faire des virages lents puis rapides ; vérifier que le braquage diminue à vitesse élevée.
 9. Rouler sur une pente, monter un trottoir et franchir une petite irrégularité pour observer les suspensions.
