@@ -6,6 +6,7 @@ var health: float
 var _mesh: MeshInstance3D
 var _material: StandardMaterial3D
 var _base_color := Color(0.72, 0.22, 0.12)
+var _health_label: Label3D
 
 func _ready() -> void:
 	add_to_group("damageables")
@@ -13,12 +14,21 @@ func _ready() -> void:
 	_mesh = get_node_or_null("TargetMesh") as MeshInstance3D
 	if _mesh != null:
 		_material = _mesh.material_override as StandardMaterial3D
-		print("LIBREVILLE STORIES | Cible d'entraînement prête (", health, " PV).")
+	_health_label = Label3D.new()
+	_health_label.name = "HealthLabel"
+	_health_label.position = Vector3(0, 2.05, 0)
+	_health_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_health_label.font_size = 48
+	_health_label.pixel_size = 0.004
+	add_child(_health_label)
+	_update_health_label()
+	print("LIBREVILLE STORIES | Cible d'entraînement prête (", health, " PV).")
 
 func damage(hit_position: Vector3, impulse: Vector3) -> void:
 	if health <= 0.0:
 		return
 	health = maxf(0.0, health - 34.0)
+	_update_health_label()
 	_show_hit_effect(hit_position, impulse)
 	if _material != null:
 		_material.albedo_color = Color(1.0, 0.82, 0.18)
@@ -59,7 +69,12 @@ func _disable_target() -> void:
 	visible = false
 	await get_tree().create_timer(2.0).timeout
 	health = maximum_health
+	_update_health_label()
 	collision_layer = 1
 	collision_mask = 1
 	visible = true
 	print("LIBREVILLE STORIES | Cible réinitialisée.")
+
+func _update_health_label() -> void:
+	if is_instance_valid(_health_label):
+		_health_label.text = "CIBLE  |  %d / %d" % [roundi(health), roundi(maximum_health)]
