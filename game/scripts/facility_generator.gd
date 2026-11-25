@@ -165,6 +165,16 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 		"bus": w=36; d=25; h=5
 		"fuel": w=28; d=24; h=5.5; wall=white
 		"admin": w=24; d=18; h=10; wall=white
+	var lower_label := label.to_lower()
+	# Silhouettes renforcées pour les grands sites identifiés dans les données OSM.
+	# Les dimensions sont des proportions de gameplay, pas des mesures cadastrales.
+	if k == "hospital":
+		if "chul" in lower_label or "universitaire" in lower_label:
+			w=54; d=38; h=18
+		elif "akanda" in lower_label or "hiaobo" in lower_label:
+			w=43; d=32; h=15
+	if k == "bus" and ("pk8" in lower_label or "pk 8" in lower_label):
+		w=46; d=32
 	_box(root,Vector3(0,0.1,0),Vector3(w+6,0.2,d+6),asphalt)
 	_box(root,Vector3(0,h/2,0),Vector3(w,h,d),wall)
 	_box(root,Vector3(0,h+0.18,0),Vector3(w+0.8,0.36,d+0.8),roof)
@@ -175,8 +185,13 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 			_sign(root,"URGENCES",Vector3(0,2.4,d/2+0.4),blue)
 			_box(root,Vector3(0,2.1,d/2+2.2),Vector3(10,0.35,4),blue)
 			if k=="hospital":
-				_box(root,Vector3(w*0.28,h+2.4,-d*0.12),Vector3(12,4.8,d*0.7),white)
-				_box(root,Vector3(w*0.28,h+4.9,-d*0.12),Vector3(12,0.25,d*0.72),roof)
+				_box(root,Vector3(w*0.28,h+2.4,-d*0.12),Vector3(maxf(12.0,w*0.34),4.8,d*0.7),white)
+				_box(root,Vector3(w*0.28,h+4.9,-d*0.12),Vector3(maxf(12.0,w*0.35),0.25,d*0.72),roof)
+				_box(root,Vector3(-w*0.20,2.9,d/2+3.0),Vector3(15,0.32,5.5),blue)
+				if "chul" in lower_label:
+					_sign(root,"CHUL",Vector3(0,h+2.0,d/2+0.4),blue)
+				elif "akanda" in lower_label:
+					_sign(root,"CHU AKANDA",Vector3(0,h+2.0,d/2+0.4),blue)
 		"police":
 			_sign(root,"POLICE",Vector3(0,h+1,d/2+0.3),blue)
 			_box(root,Vector3(-w/2-1.8,1.5,d*0.25),Vector3(3,3,3),white)
