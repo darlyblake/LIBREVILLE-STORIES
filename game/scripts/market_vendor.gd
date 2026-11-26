@@ -60,7 +60,7 @@ func _market_is_open() -> bool:
 	var clock := get_node_or_null("/root/WorldClock")
 	if clock == null:
 		return true
-	return int(clock.hour) >= 6 and int(clock.hour) < 19
+	return bool(clock.call("is_schedule_open", "market_mont_bouet"))
 
 
 func _dialogue_for_vendor() -> String:
