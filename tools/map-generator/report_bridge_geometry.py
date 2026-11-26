@@ -28,6 +28,26 @@ def project_ring(ring: list, latitude_origin: float) -> list[tuple[float, float]
     return [(lon * lon_scale, lat * lat_scale) for lon, lat in ring]
 
 
+def line_metrics(geometry: dict, latitude_origin: float) -> dict:
+    """Approximate planimetric lengths for mapped line geometries."""
+    kind = geometry.get("type")
+    coordinates = geometry.get("coordinates", [])
+    lines = [coordinates] if kind == "LineString" else coordinates if kind == "MultiLineString" else []
+    lengths = []
+    for line in lines:
+        points = project_ring(line, latitude_origin)
+        lengths.append(sum(
+            math.hypot(points[index + 1][0] - point[0], points[index + 1][1] - point[1])
+            for index, point in enumerate(points[:-1])
+        ))
+    return {
+        "line_count": len(lines),
+        "coordinate_count": sum(len(line) for line in lines),
+        "mapped_line_length_m_approx": round(sum(lengths), 1),
+        "individual_line_lengths_m_approx": [round(length, 1) for length in lengths],
+    }
+
+
 def polygon_metrics(geometry: dict, latitude_origin: float) -> dict:
     polygons = []
     kind = geometry.get("type")
@@ -109,10 +129,11 @@ def main() -> None:
         }
         if geometry.get("type") in {"Polygon", "MultiPolygon"}:
             item["planimetric_metrics"] = polygon_metrics(geometry, latitude_origin)
-        else:
+        elif geometry.get("type") in {"LineString", "MultiLineString"}:
+            item["planimetric_metrics"] = line_metrics(geometry, latitude_origin)
             item["note"] = (
-                "Tracé linéaire OSM : longueur de voie non assimilable à la longueur "
-                "du tablier ou des rampes."
+                "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable "
+                "à la longueur totale du tablier ni à celle des rampes."
             )
         features.append(item)
 
@@ -136,12 +157,18 @@ def main() -> None:
     print(f"Rapport géométrique ponts : {len(features)} objets, {polygon_count} polygones.")
     for item in features:
         metrics = item.get("planimetric_metrics")
-        if metrics:
+        if metrics and "polygon_area_m2_approx" in metrics:
             print(
                 f"  {item['osm_id']} {item['name']}: "
                 f"enveloppe {metrics['bbox_width_m_approx']} x "
                 f"{metrics['bbox_height_m_approx']} m ; "
                 f"aire cartographique {metrics['polygon_area_m2_approx']} m²"
+            )
+        elif metrics:
+            print(
+                f"  {item['osm_id']} {item['name']}: "
+                f"tracé OSM {metrics['mapped_line_length_m_approx']} m "
+                f"({metrics['coordinate_count']} sommets)"
             )
 
 
