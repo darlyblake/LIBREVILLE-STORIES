@@ -7,7 +7,6 @@ const MAP_SOUTH := 0.355
 const MAP_WEST := 9.400
 const MAP_NORTH := 0.445
 const MAP_EAST := 9.495
-const MAX_FACILITIES := 100
 var map: Node
 var concrete: StandardMaterial3D
 var structural_concrete: StandardMaterial3D
@@ -163,7 +162,6 @@ func _build_facilities() -> void:
 	if gps_report:
 		gps_report.store_line("type;nom;osm_id;latitude;longitude")
 	for e in entries:
-		if count>=MAX_FACILITIES: break
 		var key:=str(e.id) if e.id!=0 else str(e.kind)+str(e.label)
 		if seen.has(key): continue
 		var duplicate := false
