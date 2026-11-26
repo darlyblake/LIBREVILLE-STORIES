@@ -87,7 +87,7 @@
 | Ministère du Travail | GPS confirmé : 0.42757 / 9.44887 ; OSM node 4686643890 | [x] | [x] |
 | Mairie du 5e arrondissement — SOGATOL | OSM way 1348151040 ; GPS 0.37679 / 9.47356 ; Boulevard des Bantu | [x] | [x] |
 | ANGTI — Agence Nationale des Grands Travaux d’Infrastructures | Immeuble BDM, boulevard de l’Indépendance | [ ] | [ ] |
-| CDC — Centre des Dépôts et Consignations | Immeuble Orchidéa, 2e étage, rue Jean Ndende | [ ] | [ ] |
+| CDC — Caisse des Dépôts et Consignations | Siège actuel inauguré en février 2026 : Immeuble Casimir Marie Ange OYE MBA, 1633 boulevard Triomphal Omar Bongo Ondimba | [ ] | [ ] |
 | CIPEP Sud — Centre des Impôts des Petites Entreprises et des Particuliers | Zone industrielle d’Oloumi, face à Gabon Méca | [ ] | [ ] |
 | Direction Provinciale des Impôts de l’Estuaire | Zone industrielle d’Oloumi, face à Gabon Méca | [ ] | [ ] |
 | DGE — Direction des Grandes Entreprises | Glass, feux tricolores, face à l’ancienne Pharmacie de Glass | [ ] | [ ] |
@@ -124,6 +124,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout de la Mairie de Plaine Niger — 4e arrondissement, OSM way 1346923818, GPS 0.37406 / 9.45930 ; point confirmé par Mapcarta/OSM, repère uniquement et empreinte physique issue de buildings.geojson.
 - 2026-11-26 : ajout de la Mairie de Sogatol — 5e arrondissement, OSM way 1348151040, GPS 0.37679 / 9.47356, Boulevard des Bantu ; Mapcarta confirme l’appellation et la fonction de mairie. Repère institutionnel intégré, fallback sans empreinte propre ; le bâtiment physique doit provenir de buildings.geojson.
 - 2026-11-26 : extension de l’inventaire en attente à partir des annuaires administratifs : ANGTI, CDC, CIPEP Sud, Direction provinciale des Impôts de l’Estuaire, DGE, CAISTAB, ARSEE, CEPIG, CICIBA, CNAP, ONPDF, AGANOR, OGAPI, CNSS et services multi-sites CNAMGS. Coordonnées GPS précises ou situation dans la zone encore à confirmer ; aucun de ces sites n’est intégré sans point vérifié. ANTT et ANAGEISC à Angondjé sont exclues du périmètre strict actuel.
+- 2026-11-26 : précision CDC : l’adresse officielle actuelle est l’Immeuble Casimir Marie Ange OYE MBA, 1633 boulevard Triomphal Omar Bongo Ondimba ; le nouveau siège a été inauguré le 17 février 2026. Les anciennes adresses Immeuble Orchidéa / Phoenix, rue Jean Ndende ou 70 rue Simon Kalife sont historiques et ne doivent pas servir de repère pour le siège actuel. La localisation GPS du nouvel immeuble reste à confirmer. Sources : CDC officielle (cdc-gabon.ga/contact), communication gouvernementale du 18 février 2026 et GabonReview.
+- 2026-11-26 : contrôle ANPI : le node OSM 6703527385 (0.38766 / 9.44761) existe près de Nombakélé, mais le site officiel situe le siège actuel à l’Immeuble Serena Mall, 104 rue Gustave Anguile. Le node OSM n’est donc pas utilisé comme point du siège sans preuve qu’il représente bien l’implantation actuelle. Serena Mall reste à géolocaliser précisément.
 - 2026-11-26 : contrôle des implantations CNAMGS : le siège social a été transféré à la Sablière en mai 2025, hors zone du jeu ; les directions techniques restent annoncées à Montagne Sainte et d’autres services à Glass / bas de Gué-Gué. Les anciens bureaux du front de mer ne doivent pas être présentés comme siège actuel.
 
 ## 5. Pipeline 3D pour chaque bâtiment
