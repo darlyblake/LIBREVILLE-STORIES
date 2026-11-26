@@ -15,6 +15,7 @@ signal active_events_changed(events: Array)
 
 const SAVE_PATH := "user://world_clock_state.json"
 const EVENTS_PATH := "res://data/calendar/gabon_events.json"
+const SCHEDULES_PATH := "res://data/calendar/opening_hours.json"
 const DEFAULT_START_YEAR := 2026
 const DEFAULT_START_MONTH := 1
 const DEFAULT_START_DAY := 1
@@ -34,10 +35,12 @@ var time_scale: float = 1.0
 var is_paused: bool = false
 var _accumulator: float = 0.0
 var _events: Array[Dictionary] = []
+var _schedule_profiles: Dictionary = {}
 var _active_event_ids: Dictionary = {}
 
 func _ready() -> void:
 	_load_events()
+	_load_schedules()
 	is_paused = start_paused
 	if not _load_state():
 		current_year = start_year
@@ -228,11 +231,48 @@ func are_schools_open_now() -> bool:
 	return is_school_period() and not is_weekend() and not has_event_category("public_holiday") and hour >= 7 and hour < 17
 
 func are_shops_open_now() -> bool:
-	if is_night():
-		return false
-	if is_weekend():
-		return hour >= 8 and hour < 20
-	return hour >= 7 and hour < 20
+	return is_schedule_open("retail")
+
+func get_weekday() -> int:
+	var unix_time := Time.get_unix_time_from_datetime_dict({"year": current_year, "month": current_month, "day": current_day, "hour": 12, "minute": 0, "second": 0})
+	return int(Time.get_datetime_dict_from_unix_time(unix_time).get("weekday", 1))
+
+func is_schedule_open(profile_id: String) -> bool:
+	return bool(get_schedule_status(profile_id).get("open", false))
+
+func get_schedule_status(profile_id: String) -> Dictionary:
+	var profile: Dictionary = _schedule_profiles.get(profile_id, {})
+	if profile.is_empty():
+		return {"open": false, "reason": "unknown_profile", "profile_id": profile_id}
+	if bool(profile.get("always_open", false)):
+		return {"open": true, "reason": "always_open", "profile_id": profile_id}
+	var active_holiday := has_event_category("public_holiday")
+	if active_holiday and bool(profile.get("closed_on_public_holidays", false)):
+		return {"open": false, "reason": "public_holiday", "profile_id": profile_id}
+	if bool(profile.get("requires_school_term", false)):
+		if not is_school_period():
+			return {"open": false, "reason": "school_break", "profile_id": profile_id}
+		if is_weekend():
+			return {"open": false, "reason": "weekend", "profile_id": profile_id}
+	var weekday_key := str(get_weekday())
+	var day_ranges: Array = profile.get("days", {}).get(weekday_key, [])
+	if day_ranges.is_empty():
+		return {"open": false, "reason": "closed_day", "profile_id": profile_id}
+	var now_minutes := hour * 60 + minute
+	for range_value in day_ranges:
+		if not range_value is Array or range_value.size() != 2 and range_value.size() != 4:
+			continue
+		var start_minutes := int(range_value[0]) * 60
+		var end_minutes := int(range_value[1]) * 60
+		if range_value.size() == 4:
+			start_minutes += int(range_value[1])
+			end_minutes = int(range_value[2]) * 60 + int(range_value[3])
+		if now_minutes >= start_minutes and now_minutes < end_minutes:
+			return {"open": true, "reason": "within_opening_hours", "profile_id": profile_id, "closes_at": "%02d:%02d" % [int(end_minutes / 60), end_minutes % 60]}
+	var first_range: Array = day_ranges[0]
+	var opening_hour := int(first_range[0])
+	var opening_minute := int(first_range[1]) if first_range.size() == 4 else 0
+	return {"open": false, "reason": "outside_opening_hours", "profile_id": profile_id, "opens_at": "%02d:%02d" % [opening_hour, opening_minute]}
 
 func get_seasonal_tags() -> Array[String]:
 	var tags: Array[String] = []
@@ -256,6 +296,14 @@ func _refresh_active_events(initial: bool = false) -> void:
 				event_ended.emit(_active_event_ids[old_id])
 	_active_event_ids = now_active
 	active_events_changed.emit(current_events)
+
+func _load_schedules() -> void:
+	if not FileAccess.file_exists(SCHEDULES_PATH):
+		push_warning("Fichier des horaires introuvable : " + SCHEDULES_PATH)
+		return
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(SCHEDULES_PATH))
+	if parsed is Dictionary and parsed.get("profiles", {}) is Dictionary:
+		_schedule_profiles = parsed.get("profiles", {})
 
 func _load_events() -> void:
 	if not FileAccess.file_exists(EVENTS_PATH):
