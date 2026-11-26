@@ -88,7 +88,6 @@
 | Ministère de l’Enseignement supérieur | Avenue de Cointet | [ ] | [ ] |
 | ANBG — Agence Nationale des Bourses du Gabon | 195 rue Michel Nze MBA, Oloumi, anciens locaux du ministère de la Planification | [ ] | [ ] |
 | PNPE — Pôle National de Promotion de l’Emploi | Siège / antenne Estuaire, 378 rue Jean-Baptiste Ndende, Petit-Paris | [ ] | [ ] |
-| ANPI-Gabon — Agence Nationale de Promotion des Investissements | OSM node 6703527385 ; GPS 0.38766 / 9.44761 ; siège officiel Serena Mall, 104 rue Gustave Anguile | [x] | [x] |
 | DPO — Direction des Publications Officielles / Journal Officiel | 400 avenue du Colonel Parant | [ ] | [ ] |
 | ANGTI — Agence Nationale des Grands Travaux d’Infrastructures | Immeuble BDM, boulevard de l’Indépendance | [ ] | [ ] |
 | CDC — Caisse des Dépôts et Consignations | Siège actuel inauguré en février 2026 : Immeuble Casimir Marie Ange OYE MBA, 1633 boulevard Triomphal Omar Bongo Ondimba | [ ] | [ ] |
@@ -132,7 +131,7 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 
 - 2026-11-26 : ajout de la Mairie du 2e arrondissement — OSM node 11458214434, GPS 0.40390 / 9.44285, avenue Jean-Paul II ; repère uniquement, bâtiment physique depuis buildings.geojson. Source Mapcarta / OpenStreetMap.
 
-- 2026-11-26 : recherche documentaire complémentaire : ANBG (195 rue Michel Nze MBA, Oloumi), PNPE (378 rue Jean-Baptiste Ndende, Petit-Paris), ANPI-Gabon (Serena Mall, 104 rue Gustave Anguile) et DPO / Journal Officiel (400 avenue du Colonel Parant). Adresses confirmées par les sites institutionnels, mais points GPS cartographiques précis non validés : conservés dans la liste de recherche, non intégrés au jeu.
+- 2026-11-26 : recherche documentaire complémentaire : ANBG (195 rue Michel Nze MBA, Oloumi), PNPE (378 rue Jean-Baptiste Ndende, Petit-Paris), ANPI-Gabon (Serena Mall, 104 rue Gustave Anguile) et DPO / Journal Officiel (400 avenue du Colonel Parant). Adresses confirmées par les sites institutionnels ; ANBG et DPO restent sans point GPS propre validé. L’ANPI a depuis été intégrée sur la base du node OSM 6703527385, dont la correspondance exacte avec Serena Mall reste à contrôler.
 
 - 2026-11-26 : ajout de la Mairie de Plaine Niger — 4e arrondissement, OSM way 1346923818, GPS 0.37406 / 9.45930 ; point confirmé par Mapcarta/OSM, repère uniquement et empreinte physique issue de buildings.geojson.
 - 2026-11-26 : ajout de la Mairie de Sogatol — 5e arrondissement, OSM way 1348151040, GPS 0.37679 / 9.47356, Boulevard des Bantu ; Mapcarta confirme l’appellation et la fonction de mairie. Repère institutionnel intégré, fallback sans empreinte propre ; le bâtiment physique doit provenir de buildings.geojson.
@@ -163,6 +162,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
 
 ## 7. Historique
+
+- 2026-11-26 : ANPI-Gabon est sortie de la liste des recherches en attente après intégration du node OSM 6703527385. Le compteur des lignes ouvertes est recalculé après retrait des doublons déjà intégrés et des sites hors périmètre.
 
 - 2026-11-26 : intégration du repère ANPI-Gabon à partir du node OSM 6703527385, GPS 0.38766 / 9.44761. Mapcarta identifie explicitement ce point comme ANPI ; le siège officiel actuel est publié à Serena Mall, 104 rue Gustave Anguile. Repère ajouté au générateur avec anti-doublon par OSM ID/nom et fallback sans empreinte propre. La correspondance exacte entre le point cartographique et le bâtiment Serena Mall reste à vérifier par comparaison visuelle / terrain avant modélisation 3D. Sources : Mapcarta/OSM (ANPI node 6703527385), investingabon.ga/contact.
 
