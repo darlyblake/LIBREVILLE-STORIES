@@ -65,9 +65,18 @@ static func should_use_pitched_roof(kind: String, props: Dictionary, point_count
 	if shape == "gabled":
 		return true
 	# Ces formes nécessitent une géométrie dédiée ; ne pas les dessiner à tort en deux pans.
-	if shape in ["hipped", "pyramidal", "skillion", "shed", "round", "dome", "onion"]:
+	if shape == "pyramidal":
+		return true
+	if shape in ["hipped", "skillion", "shed", "round", "dome", "onion"]:
 		return false
 	return kind in ["house", "residential", "detached", "semidetached_house", "bungalow"]
+
+
+static func roof_shape(props: Dictionary) -> String:
+	var shape := str(props.get("roof:shape", "")).strip_edges().to_lower()
+	if shape in ["flat", "gabled", "pyramidal", "hipped", "skillion", "shed", "round", "dome", "onion"]:
+		return shape
+	return "gabled"
 
 
 static func roof_style(kind: String, osm_id: int, props: Dictionary = {}) -> int:
