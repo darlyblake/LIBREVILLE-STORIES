@@ -4,7 +4,7 @@ const CENTER_LAT := 0.400
 const CENTER_LON := 9.4475
 const DATA_PATH := "res://data/osm/extended/pois.geojson"
 const RADIUS := 2600.0
-const MAX_FACILITIES := 60
+const MAX_FACILITIES := 100
 var map: Node
 var concrete: StandardMaterial3D
 var structural_concrete: StandardMaterial3D
@@ -16,6 +16,8 @@ var roof: StandardMaterial3D
 var steel: StandardMaterial3D
 var glass: StandardMaterial3D
 var asphalt: StandardMaterial3D
+var school_accent: StandardMaterial3D
+var hotel_accent: StandardMaterial3D
 var count := 0
 var use_pbr_textures := true
 
@@ -43,6 +45,8 @@ func _make_materials() -> void:
 	steel = _facility_mat(Color(0.72,0.73,0.72), "metal_plate_02", _texture(true))
 	steel.metallic = 0.72
 	asphalt = _facility_mat(Color(0.24,0.25,0.24), "asphalt_03", _texture(false))
+	school_accent = _facility_mat(Color(0.12,0.28,0.48), "blue_metal_roof", _texture(true))
+	hotel_accent = _facility_mat(Color(0.48,0.31,0.18), "brushed_concrete", _texture(false))
 	glass = StandardMaterial3D.new()
 	glass.albedo_color = Color(0.20,0.40,0.51,0.82)
 	glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -159,6 +163,8 @@ func _kind(p:Dictionary)->String:
 	var b:=str(p.get("building","")).to_lower()
 	var s:=str(p.get("shop","")).to_lower()
 	if a=="hospital" or h=="hospital" or b=="hospital": return "hospital"
+	if a in ["school", "kindergarten", "college", "university"] or b in ["school", "college", "university", "kindergarten"]: return "school"
+	if str(p.get("tourism", "")).to_lower() in ["hotel", "guest_house", "hostel", "motel"] or b in ["hotel", "guest_house"]: return "hotel"
 	if a=="clinic" or h in ["clinic","doctor","health_post"] or b=="clinic": return "clinic"
 	if a=="police" or b=="police": return "police"
 	if a=="fire_station" or b=="fire_station": return "fire"
@@ -271,6 +277,8 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 		"bus": w=36; d=25; h=5
 		"fuel": w=28; d=24; h=5.5; wall=white
 		"admin": w=24; d=18; h=10; wall=white
+		"school": w=38; d=28; h=9; wall=white
+		"hotel": w=30; d=22; h=16; wall=white
 	var lower_label := label.to_lower()
 	# Silhouettes renforcées pour les grands sites identifiés dans les données OSM.
 	# Les dimensions sont des proportions de gameplay, pas des mesures cadastrales.
@@ -288,6 +296,20 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 	_add_facade_construction_details(root,w,d,h)
 	_add_rainwater_details(root,w,d,h)
 	match k:
+		"school":
+			_sign(root, "ÉCOLE", Vector3(0, h + 1.0, d / 2 + 0.3), school_accent)
+			_box(root, Vector3(0, 0.35, d / 2 + 4.0), Vector3(w * 0.62, 0.35, 6.5), school_accent)
+			_box(root, Vector3(0, 1.15, d / 2 + 7.2), Vector3(4.0, 2.3, 0.25), blue)
+			_box(root, Vector3(-w * 0.36, 0.08, -d / 2 - 4.5), Vector3(5.0, 0.16, 7.0), asphalt)
+			for i in range(4):
+				_box(root, Vector3(-w * 0.36 + i * 3.2, 1.2, d / 2 + 7.0), Vector3(0.12, 2.4, 0.12), school_accent)
+		"hotel":
+			_sign(root, "HÔTEL", Vector3(0, h + 1.0, d / 2 + 0.3), hotel_accent)
+			_box(root, Vector3(0, h + 0.42, 0), Vector3(w + 2.0, 0.42, d + 2.0), hotel_accent)
+			_box(root, Vector3(0, 1.25, d / 2 + 2.1), Vector3(5.0, 2.5, 0.18), glass)
+			_box(root, Vector3(0, 0.18, d / 2 + 4.0), Vector3(w * 0.72, 0.18, 6.0), concrete)
+			for x in [-w * 0.32, w * 0.32]:
+				_box(root, Vector3(x, 2.1, d / 2 + 3.2), Vector3(0.35, 4.2, 0.35), hotel_accent)
 		"hospital","clinic":
 			_sign(root,"✚",Vector3(-w/2+2,h+1.4,0),red)
 			_sign(root,"URGENCES",Vector3(0,2.4,d/2+0.4),blue)
