@@ -160,6 +160,10 @@ func _build_facilities() -> void:
 	var seen:={}
 	var placed: Array[Dictionary] = []
 	var selected_school_count := 0
+	# Export des coordonnées OSM réellement retenues pour contrôle SIG.
+	var gps_report := FileAccess.open("user://libreville_facilities_gps.csv", FileAccess.WRITE)
+	if gps_report:
+		gps_report.store_line("type;nom;osm_id;latitude;longitude")
 	for e in entries:
 		if count>=MAX_FACILITIES: break
 		if e.kind == "school" and selected_school_count >= MAX_SCHOOLS:
@@ -181,6 +185,12 @@ func _build_facilities() -> void:
 			selected_school_count += 1
 		if e.kind == "hotel": hotel_count += 1
 		print("SITE OSM | ",e.kind," | ",e.label," | OSM ",e.id," | GPS ",e.lat,", ",e.lon)
+		if gps_report:
+			var safe_label := str(e.label).replace(";", ",").replace("\\n", " ")
+			gps_report.store_line("%s;%s;%s;%.7f;%.7f" % [e.kind, safe_label, str(e.id), float(e.lat), float(e.lon)])
+	if gps_report:
+		gps_report.close()
+	print("COORDONNÉES GPS OSM exportées : user://libreville_facilities_gps.csv")
 	print("INFRASTRUCTURES LIBREVILLE | ",count," sites dans l'emprise validée | écoles : ",school_count," (max. ",MAX_SCHOOLS,") | hôtels : ",hotel_count)
 
 func _kind(p:Dictionary)->String:
