@@ -12,9 +12,11 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data" / "osm" / "extended"
 WEST, SOUTH, EAST, NORTH = 9.370, 0.300, 9.550, 0.500
 TOLERANCE = 0.00002
+OPTIONAL_FILES = {"bridges.geojson"}
 
 ALLOWED_TYPES = {
     "roads.geojson": {"LineString", "MultiLineString"},
+    "bridges.geojson": {"LineString", "MultiLineString", "Polygon", "MultiPolygon"},
     "buildings.geojson": {"Polygon", "MultiPolygon"},
     "environment.geojson": {
         "LineString", "MultiLineString", "Polygon", "MultiPolygon"
@@ -33,6 +35,9 @@ def main() -> None:
     for filename, allowed in ALLOWED_TYPES.items():
         path = DATA_DIR / filename
         if not path.is_file():
+            if filename in OPTIONAL_FILES:
+                print(f"{filename}: absent (sera créé à la prochaine extraction OSM)")
+                continue
             failures.append(f"{filename}: fichier absent")
             continue
 
