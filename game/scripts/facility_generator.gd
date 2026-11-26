@@ -128,6 +128,7 @@ func _build_facilities() -> void:
 	var has_water_forests_site := false
 	var has_senate_site := false
 	var has_public_service_site := false
+	var has_justice_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -148,6 +149,8 @@ func _build_facilities() -> void:
 			has_senate_site = true
 		if poi_name.contains("fonction publique"):
 			has_public_service_site = true
+		if poi_name.contains("ministere de la justice") or poi_name.contains("ministere de justice"):
+			has_justice_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -200,6 +203,20 @@ func _build_facilities() -> void:
 			"id": 4940709339,
 			"lat": 0.41146,
 			"lon": 9.44544,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère de la Justice, rue Pecqueur : repère GPS vérifié dans la zone.
+	# N'ajoute aucun volume ; le bâtiment demeure celui de l'extraction buildings.geojson.
+	if not has_justice_site:
+		var justice_position := _geo([9.4460964, 0.3858865])
+		entries.append({
+			"kind": "court",
+			"label": "Ministère de la Justice — Rue Pecqueur",
+			"pos": justice_position,
+			"id": 0,
+			"lat": 0.3858865,
+			"lon": 9.4460964,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -278,6 +295,8 @@ func _administrative_kind(p: Dictionary) -> String:
 		return "city_hall"
 	if name.contains("eaux") and name.contains("foret"):
 		return "ministry"
+	if name.contains("ministere de la justice") or name.contains("ministere de justice"):
+		return "court"
 	if name.contains("senat") or name.contains("palais omar bongo"):
 		return "admin"
 	if name.contains("immeuble du 2 decembre") or name.contains("ministere des mines"):
