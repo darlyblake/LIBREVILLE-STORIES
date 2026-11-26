@@ -150,6 +150,7 @@ func _build_facilities() -> void:
 	var has_cnee_site := false
 	var has_cnd_site := false
 	var has_customs_site := false
+	var has_constitutional_court_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
@@ -217,6 +218,8 @@ func _build_facilities() -> void:
 			has_assembly_site = true
 		if poi_osm_id == 12727052424 or poi_name.contains("direction generale des douanes") or poi_name.contains("douanes et droits indirects"):
 			has_customs_site = true
+		if poi_osm_id == 410343353 or poi_name.contains("cour constitutionnelle"):
+			has_constitutional_court_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -590,6 +593,19 @@ func _build_facilities() -> void:
 			"id": 12727052424,
 			"lat": 0.37618,
 			"lon": 9.46677,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Cour constitutionnelle du Gabon, boulevard de l’Indépendance.
+	# OSM way 410343353 ; le repère reste indépendant de l’empreinte physique buildings.geojson.
+	if not has_constitutional_court_site:
+		entries.append({
+			"kind": "court",
+			"label": "Cour constitutionnelle du Gabon",
+			"pos": _geo([9.43989, 0.39687]),
+			"id": 410343353,
+			"lat": 0.39687,
+			"lon": 9.43989,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -967,6 +983,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "AMBASSADE"
 		"court":
 			marker_text = "JUSTICE"
+			if label.to_lower().contains("cour constitutionnelle"):
+				marker_text = "COUR CONSTITUTIONNELLE"
+				marker_material = school_accent
 	_sign(root, marker_text, Vector3(0, 2.2, 0), marker_material)
 	_name(root, label, Vector3(0, 3.35, 0))
 
