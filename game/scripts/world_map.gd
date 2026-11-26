@@ -2561,6 +2561,7 @@ func _load_roads() -> void:
 	var parts: Array[Dictionary] = []
 	var node_registry: Dictionary = {}
 	var road_feature_index := 0
+	var bridge_feature_count := 0
 	for feature in features:
 		var geometry: Dictionary = feature.get("geometry", {})
 		var lines: Array = []
@@ -2572,6 +2573,9 @@ func _load_roads() -> void:
 			_:
 				continue
 		var props: Dictionary = feature.get("properties", {})
+		var bridge_tag := str(props.get("bridge", ""))
+		if not bridge_tag.is_empty() and bridge_tag != "no":
+			bridge_feature_count += 1
 		var kind := str(props.get("highway", "residential"))
 		var width := WorldMapRoadUtils.road_width(kind, props)
 		var surface_key := WorldMapColorUtils.road_surface_key(kind, props)
@@ -2664,7 +2668,9 @@ func _load_roads() -> void:
 		tile_counter += 1
 		await get_tree().process_frame
 	_road_hit_grid.clear()
-	print("LIBREVILLE STORIES | VERSION v7 · décor vert OSM %s | réseau routier : %d tronçons, %d zones, %d lampadaires, %d ms" % ["ACTIVÉ" if render_green_areas else "MASQUÉ", parts.size(), tile_counter, _lamp_count, Time.get_ticks_msec() - started_ms])
+	print("LIBREVILLE STORIES | VERSION v7 · décor vert OSM %s | réseau routier : %d tronçons, %d zones, %d lampadaires, %d objets bridge OSM (tracés provisoires au niveau du MNT), %d ms" % ["ACTIVÉ" if render_green_areas else "MASQUÉ", parts.size(), tile_counter, _lamp_count, bridge_feature_count, Time.get_ticks_msec() - started_ms])
+	if bridge_feature_count > 0:
+		print("LIBREVILLE STORIES | ATTENTION : %d objets bridge sont encore drapés sur le terrain ; tabliers, piles et profils altimétriques non reconstruits sans relevés fiables." % bridge_feature_count)
 
 
 func _add_road_name_labels(features: Array) -> void:
