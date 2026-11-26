@@ -40,7 +40,7 @@ func _make_materials() -> void:
 	roof = _facility_mat(Color(0.78,0.79,0.77), "corrugated_iron_03", _texture(true))
 	steel = _facility_mat(Color(0.72,0.73,0.72), "metal_plate_02", _texture(true))
 	steel.metallic = 0.72
-	asphalt = _facility_mat(Color(0.24,0.25,0.24), "asphalt_02", _texture(false))
+	asphalt = _facility_mat(Color(0.24,0.25,0.24), "asphalt_03", _texture(false))
 	glass = StandardMaterial3D.new()
 	glass.albedo_color = Color(0.20,0.40,0.51,0.82)
 	glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
