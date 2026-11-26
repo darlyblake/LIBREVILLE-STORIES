@@ -69,3 +69,14 @@ Les effets présents dans le JSON sont descriptifs. Chaque système spécialisé
 
 ## Validation
 `tools/validate_calendar.py` vérifie le JSON, les identifiants uniques, les dates et les plages annuelles, y compris celles qui traversent le Nouvel An. La CI vérifie également l'import et l'analyse des scripts Godot.
+
+## Profils d'horaires centralisés – version 0.5
+Les profils sont déclarés dans `data/calendar/opening_hours.json` et chargés par `WorldClock`. Chaque lieu peut demander `is_schedule_open(profile_id)` ou `get_schedule_status(profile_id)`, qui retourne aussi la raison de fermeture.
+Profils prototype :
+- `school` : lundi–vendredi, 07:00–17:00, uniquement pendant les périodes scolaires et hors jours fériés.
+- `administration` et `bank` : lundi–vendredi, 07:30–15:30.
+- `retail` : 07:00–20:00 en semaine, 08:00–20:00 le week-end.
+- `market_mont_bouet` : tous les jours, 06:00–19:00.
+- `hospital` et `police` : services de garde 24 h/24.
+- `pharmacy` : profil de pharmacie de garde simulée, 08:00–22:00.
+Ces heures sont des valeurs de simulation, non des horaires officiels garantis. Elles seront personnalisables établissement par établissement. Les plages sont en heure locale du monde ; les jours utilisent 0=dimanche, 1=lundi, ..., 6=samedi.
