@@ -131,6 +131,7 @@ func _build_facilities() -> void:
 	var has_justice_site := false
 	var has_health_ministry_site := false
 	var has_foreign_affairs_site := false
+	var has_tpi_annex_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -157,6 +158,8 @@ func _build_facilities() -> void:
 			has_health_ministry_site = true
 		if poi_osm_id == 13375677182 or poi_name.contains("maison jean ping") or poi_name.contains("hotel des affaires etrangeres"):
 			has_foreign_affairs_site = true
+		if poi_osm_id == 1549705432 or poi_name.contains("tribunal de premiere instance"):
+			has_tpi_annex_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -251,6 +254,21 @@ func _build_facilities() -> void:
 			"id": 13375677182,
 			"lat": 0.40492,
 			"lon": 9.43495,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Annexe du Tribunal de Première Instance de Libreville, inaugurée en mai 2026.
+	# Le contour physique reste fourni par buildings.geojson ; ce bloc ajoute uniquement
+	# le repère nommé si le POI OSM correspondant manque dans l'extraction.
+	if not has_tpi_annex_site:
+		var tpi_annex_position := _geo([9.45096, 0.42648])
+		entries.append({
+			"kind": "court",
+			"label": "Annexe du Tribunal de Première Instance de Libreville",
+			"pos": tpi_annex_position,
+			"id": 1549705432,
+			"lat": 0.42648,
+			"lon": 9.45096,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
