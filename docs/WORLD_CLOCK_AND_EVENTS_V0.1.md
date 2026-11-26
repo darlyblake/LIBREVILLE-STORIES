@@ -1,47 +1,50 @@
-# Horloge, calendrier et événements – version 0.1
+# Horloge, calendrier et événements – version 0.3
 
 ## Objectif
-Une horloge unique pilote le temps du monde. Les PNJ, commerces, écoles, panneaux publicitaires, radios et télévisions ne doivent pas chacun inventer leur propre date.
+Une horloge unique pilote le temps du monde. Les PNJ, commerces, écoles, panneaux publicitaires, radios et télévisions ne gèrent pas chacun leur propre date. Ils interrogent `WorldClock` et écoutent ses signaux.
 
 ## Horloge
-- Date de départ prototype : 1 janvier 2026 à 06:00.
+- Date de départ du prototype : 1 janvier 2026 à 06:00.
 - 1 minute de jeu = 1 seconde réelle par défaut (24 minutes réelles par journée complète).
-- Vitesse réglable, pause/reprise, changement d'heure et avance rapide disponibles par API.
-- Sauvegarde indépendante dans user://world_clock_state.json.
-- Chaque changement de mois appelle PopulationManager.advance_month() une seule fois.
+- Vitesse réglable, pause/reprise, changement d'heure et avance rapide par API.
+- Sauvegarde indépendante dans `user://world_clock_state.json`.
+- Chaque passage réel au premier jour d'un nouveau mois appelle `PopulationManager.advance_month()` une seule fois.
+- Un réglage manuel de date synchronise l'année et le mois du gestionnaire de population sans simuler artificiellement des mois de naissance/décès.
 
-## Signaux à écouter
-- minute_changed / hour_changed : éclairage, animations, circulation et horaires.
-- day_started / day_ended : routines quotidiennes et réinitialisation des activités.
-- month_changed / year_changed : statistiques, factures, population et calendrier.
-- event_started / event_ended / active_events_changed : décorations, affichage, produits, émissions radio/TV et comportements PNJ.
+## Signaux
+- `minute_changed` : horodatage complet ; HUD et systèmes qui nécessitent une précision à la minute.
+- `hour_changed` : changement d'heure ; éclairage, horaires et routines.
+- `day_started` / `day_ended` : routines quotidiennes.
+- `month_changed` / `year_changed` : statistiques, population et calendrier.
+- `event_started` / `event_ended` / `active_events_changed` : décorations, produits, médias, comportements et circulation.
 
-## Événements déjà référencés
-- Fêtes fixes gabonaises : 1er janvier, 17 avril (Journée nationale de la femme), 1er mai, 15 août, 16–17 août (indépendance), 30 août (Libération), 1er novembre et 25 décembre.
-- Octobre Rose : campagne de sensibilisation aux cancers féminins, notamment sein et col de l'utérus.
-- Novembre Bleu : sensibilisation aux cancers masculins, notamment prostate.
-- Noël : période commerciale et culturelle du 1er au 25 décembre, distincte du jour férié du 25.
-- Calendrier scolaire révisé 2025-2026 : périodes officielles renseignées. Le calendrier 2026-2027 n'est pas figé dans les données tant qu'une source officielle annuelle ne le confirme pas.
+Un changement manuel d'heure émet désormais `hour_changed` si l'heure change. Un changement manuel de date met à jour les événements actifs et les signaux de mois/année.
+
+## Événements
+- Fêtes fixes gabonaises référencées : 1er janvier, 17 avril, 1er mai, 15 août, 16–17 août, 30 août, 1er novembre et 25 décembre.
+- Octobre Rose et Novembre Bleu sont des campagnes de sensibilisation, pas des jours fériés.
+- La période commerciale de Noël (1er–25 décembre) est distincte du jour férié du 25 décembre.
+- Les événements annuels peuvent traverser le 31 décembre : renseigner une année de référence identique pour les deux dates, par exemple 2000-12-20 au 2000-01-05.
+- Les événements non annuels utilisent leurs dates calendaires réelles.
+
+## Horaires de simulation
+- Écoles : jour de classe, hors week-end, jour férié et vacances, entre 07:00 et 17:00.
+- Commerces génériques : 07:00–20:00 en semaine et 08:00–20:00 le week-end ; fermés la nuit.
+- Le marché Mont-Bouët conserve son horaire local prototype de 06:00–19:00.
+- Les horaires restent des règles de simulation provisoires : chaque commerce/école pourra définir ses propres heures et jours de fermeture.
+
+## Calendrier scolaire et limites
+Les périodes scolaires 2025–2026 sont référencées dans les données présentes. Le calendrier 2026–2027 reste à confirmer par une annonce officielle. Les périodes scolaires révisées se chevauchent parfois avec les périodes de congés : le tag `school_holidays` est prioritaire et ferme les écoles.
+Les fêtes mobiles (Pâques, Pentecôte, Aïd) et les dates scolaires annuelles doivent être actualisées à partir de sources officielles ; aucune date arbitraire ne doit être présentée comme officielle.
 
 ## Contrat pour les futurs systèmes
-Les effets d'événements sont des données descriptives. Un système spécialisé devra les appliquer :
-- ville/panneaux : décorations, affiches et campagnes de santé ;
-- commerces : stocks saisonniers, promotions et horaires ;
-- PNJ : présence des élèves, achats, célébrations, réunions familiales ;
+Les effets présents dans le JSON sont descriptifs. Chaque système spécialisé devra les appliquer :
+- ville/panneaux : décorations, affiches et campagnes ;
+- commerces : horaires, stocks saisonniers et promotions ;
+- PNJ : présence des élèves, achats, célébrations et réunions familiales ;
 - radios/TV : grille spéciale, jingles et annonces ;
-- écoles : présence des élèves uniquement pendant les jours de classe et hors vacances ;
+- écoles : présence des élèves uniquement les jours de classe ;
 - circulation : embouteillages et déviations autour des rassemblements.
 
-Les fêtes mobiles (Pâques, Pentecôte, Aïd) et les dates annuelles scolaires nécessitent un calendrier actualisé chaque année. Ne pas les figer avec une date arbitraire.
-
-## Limites de la version
-Cette première livraison fournit le moteur temporel et le catalogue d'événements. Elle ne crée pas encore les assets de décoration, les stocks réels, les émissions radio/TV ou les routines PNJ : ces systèmes devront écouter les signaux ci-dessus.
-
-
-## Extension 0.2 – cycle jour/nuit
-- Le nœud WorldLighting ajuste progressivement la lumière directionnelle, l'ambiance et la couleur du ciel/brouillard selon l'heure.
-- La circulation et les piétons ralentissent pendant les heures nocturnes ; ils ne disparaissent pas brutalement.
-- Les horaires des commerces et établissements sont fournis par WorldClock, mais leur fermeture physique et leurs animations restent à connecter à chaque bâtiment.
-
-- Le HUD affiche en jeu la date, l'heure, la période de la journée et les événements actifs.
-- Le vendeur du marché Mont-Bouët respecte maintenant une plage d'ouverture prototype de 06:00 à 19:00 et adapte son dialogue aux fêtes et campagnes en cours.
+## Validation
+Le script `tools/validate_calendar.py` vérifie le JSON, les identifiants uniques, les dates et les plages annuelles, y compris celles qui traversent le Nouvel An. La CI vérifie également l'import et l'analyse des scripts Godot.
