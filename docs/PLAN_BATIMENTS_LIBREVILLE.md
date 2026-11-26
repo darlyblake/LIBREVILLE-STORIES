@@ -56,6 +56,7 @@
 | Cour constitutionnelle du Gabon — Boulevard de l’Indépendance | [x] | [x] | [ ] | [ ] | [ ] |
 | Agence Gabonaise de Sécurité Alimentaire (AGASA) — Batterie 4 | [x] | [x] | [ ] | [ ] | [ ] |
 | Institut National de Cartographie (INC) — Direction générale, Camp de police | [x] | [x] | [ ] | [ ] | [ ] |
+| Chambre de Commerce du Gabon — 12 avenue Augustin Boumah | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -70,6 +71,8 @@
 | Ministère du Travail | GPS confirmé : 0.42757 / 9.44887 ; OSM node 4686643890 | [x] | [x] |
 
 Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
+
+- 2026-11-26 : ajout de la Chambre de Commerce du Gabon — OSM way 456350865, GPS 0.38419 / 9.44697, 12 avenue Augustin Boumah ; repère institutionnel uniquement, empreinte physique depuis buildings.geojson. Source cartographique : Mapcarta / OpenStreetMap.
 
 ## 5. Pipeline 3D pour chaque bâtiment
 
