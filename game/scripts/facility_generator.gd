@@ -308,6 +308,7 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 		"fuel": w=28; d=24; h=5.5; wall=white
 		"admin": w=24; d=18; h=10; wall=white
 		"school": w=38; d=28; h=9; wall=white
+		"university": w=48; d=36; h=14; wall=white
 		"hotel": w=30; d=22; h=16; wall=white
 	var lower_label := label.to_lower()
 	# Silhouettes renforcées pour les grands sites identifiés dans les données OSM.
@@ -333,6 +334,10 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 			_box(root, Vector3(-w * 0.36, 0.08, -d / 2 - 4.5), Vector3(5.0, 0.16, 7.0), asphalt)
 			for i in range(4):
 				_box(root, Vector3(-w * 0.36 + i * 3.2, 1.2, d / 2 + 7.0), Vector3(0.12, 2.4, 0.12), school_accent)
+		"university":
+			_sign(root, "UNIVERSITÉ", Vector3(0, h + 1.0, d / 2 + 0.3), school_accent)
+			_box(root, Vector3(0, 0.35, d / 2 + 4.0), Vector3(w * 0.72, 0.35, 7.0), school_accent)
+			_box(root, Vector3(0, 1.2, d / 2 + 7.8), Vector3(5.0, 2.4, 0.25), blue)
 		"hotel":
 			_sign(root, "HÔTEL", Vector3(0, h + 1.0, d / 2 + 0.3), hotel_accent)
 			_box(root, Vector3(0, h + 0.42, 0), Vector3(w + 2.0, 0.42, d + 2.0), hotel_accent)
