@@ -4535,59 +4535,73 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 
 func _add_administrative_facade_details(surface: SurfaceTool, a: Vector2, b: Vector2,
 		normal: Vector3, base_y: float, height: float, props: Dictionary) -> void:
-	# Détails posés sur la façade principale OSM ; l’empreinte cadastrale reste inchangée.
+	# Détails en relief posés sur la façade principale OSM ; l’empreinte cadastrale reste inchangée.
 	var style := WorldMapBuildingStyleUtils.administrative_style(props)
 	var edge := b - a
 	var edge_length := edge.length()
-	if edge_length < 8.0:
+	if edge_length < 8.0 or style.is_empty():
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
 	var origin := Vector3(a.x, base_y, a.y)
-	var offset := normal * 0.065
 	if style == "town_hall":
-		# Hôtel de Ville : façade vitrée rythmée et bandeaux rouges caractéristiques.
+		# Hôtel de Ville : bandeaux rouges et trame de vitrage en relief.
 		surface.set_color(Color(0.43, 0.19, 0.20))
 		for y in [0.75, maxf(1.0, height - 0.65)]:
-			_add_quad(surface, origin + Vector3.UP * y + offset,
-				origin + tangent * edge_length + Vector3.UP * y + offset,
-				origin + tangent * edge_length + Vector3.UP * (y + 0.28) + offset,
-				origin + Vector3.UP * (y + 0.28) + offset)
+			_add_facade_prism(surface, origin + tangent * (edge_length * 0.5) + Vector3.UP * y,
+				tangent, normal, edge_length * 0.5, 0.28, 0.16)
 		surface.set_color(Color(0.55, 0.57, 0.56))
 		var mullion_count := clampi(int(edge_length / 2.6), 3, 18)
 		for index in range(1, mullion_count):
-			var point := origin + tangent * (edge_length * float(index) / float(mullion_count)) + offset
-			var top := point + Vector3.UP * maxf(1.0, height - 1.0)
-			_add_quad(surface, point, point + tangent * 0.10, top + tangent * 0.10, top)
+			var distance := edge_length * float(index) / float(mullion_count)
+			_add_facade_prism(surface, origin + tangent * distance,
+				tangent, normal, 0.055, maxf(1.0, height - 1.0), 0.12)
 	elif style in ["ministry", "court", "presidential"]:
-		# Ministères et institutions : pilastres clairs et bandeaux horizontaux.
+		# Ministères et institutions : pilastres saillants et bandeaux de dalle.
 		var column_color := Color(0.91, 0.89, 0.82) if style != "presidential" else Color(0.88, 0.84, 0.73)
 		surface.set_color(column_color)
 		var columns := clampi(int(edge_length / 4.2), 2, 14)
 		for index in range(columns + 1):
 			var distance := edge_length * float(index) / float(columns)
-			var point := origin + tangent * distance + offset
-			var half_width := 0.16 if style == "presidential" else 0.22
-			_add_quad(surface, point - tangent * half_width,
-				point + tangent * half_width,
-				point + tangent * half_width + Vector3.UP * height,
-				point - tangent * half_width + Vector3.UP * height)
+			var column_width := 0.32 if style == "presidential" else 0.44
+			_add_facade_prism(surface, origin + tangent * distance,
+				tangent, normal, column_width * 0.5, height, 0.24)
+		surface.set_color(Color(0.72, 0.70, 0.65))
 		for floor_index in range(1, int(floor(height / 3.2))):
 			var y := float(floor_index) * 3.2
-			_add_quad(surface, origin + Vector3.UP * y + offset,
-				origin + tangent * edge_length + Vector3.UP * y + offset,
-				origin + tangent * edge_length + Vector3.UP * (y + 0.12) + offset,
-				origin + Vector3.UP * (y + 0.12) + offset)
+			_add_facade_prism(surface, origin + tangent * (edge_length * 0.5) + Vector3.UP * y,
+				tangent, normal, edge_length * 0.5, 0.12, 0.16)
 	elif style == "embassy":
-		# Encadrement sobre de l’entrée des représentations diplomatiques.
+		# Portique d’entrée sobre, avec deux montants et une traverse en relief.
 		surface.set_color(Color(0.90, 0.87, 0.79))
 		var portal_width := minf(4.0, edge_length * 0.28)
-		var center := origin + tangent * (edge_length * 0.5) + offset
+		var center := origin + tangent * (edge_length * 0.5)
+		var portal_height := minf(3.8, height)
 		for side in [-1.0, 1.0]:
-			var point := center + tangent * side * portal_width * 0.5
-			var portal_height := minf(3.8, height)
-			_add_quad(surface, point - tangent * 0.12, point + tangent * 0.12,
-				point + tangent * 0.12 + Vector3.UP * portal_height,
-				point - tangent * 0.12 + Vector3.UP * portal_height)
+			_add_facade_prism(surface, center + tangent * side * portal_width * 0.5,
+				tangent, normal, 0.12, portal_height, 0.24)
+		_add_facade_prism(surface, center + Vector3.UP * portal_height,
+			tangent, normal, portal_width * 0.5, 0.16, 0.24)
+
+
+func _add_facade_prism(surface: SurfaceTool, center: Vector3, tangent: Vector3,
+		normal: Vector3, half_width: float, prism_height: float, depth: float) -> void:
+	# Petit volume rectangulaire extrudé perpendiculairement au mur.
+	var back_offset := normal * 0.035
+	var front_offset := normal * (depth + 0.035)
+	var left := tangent * half_width
+	var bottom_back_left := center - left + back_offset
+	var bottom_back_right := center + left + back_offset
+	var bottom_front_left := center - left + front_offset
+	var bottom_front_right := center + left + front_offset
+	var top_back_left := bottom_back_left + Vector3.UP * prism_height
+	var top_back_right := bottom_back_right + Vector3.UP * prism_height
+	var top_front_left := bottom_front_left + Vector3.UP * prism_height
+	var top_front_right := bottom_front_right + Vector3.UP * prism_height
+	_add_quad(surface, bottom_front_left, bottom_front_right, top_front_right, top_front_left)
+	_add_quad(surface, bottom_back_left, bottom_front_left, top_front_left, top_back_left)
+	_add_quad(surface, bottom_front_right, bottom_back_right, top_back_right, top_front_right)
+	_add_quad(surface, top_front_left, top_front_right, top_back_right, top_back_left)
+	_add_quad(surface, bottom_back_left, bottom_back_right, bottom_front_right, bottom_front_left)
 
 
 func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, base_y: float = 0.0, props: Dictionary = {}) -> bool:
