@@ -175,6 +175,8 @@ func _build_facilities() -> void:
 	var has_assembly_site := false
 	var has_petroleum_ministry_site := false
 	var has_finance_ministry_site := false
+	var has_ceeac_regional_staff_site := false
+	var has_commissariat_littoral_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -255,6 +257,10 @@ func _build_facilities() -> void:
 			has_petroleum_ministry_site = true
 		if poi_osm_id == 11505197345 or poi_name.contains("ministeres des finances") or poi_name.contains("ministere de l economie et des finances"):
 			has_finance_ministry_site = true
+		if poi_osm_id == 424247169 or poi_name.contains("etat-major regional ceeac") or poi_name.contains("etat major regional ceeac"):
+			has_ceeac_regional_staff_site = true
+		if poi_osm_id == 250792764 or poi_name.contains("commissariat du littoral"):
+			has_commissariat_littoral_site = true
 		if poi_osm_id == 12727052424 or poi_name.contains("direction generale des douanes") or poi_name.contains("douanes et droits indirects"):
 			has_customs_site = true
 		if poi_osm_id == 410343353 or poi_name.contains("cour constitutionnelle"):
@@ -932,6 +938,32 @@ func _build_facilities() -> void:
 			"id": 456350865,
 			"lat": 0.38419,
 			"lon": 9.44697,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# État-major régional de la CEEAC : site militaire distinct du siège de la CEEAC au Haut de Gué-Gué.
+	# Repère nommé uniquement ; l'empreinte physique reste issue de buildings.geojson.
+	if not has_ceeac_regional_staff_site:
+		entries.append({
+			"kind": "admin",
+			"label": "État-major régional CEEAC — secteur CHUL",
+			"pos": _geo([9.44731, 0.39397]),
+			"id": 424247169,
+			"lat": 0.39397,
+			"lon": 9.44731,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Commissariat du Littoral, avenue Docteur Albert Schweitzer.
+	# Repère marker-only ; aucun volume générique ne double le bâtiment OSM.
+	if not has_commissariat_littoral_site:
+		entries.append({
+			"kind": "police",
+			"label": "Commissariat du Littoral — Avenue Docteur Albert Schweitzer",
+			"pos": _geo([9.44691, 0.38963]),
+			"id": 250792764,
+			"lat": 0.38963,
+			"lon": 9.44691,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
