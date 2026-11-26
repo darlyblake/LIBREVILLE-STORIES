@@ -74,3 +74,22 @@ Les matériaux intégrés au jeu doivent provenir de textures CC0 ou de licences
 ## 7. Attribution
 
 Les données OSM sont © contributeurs OpenStreetMap, sous licence ODbL 1.0. Les sources de presse et vidéos sont citées comme références d'observation ; leurs contenus ne sont pas redistribués dans le jeu.
+
+
+## 8. Carrefour giratoire associé — objet distinct du pont
+
+Une seconde géométrie OSM identifie le **Rond-point Charbonnages** :
+- way OSM : `251206404` ;
+- position publiée : 0.43772 N, 9.44126 E ;
+- longueur de la ligne fermée : environ 71 m ;
+- type : voie secondaire, giratoire ;
+- deux voies (`lanes=2`), sens unique (`oneway=yes`), éclairage (`lit=yes`) ;
+- surface déclarée : asphalte ;
+- dernière modification indiquée par la source : 3 novembre 2024.
+
+Cette donnée est utile pour contrôler le carrefour au sol, mais elle ne décrit **pas** le tablier de l'échangeur. Le giratoire et le pont doivent rester deux objets séparés dans la fiche et dans la scène 3D. La longueur OSM est celle de la ligne du giratoire, pas son diamètre extérieur ni la largeur de sa chaussée.
+
+Source cartographique secondaire exposant les tags OSM :
+- https://ga.geoview.info/rondpoint_charbonnages%2C10251206404w
+
+Contrôle de cohérence : le repère du giratoire (0.43772, 9.44126) est distinct du repère cartographique de l'échangeur (0.43650, 9.44087). Il ne faut donc pas fusionner leurs coordonnées ni déduire le centre du tablier depuis le giratoire.
