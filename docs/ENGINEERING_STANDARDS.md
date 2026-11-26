@@ -26,10 +26,12 @@ Ce document adapte au projet Godot les pratiques utiles observées dans les dép
 - Import et analyse des scripts/ressources avec Godot 4.3 en mode headless.
 - Inspection des clips d'animation des personnages.
 - Validation indépendante du JSON du calendrier : structure, identifiants uniques, dates ISO, ordre des dates et types des champs.
+- Validation des profils d’horaires : jours de semaine, formats des plages, bornes 00:00–24:00 et ordre ouverture/fermeture.
 
 ## Contrôles à ajouter progressivement
 
 - Tests de transitions jour/mois/année et des événements récurrents.
+- Tests fonctionnels des horaires : ouverture/fermeture à la minute, jours fériés, week-ends, congés scolaires et services ouverts 24 h/24.
 - Tests de sauvegarde/rechargement et migration de population.
 - Vérification des liens parents/enfants/conjoints et du plafond de population.
 - Tests de génération géographique sur des polygones simples, multipolygones et géométries invalides.
