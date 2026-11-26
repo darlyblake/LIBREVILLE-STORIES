@@ -33,6 +33,10 @@ func _load_config() -> void:
 		push_error("LifeSimulationManager : JSON des profils de vie invalide.")
 
 func _on_day_started(_date: Dictionary) -> void:
+	for resident_id in _runtime:
+		var state: Dictionary = _runtime[resident_id]
+		state["nightlife_until"] = -1
+		_runtime[resident_id] = state
 	_refresh_all_activities()
 	_emit_crowd_levels()
 
@@ -159,6 +163,9 @@ func _update_activity(resident_id: String, resident: Dictionary, state: Dictiona
 	elif str(resident.get("job", "")) == "élève" and _is_school_day(hour):
 		state["activity"] = "école"
 		state["destination"] = "school"
+	elif str(resident.get("job", "")) == "élève" and not bool(clock.call("is_school_period")) and hour >= 10 and hour < 18:
+		state["activity"] = "loisirs"
+		state["destination"] = "leisure"
 	elif hour >= 11 and hour < 14 and _is_working_day(resident_id, resident, state, clock.get_date()):
 		state["activity"] = "restaurant"
 		state["destination"] = "restaurant"
