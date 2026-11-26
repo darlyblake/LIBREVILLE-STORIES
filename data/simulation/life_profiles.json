@@ -30,10 +30,6 @@
       "start_hour": 6,
       "end_hour": 19
     },
-    "agent_de_sécurité": {
-      "start_hour": 19,
-      "end_hour": 7
-    },
     "soignant": {
       "start_hour": 7,
       "end_hour": 19
@@ -45,6 +41,10 @@
     "shift_worker": {
       "start_hour": 7,
       "end_hour": 19
+    },
+    "agent de sécurité": {
+      "start_hour": 19,
+      "end_hour": 7
     }
   },
   "nightlife": {
