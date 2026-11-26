@@ -153,8 +153,12 @@ def main() -> None:
         "features": features,
     }
     OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    polygon_count = sum("planimetric_metrics" in item for item in features)
-    print(f"Rapport géométrique ponts : {len(features)} objets, {polygon_count} polygones.")
+    polygon_count = sum(item.get("geometry_type") in {"Polygon", "MultiPolygon"} for item in features)
+    line_count = sum(item.get("geometry_type") in {"LineString", "MultiLineString"} for item in features)
+    print(
+        f"Rapport géométrique ponts : {len(features)} objets, "
+        f"{polygon_count} polygones et {line_count} tracés linéaires."
+    )
     for item in features:
         metrics = item.get("planimetric_metrics")
         if metrics and "polygon_area_m2_approx" in metrics:
