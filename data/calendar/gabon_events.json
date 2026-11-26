@@ -2,23 +2,470 @@
   "country": "Gabon",
   "city": "Libreville",
   "timezone": "Africa/Libreville",
-  "note": "Calendrier de simulation. Les fêtes nationales fixes sont récurrentes. Les fêtes mobiles et calendriers scolaires doivent être actualisés à partir des annonces officielles de chaque année.",
+  "note": "Calendrier de simulation Libreville. Fêtes fixes récurrentes et calendriers scolaires datés. Les fêtes religieuses mobiles sont renseignées année par année ; les dates de l'Aïd restent à confirmer par les annonces officielles.",
   "events": [
-    {"id":"new_year","title":"Jour de l'An","category":"public_holiday","start_date":"2000-01-01","end_date":"2000-01-01","annual":true,"tags":["new_year","shop_gifts"],"effects":{"shops":"reduced_hours","public_services":"closed","media":"new_year_programming"}},
-    {"id":"womens_day","title":"Journée nationale de la femme","category":"national_day","start_date":"2000-04-17","end_date":"2000-04-17","annual":true,"tags":["women","equality","pink_campaign"],"effects":{"media":"special_programming","public_events":true}},
-    {"id":"labour_day","title":"Fête du Travail","category":"public_holiday","start_date":"2000-05-01","end_date":"2000-05-01","annual":true,"tags":["labour"],"effects":{"shops":"reduced_hours","public_services":"closed"}},
-    {"id":"assumption","title":"Assomption","category":"public_holiday","start_date":"2000-08-15","end_date":"2000-08-15","annual":true,"tags":["religious_holiday"],"effects":{"shops":"reduced_hours"}},
-    {"id":"independence_days","title":"Célébrations de l'indépendance du Gabon","category":"national_celebration","start_date":"2000-08-16","end_date":"2000-08-17","annual":true,"tags":["independence","national_flags","parade","concerts","traditional_food"],"effects":{"city":"national_decorations","traffic":"parade_disruptions","shops":"holiday_products","media":"national_broadcast","npc":"attend_celebrations"}},
-    {"id":"liberation_day","title":"Journée de la Libération","category":"national_day","start_date":"2000-08-30","end_date":"2000-08-30","annual":true,"tags":["liberation","national_memory"],"effects":{"media":"special_programming","public_events":true}},
-    {"id":"october_rose","title":"Octobre Rose – sensibilisation aux cancers féminins","category":"health_campaign","start_date":"2000-10-01","end_date":"2000-10-31","annual":true,"tags":["octobre_rose","pink","breast_cancer_awareness","cervical_cancer_awareness","health_screening"],"effects":{"billboards":"pink_health_campaign","shops":"pink_campaign_products","media":"health_awareness_programs","clinics":"screening_campaign"}},
-    {"id":"all_saints","title":"Toussaint","category":"public_holiday","start_date":"2000-11-01","end_date":"2000-11-01","annual":true,"tags":["religious_holiday","remembrance"],"effects":{"shops":"reduced_hours","public_services":"closed"}},
-    {"id":"november_blue","title":"Novembre Bleu – sensibilisation aux cancers masculins","category":"health_campaign","start_date":"2000-11-01","end_date":"2000-11-30","annual":true,"tags":["novembre_bleu","blue","prostate_cancer_awareness","mens_health","health_screening"],"effects":{"billboards":"blue_health_campaign","shops":"blue_campaign_products","media":"health_awareness_programs","clinics":"screening_campaign"}},
-    {"id":"christmas","title":"Noël","category":"cultural_celebration","start_date":"2000-12-01","end_date":"2000-12-25","annual":true,"tags":["christmas","decorations","gifts","seasonal_food","christmas_music"],"effects":{"city":"christmas_lights","shops":"christmas_stock_and_promotions","markets":"gift_stalls","media":"christmas_programming","npc":"family_shopping_and_gatherings"}},
-    {"id":"christmas_day","title":"Jour de Noël","category":"public_holiday","start_date":"2000-12-25","end_date":"2000-12-25","annual":true,"tags":["christmas","public_holiday"],"effects":{"shops":"mostly_closed","public_services":"closed","media":"christmas_broadcast"}},
-    {"id":"school_2025_2026_term_2","title":"Période scolaire – 2e trimestre (calendrier révisé 2025-2026)","category":"education","start_date":"2025-11-24","end_date":"2026-03-28","annual":false,"tags":["school_in_session","students_visible","school_traffic","school_transport"],"effects":{"schools":"open_on_school_days","npc":"students_commute"}},
-    {"id":"school_2025_2026_return_to_school","title":"Reprise des cours après réajustement","category":"school_break","start_date":"2026-01-05","end_date":"2026-01-18","annual":false,"tags":["school_holidays","students_less_visible"],"effects":{"schools":"closed","npc":"students_on_holiday"}},
-    {"id":"school_2025_2026_term_3","title":"Période scolaire – 3e trimestre (calendrier révisé 2025-2026)","category":"education","start_date":"2026-03-30","end_date":"2026-07-31","annual":false,"tags":["school_in_session","students_visible","school_traffic","school_transport","exams_period"],"effects":{"schools":"open_on_school_days","npc":"students_commute"}},
-    {"id":"school_christmas_break_2025_2026","title":"Vacances de Noël et du Nouvel An (2025-2026)","category":"school_break","start_date":"2025-12-20","end_date":"2026-01-04","annual":false,"tags":["school_holidays","students_less_visible"],"effects":{"schools":"closed","npc":"students_on_holiday"}},
-    {"id":"school_2026_2027_pending","title":"Calendrier scolaire 2026-2027 à confirmer","category":"information_notice","start_date":"2026-08-01","end_date":"2026-08-31","annual":false,"tags":["school_calendar_pending"],"effects":{"media":"school_calendar_announcement"}}
+    {
+      "id": "new_year",
+      "title": "Jour de l'An",
+      "category": "public_holiday",
+      "start_date": "2000-01-01",
+      "end_date": "2000-01-01",
+      "annual": true,
+      "tags": [
+        "new_year",
+        "shop_gifts"
+      ],
+      "effects": {
+        "shops": "reduced_hours",
+        "public_services": "closed",
+        "media": "new_year_programming"
+      }
+    },
+    {
+      "id": "womens_day",
+      "title": "Journée nationale de la femme",
+      "category": "national_day",
+      "start_date": "2000-04-17",
+      "end_date": "2000-04-17",
+      "annual": true,
+      "tags": [
+        "women",
+        "equality",
+        "pink_campaign"
+      ],
+      "effects": {
+        "media": "special_programming",
+        "public_events": true
+      }
+    },
+    {
+      "id": "labour_day",
+      "title": "Fête du Travail",
+      "category": "public_holiday",
+      "start_date": "2000-05-01",
+      "end_date": "2000-05-01",
+      "annual": true,
+      "tags": [
+        "labour"
+      ],
+      "effects": {
+        "shops": "reduced_hours",
+        "public_services": "closed"
+      }
+    },
+    {
+      "id": "assumption",
+      "title": "Assomption",
+      "category": "public_holiday",
+      "start_date": "2000-08-15",
+      "end_date": "2000-08-15",
+      "annual": true,
+      "tags": [
+        "religious_holiday"
+      ],
+      "effects": {
+        "shops": "reduced_hours"
+      }
+    },
+    {
+      "id": "independence_days",
+      "title": "Célébrations de l'indépendance du Gabon",
+      "category": "national_celebration",
+      "start_date": "2000-08-16",
+      "end_date": "2000-08-17",
+      "annual": true,
+      "tags": [
+        "independence",
+        "national_flags",
+        "parade",
+        "concerts",
+        "traditional_food"
+      ],
+      "effects": {
+        "city": "national_decorations",
+        "traffic": "parade_disruptions",
+        "shops": "holiday_products",
+        "media": "national_broadcast",
+        "npc": "attend_celebrations"
+      }
+    },
+    {
+      "id": "liberation_day",
+      "title": "Journée de la Libération",
+      "category": "national_day",
+      "start_date": "2000-08-30",
+      "end_date": "2000-08-30",
+      "annual": true,
+      "tags": [
+        "liberation",
+        "national_memory"
+      ],
+      "effects": {
+        "media": "special_programming",
+        "public_events": true
+      }
+    },
+    {
+      "id": "october_rose",
+      "title": "Octobre Rose – sensibilisation aux cancers féminins",
+      "category": "health_campaign",
+      "start_date": "2000-10-01",
+      "end_date": "2000-10-31",
+      "annual": true,
+      "tags": [
+        "octobre_rose",
+        "pink",
+        "breast_cancer_awareness",
+        "cervical_cancer_awareness",
+        "health_screening"
+      ],
+      "effects": {
+        "billboards": "pink_health_campaign",
+        "shops": "pink_campaign_products",
+        "media": "health_awareness_programs",
+        "clinics": "screening_campaign"
+      }
+    },
+    {
+      "id": "all_saints",
+      "title": "Toussaint",
+      "category": "public_holiday",
+      "start_date": "2000-11-01",
+      "end_date": "2000-11-01",
+      "annual": true,
+      "tags": [
+        "religious_holiday",
+        "remembrance"
+      ],
+      "effects": {
+        "shops": "reduced_hours",
+        "public_services": "closed"
+      }
+    },
+    {
+      "id": "november_blue",
+      "title": "Novembre Bleu – sensibilisation aux cancers masculins",
+      "category": "health_campaign",
+      "start_date": "2000-11-01",
+      "end_date": "2000-11-30",
+      "annual": true,
+      "tags": [
+        "novembre_bleu",
+        "blue",
+        "prostate_cancer_awareness",
+        "mens_health",
+        "health_screening"
+      ],
+      "effects": {
+        "billboards": "blue_health_campaign",
+        "shops": "blue_campaign_products",
+        "media": "health_awareness_programs",
+        "clinics": "screening_campaign"
+      }
+    },
+    {
+      "id": "christmas",
+      "title": "Noël",
+      "category": "cultural_celebration",
+      "start_date": "2000-12-01",
+      "end_date": "2000-12-25",
+      "annual": true,
+      "tags": [
+        "christmas",
+        "decorations",
+        "gifts",
+        "seasonal_food",
+        "christmas_music"
+      ],
+      "effects": {
+        "city": "christmas_lights",
+        "shops": "christmas_stock_and_promotions",
+        "markets": "gift_stalls",
+        "media": "christmas_programming",
+        "npc": "family_shopping_and_gatherings"
+      }
+    },
+    {
+      "id": "christmas_day",
+      "title": "Jour de Noël",
+      "category": "public_holiday",
+      "start_date": "2000-12-25",
+      "end_date": "2000-12-25",
+      "annual": true,
+      "tags": [
+        "christmas",
+        "public_holiday"
+      ],
+      "effects": {
+        "shops": "mostly_closed",
+        "public_services": "closed",
+        "media": "christmas_broadcast"
+      }
+    },
+    {
+      "id": "school_2025_2026_term_2",
+      "title": "Période scolaire – 2e trimestre (calendrier révisé 2025-2026)",
+      "category": "education",
+      "start_date": "2025-11-24",
+      "end_date": "2026-03-28",
+      "annual": false,
+      "tags": [
+        "school_in_session",
+        "students_visible",
+        "school_traffic",
+        "school_transport"
+      ],
+      "effects": {
+        "schools": "open_on_school_days",
+        "npc": "students_commute"
+      }
+    },
+    {
+      "id": "school_2025_2026_term_3",
+      "title": "Période scolaire – 3e trimestre (calendrier révisé 2025-2026)",
+      "category": "education",
+      "start_date": "2026-03-30",
+      "end_date": "2026-07-31",
+      "annual": false,
+      "tags": [
+        "school_in_session",
+        "students_visible",
+        "school_traffic",
+        "school_transport",
+        "exams_period"
+      ],
+      "effects": {
+        "schools": "open_on_school_days",
+        "npc": "students_commute"
+      }
+    },
+    {
+      "id": "school_2025_2026_revised_break",
+      "title": "Interruption des cours avant reprise effective du 19 janvier 2026",
+      "category": "school_break",
+      "start_date": "2025-12-20",
+      "end_date": "2026-01-18",
+      "annual": false,
+      "tags": [
+        "school_holidays",
+        "students_less_visible"
+      ],
+      "effects": {
+        "schools": "closed",
+        "npc": "students_on_break"
+      }
+    },
+    {
+      "id": "school_2026_2027_term_1",
+      "title": "Année scolaire 2026-2027 – premier trimestre",
+      "category": "education",
+      "start_date": "2026-09-07",
+      "end_date": "2026-11-28",
+      "annual": false,
+      "tags": [
+        "school_in_session",
+        "students_visible",
+        "school_traffic",
+        "school_transport"
+      ],
+      "effects": {
+        "schools": "open_on_school_days",
+        "npc": "students_commute"
+      }
+    },
+    {
+      "id": "school_2026_2027_break_1",
+      "title": "Congés du premier trimestre 2026-2027",
+      "category": "school_break",
+      "start_date": "2026-11-28",
+      "end_date": "2026-12-06",
+      "annual": false,
+      "tags": [
+        "school_holidays",
+        "students_less_visible"
+      ],
+      "effects": {
+        "schools": "closed",
+        "npc": "students_on_holiday"
+      }
+    },
+    {
+      "id": "school_2026_2027_term_2",
+      "title": "Année scolaire 2026-2027 – deuxième trimestre",
+      "category": "education",
+      "start_date": "2026-12-07",
+      "end_date": "2027-03-06",
+      "annual": false,
+      "tags": [
+        "school_in_session",
+        "students_visible",
+        "school_traffic",
+        "school_transport"
+      ],
+      "effects": {
+        "schools": "open_on_school_days",
+        "npc": "students_commute"
+      }
+    },
+    {
+      "id": "school_2026_2027_break_2",
+      "title": "Congés du deuxième trimestre 2026-2027",
+      "category": "school_break",
+      "start_date": "2027-03-06",
+      "end_date": "2027-03-14",
+      "annual": false,
+      "tags": [
+        "school_holidays",
+        "students_less_visible"
+      ],
+      "effects": {
+        "schools": "closed",
+        "npc": "students_on_holiday"
+      }
+    },
+    {
+      "id": "school_2026_2027_term_3",
+      "title": "Année scolaire 2026-2027 – troisième trimestre",
+      "category": "education",
+      "start_date": "2027-03-15",
+      "end_date": "2027-07-10",
+      "annual": false,
+      "tags": [
+        "school_in_session",
+        "students_visible",
+        "school_traffic",
+        "school_transport",
+        "exams_period"
+      ],
+      "effects": {
+        "schools": "open_on_school_days",
+        "npc": "students_commute"
+      }
+    },
+    {
+      "id": "school_2026_2027_exams",
+      "title": "Période des examens nationaux 2026-2027",
+      "category": "education",
+      "start_date": "2027-05-24",
+      "end_date": "2027-07-10",
+      "annual": false,
+      "tags": [
+        "exams_period",
+        "school_traffic"
+      ],
+      "effects": {
+        "schools": "exam_schedule",
+        "npc": "students_attend_exams"
+      }
+    },
+    {
+      "id": "easter_2026",
+      "title": "Pâques",
+      "category": "public_holiday",
+      "start_date": "2026-04-05",
+      "end_date": "2026-04-05",
+      "annual": false,
+      "tags": [
+        "easter",
+        "religious_holiday"
+      ],
+      "effects": {
+        "public_services": "closed",
+        "shops": "reduced_hours"
+      }
+    },
+    {
+      "id": "easter_monday_2026",
+      "title": "Lundi de Pâques",
+      "category": "public_holiday",
+      "start_date": "2026-04-06",
+      "end_date": "2026-04-06",
+      "annual": false,
+      "tags": [
+        "easter",
+        "religious_holiday"
+      ],
+      "effects": {
+        "public_services": "closed",
+        "shops": "reduced_hours"
+      }
+    },
+    {
+      "id": "ascension_2026",
+      "title": "Ascension",
+      "category": "public_holiday",
+      "start_date": "2026-05-14",
+      "end_date": "2026-05-14",
+      "annual": false,
+      "tags": [
+        "religious_holiday"
+      ],
+      "effects": {
+        "public_services": "closed",
+        "shops": "reduced_hours"
+      }
+    },
+    {
+      "id": "pentecost_2026",
+      "title": "Pentecôte",
+      "category": "public_holiday",
+      "start_date": "2026-05-24",
+      "end_date": "2026-05-24",
+      "annual": false,
+      "tags": [
+        "religious_holiday"
+      ],
+      "effects": {
+        "public_services": "closed",
+        "shops": "reduced_hours"
+      }
+    },
+    {
+      "id": "whit_monday_2026",
+      "title": "Lundi de Pentecôte",
+      "category": "public_holiday",
+      "start_date": "2026-05-25",
+      "end_date": "2026-05-25",
+      "annual": false,
+      "tags": [
+        "religious_holiday"
+      ],
+      "effects": {
+        "public_services": "closed",
+        "shops": "reduced_hours"
+      }
+    },
+    {
+      "id": "eid_al_fitr_2026_estimated",
+      "title": "Aïd el-Fitr – date estimée, à confirmer",
+      "category": "public_holiday",
+      "start_date": "2026-03-20",
+      "end_date": "2026-03-20",
+      "annual": false,
+      "tags": [
+        "religious_holiday",
+        "date_to_confirm"
+      ],
+      "effects": {
+        "public_services": "closed",
+        "shops": "reduced_hours"
+      }
+    },
+    {
+      "id": "eid_al_adha_2026_estimated",
+      "title": "Aïd el-Kebir – date estimée, à confirmer",
+      "category": "public_holiday",
+      "start_date": "2026-05-27",
+      "end_date": "2026-05-27",
+      "annual": false,
+      "tags": [
+        "religious_holiday",
+        "date_to_confirm"
+      ],
+      "effects": {
+        "public_services": "closed",
+        "shops": "reduced_hours"
+      }
+    }
   ]
 }
