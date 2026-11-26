@@ -146,8 +146,8 @@ func _build_facilities() -> void:
 		var osm_id := int(p.get("osm_id",0))
 		if osm_id == 0: osm_id=int(str(p.get("@id","0")).replace("way/","").replace("node/","").replace("relation/",""))
 		entries.append({"kind":kind,"label":label,"pos":pos,"id":osm_id,"lat":latitude,"lon":longitude})
-	# Priorité aux établissements demandés : les écoles et hôtels sont placés
-	# avant les autres équipements pour ne pas être éliminés par le plafond.
+	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
+	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
 	entries.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
 		var a_priority := 0 if a.kind in ["school", "university", "hotel", "hospital", "clinic"] else 1
@@ -178,7 +178,7 @@ func _build_facilities() -> void:
 		if e.kind == "hotel": hotel_count += 1
 		print("SITE OSM | ",e.kind," | ",e.label," | OSM ",e.id," | GPS ",e.lat,", ",e.lon)
 		if gps_report:
-			var safe_label := str(e.label).replace(";", ",").replace("\\n", " ")
+			var safe_label := str(e.label).replace(";", ",").replace("\n", " ")
 			gps_report.store_line("%s;%s;%s;%.7f;%.7f" % [e.kind, safe_label, str(e.id), float(e.lat), float(e.lon)])
 	if gps_report:
 		gps_report.close()
