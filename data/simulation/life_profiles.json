@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "note": "Profils de simulation provisoires. Les jours de repos, congés et fréquentations sont des paramètres de gameplay, pas des statistiques officielles.",
+  "employment": {
+    "annual_leave_calendar_days": 20,
+    "standard_weekly_rest_days": 2
+  },
+  "job_profiles": {
+    "fonctionnaire": {
+      "start_hour": 7,
+      "end_hour": 16
+    },
+    "enseignant": {
+      "start_hour": 7,
+      "end_hour": 16
+    },
+    "employé": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "artisan": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "commerçant": {
+      "start_hour": 7,
+      "end_hour": 18
+    },
+    "chauffeur": {
+      "start_hour": 6,
+      "end_hour": 19
+    },
+    "agent_de_sécurité": {
+      "start_hour": 19,
+      "end_hour": 7
+    },
+    "soignant": {
+      "start_hour": 7,
+      "end_hour": 19
+    },
+    "standard_worker": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "shift_worker": {
+      "start_hour": 7,
+      "end_hour": 19
+    }
+  },
+  "nightlife": {
+    "weekday_chance": 0.08,
+    "weekend_chance": 0.28,
+    "holiday_chance": 0.32,
+    "alcohol_per_hour": 0.22
+  },
+  "crowds": {
+    "market": {
+      "weekday_day": 1,
+      "weekend_day": 1.65,
+      "school_holiday_factor": 1.2,
+      "night_hours": {
+        "factor": 0.3
+      }
+    },
+    "restaurant": {
+      "weekday_day": 1,
+      "weekend_day": 1.55,
+      "school_holiday_factor": 1.2,
+      "night_hours": {
+        "factor": 1.25
+      }
+    },
+    "leisure": {
+      "weekday_day": 0.7,
+      "weekend_day": 1.8,
+      "school_holiday_factor": 1.45,
+      "night_hours": {
+        "factor": 1.35
+      }
+    },
+    "beachfront": {
+      "weekday_day": 0.65,
+      "weekend_day": 2,
+      "school_holiday_factor": 1.55,
+      "night_hours": {
+        "factor": 1.4
+      }
+    },
+    "park": {
+      "weekday_day": 0.65,
+      "weekend_day": 1.65,
+      "school_holiday_factor": 1.5,
+      "night_hours": {
+        "factor": 0.75
+      }
+    },
+    "bar": {
+      "weekday_day": 0.45,
+      "weekend_day": 1.5,
+      "school_holiday_factor": 1.25,
+      "night_hours": {
+        "factor": 2
+      }
+    }
+  }
+}
