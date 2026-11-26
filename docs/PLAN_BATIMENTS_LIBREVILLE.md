@@ -49,6 +49,7 @@
 | BRAC-OIF — Bureau régional de l’OIF pour l’Afrique centrale | [x] | [x] | [ ] | [ ] | [ ] |
 | DGTTC — Direction Générale des Travaux Topographiques et du Cadastre — Trois quartiers | [x] | [x] | [ ] | [ ] | [ ] |
 | DGEL — Direction Générale des Études et Laboratoires — Ancien Sobraga | [x] | [x] | [ ] | [ ] | [ ] |
+| CNEE — Conseil National de l’Eau et de l’Électricité — Haut de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -101,5 +102,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout du BRAC-OIF — OSM way 625614944, GPS 0.43037 / 9.42647 ; repère institutionnel, volume physique depuis buildings.geojson.
 - 2026-11-26 : ajout de la DGTTC — OSM way 816220349, GPS 0.42335 / 9.42733 ; site distinct de l’ANUTTC d’Oloumi, repère institutionnel, empreinte physique depuis buildings.geojson.
 - 2026-11-26 : ajout de la DGEL — OSM node 11421865904, GPS 0.41820 / 9.44920, 261 Rue Germain Mba, Ancien Sobraga ; repère institutionnel, volume physique depuis buildings.geojson.
+- 2026-11-26 : ajout du CNEE — OSM node 12150167700, GPS 0.42836 / 9.43147, siège social à Haut de Gué-Gué ; repère institutionnel, bâtiment physique issu de buildings.geojson.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
