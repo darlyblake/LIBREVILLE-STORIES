@@ -153,6 +153,7 @@ func _build_facilities() -> void:
 	var has_constitutional_court_site := false
 	var has_agasa_site := false
 	var has_cartography_institute_site := false
+	var has_chamber_of_commerce_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
@@ -226,6 +227,8 @@ func _build_facilities() -> void:
 			has_agasa_site = true
 		if poi_osm_id == 793967943 or poi_name.contains("institut national de cartographie") or poi_name == "inc":
 			has_cartography_institute_site = true
+		if poi_osm_id == 456350865 or poi_name.contains("chambre de commerce"):
+			has_chamber_of_commerce_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -642,6 +645,19 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# Chambre de Commerce du Gabon — OSM way 456350865, centroïde Mapcarta/OSM.
+	# Le repère est placé sur le bâtiment public existant ; aucune géométrie dupliquée.
+	if not has_chamber_of_commerce_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Chambre de Commerce du Gabon",
+			"pos": _geo([9.44697, 0.38419]),
+			"id": 456350865,
+			"lat": 0.38419,
+			"lon": 9.44697,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -936,6 +952,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("chambre de commerce"):
+				marker_text = "CHAMBRE DE COMMERCE"
+				marker_material = school_accent
 			if label.to_lower().contains("comptabilite publique") or label.to_lower().contains("comptabilité publique") or label.to_lower().contains("dgcpt"):
 				marker_text = "TRÉSOR PUBLIC"
 				marker_material = school_accent
