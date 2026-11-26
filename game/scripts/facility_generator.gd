@@ -149,6 +149,8 @@ func _build_facilities() -> void:
 	var has_dgel_site := false
 	var has_cnee_site := false
 	var has_cnd_site := false
+	var has_anpn_site := false
+	var has_agatour_site := false
 	var has_direction_nationale_assurances_site := false
 	var has_customs_site := false
 	var has_constitutional_court_site := false
@@ -232,6 +234,10 @@ func _build_facilities() -> void:
 			has_cnd_site = true
 		if poi_osm_id == 6144764686 or poi_name.contains("direction nationale des assurances"):
 			has_direction_nationale_assurances_site = true
+		if poi_osm_id == 12149539808 or poi_name.contains("agence nationale des parcs nationaux") or poi_name == "anpn":
+			has_anpn_site = true
+		if poi_osm_id == 12317977790 or poi_name == "agatour" or poi_name.contains("agence gabonaise de developpement et de promotion du tourisme"):
+			has_agatour_site = true
 		if poi_name.contains("palais leon mba") or poi_name.contains("assemblee nationale"):
 			has_assembly_site = true
 		if poi_osm_id == 12727052424 or poi_name.contains("direction generale des douanes") or poi_name.contains("douanes et droits indirects"):
@@ -641,6 +647,32 @@ func _build_facilities() -> void:
 			"id": 0,
 			"lat": 0.4122222,
 			"lon": 9.4427778,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Agence Nationale des Parcs Nationaux (ANPN), OSM node 12149539808.
+	# Siège, Rue Bana Ba Kengue ; point Mapcarta/OSM dans l’emprise.
+	if not has_anpn_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Agence Nationale des Parcs Nationaux (ANPN)",
+			"pos": _geo([9.42760, 0.42843]),
+			"id": 12149539808,
+			"lat": 0.42843,
+			"lon": 9.42760,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Agence Gabonaise de Développement et de Promotion du Tourisme (AGATOUR), OSM node 12317977790.
+	# Siège Impasse Père Peterse, Batterie IV ; distinct du point d’information touristique du centre-ville.
+	if not has_agatour_site:
+		entries.append({
+			"kind": "admin",
+			"label": "AGATOUR — Agence Gabonaise de Développement et de Promotion du Tourisme",
+			"pos": _geo([9.42793, 0.41896]),
+			"id": 12317977790,
+			"lat": 0.41896,
+			"lon": 9.42793,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
