@@ -1,6 +1,8 @@
 # Plan de construction des bâtiments — LIBREVILLE-STORIES
 
 > Document de suivi vivant. Les cases sont cochées uniquement après une intégration vérifiée dans le dépôt. Une adresse connue ne suffit pas à valider un emplacement GPS ou un modèle 3D.
+>
+> **Construction architecturale :** consulter [CONSTRUCTION_3D_ADMINISTRATIONS.md](CONSTRUCTION_3D_ADMINISTRATIONS.md) pour la chaîne de production Blender/GLB, les matériaux PBR, les composants et le suivi des premiers lots administratifs.
 
 ## 1. Zone géographique du jeu
 
