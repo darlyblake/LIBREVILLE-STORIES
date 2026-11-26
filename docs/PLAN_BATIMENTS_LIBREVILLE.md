@@ -52,6 +52,7 @@
 | CNEE — Conseil National de l’Eau et de l’Électricité — Haut de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
 | CND — Conseil National de la Démocratie — secteur Ancien Sobraga | [x] | [x] | [ ] | [ ] | [ ] |
 | Palais Léon Mba — Assemblée nationale — Boulevard Triomphal Omar Bongo | [x] | [x] | [ ] | [ ] | [ ] |
+| Direction Générale des Douanes et Droits Indirects — Oloumi | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -107,5 +108,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout du CNEE — OSM node 12150167700, GPS 0.42836 / 9.43147, siège social à Haut de Gué-Gué ; repère institutionnel, bâtiment physique issu de buildings.geojson.
 - 2026-11-26 : ajout du CND — OSM node 11529395192, GPS 0.41810 / 9.45075 ; repère institutionnel, volume physique depuis buildings.geojson.
 - 2026-11-26 : ajout du Palais Léon Mba — Assemblée nationale, GPS converti depuis 0°24′44″N, 9°26′34″E (0.4122222 / 9.4427778) ; repère institutionnel, volume physique depuis buildings.geojson.
+- 2026-11-26 : ajout de la Direction Générale des Douanes et Droits Indirects — OSM node 12727052424, GPS 0.37618 / 9.46677, 823 Avenue Edouard Ekomie Mba, Oloumi ; repère institutionnel, bâtiment physique depuis buildings.geojson.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
