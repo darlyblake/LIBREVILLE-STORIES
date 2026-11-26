@@ -152,6 +152,7 @@ func _build_facilities() -> void:
 	var has_transport_ministry_site := false
 	var has_anpn_site := false
 	var has_agatour_site := false
+	var has_anpi_site := false
 	var has_direction_nationale_assurances_site := false
 	var has_customs_site := false
 	var has_constitutional_court_site := false
@@ -239,6 +240,8 @@ func _build_facilities() -> void:
 			has_anpn_site = true
 		if poi_osm_id == 12317977790 or poi_name == "agatour" or poi_name.contains("agence gabonaise de developpement et de promotion du tourisme"):
 			has_agatour_site = true
+		if poi_osm_id == 6703527385 or poi_name == "anpi" or poi_name.contains("agence nationale de promotion des investissements"):
+			has_anpi_site = true
 		if poi_osm_id == 249526244 or poi_name.contains("ministere des transports") or poi_name.contains("ministere de la marine marchande"):
 			has_transport_ministry_site = true
 		if poi_name.contains("palais leon mba") or poi_name.contains("assemblee nationale"):
@@ -640,6 +643,19 @@ func _build_facilities() -> void:
 			"id": 249526244,
 			"lat": 0.40802,
 			"lon": 9.43928,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# ANPI-Gabon — node OSM 6703527385, identifié comme bureau ANPI sur Mapcarta/OSM.
+	# Le siège officiel actuel est Serena Mall, 104 rue Gustave Anguile ; vérifier sur place que ce point désigne bien cette implantation.
+	if not has_anpi_site:
+		entries.append({
+			"kind": "admin",
+			"label": "ANPI-Gabon — Agence Nationale de Promotion des Investissements",
+			"pos": _geo([9.44761, 0.38766]),
+			"id": 6703527385,
+			"lat": 0.38766,
+			"lon": 9.44761,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
