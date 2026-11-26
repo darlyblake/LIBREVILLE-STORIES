@@ -39,3 +39,10 @@ Ce document adapte au projet Godot les pratiques utiles observées dans les dép
 - Mesure du nombre de nœuds 3D actifs et du temps de frame dans les quartiers chargés.
 
 Les dépôts de référence servent de source de méthodes, pas de code à copier. Les implémentations Android, web et backend ne sont pas transplantées dans Godot.
+
+## Population multi-sectorielle et profils sociaux
+- Le catalogue `data/population/occupation_and_social_profiles.json` couvre les secteurs publics, privés, informels, techniques, sanitaires, éducatifs, logistiques, environnementaux et les situations hors emploi.
+- Les métiers de direction politique sont des rôles rares ; ils ne doivent jamais être distribués avec la même fréquence qu'un métier courant.
+- Les profils de précarité, de santé mentale, de dépendance et de criminalité sont distincts. Aucun diagnostic ne doit être déduit de l'apparence, de la tenue ou du seul comportement visible.
+- Le catalogue décrit les archétypes et les événements disponibles ; leur distribution démographique et leurs animations devront être calibrées, testées et reliées à des personnages individuels avant activation en jeu.
+- Les métiers essentiels (collecte des déchets, eau, électricité, télécommunications, santé, secours et transports) devront disposer de routines et de véhicules de service dédiés.
