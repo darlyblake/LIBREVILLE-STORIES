@@ -32,7 +32,7 @@ Les sources gouvernementales décrivent :
 
 Sources :
 - Ministère des Travaux Publics, 26 mai 2025 : https://infrastructures.gouv.ga/2025/05/26/le-ministre-moukoumbi-en-visite-dinspection-sur-les-grands-chantiers-routiers-de-lestuaire/
-- Gouvernement gabonais, 14 août 2025 : https://gouvernement.ga/2025/08/14/%F0%9D%90%80%F0%9D%90%82%F0%9D%90%93%F0%9D%90%88%F0%9D%90%8E%F0%9D%90%8D-%F0%9D%90%83%F0%9D%90%94-%F0%9D%90%86%F0%9D%90%8E%F0%9D%90%94%F0%9D%90%95%F0%9D%90%84%F0%9D%90%91%F0%9D%90%8D%F0%9D%90%84/
+- Gouvernement gabonais, 14 août 2025 : https://gouvernement.ga/2025/08/14/%F0%9D%90%80%F0%9D%90%82%F0%9D%90%93%F0%9D%90%88%F0%9D%90%8E%F0%9D%90%8D-%F0%9D%90%83%F0%9D%90%94-%F0%9D%90%86%F0%9D%90%8E%F0%9D%90%94%F0%9D%90%95%F0%9D%90%84%F0%9D%90%91%0D%0A%0D%0A/
 - Gouvernement gabonais, visite du 29 octobre 2025 : https://gouvernement.ga/2025/10/29/terrain/
 
 ## 4. Chronologie et état d'avancement documenté
@@ -43,10 +43,12 @@ Sources :
 | 4 octobre 2025 | Le ministère indique 21 % d'avancement du pont, 87 % des voiries, livraison annoncée en février 2027 | Conserver l'état chantier à cette date comme photographie historique, pas comme état actuel |
 | 29 octobre 2025 | Le Gouvernement décrit le pont, le giratoire, les routes de jonction et le bassin versant de Gué-Gué | Confirme que les composantes sont interdépendantes |
 | 22 avril 2026 | Le ministère indique que la voie de raccordement vers le rond-point 1 de la voie de contournement est presque achevée ; le Fly-Over doit venir dans une phase ultérieure | Ne pas représenter le Fly-Over comme achevé sur la base de cette source |
+| 11 août 2026 | La Présidence indique que le Chef de l'État s'est arrêté au rond-point du Camp de Gaulle pour évaluer l'évolution des aménagements ; aucun taux d'avancement ni dimension nouvelle n'est publié dans ce compte rendu | Dernier repère officiel repéré dans cette recherche ; ne permet pas de conclure que le Fly-Over est terminé ou ouvert |
 
 Sources :
 - Ministère, 4 octobre 2025 : https://www.infrastructures.gouv.ga/9-actualites/1332-edgard-moukoumbi-en-visite-ce-samedi-04-octobre-2025-sur-les-chantiers-du-camp-de-gaulle-et-de-l-esplanade-georges-damas-aleka/
 - Ministère, 22 avril 2026 : https://infrastructures.gouv.ga/2026/04/22/camp-de-gaulle-la-voie-de-raccordement-quasi-finalisee-le-ministre-edgard-moukoumbi-constate-lavancee/
+- Présidence de la République, 11 août 2026 : https://presidence.ga/2026/08/11/modernisation-du-grand-libreville-le-chef-de-letat-sur-le-terrain-pour-accelerer-lexecution-des-projets/
 
 ## 5. Géométrie à relever avant la reconstruction 3D
 
