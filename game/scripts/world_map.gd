@@ -3990,9 +3990,11 @@ func _load_administrative_sites() -> Dictionary:
 		var props: Dictionary = feature.get("properties", {})
 		var office := str(props.get("office", "")).to_lower()
 		var amenity := str(props.get("amenity", "")).to_lower()
+		var building := str(props.get("building", "")).to_lower()
 		var government := str(props.get("government", "")).to_lower()
 		var is_administrative := office in ["government", "administrative", "diplomatic"]
 		is_administrative = is_administrative or amenity in ["townhall", "government", "conference_centre"]
+		is_administrative = is_administrative or building in ["townhall", "government", "civic", "public"]
 		is_administrative = is_administrative or government in ["administrative", "government", "ministry", "parliament", "public_service"]
 		if not is_administrative:
 			continue
@@ -4720,7 +4722,7 @@ func _add_administrative_facade_details(surface: SurfaceTool, a: Vector2, b: Vec
 	elif style == "conference_centre":
 		# Palais des Congrès : façade vitrée à résille métallique dorée et grand auvent.
 		surface.set_color(Color(0.76, 0.61, 0.34))
-		var lattice_columns := clampi(int(edge_length / 1.45), 8, 28)
+		var lattice_columns := clampi(int(edge_length / 1.45), 8, 64)
 		for index in range(lattice_columns + 1):
 			var distance := edge_length * float(index) / float(lattice_columns)
 			_add_facade_prism(surface, origin + tangent * distance + Vector3.UP * 0.55,

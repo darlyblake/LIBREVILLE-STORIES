@@ -38,7 +38,7 @@ static func building_color(kind: String, osm_id: int, props: Dictionary = {}) ->
 		"court": selected = Color(0.80, 0.79, 0.73)
 		"embassy": selected = Color(0.86, 0.83, 0.76)
 		"public_office": selected = Color(0.82, 0.81, 0.76)
-		"conference_centre": selected = Color(0.68, 0.58, 0.43)
+		"conference_centre": selected = Color(0.48, 0.57, 0.60)
 	# building:material module la teinte quand aucune couleur explicite n'est fournie.
 	var material_tag := str(props.get("building:material", "")).strip_edges().to_lower()
 	var material_tint := Color.WHITE
