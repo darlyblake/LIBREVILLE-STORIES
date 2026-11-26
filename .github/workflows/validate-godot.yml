@@ -50,6 +50,8 @@ jobs:
         run: python tools/validate_opening_hours.py
       - name: Validate life-simulation profiles
         run: python tools/validate_life_profiles.py
+      - name: Validate occupation catalogue
+        run: python tools/validate_occupation_catalog.py
 
   parse-project:
     runs-on: ubuntu-latest
