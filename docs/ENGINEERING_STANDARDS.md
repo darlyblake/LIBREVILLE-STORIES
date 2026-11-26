@@ -26,6 +26,7 @@ Ce document adapte au projet Godot les pratiques utiles observées dans les dép
 - Import et analyse des scripts/ressources avec Godot 4.3 en mode headless.
 - Inspection des clips d'animation des personnages.
 - Validation indépendante du JSON du calendrier : structure, identifiants uniques, dates ISO, ordre des dates et types des champs.
+- Validation des profils de vie : horaires métiers, congés annuels, probabilités de sorties et multiplicateurs de fréquentation.
 - Validation des profils d’horaires : jours de semaine, formats des plages, bornes 00:00–24:00 et ordre ouverture/fermeture.
 
 ## Contrôles à ajouter progressivement
