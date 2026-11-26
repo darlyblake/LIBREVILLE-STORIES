@@ -56,4 +56,4 @@ func _refresh() -> void:
 		var names: Array[String] = []
 		for event in active:
 			names.append(str(event.get("title", "Événement")))
-		_event_label.text = "ÉVÉNEMENT : " + ", ".join(names)
+		_event_label.text = "ÉVÉNEMENT : " + ", ".join(PackedStringArray(names))
