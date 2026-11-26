@@ -23,18 +23,21 @@ static func building_color(kind: String, osm_id: int, props: Dictionary = {}) ->
 		Color(0.84, 0.80, 0.72)   # ivoire
 	]
 	var selected := palette[abs(osm_id) % palette.size()]
-	match administrative_style(props):
-		"town_hall": selected = Color(0.72, 0.70, 0.66)
-		"ministry": selected = Color(0.84, 0.82, 0.76)
-		"presidential": selected = Color(0.82, 0.78, 0.67)
-		"court": selected = Color(0.80, 0.79, 0.73)
-		"embassy": selected = Color(0.86, 0.83, 0.76)
 	if kind in ["industrial", "warehouse"]:
 		selected = Color(0.58, 0.61, 0.59) if abs(osm_id) % 3 == 0 else Color(0.67, 0.67, 0.62)
 	elif kind in ["commercial", "retail", "supermarket", "office"]:
 		selected = Color(0.76, 0.76, 0.71) if abs(osm_id) % 2 == 0 else Color(0.82, 0.78, 0.70)
 	elif kind in ["apartments", "hotel"]:
 		selected = Color(0.80, 0.76, 0.68) if abs(osm_id) % 2 == 0 else Color(0.72, 0.70, 0.64)
+	# La catégorie administrative prime sur la couleur générique du type de bâtiment.
+	# Une couleur explicitement renseignée dans OSM reste prioritaire (traitée plus haut).
+	match administrative_style(props):
+		"town_hall": selected = Color(0.72, 0.70, 0.66)
+		"ministry": selected = Color(0.84, 0.82, 0.76)
+		"presidential": selected = Color(0.82, 0.78, 0.67)
+		"court": selected = Color(0.80, 0.79, 0.73)
+		"embassy": selected = Color(0.86, 0.83, 0.76)
+		"public_office": selected = Color(0.82, 0.81, 0.76)
 	# building:material module la teinte quand aucune couleur explicite n'est fournie.
 	var material_tag := str(props.get("building:material", "")).strip_edges().to_lower()
 	var material_tint := Color.WHITE
@@ -63,11 +66,17 @@ static func building_color(kind: String, osm_id: int, props: Dictionary = {}) ->
 
 static func administrative_style(props: Dictionary) -> String:
 	# Profil architectural fondé sur les tags OSM et les noms d’institutions.
-	var name := str(props.get("name", props.get("name:fr", ""))).to_lower()
-	name = name.replace("é", "e").replace("è", "e").replace("ê", "e").replace("ô", "o").replace("à", "a")
+	var name := str(props.get("name", "")).strip_edges()
+	if name.is_empty():
+		name = str(props.get("name:fr", "")).strip_edges()
+	name = name.to_lower()
+	name = name.replace("é", "e").replace("è", "e").replace("ê", "e").replace("ë", "e")
+	name = name.replace("ô", "o").replace("ö", "o").replace("à", "a").replace("â", "a")
+	name = name.replace("ù", "u").replace("û", "u").replace("ç", "c")
 	var amenity := str(props.get("amenity", "")).to_lower()
 	var office := str(props.get("office", "")).to_lower()
 	var building := str(props.get("building", "")).to_lower()
+	var government := str(props.get("government", "")).to_lower()
 	if amenity == "townhall" or building == "townhall" or name.contains("mairie") or name.contains("hotel de ville"):
 		return "town_hall"
 	if name.contains("presidence") or name.contains("palais presidentiel") or name.contains("palais de la renovation"):
@@ -78,7 +87,7 @@ static func administrative_style(props: Dictionary) -> String:
 		return "court"
 	if office == "diplomatic" or name.contains("ambassade") or name.contains("consulat"):
 		return "embassy"
-	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government":
+	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government" or government in ["administrative", "government"]:
 		return "public_office"
 	return ""
 

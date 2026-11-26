@@ -207,11 +207,17 @@ func _kind(p:Dictionary)->String:
 
 
 func _administrative_kind(p: Dictionary) -> String:
-	var name := str(p.get("name:fr", p.get("name", ""))).to_lower()
-	name = name.replace("é", "e").replace("è", "e").replace("ê", "e").replace("ô", "o").replace("à", "a")
+	var name := str(p.get("name:fr", "")).strip_edges()
+	if name.is_empty():
+		name = str(p.get("name", "")).strip_edges()
+	name = name.to_lower()
+	name = name.replace("é", "e").replace("è", "e").replace("ê", "e").replace("ë", "e")
+	name = name.replace("ô", "o").replace("ö", "o").replace("à", "a").replace("â", "a")
+	name = name.replace("ù", "u").replace("û", "u").replace("ç", "c")
 	var office := str(p.get("office", "")).to_lower()
 	var amenity := str(p.get("amenity", "")).to_lower()
 	var building := str(p.get("building", "")).to_lower()
+	var government := str(p.get("government", "")).to_lower()
 	if amenity == "townhall" or building == "townhall" or name.contains("mairie") or name.contains("hotel de ville"):
 		return "city_hall"
 	if name.contains("ministere") or name.contains("primature"):
@@ -220,7 +226,7 @@ func _administrative_kind(p: Dictionary) -> String:
 		return "embassy"
 	if name.contains("cour constitutionnelle") or name.contains("tribunal") or name.contains("cour supreme"):
 		return "court"
-	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government":
+	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government" or government in ["administrative", "government"]:
 		return "admin"
 	return ""
 
