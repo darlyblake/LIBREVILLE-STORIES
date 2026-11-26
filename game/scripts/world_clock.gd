@@ -45,6 +45,10 @@ func _ready() -> void:
 		current_month = start_month
 		current_day = mini(start_day, _days_in_month(start_year, start_month))
 		_save_state()
+	if has_node("/root/PopulationManager"):
+		var population = get_node("/root/PopulationManager")
+		population.game_year = current_year
+		population.game_month = current_month
 	_refresh_active_events(true)
 	print("WORLD CLOCK | %s %02d:%02d" % [get_date_string(), hour, minute])
 
@@ -99,7 +103,8 @@ func advance_minutes(amount: int) -> void:
 			if hour != previous_hour:
 				hour_changed.emit(hour, get_day_period())
 		minute_changed.emit(get_datetime())
-	_save_state()
+	if minute == 0 and hour % 6 == 0:
+		_save_state()
 
 func advance_hours(amount: int) -> void:
 	advance_minutes(amount * 60)
@@ -119,8 +124,6 @@ func _advance_day() -> void:
 			current_month = 1
 			current_year += 1
 			year_changed.emit(current_year)
-			if has_node("/root/PopulationManager"):
-				get_node("/root/PopulationManager").game_year = current_year - 1
 		if has_node("/root/PopulationManager"):
 			get_node("/root/PopulationManager").advance_month()
 		month_changed.emit(current_month, current_year)
@@ -190,11 +193,17 @@ func has_event_category(category: String) -> bool:
 			return true
 	return false
 
+func _has_active_tag(tag: String) -> bool:
+	for event in get_active_events():
+		if event.get("tags", []).has(tag):
+			return true
+	return false
+
 func is_school_period() -> bool:
-	return has_event_category("education") and has_event_category("school_in_session")
+	return _has_active_tag("school_in_session") and not _has_active_tag("school_holidays")
 
 func are_schools_open_now() -> bool:
-	return is_school_period() and not is_weekend() and hour >= 7 and hour < 17
+	return is_school_period() and not is_weekend() and not has_event_category("public_holiday") and hour >= 7 and hour < 17
 
 func are_shops_open_now() -> bool:
 	if is_night():
