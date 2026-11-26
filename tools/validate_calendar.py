@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the Gabon calendar data without requiring the Godot editor."""
+"""Validate Gabon calendar data, including recurring ranges across New Year."""
 import json
 import sys
 from datetime import date
@@ -45,18 +45,21 @@ def main() -> None:
             end = date.fromisoformat(event["end_date"])
         except ValueError as exc:
             fail(f"{event_id}: date ISO invalide ({exc})")
-        if end < start:
+
+        annual = event.get("annual")
+        if not isinstance(annual, bool):
+            fail(f"{event_id}: 'annual' doit être booléen")
+        if annual:
+            if start.year != end.year:
+                fail(f"{event_id}: les dates annuelles doivent partager une année de référence")
+            # For recurring events, end < start is valid: the range wraps over New Year.
+        elif end < start:
             fail(f"{event_id}: end_date précède start_date")
 
-        if not isinstance(event.get("annual"), bool):
-            fail(f"{event_id}: 'annual' doit être booléen")
         if not isinstance(event.get("tags", []), list):
             fail(f"{event_id}: 'tags' doit être un tableau")
         if not isinstance(event.get("effects", {}), dict):
             fail(f"{event_id}: 'effects' doit être un objet")
-
-        if event["annual"] and start.year != end.year:
-            fail(f"{event_id}: une plage annuelle doit utiliser une année de référence identique")
 
     print(f"Calendrier valide: {len(seen)} événements, identifiants uniques, dates et structures corrects.")
 
