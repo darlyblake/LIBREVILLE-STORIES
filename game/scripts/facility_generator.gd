@@ -151,6 +151,7 @@ func _build_facilities() -> void:
 	var has_cnd_site := false
 	var has_customs_site := false
 	var has_constitutional_court_site := false
+	var has_agasa_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
@@ -220,6 +221,8 @@ func _build_facilities() -> void:
 			has_customs_site = true
 		if poi_osm_id == 410343353 or poi_name.contains("cour constitutionnelle"):
 			has_constitutional_court_site = true
+		if poi_osm_id == 12832789224 or poi_name == "agasa" or poi_name.contains("agence gabonaise de securite alimentaire"):
+			has_agasa_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -609,6 +612,19 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# Agence Gabonaise de Sécurité Alimentaire (AGASA), Batterie 4.
+	# OSM node 12832789224 ; repère seulement, volume physique depuis buildings.geojson.
+	if not has_agasa_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Agence Gabonaise de Sécurité Alimentaire (AGASA)",
+			"pos": _geo([9.42785, 0.41896]),
+			"id": 12832789224,
+			"lat": 0.41896,
+			"lon": 9.42785,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -908,6 +924,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("aninf") or label.to_lower().contains("infrastructures numeriques") or label.to_lower().contains("infrastructures numériques"):
 				marker_text = "ANINF"
+				marker_material = school_accent
+			if label.to_lower().contains("agasa") or label.to_lower().contains("securite alimentaire") or label.to_lower().contains("sécurité alimentaire"):
+				marker_text = "AGASA"
 				marker_material = school_accent
 			if label.to_lower().contains("communication"):
 				marker_text = "COMMUNICATION"
