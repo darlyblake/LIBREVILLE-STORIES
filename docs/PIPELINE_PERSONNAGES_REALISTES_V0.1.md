@@ -71,7 +71,10 @@ Les résidents ne sont pas les modèles. Un résident est une identité persista
 - 100 modèles de base sont un catalogue de départ, pas 100 identités imposées.
 - Plusieurs résidents peuvent partager une base graphique tout en ayant des variations de morphs, coiffure, vêtements, teint et visage.
 - Le choix de modèle et les paramètres de morphologie sont sauvegardés dans la fiche du résident.
-- Une naissance crée une nouvelle identité ; ses traits hérités devront être calculés à partir des parents, puis appliqués aux morphs du modèle. Ce mécanisme génétique n'est pas encore connecté.
+- Chaque fiche possède un profil `face_detail` persistant : dimensions de tête, espacement des yeux, dimensions du nez et de la bouche, menton, pommettes et oreilles.
+- Ces paramètres sont interprétés par `npc_character.gd` pour produire des différences faciales visibles sur une base de mesh réutilisable.
+- Les anciennes sauvegardes reçoivent un profil facial lors de leur normalisation, puis celui-ci est conservé.
+- Une naissance crée une nouvelle identité ; l'hérédité des traits faciaux reste à connecter.
 - Les changements d'âge doivent modifier les paramètres d'apparence sans changer l'identité du résident.
 - Les personnages éloignés restent simulés sans instancier un modèle 3D.
 
@@ -85,6 +88,12 @@ Machine de référence : Intel Core i5-8350U, 16 Go RAM, Intel UHD 620.
 - Réserver les morphs faciaux détaillés et animations coûteuses aux personnages proches.
 - Tester les lots de personnages sur la machine de référence avant d'augmenter la densité.
 - Les tailles de fichiers et le nombre de triangles doivent être mesurés sur les exports réels, pas supposés.
+
+## Première couche de morphologie faciale procédurale
+
+`PopulationManager._generate_face_detail()` crée un profil numérique individuel par résident. `npc_character.gd` applique ces valeurs à la tête, aux yeux, au nez, à la bouche, au menton, aux pommettes et aux oreilles. Les paramètres sont générés une fois et sauvegardés. Les anciennes fiches sont complétées à leur normalisation.
+
+Il s'agit d'un prototype géométrique, pas encore d'un système de blendshapes sur un visage humain réaliste. Les paupières, lèvres sculptées, rides, asymétries fines, rig facial et transmission héréditaire restent à développer. Une validation visuelle dans Godot est nécessaire.
 
 ## État réel
 
