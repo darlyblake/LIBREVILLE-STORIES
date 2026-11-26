@@ -46,6 +46,8 @@ jobs:
           python-version: "3.12"
       - name: Validate Gabon calendar JSON
         run: python tools/validate_calendar.py
+      - name: Validate opening-hours profiles
+        run: python tools/validate_opening_hours.py
 
   parse-project:
     runs-on: ubuntu-latest
