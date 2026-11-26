@@ -145,6 +145,8 @@ func _assign_initial_children(child_ids: Array[String]) -> void:
 		child["mother_id"] = mother_id
 		child["father_id"] = father_id
 		child["last_name"] = str(residents[father_id]["last_name"])
+		child["nationality"] = str(mother.get("nationality", "Gabon"))
+		child["origin_region"] = str(mother.get("origin_region", "Afrique centrale"))
 		child["generation"] = 2
 		residents[child_id] = child
 		_append_child_to_parent(mother_id, child_id)
