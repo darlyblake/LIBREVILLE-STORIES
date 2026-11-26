@@ -72,6 +72,33 @@ Les géométries polygonales de la couche permettent de calculer une enveloppe e
 Le rapport est généré automatiquement avec la méthode et les avertissements dans son en-tête. Attribution : © OpenStreetMap contributors, ODbL 1.0.
 
 
+
+## 8 bis. Longueurs descriptives des tracés linéaires OSM
+
+Le recalcul du 26 novembre 2026 sur l'extrait Geofabrik régional a produit les longueurs planimétriques suivantes pour quelques ways nommés. Elles décrivent uniquement la ligne OSM exportée, pas nécessairement le tablier, les rampes ou l'ensemble de l'échangeur.
+
+| Ouvrage / repère | Way OSM | Longueur du tracé OSM (approx.) | Nombre de sommets | Lecture |
+|---|---:|---:|---:|---|
+| Échangeur de l'Aéroport | 43157373 | 57,0 m | 2 | Branche cartographiée |
+| Échangeur de l'Aéroport | 43157376 | 56,9 m | 2 | Seconde branche ; ne pas additionner comme longueur du tablier |
+| Gué-Gué | 47290112 | 31,7 m | 2 | Way court, géométrie très simplifiée |
+| Gué-Gué | 47290115 | 32,1 m | 2 | Way parallèle ; ne pas additionner |
+| Échangeur Cité de la Démocratie | 448337123 | 54,8 m | 2 | Axe cartographié |
+| Échangeur Cité de la Démocratie | 448836549 | 55,1 m | 2 | Seconde ligne cartographiée |
+| Échangeur Nzeng-Ayong | 169184393 | 202,1 m | 13 | Way routier balisé bridge ; peut inclure une portion de raccordement |
+| Échangeur Nzeng-Ayong | 169184394 | 200,2 m | 12 | Seconde ligne ; ne pas additionner |
+| Échangeur IAI | 170924097 | 463,6 m | 21 | Way long ; ne pas assimiler à la longueur du seul tablier |
+| Échangeur IAI | 170924101 | 461,2 m | 24 | Seconde ligne ; vérifier les limites exactes de l'ouvrage |
+| Pont de la RTG | 208495051 | 40,7 m | 2 | Tracé court à confronter à une vue aérienne |
+| Pont d'Akébé | 1358983759 | 10,3 m | 2 | Géométrie très sommaire ; valeur non exploitable comme dimension d'ouvrage |
+| Pont M'pirah | 1328745502 | 15,8 m | 2 | Géométrie très sommaire ; valeur non exploitable comme dimension d'ouvrage |
+| Échangeur des Charbonnages | 1443840889 | 57,4 m | 2 | Axe OSM ; source de géométrie déclarée par OSM |
+| Échangeur des Charbonnages | 1443840890 | 57,4 m | 4 | Way parallèle/proche ; ne pas additionner |
+
+Les distances sont calculées dans une projection locale équirectangulaire à la latitude moyenne de chaque objet. Les ways à deux sommets sont des axes schématiques : une longueur précise au décimètre ne serait pas justifiée par leur niveau de détail. Les deux tracés parallèles d'un même ouvrage peuvent représenter les chaussées opposées ou une duplication de cartographie ; leur interprétation doit être confirmée visuellement.
+
+**Règle de production :** utiliser ces mesures pour contrôler les ordres de grandeur et la continuité des axes. Ne pas les convertir automatiquement en longueur de tablier, de rampe, de garde-corps ou de structure porteuse.
+
 ## 9. État réel de l'intégration dans le moteur Godot (26 novembre 2026)
 
 Le chargeur `game/scripts/world_map.gd` privilégie la couche régionale `data/osm/extended/roads.geojson` lorsqu'elle existe. Les tronçons routiers sont convertis par `_geo_to_road_point()`, qui échantillonne le MNT et place chaque point sur la surface du terrain. Ainsi, un way portant `bridge=yes` ou `bridge=viaduct` est actuellement rendu comme un tracé routier posé sur le relief, et non comme un pont surélevé.
