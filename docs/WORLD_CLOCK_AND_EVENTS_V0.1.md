@@ -42,3 +42,6 @@ Cette première livraison fournit le moteur temporel et le catalogue d'événeme
 - Le nœud WorldLighting ajuste progressivement la lumière directionnelle, l'ambiance et la couleur du ciel/brouillard selon l'heure.
 - La circulation et les piétons ralentissent pendant les heures nocturnes ; ils ne disparaissent pas brutalement.
 - Les horaires des commerces et établissements sont fournis par WorldClock, mais leur fermeture physique et leurs animations restent à connecter à chaque bâtiment.
+
+- Le HUD affiche en jeu la date, l'heure, la période de la journée et les événements actifs.
+- Le vendeur du marché Mont-Bouët respecte maintenant une plage d'ouverture prototype de 06:00 à 19:00 et adapte son dialogue aux fêtes et campagnes en cours.
