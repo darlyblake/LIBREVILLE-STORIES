@@ -63,6 +63,9 @@
 | SEEG — Société d’Énergie et d’Eau du Gabon — 346 avenue Félix Éboué, siège social | [x] | [x] | [ ] | [ ] | [ ] |
 | DGDI — Direction Générale de la Documentation et de l’Immigration — Oloumi | [x] | [x] | [ ] | [ ] | [ ] |
 | Centre Technique de l’Habitat — avenue Barthélemy Boganda, Nzeng-Ayong | [x] | [x] | [ ] | [ ] | [ ] |
+| Mairie de Nombakélé — 3e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
+| Mairie de Nzeng-Ayong | [x] | [x] | [ ] | [ ] | [ ] |
+| Mairie des Hauts de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -85,6 +88,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout groupé d’eGabon — OSM way 636626338, GPS 0.38566 / 9.44786 — et du siège social de la SEEG — OSM way 456742208, GPS 0.39300 / 9.44671, 346 avenue Félix Éboué ; repères seulement, empreintes physiques issues de buildings.geojson. Sources Mapcarta / OpenStreetMap.
 
 - 2026-11-26 : ajout groupé de la DGDI — OSM node 2910360231, GPS 0.38207 / 9.46700, secteur Oloumi — et du Centre Technique de l’Habitat — OSM node 11133203583, GPS 0.42044 / 9.48454, avenue Barthélemy Boganda, Nzeng-Ayong ; repères institutionnels uniquement, bâtiments physiques depuis buildings.geojson. Sources Mapcarta / OpenStreetMap.
+
+- 2026-11-26 : ajout groupé de trois mairies d’arrondissement : Mairie de Nombakélé / 3e arrondissement — OSM way 1343319442, GPS 0.39109 / 9.45077 ; Mairie de Nzeng-Ayong — OSM way 1348678391, GPS 0.42399 / 9.47159 ; Mairie des Hauts de Gué-Gué — OSM node 4040655377, GPS 0.42802 / 9.43262. Repères uniquement, empreintes physiques depuis buildings.geojson. Sources Mapcarta / OpenStreetMap.
 
 ## 5. Pipeline 3D pour chaque bâtiment
 
