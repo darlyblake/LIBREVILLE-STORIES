@@ -201,7 +201,27 @@ func _kind(p:Dictionary)->String:
 	if a=="fire_station" or b=="fire_station": return "fire"
 	if a=="bus_station" or b=="train_station" or str(p.get("public_transport",""))=="station": return "bus"
 	if a=="fuel" or s=="fuel": return "fuel"
-	if a=="townhall" or b in ["government","civic","public"] or str(p.get("office","")) in ["government","administrative"]: return "admin"
+	var admin_kind := _administrative_kind(p)
+	if admin_kind != "": return admin_kind
+	return ""
+
+
+func _administrative_kind(p: Dictionary) -> String:
+	var name := str(p.get("name:fr", p.get("name", ""))).to_lower()
+	name = name.replace("é", "e").replace("è", "e").replace("ê", "e").replace("ô", "o").replace("à", "a")
+	var office := str(p.get("office", "")).to_lower()
+	var amenity := str(p.get("amenity", "")).to_lower()
+	var building := str(p.get("building", "")).to_lower()
+	if amenity == "townhall" or building == "townhall" or name.contains("mairie") or name.contains("hotel de ville"):
+		return "city_hall"
+	if name.contains("ministere") or name.contains("primature"):
+		return "ministry"
+	if name.contains("ambassade") or name.contains("consulat") or office == "diplomatic":
+		return "embassy"
+	if name.contains("cour constitutionnelle") or name.contains("tribunal") or name.contains("cour supreme"):
+		return "court"
+	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government":
+		return "admin"
 	return ""
 
 func _default_name(k:String)->String:
@@ -214,6 +234,10 @@ func _default_name(k:String)->String:
 		"fuel": return "Station-service"
 		"school": return "Établissement scolaire"
 		"university": return "Université"
+		"city_hall": return "Mairie"
+		"ministry": return "Ministère"
+		"embassy": return "Ambassade"
+		"court": return "Justice"
 		"hotel": return "Hôtel"
 		_: return "Administration"
 
@@ -397,6 +421,14 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CARBURANT"
 		"admin":
 			marker_text = "ADMINISTRATION"
+		"city_hall":
+			marker_text = "MAIRIE"
+		"ministry":
+			marker_text = "MINISTÈRE"
+		"embassy":
+			marker_text = "AMBASSADE"
+		"court":
+			marker_text = "JUSTICE"
 	_sign(root, marker_text, Vector3(0, 2.2, 0), marker_material)
 	_name(root, label, Vector3(0, 3.35, 0))
 

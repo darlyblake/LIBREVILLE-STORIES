@@ -46,7 +46,7 @@ L'artefact géographique produit par l'extraction Geofabrik/OSM contient **3 302
 
 Après application du rayon actuel du générateur (2 600 m autour du centre de la carte, 0,400° N / 9,4475° E), le contrôle spatial des géométries POI trouve **63 candidats scolaires** et **26 candidats d'hébergement**. Ce sont des objets OSM, pas 89 bâtiments reconstruits à l'échelle réelle : certains POI sont des points sans empreinte bâtie, certains noms sont absents, et plusieurs établissements peuvent avoir plusieurs objets OSM.
 
-Le générateur limite toujours l'ensemble des équipements à 100 sites pour préserver les performances. Depuis le commit de priorité, les catégories « school » et « hotel » sont triées avant les autres équipements ; les plus proches du centre sont retenus en premier dans chaque catégorie. Le nombre réellement instancié peut donc être inférieur aux candidats si des objets sont trop proches (déduplication de 18 m) ou si la géométrie est invalide.
+Le générateur ne fixe aucun plafond global d’établissements. Les catégories scolaires, universitaires, hôtelières, sanitaires et administratives sont traitées en priorité, sans supprimer les autres POI admissibles. La déduplication de 18 m évite les doublons proches de même catégorie.
 
 **Source de données :** extraction OpenStreetMap / Geofabrik du 26-11-2026, licence ODbL 1.0. Attribution : © OpenStreetMap contributors. Les fichiers GeoJSON complets sont conservés dans l'artefact GitHub Actions « libreville-osm-extended » du dépôt.
 
@@ -125,6 +125,20 @@ Le script `game/scripts/facility_generator.gd` reconnaît désormais les écoles
 - écoles : volume bas/étendu, entrée et signalétique scolaire ;
 - hôtels : volume plus vertical, bandeau de toiture, entrée couverte et vitrage.
 
-Le placement dépend du POI OSM et de la hauteur terrain. Les écoles et hôtels passent désormais en priorité dans la limite de 100 équipements, puis les autres services sont ajoutés avec les places restantes. Les dimensions générées sont des dimensions de représentation provisoire, pas les dimensions réelles des bâtiments. Les établissements non présents dans la couche OSM locale ne sont pas artificiellement créés.
+Le placement dépend du POI OSM et de la hauteur terrain. Les écoles, universités, hôtels, hôpitaux, cliniques et structures administratives sont traités en priorité, sans plafond global. Les dimensions générées sont des dimensions de représentation provisoire, pas les dimensions réelles des bâtiments. Les établissements non présents dans la couche OSM locale ne sont pas artificiellement créés.
 
 **Contrôle à effectuer dans la prochaine validation Godot :** vérifier le nombre d'écoles et d'hôtels effectivement détectés dans les données extraites, puis corriger les objets OSM manquants ou mal classés avant de détailler chaque façade.
+
+
+## 6. Structures administratives — références architecturales
+
+Les photographies consultées servent de références de silhouette, de matériaux et de composition ; elles ne sont pas copiées comme textures dans le jeu :
+
+- **Hôtel de Ville de Libreville** : façade largement vitrée, trame verticale régulière, bandeaux rouges au rez-de-chaussée et à l’attique, entrée et parvis planté. Photo : https://static.africa-press.net/gabon/sites/54/2022/10/postQueueImg_38.jpg
+- **Ministère de l’Économie et des Finances** : bâtiment à plusieurs niveaux, pilastres verticaux clairs, panneaux brun-ocre, fenêtres en trame et galerie d’arches au rez-de-chaussée. Photo : https://www.union.sonapresse.com/sites/default/files/articles/Ministere-economie-Gabon-LUnion.webp
+- **Palais présidentiel** : grand volume institutionnel clair, trame de fenêtres régulière, clôture et portail de sécurité, palmiers et espaces plantés. Photos : https://www.petitfute.com/medias/photo/835/0d/ba/291789-libreville-palais-presidentiel-libreville.jpg et https://i.f1g.fr/media/cms/1200x630_crop/2024/03/10/a097f199dcf39d583cfbbc3475ee65d911cbeea76d3f753c9d5266e1f674eea8.jpg
+- **Annexe de l’Assemblée nationale** : volume contemporain en ailes, façade vitrée, entrée couverte et parvis paysager. Photo : https://prod.cdn-medias.jeuneafrique.com/cdn-cgi/image/q%3Dauto%2Cf%3Dauto%2Cmetadata%3Dnone%2Cwidth%3D1215%2Cfit%3Dcover/https%3A/prod.cdn-medias.jeuneafrique.com/medias/2014/01/08/Gabon_Assemblee_nationale_cBrunoBenMoubamba_Flickr.jpg
+
+Les bâtiments dont les tags et noms OSM identifient une mairie, un ministère, un palais présidentiel, une juridiction ou une ambassade reçoivent désormais un profil de façade distinctif. Les coordonnées et empreintes restent celles d’OSM ; les détails ajoutés sont une interprétation visuelle, pas un relevé architectural certifié. Les bâtiments non identifiés avec certitude conservent leur style OSM/générique.
+
+Le Palais des Congrès Omar Bongo Ondimba a été inauguré le 3 mai 2026 et se trouve à la Cité de la Démocratie. Son site officiel décrit un complexe de 430 hectares. Il reste à contrôler contre les limites de l’emprise jouable avant toute intégration : https://www.palaiscongreslibreville.ga/fr/palais

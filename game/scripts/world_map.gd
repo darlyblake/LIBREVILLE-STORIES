@@ -4509,6 +4509,9 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
 		door_normal = Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_door(details, door_a, door_b, door_normal, base_y)
+	# Profil architectural des bâtiments administratifs documentés à Libreville.
+	if longest_edge_length >= 8.0 and not WorldMapBuildingStyleUtils.administrative_style(props).is_empty():
+		_add_administrative_facade_details(details, door_a, door_b, door_normal, base_y, height, props)
 	# Marquise de boutique : auvent discret au-dessus des commerces donnant sur rue.
 	if longest_edge_length >= 3.6 and height >= 2.8 and (building_kind in ["commercial", "retail", "supermarket"] or props.has("shop")):
 		_add_shopfront_awning(details, door_a, door_b, door_normal, base_y, height, osm_id)
@@ -4528,6 +4531,63 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 	# discret, cohérent avec les installations domestiques de Libreville.
 	if not pitched_roof and building_kind in ["house", "residential", "detached", "semidetached_house", "bungalow", "apartments"] and abs(osm_id) % 7 == 0:
 		_add_rooftop_water_tank(details, points, height, base_y)
+
+
+func _add_administrative_facade_details(surface: SurfaceTool, a: Vector2, b: Vector2,
+		normal: Vector3, base_y: float, height: float, props: Dictionary) -> void:
+	# Détails posés sur la façade principale OSM ; l’empreinte cadastrale reste inchangée.
+	var style := WorldMapBuildingStyleUtils.administrative_style(props)
+	var edge := b - a
+	var edge_length := edge.length()
+	if edge_length < 8.0:
+		return
+	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
+	var origin := Vector3(a.x, base_y, a.y)
+	var offset := normal * 0.065
+	if style == "town_hall":
+		# Hôtel de Ville : façade vitrée rythmée et bandeaux rouges caractéristiques.
+		surface.set_color(Color(0.43, 0.19, 0.20))
+		for y in [0.75, maxf(1.0, height - 0.65)]:
+			_add_quad(surface, origin + Vector3.UP * y + offset,
+				origin + tangent * edge_length + Vector3.UP * y + offset,
+				origin + tangent * edge_length + Vector3.UP * (y + 0.28) + offset,
+				origin + Vector3.UP * (y + 0.28) + offset)
+		surface.set_color(Color(0.55, 0.57, 0.56))
+		var mullion_count := clampi(int(edge_length / 2.6), 3, 18)
+		for index in range(1, mullion_count):
+			var point := origin + tangent * (edge_length * float(index) / float(mullion_count)) + offset
+			var top := point + Vector3.UP * maxf(1.0, height - 1.0)
+			_add_quad(surface, point, point + tangent * 0.10, top + tangent * 0.10, top)
+	elif style in ["ministry", "court", "presidential"]:
+		# Ministères et institutions : pilastres clairs et bandeaux horizontaux.
+		var column_color := Color(0.91, 0.89, 0.82) if style != "presidential" else Color(0.88, 0.84, 0.73)
+		surface.set_color(column_color)
+		var columns := clampi(int(edge_length / 4.2), 2, 14)
+		for index in range(columns + 1):
+			var distance := edge_length * float(index) / float(columns)
+			var point := origin + tangent * distance + offset
+			var half_width := 0.16 if style == "presidential" else 0.22
+			_add_quad(surface, point - tangent * half_width,
+				point + tangent * half_width,
+				point + tangent * half_width + Vector3.UP * height,
+				point - tangent * half_width + Vector3.UP * height)
+		for floor_index in range(1, int(floor(height / 3.2))):
+			var y := float(floor_index) * 3.2
+			_add_quad(surface, origin + Vector3.UP * y + offset,
+				origin + tangent * edge_length + Vector3.UP * y + offset,
+				origin + tangent * edge_length + Vector3.UP * (y + 0.12) + offset,
+				origin + Vector3.UP * (y + 0.12) + offset)
+	elif style == "embassy":
+		# Encadrement sobre de l’entrée des représentations diplomatiques.
+		surface.set_color(Color(0.90, 0.87, 0.79))
+		var portal_width := minf(4.0, edge_length * 0.28)
+		var center := origin + tangent * (edge_length * 0.5) + offset
+		for side in [-1.0, 1.0]:
+			var point := center + tangent * side * portal_width * 0.5
+			var portal_height := minf(3.8, height)
+			_add_quad(surface, point - tangent * 0.12, point + tangent * 0.12,
+				point + tangent * 0.12 + Vector3.UP * portal_height,
+				point - tangent * 0.12 + Vector3.UP * portal_height)
 
 
 func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, base_y: float = 0.0, props: Dictionary = {}) -> bool:

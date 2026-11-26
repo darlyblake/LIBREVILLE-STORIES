@@ -23,6 +23,12 @@ static func building_color(kind: String, osm_id: int, props: Dictionary = {}) ->
 		Color(0.84, 0.80, 0.72)   # ivoire
 	]
 	var selected := palette[abs(osm_id) % palette.size()]
+	match administrative_style(props):
+		"town_hall": selected = Color(0.72, 0.70, 0.66)
+		"ministry": selected = Color(0.84, 0.82, 0.76)
+		"presidential": selected = Color(0.82, 0.78, 0.67)
+		"court": selected = Color(0.80, 0.79, 0.73)
+		"embassy": selected = Color(0.86, 0.83, 0.76)
 	if kind in ["industrial", "warehouse"]:
 		selected = Color(0.58, 0.61, 0.59) if abs(osm_id) % 3 == 0 else Color(0.67, 0.67, 0.62)
 	elif kind in ["commercial", "retail", "supermarket", "office"]:
@@ -53,6 +59,28 @@ static func building_color(kind: String, osm_id: int, props: Dictionary = {}) ->
 		clampf(selected.b * material_tint.b, 0.0, 1.0),
 		selected.a
 	)
+
+
+static func administrative_style(props: Dictionary) -> String:
+	# Profil architectural fondé sur les tags OSM et les noms d’institutions.
+	var name := str(props.get("name", props.get("name:fr", ""))).to_lower()
+	name = name.replace("é", "e").replace("è", "e").replace("ê", "e").replace("ô", "o").replace("à", "a")
+	var amenity := str(props.get("amenity", "")).to_lower()
+	var office := str(props.get("office", "")).to_lower()
+	var building := str(props.get("building", "")).to_lower()
+	if amenity == "townhall" or building == "townhall" or name.contains("mairie") or name.contains("hotel de ville"):
+		return "town_hall"
+	if name.contains("presidence") or name.contains("palais presidentiel") or name.contains("palais de la renovation"):
+		return "presidential"
+	if name.contains("ministere") or name.contains("ministerial"):
+		return "ministry"
+	if name.contains("cour constitutionnelle") or name.contains("cour supreme") or name.contains("tribunal") or name.contains("justice"):
+		return "court"
+	if office == "diplomatic" or name.contains("ambassade") or name.contains("consulat"):
+		return "embassy"
+	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government":
+		return "public_office"
+	return ""
 
 
 static func should_use_pitched_roof(kind: String, props: Dictionary, point_count: int) -> bool:
@@ -136,6 +164,15 @@ static func building_height(kind: String, osm_id: int, props: Dictionary) -> flo
 	var levels := str(props.get("building:levels", "")).to_int()
 	if levels > 0 and levels <= 40:
 		return clampf(float(levels) * 3.15, 3.0, 120.0)
+	var admin_style := administrative_style(props)
+	if admin_style == "presidential":
+		return 18.0
+	if admin_style == "ministry" or admin_style == "court":
+		return 17.0
+	if admin_style == "town_hall":
+		return 12.0
+	if admin_style == "embassy":
+		return 9.0
 	# Hauteurs différenciées inspirées de Libreville :
 	# cathédrale, bâtiments admin (Bd Triomphal), immeubles, maisons populaires.
 	match kind:
