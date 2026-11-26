@@ -140,6 +140,9 @@ func _build_facilities() -> void:
 	var has_treasury_site := false
 	var has_cima_site := false
 	var has_presidential_palace_site := false
+	var has_labour_ministry_site := false
+	var has_planning_ministry_site := false
+	var has_ceeac_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -184,6 +187,12 @@ func _build_facilities() -> void:
 			has_cima_site = true
 		if poi_osm_id == 168587922 or poi_name.contains("palais presidentiel") or poi_name.contains("palais du bord de mer"):
 			has_presidential_palace_site = true
+		if poi_osm_id == 4686643890 or poi_name.contains("ministere du travail"):
+			has_labour_ministry_site = true
+		if poi_osm_id == 1243106067 or poi_name.contains("ministere de la planification"):
+			has_planning_ministry_site = true
+		if poi_osm_id == 424241587 or poi_name.contains("ceeac"):
+			has_ceeac_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -413,6 +422,45 @@ func _build_facilities() -> void:
 			"id": 168587922,
 			"lat": 0.39237,
 			"lon": 9.44235,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère du Travail et de la Formation professionnelle, point OSM node 4686643890.
+	# Coordonnées cartographiques vérifiées dans l'emprise jouable ; repère seulement.
+	if not has_labour_ministry_site:
+		entries.append({
+			"kind": "ministry",
+			"label": "Ministère du Travail et de la Formation professionnelle",
+			"pos": _geo([9.44887, 0.42757]),
+			"id": 4686643890,
+			"lat": 0.42757,
+			"lon": 9.44887,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère de la Planification et de la Prospective, OSM way 1243106067.
+	# Le bâtiment réel reste issu de buildings.geojson ; aucun volume de secours.
+	if not has_planning_ministry_site:
+		entries.append({
+			"kind": "ministry",
+			"label": "Ministère de la Planification et de la Prospective",
+			"pos": _geo([9.42566, 0.4226]),
+			"id": 1243106067,
+			"lat": 0.4226,
+			"lon": 9.42566,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# CEEAC, Haut de Gué-Gué, OSM way 424241587 ; point dans la zone validée.
+	# Repère de site uniquement, le bâtiment physique provient de buildings.geojson.
+	if not has_ceeac_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Communauté Économique des États de l’Afrique Centrale (CEEAC)",
+			"pos": _geo([9.43105, 0.42858]),
+			"id": 424241587,
+			"lat": 0.42858,
+			"lon": 9.43105,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -728,6 +776,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			if label.to_lower().contains("palais presidentiel") or label.to_lower().contains("palais du bord de mer"):
 				marker_text = "PRÉSIDENCE"
 				marker_material = school_accent
+			if label.to_lower().contains("ceeac"):
+				marker_text = "CEEAC"
+				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
 		"ministry":
@@ -752,6 +803,12 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("eaux") and label.to_lower().contains("foret"):
 				marker_text = "EAUX & FORÊTS"
+				marker_material = school_accent
+			if label.to_lower().contains("travail"):
+				marker_text = "TRAVAIL"
+				marker_material = school_accent
+			if label.to_lower().contains("planification"):
+				marker_text = "PLANIFICATION"
 				marker_material = school_accent
 		"embassy":
 			marker_text = "AMBASSADE"
