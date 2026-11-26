@@ -56,7 +56,7 @@
     {
       "row": 2,
       "column": 3,
-      "elements": 13422,
+      "elements": 13421,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
@@ -77,7 +77,7 @@
     {
       "row": 3,
       "column": 2,
-      "elements": 9619,
+      "elements": 9620,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
@@ -124,7 +124,7 @@
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     }
   ],
-  "extracted_at_utc": "2026-11-19T13:06:49.893926+00:00",
+  "extracted_at_utc": "2026-11-26T09:38:10.848501+00:00",
   "files": {
     "localities.geojson": {
       "features": 107,
@@ -136,7 +136,7 @@
         "quarter": 17
       },
       "note": "Noms OSM ponctuels de localités/quartiers; aucun contour géographique n'est déduit.",
-      "size_bytes": 25097
+      "size_bytes": 25098
     },
     "neighbourhoods.geojson": {
       "features": 1,
@@ -153,12 +153,23 @@
         "vegetation": 139,
         "natural_surface": 5
       },
-      "size_bytes": 341448
+      "size_bytes": 341447
+    },
+    "bridges.geojson": {
+      "features": 103,
+      "categories": {
+        "viaduct": 32,
+        "yes": 69,
+        "boardwalk": 1,
+        "aqueduct": 1
+      },
+      "note": "Ways OSM explicitement balisés bridge=* ou man_made=bridge. Tracés uniquement ; aucune hauteur ou géométrie 3D n'est inférée.",
+      "size_bytes": 41213
     },
     "pois.geojson": {
-      "features": 3276,
+      "features": 3302,
       "categories": {
-        "other": 1334,
+        "other": 1358,
         "car_repair": 26,
         "hotel": 53,
         "restaurant": 164,
@@ -167,7 +178,7 @@
         "mall": 2,
         "police": 17,
         "hostel": 3,
-        "school": 172,
+        "school": 173,
         "sports_centre": 7,
         "post_office": 8,
         "nightclub": 28,
@@ -267,7 +278,7 @@
         "waste_basket": 4,
         "taxi": 17,
         "gas": 2,
-        "marketplace": 15,
+        "marketplace": 16,
         "social_facility": 2,
         "vehicle_inspection": 6,
         "community_centre": 8,
@@ -325,23 +336,23 @@
         "conference_centre": 1,
         "prep_school": 1
       },
-      "size_bytes": 1356466
+      "size_bytes": 1367715
     },
     "roads.geojson": {
-      "features": 8323,
+      "features": 8327,
       "categories": {
         "trunk": 105,
-        "service": 2261,
+        "service": 2265,
         "trunk_link": 132,
         "primary": 194,
-        "secondary": 400,
-        "residential": 4031,
-        "tertiary": 299,
-        "primary_link": 156,
-        "secondary_link": 112,
+        "secondary": 392,
+        "residential": 4030,
+        "tertiary": 305,
+        "primary_link": 158,
+        "secondary_link": 111,
         "unclassified": 137,
-        "tertiary_link": 99,
-        "footway": 233,
+        "tertiary_link": 100,
+        "footway": 234,
         "track": 41,
         "construction": 30,
         "path": 79,
@@ -349,17 +360,17 @@
         "pedestrian": 4,
         "raceway": 1
       },
-      "size_bytes": 3769445
+      "size_bytes": 3779883
     },
     "buildings.geojson": {
-      "features": 113421,
+      "features": 113417,
       "categories": {
-        "yes": 109041,
-        "roof": 111,
+        "yes": 109034,
+        "roof": 112,
         "gym": 1,
         "retail": 233,
         "cathedral": 3,
-        "school": 325,
+        "school": 327,
         "house": 2059,
         "public": 22,
         "office": 151,
@@ -373,11 +384,11 @@
         "chapel": 2,
         "detached": 60,
         "residential": 335,
-        "college": 73,
+        "college": 72,
         "bank": 7,
         "dormitory": 6,
         "university": 15,
-        "hospital": 32,
+        "hospital": 33,
         "construction": 104,
         "hotel": 52,
         "government": 9,
@@ -414,7 +425,7 @@
         "toitq": 1,
         "place_of_worship": 1
       },
-      "size_bytes": 33226403
+      "size_bytes": 33225627
     }
   }
 }
