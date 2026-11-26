@@ -79,6 +79,17 @@
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré. La Mairie de Nzeng-Ayong est également identifiée par Mapcarta comme la Mairie du 6e arrondissement. Le point OSM précédemment utilisé pour la Mairie du 2e arrondissement (avenue Jean-Paul II) est obsolète : la mairie a été délocalisée en 2024 dans un immeuble derrière le ministère des Eaux et Forêts ; le nouveau bâtiment n'a pas encore de GPS validé. L'Hôtel de Ville central est annoncé boulevard Omar Bongo Ondimba, mais son annuaire ne donne qu'un plus code CC6V+6Q2, insuffisant pour intégrer un GPS exact.
 
+## 3 bis. Pôle CHU — bâtiments et équipements voisins identifiés
+
+| Site | Référence OSM | GPS | Statut dans le projet |
+|---|---|---|---|
+| Centre Hospitalier Universitaire de Libreville (CHUL) | way 410356077 | 0.39200, 9.44797 | [x] point cartographique vérifié ; [ ] repère de jeu ; [ ] modèle 3D dédié |
+| Agence SEEG-Centrale — 268 avenue Félix Éboué | way 456784178 | 0.39215, 9.44662 | [x] bâtiment OSM vérifié ; [ ] repère de jeu dédié |
+| Institut National de Formation d’Action Sanitaire et Sociale (INFASS) — 339 rue Fall Ndiaye Azizet | node 12429309200 | 0.39321, 9.44818 | [x] point OSM vérifié ; [ ] repère de jeu |
+| Mémorial du Président Léon Mba — 151 avenue Félix Éboué | way 455714475 | 0.39106, 9.44574 | [x] bâtiment OSM vérifié ; [ ] repère de jeu |
+
+**Lecture du secteur :** l'Agence SEEG-Centrale (268 avenue Félix Éboué) et le siège social de la SEEG (346 avenue Félix Éboué, déjà suivi séparément) sont deux sites différents. Le CHUL est un complexe hospitalier, tandis que l'INFASS est un établissement de formation situé à environ 140 m au nord du CHUL. L'État-major régional CEEAC et le ministère de l'Intérieur sont également signalés à proximité, mais leurs empreintes et points propres doivent être vérifiés avant d'ajouter de nouveaux marqueurs. Ne pas confondre le ministère de l'Intérieur situé près du CHUL avec le point précédemment intégré avenue de Cointet sans contrôle de l'identité du bâtiment.
+
 ## 4. Administrations en recherche — ne pas placer avant validation GPS
 
 | Bâtiment / site | Informations connues | GPS exact dans la zone | Intégration |
@@ -223,3 +234,5 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : extension de la zone du boulevard Triomphal : ajout du Ministère du Pétrole — OSM node 11505339840, GPS 0.40778 / 9.44131 — et du Ministère de l’Économie et des Finances — OSM node 11505197345, GPS 0.40803 / 9.43928, dans l’Immeuble Arambo. Pour les Finances, le point est un repère institutionnel dans un bâtiment déjà cartographié ; aucune seconde géométrie physique n’est créée. Sources cartographiques : Mapcarta / OpenStreetMap ; adresses du secteur recoupées avec les annuaires institutionnels.
 
 - 2026-11-26 : complément ciblé Présidence–Primature–boulevard Triomphal : adresse actuelle de la Primature confirmée à l’Immeuble du 2 Décembre, avenue Jean-Paul II (site officiel primature.gouv.ga/nous-contacter et avis APDPVP 2024). La Tour ANINF est confirmée au boulevard Triomphal Omar Bongo (site officiel aninf.ga/contact et ministère de l’Économie numérique) ; le point OSM exact du bâtiment doit encore être extrait, donc aucun GPS n’est ajouté. Le ministère de la Défense possède plusieurs implantations : siège rue du Gouverneur Balley, secrétariat général dans la Cité administrative de la Présidence, Garde républicaine dans l’enceinte présidentielle, états-majors et unités à d’autres adresses ; ne pas fusionner toutes ces implantations en un seul bâtiment. Sources : Primature, APDPVP, ANINF, ministère de la Défense, Go Africa Online.
+
+- 2026-11-26 : cartographie détaillée du pôle CHUL / avenue Félix Éboué. Validation des références OSM : CHUL way 410356077 (0.39200, 9.44797) ; Agence SEEG-Centrale way 456784178 (0.39215, 9.44662), 268 avenue Félix Éboué ; INFASS node 12429309200 (0.39321, 9.44818), 339 rue Fall Ndiaye Azizet ; Mémorial du Président Léon Mba way 455714475 (0.39106, 9.44574), 151 avenue Félix Éboué. Les coordonnées sont celles des objets cartographiques, pas des points d'entrée. Distinction maintenue avec le siège social SEEG, way 456742208, 346 avenue Félix Éboué (0.39300, 9.44671), déjà suivi. Aucune nouvelle géométrie 3D ni texture créée dans cette passe. Sources Mapcarta / OpenStreetMap.
