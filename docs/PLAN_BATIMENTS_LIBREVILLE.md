@@ -42,6 +42,8 @@
 | Direction Générale de la Comptabilité Publique et du Trésor (DGCPT) — 321 avenue Rose Francine Rogombe | [x] | [x] | [ ] | [ ] | [ ] |
 | Conférence Interafricaine des Marchés d’Assurances (CIMA) — centre-ville | [x] | [x] | [ ] | [ ] | [ ] |
 | Palais présidentiel du Bord de mer — boulevard de l’Indépendance | [x] | [x] | [ ] | [ ] | [ ] |
+| Agence Nationale des Parcs Nationaux (ANPN) — Rue Bana Ba Kengue | [x] | [x] | [ ] | [ ] | [ ] |
+| AGATOUR — Agence Gabonaise de Développement et de Promotion du Tourisme — Impasse Père Peterse, Batterie IV | [x] | [x] | [ ] | [ ] | [ ] |
 | Direction Nationale des Assurances — Rond-Point de la Démocratie | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère du Travail et de la Formation professionnelle | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de la Planification et de la Prospective | [x] | [x] | [ ] | [ ] | [ ] |
@@ -151,6 +153,9 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
 
 ## 7. Historique
+
+- 2026-11-26 : ajout de l’Agence Nationale des Parcs Nationaux (ANPN), OSM node 12149539808, GPS 0.42843 / 9.42760, Rue Bana Ba Kengue ; siège indiqué par Mapcarta/OSM et adresse corroborée par l’annuaire Go Africa. Repère institutionnel sans empreinte propre, volume physique depuis buildings.geojson.
+- 2026-11-26 : ajout d’AGATOUR, Agence Gabonaise de Développement et de Promotion du Tourisme et de l’Hôtellerie, OSM node 12317977790, GPS 0.41896 / 9.42793, Impasse Père Peterse, Batterie IV. Ce point correspond au bureau gouvernemental de l’agence et non au point d’information touristique distinct situé avenue du Colonel Parant. Repère sans empreinte propre, volume physique depuis buildings.geojson.
 
 - 2026-11-26 : ajout de la Direction Nationale des Assurances — OSM node 6144764686, GPS 0.42738 / 9.44884, Rond-Point de la Démocratie ; point Mapcarta/OSM vérifié et situé dans l’emprise stricte. Repère institutionnel seul, sans empreinte propre ; bâtiment physique depuis buildings.geojson. Source : Mapcarta / OpenStreetMap.
 
