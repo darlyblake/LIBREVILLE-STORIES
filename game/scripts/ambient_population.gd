@@ -348,6 +348,17 @@ func _advance_actor(actor: Dictionary, delta: float, is_pedestrian: bool) -> voi
 	var current_direction: Vector3 = current_sample["direction"]
 	var cruise_speed := float(actor.get("cruise_speed", actor["speed"]))
 	var desired_speed := cruise_speed
+	var clock := get_node_or_null("/root/WorldClock")
+	if clock != null:
+		var game_hour := int(clock.hour)
+		if is_pedestrian:
+			if game_hour < 6 or game_hour >= 21:
+				desired_speed *= 0.35
+			elif game_hour < 7 or game_hour >= 19:
+				desired_speed *= 0.70
+		else:
+			if game_hour < 5 or game_hour >= 23:
+				desired_speed *= 0.60
 	if not is_pedestrian and is_instance_valid(_traffic_signs):
 		if _traffic_signs.has_method("is_red_for_vehicle") and bool(_traffic_signs.call("is_red_for_vehicle", current_position, current_direction)):
 			desired_speed = 0.0
