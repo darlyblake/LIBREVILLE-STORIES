@@ -4532,8 +4532,9 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 
 func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, base_y: float = 0.0) -> bool:
 	# La géométrie pure est calculée hors de WorldMap ; l'émission reste ici.
-	var triangles := WorldMapGeometryUtils.pitched_roof_triangles(points, wall_height, base_y)
-	if triangles.size() != 18:
+	var roof_shape := str(WorldMapBuildingStyleUtils.roof_shape(props))
+	var triangles := WorldMapGeometryUtils.pitched_roof_triangles(points, wall_height, base_y, roof_shape)
+	if triangles.size() < 3 or triangles.size() % 3 != 0:
 		return false
 	for i in range(0, triangles.size(), 3):
 		_add_roof_uv_triangle(surface, triangles[i], triangles[i + 1], triangles[i + 2], style)
