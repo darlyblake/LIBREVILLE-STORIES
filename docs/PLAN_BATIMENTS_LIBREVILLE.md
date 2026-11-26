@@ -151,6 +151,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 
 ## 7. Historique
 
+- 2026-11-26 : contrôle complémentaire des implantations : CAISTAB est confirmée à l’Immeuble Gabon 2000, quartier Glass (Go Africa, Filao et site CAISTAB) ; la DGE est indiquée aux feux tricolores de Glass, face à la Pharmacie de Glass (Go Africa) ; le CEPIG est indiqué à l’Immeuble Nostalgie, rue du Cabinet Berthonneau (Go Africa) ; le CICIBA est signalé à Cité-Damas, voie express avant la montée du carrefour Awendjé (Go Africa, annuaire du ministère des Affaires étrangères) ; l’ONPDF est localisé dans le secteur du Lycée d’État, avant l’échangeur (Filao et annuaire diplomatique). Ces adresses sont des repères textuels, pas des coordonnées GPS : aucune entrée n’est ajoutée au générateur tant qu’un point OSM exact dans l’emprise 0.355–0.445 / 9.400–9.495 n’est pas vérifié. Sources : Go Africa (CAISTAB, DGE, CEPIG, CICIBA), Filao (ONPDF), ministère des Affaires étrangères (CICIBA).
+
 - 2026-11-26 : création du document de suivi initial.
 - 2026-11-26 : inventaire des administrations déjà repérées dans `facility_generator.gd`.
 - 2026-11-26 : ajout du repère du Ministère de l’Éducation nationale — OSM way 410354024, GPS 0.39396 / 9.44551.
