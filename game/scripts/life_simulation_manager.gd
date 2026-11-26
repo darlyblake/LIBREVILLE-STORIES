@@ -8,7 +8,7 @@ signal crowd_level_changed(location_type: String, multiplier: float)
 const CONFIG_PATH := "res://data/simulation/life_profiles.json"
 const STANDARD_WORK_JOBS := ["fonctionnaire", "enseignant", "employé", "artisan", "commerçant"]
 const SHIFT_WORK_JOBS := ["chauffeur", "agent de sécurité", "soignant"]
-const NON_WORK_JOBS := ["sans emploi", "retraité", "nourrisson", "petit enfant", "élève", "décédé"]
+const NON_WORK_JOBS := ["sans emploi", "retraité", "nourrisson", "petit enfant", "élève", "étudiant", "décédé"]
 
 var _config: Dictionary = {}
 var _runtime: Dictionary = {}
