@@ -149,6 +149,7 @@ func _build_facilities() -> void:
 	var has_dgel_site := false
 	var has_cnee_site := false
 	var has_cnd_site := false
+	var has_transport_ministry_site := false
 	var has_anpn_site := false
 	var has_agatour_site := false
 	var has_direction_nationale_assurances_site := false
@@ -238,6 +239,8 @@ func _build_facilities() -> void:
 			has_anpn_site = true
 		if poi_osm_id == 12317977790 or poi_name == "agatour" or poi_name.contains("agence gabonaise de developpement et de promotion du tourisme"):
 			has_agatour_site = true
+		if poi_osm_id == 249526244 or poi_name.contains("ministere des transports") or poi_name.contains("ministere de la marine marchande"):
+			has_transport_ministry_site = true
 		if poi_name.contains("palais leon mba") or poi_name.contains("assemblee nationale"):
 			has_assembly_site = true
 		if poi_osm_id == 12727052424 or poi_name.contains("direction generale des douanes") or poi_name.contains("douanes et droits indirects"):
@@ -621,6 +624,20 @@ func _build_facilities() -> void:
 			"id": 11529395192,
 			"lat": 0.41810,
 			"lon": 9.45075,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère des Transports, Marine marchande et Logistique : siège au 3e étage de l’Immeuble Arambo.
+	# Le point reprend le centroïde OSM vérifié du bâtiment public Arambo (way 249526244).
+	# Repère marker-only ; l’empreinte du bâtiment est conservée depuis buildings.geojson.
+	if not has_transport_ministry_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Ministère des Transports, de la Marine marchande et de la Logistique",
+			"pos": _geo([9.43928, 0.40802]),
+			"id": 249526244,
+			"lat": 0.40802,
+			"lon": 9.43928,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
