@@ -138,6 +138,7 @@ func _build_facilities() -> void:
 	var has_education_ministry_site := false
 	var has_aninf_site := false
 	var has_treasury_site := false
+	var has_cima_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -178,6 +179,8 @@ func _build_facilities() -> void:
 			has_aninf_site = true
 		if poi_osm_id == 455714429 or poi_name.contains("direction generale de la comptabilite publique") or poi_name.contains("dgcpt"):
 			has_treasury_site = true
+		if poi_osm_id == 455714470 or poi_name.contains("conference interafricaine des marches d assurances") or poi_name.contains("cima"):
+			has_cima_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -377,6 +380,21 @@ func _build_facilities() -> void:
 			"id": 455714429,
 			"lat": 0.39216,
 			"lon": 9.44461,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Conférence Interafricaine des Marchés d’Assurances (CIMA), centre-ville.
+	# OSM way 455714470 ; centroïde cartographique dans l’emprise validée.
+	# Repère uniquement : le bâtiment physique provient de buildings.geojson.
+	if not has_cima_site:
+		var cima_position := _geo([9.44528, 0.3904])
+		entries.append({
+			"kind": "admin",
+			"label": "Conférence Interafricaine des Marchés d’Assurances (CIMA)",
+			"pos": cima_position,
+			"id": 455714470,
+			"lat": 0.3904,
+			"lon": 9.44528,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -685,6 +703,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("senat") or label.to_lower().contains("omar bongo"):
 				marker_text = "SÉNAT"
+				marker_material = school_accent
+			if label.to_lower().contains("cima") or label.to_lower().contains("marches d’assurances") or label.to_lower().contains("marchés d’assurances"):
+				marker_text = "CIMA"
 				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
