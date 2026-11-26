@@ -1,7 +1,7 @@
 # Inventaire SIG des structures administratives dans l’emprise jouable
 
 **Périmètre de contrôle :** latitude 0,355 à 0,445 ; longitude 9,400 à 9,495.  
-**Source :** couche locale `data/osm/pois.geojson` du dépôt LIBREVILLE-STORIES (points OSM).  
+**Source de cet inventaire :** couche de base `data/osm/pois.geojson` du dépôt LIBREVILLE-STORIES (points OSM). Le jeu utilise en priorité `data/osm/extended/pois.geojson` lorsqu’elle est disponible ; les décomptes de cette liste ne sont donc pas le nombre exact de points chargés en jeu.  
 **Règle :** seuls les objets ponctuels `office=government`, `office=diplomatic` ou `amenity=townhall` situés dans les limites ci-dessus sont listés. L’entrée mal catégorisée « Agences immobilières » a été écartée.
 
 > Cet inventaire recense des points OSM, pas un nombre de bâtiments physiques. Des points peuvent représenter plusieurs services dans une même emprise, être des doublons ou être positionnés à l’entrée plutôt qu’au centre du bâtiment. Les empreintes bâties doivent être associées par proximité/contiguïté et contrôlées visuellement avant toute reproduction architecturale.
@@ -170,7 +170,7 @@
 
 ## Repère institutionnel complémentaire : Palais des Congrès Omar Bongo Ondimba
 
-Le point OSM `1435653903` (`amenity=conference_centre`) est situé à **0,433619 N ; 9,453334 E**, donc à l’intérieur de l’emprise jouable. Il est suivi séparément des 118 points administratifs ci-dessus, car un centre de congrès est un équipement public et diplomatique, pas un bureau administratif.
+Le point OSM `1435653903` (`amenity=conference_centre`) est situé à **0,433619 N ; 9,453334 E**, donc à l’intérieur de l’emprise jouable. Il est suivi séparément des 118 points administratifs ci-dessus, car un centre de congrès est un équipement public et diplomatique, pas un bureau administratif. Le chargement en jeu prend désormais également en compte les tags `office=administrative`, `amenity=government` et les valeurs pertinentes de `government` ; le total chargé peut donc différer de cet inventaire de base.
 
 L’objet `way/1435653903` est également présent dans `buildings.geojson`, avec le même identifiant OSM et le nom du Palais. Son contour comporte 8 sommets distincts ; l’emprise WGS84 donne environ **134 × 130 m** et une aire polygonale calculée d’environ **9 167 m²**. Ce calcul est une mesure cartographique approximative (projection locale), pas une mesure cadastrale. Le point de repère et le centroïde de l’empreinte sont distants d’environ 2,6 m.
 

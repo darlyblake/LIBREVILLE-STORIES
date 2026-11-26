@@ -3990,9 +3990,15 @@ func _load_administrative_sites() -> Dictionary:
 		var props: Dictionary = feature.get("properties", {})
 		var office := str(props.get("office", "")).to_lower()
 		var amenity := str(props.get("amenity", "")).to_lower()
-		if office not in ["government", "diplomatic"] and amenity not in ["townhall", "conference_centre"]:
+		var government := str(props.get("government", "")).to_lower()
+		var is_administrative := office in ["government", "administrative", "diplomatic"]
+		is_administrative = is_administrative or amenity in ["townhall", "government", "conference_centre"]
+		is_administrative = is_administrative or government in ["administrative", "government", "ministry", "parliament", "public_service"]
+		if not is_administrative:
 			continue
-		var site_name := str(props.get("name:fr", props.get("name", ""))).strip_edges()
+		var site_name := str(props.get("name:fr", "")).strip_edges()
+		if site_name.is_empty():
+			site_name = str(props.get("name", "")).strip_edges()
 		# Cette entrée est manifestement mal catégorisée dans OSM.
 		if site_name.to_lower() == "agences immobilières":
 			continue
@@ -4146,7 +4152,9 @@ func _load_buildings() -> void:
 			var render_props: Dictionary = props.duplicate()
 			var admin_site_props := _find_administrative_site_for_building(points, administrative_sites, osm_id)
 			if not admin_site_props.is_empty() and WorldMapBuildingStyleUtils.administrative_style(render_props).is_empty():
-				var admin_name := str(admin_site_props.get("name:fr", admin_site_props.get("name", ""))).strip_edges()
+				var admin_name := str(admin_site_props.get("name:fr", "")).strip_edges()
+				if admin_name.is_empty():
+					admin_name = str(admin_site_props.get("name", "")).strip_edges()
 				if not admin_name.is_empty():
 					render_props["name"] = admin_name
 				for tag in ["office", "government", "amenity"]:
