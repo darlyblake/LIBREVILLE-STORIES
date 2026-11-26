@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "description": "Catalogue initial de métiers et situations socio-professionnelles pour la population simulée de Libreville. Les professions et pondérations sont des données de gameplay à calibrer, pas une statistique officielle.",
+  "sectors": [
+    {
+      "id": "agriculture",
+      "label": "Agriculture et alimentation",
+      "occupations": [
+        "agriculteur",
+        "éleveur",
+        "pêcheur",
+        "maraîcher",
+        "vendeur de poisson"
+      ]
+    },
+    {
+      "id": "utilities",
+      "label": "Eau, énergie et télécommunications",
+      "occupations": [
+        "agent SEEG électricité",
+        "agent SEEG eau",
+        "technicien réseau électrique",
+        "monteur de poteaux électriques",
+        "technicien fibre optique",
+        "installateur télécom",
+        "plombier",
+        "agent maintenance éclairage public"
+      ]
+    },
+    {
+      "id": "sanitation",
+      "label": "Propreté et environnement",
+      "occupations": [
+        "éboueur",
+        "chauffeur camion poubelle",
+        "agent de nettoyage urbain",
+        "responsable collecte déchets",
+        "agent espaces verts"
+      ]
+    },
+    {
+      "id": "health",
+      "label": "Santé et secours",
+      "occupations": [
+        "médecin",
+        "infirmier",
+        "sage-femme",
+        "pharmacien",
+        "ambulancier",
+        "agent hospitalier",
+        "psychologue",
+        "travailleur social"
+      ]
+    },
+    {
+      "id": "education",
+      "label": "Éducation et recherche",
+      "occupations": [
+        "enseignant",
+        "éducateur",
+        "directeur école",
+        "professeur université",
+        "chercheur",
+        "bibliothécaire"
+      ]
+    },
+    {
+      "id": "transport",
+      "label": "Transport et logistique",
+      "occupations": [
+        "chauffeur taxi",
+        "chauffeur bus",
+        "chauffeur poids lourd",
+        "livreur",
+        "mécanicien automobile",
+        "conducteur engin",
+        "agent portuaire"
+      ]
+    },
+    {
+      "id": "construction",
+      "label": "Bâtiment et travaux publics",
+      "occupations": [
+        "maçon",
+        "menuisier",
+        "électricien bâtiment",
+        "carreleur",
+        "peintre bâtiment",
+        "architecte",
+        "ingénieur génie civil",
+        "chef chantier"
+      ]
+    },
+    {
+      "id": "commerce",
+      "label": "Commerce et restauration",
+      "occupations": [
+        "commerçant",
+        "vendeur marché",
+        "restaurateur",
+        "cuisinier",
+        "serveur",
+        "boulanger",
+        "boucher",
+        "gérant boutique",
+        "caissier"
+      ]
+    },
+    {
+      "id": "public",
+      "label": "Administration et sécurité publique",
+      "occupations": [
+        "fonctionnaire",
+        "agent municipal",
+        "policier",
+        "gendarme",
+        "pompier",
+        "agent pénitentiaire",
+        "magistrat",
+        "député",
+        "sénateur",
+        "ministre",
+        "président de la République"
+      ]
+    },
+    {
+      "id": "private",
+      "label": "Services et entreprises",
+      "occupations": [
+        "employé",
+        "secrétaire",
+        "comptable",
+        "informaticien",
+        "développeur",
+        "banquier",
+        "assureur",
+        "agent immobilier",
+        "avocat",
+        "journaliste",
+        "artiste",
+        "musicien",
+        "coiffeur",
+        "couturier",
+        "entrepreneur",
+        "chef entreprise",
+        "artisan"
+      ]
+    },
+    {
+      "id": "other",
+      "label": "Situations hors emploi",
+      "occupations": [
+        "sans emploi",
+        "retraité",
+        "élève",
+        "étudiant",
+        "nourrisson",
+        "petit enfant"
+      ]
+    }
+  ],
+  "social_profiles": [
+    {
+      "id": "precarite",
+      "label": "Précarité économique",
+      "description": "Ressources limitées, petits boulots, recherche d'emploi ou aide sociale",
+      "behaviors": [
+        "recherche_emploi",
+        "petit_boulot",
+        "demande_aide",
+        "repos_sur_espace_public"
+      ]
+    },
+    {
+      "id": "sans_domicile",
+      "label": "Sans domicile stable",
+      "description": "Parcours de vie individuel, lieux habituels et recherche d'abri",
+      "behaviors": [
+        "marche_sans_destination",
+        "repos_espace_public",
+        "recherche_abri",
+        "interaction_sociale"
+      ]
+    },
+    {
+      "id": "trouble_psychique",
+      "label": "Trouble psychique ou crise",
+      "description": "Profil sensible et individualisé ; ne présume ni violence ni dangerosité",
+      "behaviors": [
+        "parle_seul",
+        "gesticule",
+        "crie_parfois",
+        "marche_sans_but",
+        "se_repose",
+        "cherche_aide"
+      ]
+    },
+    {
+      "id": "dependance_alcool",
+      "label": "Dépendance ou consommation problématique d'alcool",
+      "description": "Peut affecter santé, relations, travail et conduite ; comportements non systématiques",
+      "behaviors": [
+        "consommation_alcool",
+        "marche_ivre",
+        "perte_equilibre",
+        "vomissement",
+        "conflit_possible",
+        "demande_aide"
+      ]
+    },
+    {
+      "id": "usage_substances",
+      "label": "Usage problématique de substances",
+      "description": "Profil de santé et de précarité ; ne pas assimiler automatiquement à un dealer ou à une personne violente",
+      "behaviors": [
+        "somnolence",
+        "immobilite_prolongee",
+        "désorientation",
+        "recherche_aide",
+        "interaction_groupe"
+      ]
+    },
+    {
+      "id": "petit_trafic",
+      "label": "Petits trafics fictifs",
+      "description": "Activité criminelle fictive de jeu, distincte des profils de santé",
+      "behaviors": [
+        "rendez_vous_discret",
+        "transaction_fictive",
+        "guet",
+        "fuite_si_alerte"
+      ]
+    },
+    {
+      "id": "entrepreneur",
+      "label": "Entrepreneur et indépendant",
+      "description": "Possède ou dirige une activité économique",
+      "behaviors": [
+        "gestion_entreprise",
+        "livraison",
+        "recrutement",
+        "achat_stock",
+        "relation_client"
+      ]
+    }
+  ],
+  "street_events": [
+    "collecte_dechets",
+    "panne_eclairage",
+    "travaux_reseau_electrique",
+    "travaux_fibre",
+    "fuite_eau",
+    "intervention_plombier",
+    "controle_police",
+    "intervention_pompiers",
+    "urgence_ambulance",
+    "altercation_verbale",
+    "personne_desoriente",
+    "personne_en_detresse",
+    "personne_ivre",
+    "vomissement",
+    "repos_sur_banc",
+    "musique_rue",
+    "vente_informelle"
+  ],
+  "design_rules": [
+    "Ne pas attribuer un trouble psychique à partir de vêtements, de saleté ou du comportement d'un PNJ.",
+    "Ne pas faire de la violence le comportement par défaut d'une personne en situation de handicap psychique ou de précarité.",
+    "Distinguer les profils de santé, les activités criminelles et les métiers.",
+    "Tous les profils sensibles doivent être rares, paramétrables et représentés avec des comportements variés."
+  ]
+}
