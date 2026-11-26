@@ -239,6 +239,7 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 	_box(root,Vector3(0,h+0.18,0),Vector3(w+0.8,0.36,d+0.8),roof)
 	_windows(root,w,d,h)
 	_add_facade_construction_details(root,w,d,h)
+	_add_rainwater_details(root,w,d,h)
 	match k:
 		"hospital","clinic":
 			_sign(root,"✚",Vector3(-w/2+2,h+1.4,0),red)
@@ -327,6 +328,21 @@ func _windows(root:Node3D,w:float,d:float,h:float)->void:
 		for facade_z in [d / 2.0 + 0.10, -d / 2.0 - 0.10]:
 			_box(root, Vector3(0, y - 0.76, facade_z), Vector3(band_width, 0.12, 0.20), weathered_concrete)
 			_box(root, Vector3(0, y + 0.76, facade_z), Vector3(band_width, 0.10, 0.18), structural_concrete)
+		for facade_x in [w / 2.0 + 0.10, -w / 2.0 - 0.10]:
+			_box(root, Vector3(facade_x, y - 0.76, 0), Vector3(0.20, 0.12, d * 0.72), weathered_concrete)
+			_box(root, Vector3(facade_x, y + 0.76, 0), Vector3(0.18, 0.10, d * 0.72), structural_concrete)
+
+func _add_rainwater_details(root: Node3D, w: float, d: float, h: float) -> void:
+	# Évacuation pluviale discrète, pertinente pour le climat tropical humide.
+	# Les descentes restent en retrait des angles pour éviter les arêtes visuelles.
+	var gutter_y := h + 0.34
+	_box(root, Vector3(0, gutter_y, d / 2.0 + 0.48), Vector3(w + 0.35, 0.12, 0.16), steel)
+	_box(root, Vector3(0, gutter_y, -d / 2.0 - 0.48), Vector3(w + 0.35, 0.12, 0.16), steel)
+	for side in [-1.0, 1.0]:
+		for front in [-1.0, 1.0]:
+			var pipe_x := side * (w / 2.0 - 0.28)
+			var pipe_z := front * (d / 2.0 + 0.49)
+			_box(root, Vector3(pipe_x, h / 2.0, pipe_z), Vector3(0.10, h, 0.10), steel)
 
 func _sign(root:Node3D,t:String,p:Vector3,m:Material)->void:
 	_box(root,p,Vector3(maxf(5,float(t.length())*0.42),1.15,0.22),m)
