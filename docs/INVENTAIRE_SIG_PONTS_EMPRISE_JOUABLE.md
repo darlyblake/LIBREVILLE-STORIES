@@ -54,3 +54,19 @@ Le pont du marché d'Oloumi n'apparaît pas sous ce nom dans la liste extraite. 
 3. **Priorité C — petits franchissements sans nom** : les inventorier par secteur et les rapprocher des cours d'eau avant toute modélisation.
 
 Pour chaque ouvrage, l'étape suivante est d'associer le way OSM aux voies adjacentes, au cours d'eau éventuel, aux images datées et aux sources techniques. La modélisation 3D ne doit commencer qu'avec une orientation fiable ; la hauteur, les piles, les rampes et les largeurs restent des champs distincts à documenter.
+
+
+## Mesures planimétriques des polygones OSM
+
+Les géométries polygonales de la couche permettent de calculer une enveloppe et une aire cartographique approximatives. Le script reproductible `tools/map-generator/report_bridge_geometry.py` produit `data/osm/extended/bridge-geometry-report.json` à chaque extraction.
+
+| Objet OSM | Enveloppe approximative | Aire cartographique | Interprétation prudente |
+|---|---:|---:|---|
+| Échangeur PK5 — way 1435847292 | 52,7 × 40,5 m | 952,1 m² | Polygone d'emprise OSM ; ne représente pas nécessairement le tablier seul |
+| Pont de la Caisse — way 1395147722 | 44,3 × 11,1 m | 394,7 m² | Polygone OSM fermé ; à confronter au terrain et à l'imagerie |
+| Pont Awendjé — way 1435825401 | 46,3 × 28,5 m | 439,6 m² | Polygone OSM ; tag `bridge=aqueduct` inhabituel, non interprété comme preuve d'aqueduc |
+| Passerelle Plein-Ciel — way 1435847294 | 42,9 × 22,5 m | 174,9 m² | Emprise polygonale OSM ; à vérifier par relevé et photos |
+
+**Important :** ces valeurs sont des métriques de la géométrie cartographique OSM, calculées dans une projection locale approximative. L'enveloppe n'est pas la longueur/largeur certifiée du tablier ; l'aire peut inclure des surfaces adjacentes ou une emprise simplifiée. Elles ne donnent ni la hauteur libre, ni l'épaisseur du tablier, ni les dimensions des piles, ni la pente des rampes. Elles servent à contrôler la cohérence spatiale et à préparer le relevé, pas à figer une maquette 3D métrique.
+
+Le rapport est généré automatiquement avec la méthode et les avertissements dans son en-tête. Attribution : © OpenStreetMap contributors, ODbL 1.0.
