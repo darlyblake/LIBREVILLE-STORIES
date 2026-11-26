@@ -173,6 +173,8 @@ func _build_facilities() -> void:
 	var has_mairie_5e_arrondissement_site := false
 	var has_chamber_of_commerce_site := false
 	var has_assembly_site := false
+	var has_petroleum_ministry_site := false
+	var has_finance_ministry_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -249,6 +251,10 @@ func _build_facilities() -> void:
 			has_transport_ministry_site = true
 		if poi_name.contains("palais leon mba") or poi_name.contains("assemblee nationale"):
 			has_assembly_site = true
+		if poi_osm_id == 11505339840 or poi_name.contains("ministere du petrole"):
+			has_petroleum_ministry_site = true
+		if poi_osm_id == 11505197345 or poi_name.contains("ministeres des finances") or poi_name.contains("ministere de l economie et des finances"):
+			has_finance_ministry_site = true
 		if poi_osm_id == 12727052424 or poi_name.contains("direction generale des douanes") or poi_name.contains("douanes et droits indirects"):
 			has_customs_site = true
 		if poi_osm_id == 410343353 or poi_name.contains("cour constitutionnelle"):
@@ -423,6 +429,32 @@ func _build_facilities() -> void:
 			"id": 0,
 			"lat": 0.38800,
 			"lon": 9.44900,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère du Pétrole, secteur du boulevard Triomphal.
+	# OSM node 11505339840 ; repère seulement, sans volume architectural ajouté.
+	if not has_petroleum_ministry_site:
+		entries.append({
+			"kind": "ministry",
+			"label": "Ministère du Pétrole — Boulevard Triomphal",
+			"pos": _geo([9.44131, 0.40778]),
+			"id": 11505339840,
+			"lat": 0.40778,
+			"lon": 9.44131,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère de l’Économie et des Finances : POI OSM situé dans l’Immeuble Arambo.
+	# Il partage le bâtiment physique déjà référencé ; ne pas générer un second volume.
+	if not has_finance_ministry_site:
+		entries.append({
+			"kind": "ministry",
+			"label": "Ministère de l’Économie et des Finances — Immeuble Arambo",
+			"pos": _geo([9.43928, 0.40803]),
+			"id": 11505197345,
+			"lat": 0.40803,
+			"lon": 9.43928,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
