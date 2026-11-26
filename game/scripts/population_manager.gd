@@ -21,7 +21,7 @@ const MALE_FIRST_NAMES := ["Jean", "Paul", "Pierre", "Michel", "Alain", "Patrick
 const FEMALE_FIRST_NAMES := ["Marie", "Anne", "Jeanne", "Sylvie", "Nadine", "Clarisse", "Estelle", "Grâce", "Brigitte", "Sarah", "Patricia", "Sandrine", "Jessica", "Carine"]
 const LAST_NAMES := ["Mba", "Obiang", "Nguema", "Ndong", "Moussavou", "Essono", "Ovono", "Biyoghe", "Ayo", "Mintsa", "Ella", "Ekogha", "Oyoue", "Boussougou"]
 const DISTRICTS := ["Centre-ville", "Louis", "Glass", "Nombakélé", "Mont-Bouët", "Nkembo", "Akébé"]
-const JOBS := ["agriculteur", "pêcheur", "maraîcher", "agent SEEG électricité", "agent SEEG eau", "technicien réseau électrique", "technicien fibre optique", "plombier", "éboueur", "chauffeur camion poubelle", "agent de nettoyage urbain", "médecin", "infirmier", "sage-femme", "pharmacien", "ambulancier", "psychologue", "travailleur social", "enseignant", "éducateur", "professeur université", "chauffeur taxi", "chauffeur bus", "livreur", "mécanicien automobile", "maçon", "menuisier", "électricien bâtiment", "architecte", "commerçant", "vendeur marché", "restaurateur", "cuisinier", "serveur", "boulanger", "policier", "gendarme", "pompier", "agent municipal", "magistrat", "député", "sénateur", "ministre", "président de la République", "fonctionnaire", "comptable", "informaticien", "journaliste", "artiste", "coiffeur", "couturier", "entrepreneur", "chef entreprise", "artisan", "employé", "sans emploi"]
+const JOBS := ["agriculteur", "pêcheur", "maraîcher", "agent SEEG électricité", "agent SEEG eau", "technicien réseau électrique", "technicien fibre optique", "plombier", "éboueur", "chauffeur camion poubelle", "agent de nettoyage urbain", "médecin", "infirmier", "sage-femme", "pharmacien", "ambulancier", "psychologue", "travailleur social", "enseignant", "éducateur", "professeur université", "chauffeur taxi", "chauffeur bus", "livreur", "mécanicien automobile", "maçon", "menuisier", "électricien bâtiment", "architecte", "commerçant", "vendeur marché", "restaurateur", "cuisinier", "serveur", "boulanger", "policier", "gendarme", "pompier", "agent municipal", "magistrat", "fonctionnaire", "comptable", "informaticien", "journaliste", "artiste", "coiffeur", "couturier", "entrepreneur", "chef entreprise", "artisan", "employé", "sans emploi"]
 
 var residents: Dictionary = {}
 var alive_count: int = 0
@@ -496,6 +496,13 @@ func _job_for_age(age: int) -> String:
 		return "élève"
 	if age >= 65:
 		return "retraité"
+	var leadership_roll := _rng.randf()
+	if leadership_roll < 0.0001:
+		return "président de la République"
+	if leadership_roll < 0.001:
+		return "ministre"
+	if leadership_roll < 0.004:
+		return "député" if _rng.randf() < 0.5 else "sénateur"
 	return JOBS[_rng.randi_range(0, JOBS.size() - 1)]
 
 func _current_month_index() -> int:
