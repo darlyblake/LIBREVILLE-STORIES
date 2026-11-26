@@ -88,7 +88,7 @@
 | Hôtel de Ville central de Libreville — boulevard Omar Bongo Ondimba | Adresse d’annuaire ; point GPS propre au site central à confirmer (ne pas utiliser l’Hôtel de Ville d’Akanda) | [ ] | [ ] |
 | Ministère des Travaux publics et de la Construction | 392 avenue Rose Francine Rogombe (annexe) ; 414 avenue du Colonel Parant (principal) | [ ] | [ ] |
 | Ministère de l’Agriculture, de l’Élevage et du Développement rural | Contact officiel : Centre-ville, face à Rénovation, BP 551 ; ancienne adresse Ancienne Primature à ne plus considérer comme confirmée | [ ] | [ ] |
-| Ministère de la Défense | Rue du Gouverneur Balley et autres implantations mentionnées | [ ] | [ ] |
+| Ministère de la Défense | Siège rue du Gouverneur Balley ; annuaires le placent aussi à côté / face à la Présidence ; secrétariat général dans la Cité administrative présidentielle ; points GPS propres à chaque bâtiment à identifier | [ ] | [ ] |
 | Ministère de l’Enseignement supérieur | Avenue de Cointet | [ ] | [ ] |
 | ANBG — Agence Nationale des Bourses du Gabon | 195 rue Michel Nze MBA, Oloumi, anciens locaux du ministère de la Planification | [ ] | [ ] |
 | PNPE — Pôle National de Promotion de l’Emploi | Siège / antenne Estuaire, 378 rue Jean-Baptiste Ndende, Petit-Paris | [ ] | [ ] |
@@ -109,6 +109,8 @@
 | CNSS — Caisse Nationale de Sécurité Sociale | Avenue Georges Damas Aleka, Batavéa ; point OSM Libreville à confirmer | [ ] | [ ] |
 | CNAMGS — Directions techniques | Annexe de Montagne Sainte ; coordonnées à vérifier | [ ] | [ ] |
 | SCG-Ré — Société Commerciale Gabonaise de Réassurance | 2080 boulevard de l’Indépendance, Immeuble du Bord de Mer ; GPS exact du bâtiment à valider | [ ] | [ ] |
+| Primature — Immeuble du 2 Décembre | Avenue Jean-Paul II ; adresse officielle confirmée ; GPS/empreinte du bâtiment à identifier précisément | [ ] | [ ] |
+| Tour ANINF — siège de l’Agence Nationale des Infrastructures Numériques et des Fréquences | Boulevard Triomphal Omar Bongo, quartier Louis ; adresse officielle confirmée ; point OSM exact de la tour à valider | [ ] | [ ] |
 
 Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
 
@@ -219,3 +221,5 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 
 
 - 2026-11-26 : extension de la zone du boulevard Triomphal : ajout du Ministère du Pétrole — OSM node 11505339840, GPS 0.40778 / 9.44131 — et du Ministère de l’Économie et des Finances — OSM node 11505197345, GPS 0.40803 / 9.43928, dans l’Immeuble Arambo. Pour les Finances, le point est un repère institutionnel dans un bâtiment déjà cartographié ; aucune seconde géométrie physique n’est créée. Sources cartographiques : Mapcarta / OpenStreetMap ; adresses du secteur recoupées avec les annuaires institutionnels.
+
+- 2026-11-26 : complément ciblé Présidence–Primature–boulevard Triomphal : adresse actuelle de la Primature confirmée à l’Immeuble du 2 Décembre, avenue Jean-Paul II (site officiel primature.gouv.ga/nous-contacter et avis APDPVP 2024). La Tour ANINF est confirmée au boulevard Triomphal Omar Bongo (site officiel aninf.ga/contact et ministère de l’Économie numérique) ; le point OSM exact du bâtiment doit encore être extrait, donc aucun GPS n’est ajouté. Le ministère de la Défense possède plusieurs implantations : siège rue du Gouverneur Balley, secrétariat général dans la Cité administrative de la Présidence, Garde républicaine dans l’enceinte présidentielle, états-majors et unités à d’autres adresses ; ne pas fusionner toutes ces implantations en un seul bâtiment. Sources : Primature, APDPVP, ANINF, ministère de la Défense, Go Africa Online.
