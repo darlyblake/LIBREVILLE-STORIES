@@ -148,6 +148,7 @@ func _build_facilities() -> void:
 	var has_dgttc_site := false
 	var has_dgel_site := false
 	var has_cnee_site := false
+	var has_cnd_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -208,6 +209,8 @@ func _build_facilities() -> void:
 			has_dgel_site = true
 		if poi_osm_id == 12150167700 or poi_name.contains("conseil national de l eau") or poi_name.contains("conseil national de l'électricité"):
 			has_cnee_site = true
+		if poi_osm_id == 11529395192 or poi_name.contains("conseil national de la democratie"):
+			has_cnd_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -545,6 +548,19 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# Conseil National de la Démocratie (CND), OSM node 11529395192.
+	# Point Mapcarta/OSM ; le bâtiment physique reste issu de buildings.geojson.
+	if not has_cnd_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Conseil National de la Démocratie (CND)",
+			"pos": _geo([9.45075, 0.41810]),
+			"id": 11529395192,
+			"lat": 0.41810,
+			"lon": 9.45075,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -871,6 +887,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("etudes et laboratoires") or label.to_lower().contains("dgel"):
 				marker_text = "ÉTUDES & LABORATOIRES"
+				marker_material = school_accent
+			if label.to_lower().contains("conseil national de la democratie") or label.to_lower().contains("cnd"):
+				marker_text = "DÉMOCRATIE"
 				marker_material = school_accent
 			if label.to_lower().contains("conseil national de l eau") or label.to_lower().contains("cnee"):
 				marker_text = "EAU & ÉLECTRICITÉ"
