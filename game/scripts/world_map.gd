@@ -3988,7 +3988,7 @@ func _load_administrative_sites() -> Dictionary:
 		var props: Dictionary = feature.get("properties", {})
 		var office := str(props.get("office", "")).to_lower()
 		var amenity := str(props.get("amenity", "")).to_lower()
-		if office not in ["government", "diplomatic"] and amenity != "townhall":
+		if office not in ["government", "diplomatic"] and amenity not in ["townhall", "conference_centre"]:
 			continue
 		var site_name := str(props.get("name:fr", props.get("name", ""))).strip_edges()
 		# Cette entrée est manifestement mal catégorisée dans OSM.
@@ -4681,6 +4681,28 @@ func _add_administrative_facade_details(surface: SurfaceTool, a: Vector2, b: Vec
 			var y := float(floor_index) * 3.2
 			_add_facade_prism(surface, origin + tangent * (edge_length * 0.5) + Vector3.UP * y,
 				tangent, normal, edge_length * 0.5, 0.12, 0.16)
+	elif style == "conference_centre":
+		# Palais des Congrès : façade vitrée à résille métallique dorée et grand auvent.
+		surface.set_color(Color(0.76, 0.61, 0.34))
+		var lattice_columns := clampi(int(edge_length / 1.45), 8, 28)
+		for index in range(lattice_columns + 1):
+			var distance := edge_length * float(index) / float(lattice_columns)
+			_add_facade_prism(surface, origin + tangent * distance + Vector3.UP * 0.55,
+				tangent, normal, 0.055, maxf(1.0, height - 1.15), 0.14)
+		var lattice_rows := clampi(int(height / 1.65), 3, 10)
+		for index in range(1, lattice_rows):
+			var y := height * float(index) / float(lattice_rows)
+			_add_facade_prism(surface, origin + tangent * (edge_length * 0.5) + Vector3.UP * y,
+				tangent, normal, edge_length * 0.5, 0.075, 0.14)
+		# Le débord supérieur est volontairement marqué : élément dominant des photos.
+		_add_facade_prism(surface, origin + tangent * (edge_length * 0.5) + Vector3.UP * maxf(2.8, height - 0.55),
+			tangent, normal, edge_length * 0.52, 0.42, 2.35)
+		# Encadrement plus massif de l’entrée principale.
+		var entrance_width := minf(7.0, edge_length * 0.24)
+		var entrance_center := origin + tangent * (edge_length * 0.5)
+		for side in [-1.0, 1.0]:
+			_add_facade_prism(surface, entrance_center + tangent * side * entrance_width * 0.5,
+				tangent, normal, 0.18, minf(4.5, height), 0.48)
 	elif style == "embassy":
 		# Portique d’entrée sobre, avec deux montants et une traverse en relief.
 		surface.set_color(Color(0.90, 0.87, 0.79))

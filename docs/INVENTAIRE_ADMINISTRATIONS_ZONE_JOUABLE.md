@@ -167,3 +167,14 @@
 - Les tags OSM peuvent être incomplets ou erronés ; la présence dans cette liste ne certifie pas le statut juridique actuel de l’établissement.
 - Les établissements sans point OSM correspondant ne sont pas inventés ni ajoutés à partir d’une simple adresse textuelle.
 - Les bâtiments hors de l’emprise jouable ne sont pas inclus.
+
+## Repère institutionnel complémentaire : Palais des Congrès Omar Bongo Ondimba
+
+Le point OSM `1435653903` (`amenity=conference_centre`) est situé à **0,433619 N ; 9,453334 E**, donc à l’intérieur de l’emprise jouable. Il est suivi séparément des 118 points administratifs ci-dessus, car un centre de congrès est un équipement public et diplomatique, pas un bureau administratif.
+
+Références visuelles et institutionnelles :
+- Site officiel : https://www.palaiscongreslibreville.ga/fr/palais
+- Photographie extérieure officielle : https://www.palaiscongreslibreville.ga/
+- Inauguration officielle, 3 mai 2026 : https://gouvernement.ga/2026/05/03/la-cite-de-la-democratie-renait-de-ses-cendres-le-chef-de-letat-inaugure-le-palais-des-congres-omar-bongo-ondimba/
+
+Éléments visibles à reproduire sur l’empreinte OSM si elle correspond bien au bâtiment : façade vitrée, résille métallique dorée, grand auvent en porte-à-faux et parvis géométrique. La géométrie du bâtiment et le contour du parvis doivent rester issus des données SIG, pas d’un placement estimé.

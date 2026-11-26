@@ -38,6 +38,7 @@ static func building_color(kind: String, osm_id: int, props: Dictionary = {}) ->
 		"court": selected = Color(0.80, 0.79, 0.73)
 		"embassy": selected = Color(0.86, 0.83, 0.76)
 		"public_office": selected = Color(0.82, 0.81, 0.76)
+		"conference_centre": selected = Color(0.68, 0.58, 0.43)
 	# building:material module la teinte quand aucune couleur explicite n'est fournie.
 	var material_tag := str(props.get("building:material", "")).strip_edges().to_lower()
 	var material_tint := Color.WHITE
@@ -79,6 +80,8 @@ static func administrative_style(props: Dictionary) -> String:
 	var government := str(props.get("government", "")).to_lower()
 	if amenity == "townhall" or building == "townhall" or name.contains("mairie") or name.contains("hotel de ville"):
 		return "town_hall"
+	if amenity == "conference_centre" or name.contains("palais des congres"):
+		return "conference_centre"
 	if name.contains("presidence") or name.contains("palais presidentiel") or name.contains("palais de la renovation"):
 		return "presidential"
 	if name.contains("ministere") or name.contains("ministerial"):
@@ -184,6 +187,8 @@ static func building_height(kind: String, osm_id: int, props: Dictionary) -> flo
 		return 12.0
 	if admin_style == "embassy":
 		return 9.0
+	if admin_style == "conference_centre":
+		return 15.0
 	# Hauteurs différenciées inspirées de Libreville :
 	# cathédrale, bâtiments admin (Bd Triomphal), immeubles, maisons populaires.
 	match kind:
