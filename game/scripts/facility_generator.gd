@@ -132,6 +132,7 @@ func _build_facilities() -> void:
 	var has_health_ministry_site := false
 	var has_foreign_affairs_site := false
 	var has_tpi_annex_site := false
+	var has_budget_directorate_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -160,6 +161,8 @@ func _build_facilities() -> void:
 			has_foreign_affairs_site = true
 		if poi_osm_id == 1549705432 or poi_name.contains("tribunal de premiere instance"):
 			has_tpi_annex_site = true
+		if poi_name.contains("direction generale du budget") or poi_name == "dgb":
+			has_budget_directorate_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -269,6 +272,21 @@ func _build_facilities() -> void:
 			"id": 1549705432,
 			"lat": 0.42648,
 			"lon": 9.45096,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Direction Générale du Budget, avenue Félix Éboué : coordonnées GPS publiées
+	# par l'institution. Repère de POI uniquement ; le bâtiment physique provient
+	# exclusivement de buildings.geojson.
+	if not has_budget_directorate_site:
+		var budget_directorate_position := _geo([9.44900, 0.38800])
+		entries.append({
+			"kind": "admin",
+			"label": "Direction Générale du Budget — Avenue Félix Éboué",
+			"pos": budget_directorate_position,
+			"id": 0,
+			"lat": 0.38800,
+			"lon": 9.44900,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
