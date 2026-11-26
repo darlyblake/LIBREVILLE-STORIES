@@ -153,6 +153,8 @@ func _build_facilities() -> void:
 	var has_constitutional_court_site := false
 	var has_agasa_site := false
 	var has_cartography_institute_site := false
+	var has_cppf_site := false
+	var has_cntippee_site := false
 	var has_chamber_of_commerce_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
@@ -227,6 +229,10 @@ func _build_facilities() -> void:
 			has_agasa_site = true
 		if poi_osm_id == 793967943 or poi_name.contains("institut national de cartographie") or poi_name == "inc":
 			has_cartography_institute_site = true
+		if poi_osm_id == 12099801407 or poi_name.contains("caisse des pensions et des prestations familiales") or poi_name == "cppf":
+			has_cppf_site = true
+		if poi_osm_id == 12099801403 or poi_name.contains("commission nationale des travaux d interet public") or poi_name.contains("cntippee"):
+			has_cntippee_site = true
 		if poi_osm_id == 456350865 or poi_name.contains("chambre de commerce"):
 			has_chamber_of_commerce_site = true
 		var kind := _kind(p)
@@ -645,6 +651,31 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# CPPF — Caisse des Pensions et des Prestations Familiales, OSM node 12099801407.
+	# CNTIPPEE — OSM node 12099801403 ; les deux implantations sont dans la zone jouable.
+	# Ces repères n’ajoutent aucun volume 3D : les bâtiments restent issus de buildings.geojson.
+	if not has_cppf_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Caisse des Pensions et des Prestations Familiales (CPPF)",
+			"pos": _geo([9.41896, 0.43855]),
+			"id": 12099801407,
+			"lat": 0.43855,
+			"lon": 9.41896,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	if not has_cntippee_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Commission Nationale des Travaux d’Intérêt Public pour la Promotion de l’Entreprenariat et de l’Emploi (CNTIPPEE)",
+			"pos": _geo([9.41887, 0.44026]),
+			"id": 12099801403,
+			"lat": 0.44026,
+			"lon": 9.41887,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Chambre de Commerce du Gabon — OSM way 456350865, centroïde Mapcarta/OSM.
 	# Le repère est placé sur le bâtiment public existant ; aucune géométrie dupliquée.
 	if not has_chamber_of_commerce_site:
@@ -952,6 +983,12 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("cppf") or label.to_lower().contains("caisse des pensions"):
+				marker_text = "CPPF"
+				marker_material = school_accent
+			if label.to_lower().contains("cntippee") or label.to_lower().contains("travaux d’intérêt public") or label.to_lower().contains("travaux d interet public"):
+				marker_text = "CNTIPPEE"
+				marker_material = school_accent
 			if label.to_lower().contains("chambre de commerce"):
 				marker_text = "CHAMBRE DE COMMERCE"
 				marker_material = school_accent
