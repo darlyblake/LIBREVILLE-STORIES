@@ -164,6 +164,7 @@ func _build_facilities() -> void:
 	var has_mairie_hauts_guegue_site := false
 	var has_mairie_2e_arrondissement_site := false
 	var has_mairie_4e_arrondissement_site := false
+	var has_mairie_5e_arrondissement_site := false
 	var has_chamber_of_commerce_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
@@ -260,6 +261,8 @@ func _build_facilities() -> void:
 			has_mairie_2e_arrondissement_site = true
 		if poi_osm_id == 1346923818 or poi_name.contains("mairie de plaine niger") or poi_name.contains("mairie du 4eme arrondissement"):
 			has_mairie_4e_arrondissement_site = true
+		if poi_osm_id == 1348151040 or poi_name.contains("mairie de sogatol") or poi_name.contains("mairie du 5eme arrondissement") or poi_name.contains("mairie du 5e arrondissement"):
+			has_mairie_5e_arrondissement_site = true
 		if poi_osm_id == 456350865 or poi_name.contains("chambre de commerce"):
 			has_chamber_of_commerce_site = true
 		var kind := _kind(p)
@@ -786,6 +789,14 @@ func _build_facilities() -> void:
 			"lat": 0.37406, "lon": 9.4593,
 			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
 		})
+	# Mairie de Sogatol — 5e arrondissement, OSM way 1348151040.
+	if not has_mairie_5e_arrondissement_site:
+		entries.append({
+			"kind": "admin", "label": "Mairie de Sogatol — 5e arrondissement",
+			"pos": _geo([9.47356, 0.37679]), "id": 1348151040,
+			"lat": 0.37679, "lon": 9.47356,
+			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
+		})
 	# Chambre de Commerce du Gabon — OSM way 456350865, centroïde Mapcarta/OSM.
 	# Le repère est placé sur le bâtiment public existant ; aucune géométrie dupliquée.
 	if not has_chamber_of_commerce_site:
@@ -1093,6 +1104,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("mairie de sogatol") or label.to_lower().contains("mairie du 5e arrondissement") or label.to_lower().contains("mairie du 5eme arrondissement"):
+				marker_text = "MAIRIE 5E"
+				marker_material = school_accent
 			if label.to_lower().contains("mairie de plaine niger") or label.to_lower().contains("mairie du 4e arrondissement") or label.to_lower().contains("mairie du 4eme arrondissement"):
 				marker_text = "MAIRIE 4E"
 				marker_material = school_accent
