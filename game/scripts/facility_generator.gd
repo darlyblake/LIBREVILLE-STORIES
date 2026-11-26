@@ -315,6 +315,12 @@ func _windows(root:Node3D,w:float,d:float,h:float)->void:
 			var x:=-w*0.36+col*w*0.18
 			_box(root,Vector3(x,y,d/2+0.05),Vector3(2.2,1.35,0.08),glass)
 			_box(root,Vector3(x,y,-d/2-0.05),Vector3(2.2,1.35,0.08),glass)
+		# Les façades latérales reçoivent aussi des ouvertures : le bâtiment
+		# reste cohérent lorsqu'on le contourne, pas seulement depuis la rue.
+		for side_col in range(3):
+			var side_z := -d * 0.30 + side_col * d * 0.30
+			_box(root,Vector3(w/2+0.05,y,side_z),Vector3(0.08,1.35,2.0),glass)
+			_box(root,Vector3(-w/2-0.05,y,side_z),Vector3(0.08,1.35,2.0),glass)
 		# Appuis et linteaux continus : détail sobre qui donne une vraie lecture
 		# de façade sans multiplier les objets 3D autour de chaque fenêtre.
 		var band_width := w * 0.84
