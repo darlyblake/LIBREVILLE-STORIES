@@ -55,6 +55,7 @@
 | Direction Générale des Douanes et Droits Indirects — Oloumi | [x] | [x] | [ ] | [ ] | [ ] |
 | Cour constitutionnelle du Gabon — Boulevard de l’Indépendance | [x] | [x] | [ ] | [ ] | [ ] |
 | Agence Gabonaise de Sécurité Alimentaire (AGASA) — Batterie 4 | [x] | [x] | [ ] | [ ] | [ ] |
+| Institut National de Cartographie (INC) — Direction générale, Camp de police | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -113,5 +114,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout de la Direction Générale des Douanes et Droits Indirects — OSM node 12727052424, GPS 0.37618 / 9.46677, 823 Avenue Edouard Ekomie Mba, Oloumi ; repère institutionnel, bâtiment physique depuis buildings.geojson.
 - 2026-11-26 : ajout du repère de la Cour constitutionnelle du Gabon — OSM way 410343353, GPS 0.39687 / 9.43989, boulevard de l’Indépendance ; repère institutionnel, bâtiment physique depuis buildings.geojson.
 - 2026-11-26 : ajout de l’Agence Gabonaise de Sécurité Alimentaire (AGASA), Batterie 4 — OSM node 12832789224, GPS 0.41896 / 9.42785 ; repère institutionnel, bâtiment physique depuis buildings.geojson.
+- 2026-11-26 : ajout de la Direction générale de l’Institut National de Cartographie (INC), Camp de police — OSM way 793967943, GPS 0.40102 / 9.44126 ; l’adresse du siège technique à Batterie IV est une implantation distincte et n’est pas ajoutée dans cette entrée.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
