@@ -7,8 +7,8 @@ on:
         description: "Nombre de civils supplémentaires à générer"
         required: true
         type: choice
-        options: ["50", "100", "200"]
-        default: "100"
+        options: ["200", "400", "500"]
+        default: "500"
       crowd_detail:
         description: "Détail des civils destinés aux foules"
         required: true
@@ -26,7 +26,7 @@ concurrency:
 jobs:
   export-characters:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -73,4 +73,4 @@ jobs:
           name: libreville-stories-ara3d-characters
           path: build/ara3d/
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
