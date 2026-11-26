@@ -70,7 +70,6 @@
 | Mairie de Nombakélé — 3e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
 | Mairie de Nzeng-Ayong | [x] | [x] | [ ] | [ ] | [ ] |
 | Mairie des Hauts de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
-| Mairie du 2e arrondissement — siège provisoire derrière le ministère des Eaux et Forêts | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Mairie de Plaine Niger — 4e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
 | Mairie de Sogatol — 5e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
 
@@ -80,6 +79,7 @@
 
 | Bâtiment / site | Informations connues | GPS exact dans la zone | Intégration |
 |---|---|---|---|
+| Mairie du 2e arrondissement — siège provisoire derrière le ministère des Eaux et Forêts (nouvelle adresse à géolocaliser) | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Hôtel de Ville central de Libreville — boulevard Omar Bongo Ondimba | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Ministère des Travaux publics et de la Construction | 392 avenue Rose Francine Rogombe (annexe) ; 414 avenue du Colonel Parant (principal) | [ ] | [ ] |
 | Ministère de l’Agriculture | Immeuble de l’Ancienne Primature, avenue Cornut Gentille | [ ] | [ ] |
@@ -155,6 +155,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
 
 ## 7. Historique
+
+- 2026-11-26 : recherche générale complémentaire sur les administrations et mairies. La mairie officielle de Libreville confirme six arrondissements ; la mairie de Nzeng-Ayong est le point cartographié du 6e arrondissement et les cinq autres points déjà présents couvrent les 1er, 3e, 4e et 5e arrondissements (les mairies de Nombakélé, Hauts de Gué-Gué, Plaine Niger et Sogatol). La mairie du 2e a changé d’adresse : les articles de 2024 signalent un siège provisoire derrière le ministère des Eaux et Forêts ; le point OSM avenue Jean-Paul II a été retiré du générateur, faute de géolocalisation du nouveau siège. L’Hôtel de Ville central est donné boulevard Omar Bongo Ondimba par les annuaires, mais le plus code seul ne permet pas de valider le GPS. La CNSS confirme son siège avenue Georges Damas Aleka, Batavéa ; le point OSM CNSS Akanda est hors périmètre et ne doit pas être utilisé. Autres adresses confirmées sans GPS précis : ANGTI (Immeuble BDM, boulevard de l’Indépendance), CEPIG (Immeuble Nostalgie, rue du Cabinet Berthonneau), CIPEP Sud et Direction provinciale des Impôts de l’Estuaire (zone industrielle d’Oloumi face à Gabon Méca), DGE (feux tricolores de Glass), CAISTAB (Immeuble Gabon 2000, Glass), ARSEE (Ancien Sobraga, face à Multipress), CICIBA (voie express avant échangeur Awendjé). Le site officiel DGI publie une carte des centres fiscaux mais aucun GPS exploitable n’a été extrait ici. Aucun de ces sites n’est ajouté au jeu sans point exact dans les limites. Sources : mairie de Libreville (libreville.ga), Gabon Media Time, Le Pratique du Gabon, CNSS (cnss.ga), DGI (dgi.ga/maps), Go Africa Online, site officiel ARSEE.
 
 - 2026-11-26 : audit des mairies : confirmation que les six arrondissements de Libreville sont couverts dans l’inventaire, mais le repère de la Mairie du 2e arrondissement (OSM node 11458214434, avenue Jean-Paul II) est ancien. Des articles de mai et octobre 2024 confirment le déplacement du siège provisoire dans un immeuble derrière le ministère des Eaux et Forêts ; aucun point GPS précis du nouvel immeuble n’a été validé. Le repère obsolète a donc été retiré du générateur. La Mairie de Nzeng-Ayong correspond aussi à la Mairie du 6e arrondissement. L’Hôtel de Ville central est listé boulevard Omar Bongo Ondimba, mais seule une adresse/plus code CC6V+6Q2 est disponible, sans GPS OSM vérifié. Sources : mairie de Libreville (libreville.ga), annuaire Le Pratique du Gabon, Mapcarta/OSM, Gabon Media Time (28 mai et 9 octobre 2024).
 
