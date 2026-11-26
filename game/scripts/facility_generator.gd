@@ -149,6 +149,7 @@ func _build_facilities() -> void:
 	var has_dgel_site := false
 	var has_cnee_site := false
 	var has_cnd_site := false
+	var has_assembly_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -211,6 +212,8 @@ func _build_facilities() -> void:
 			has_cnee_site = true
 		if poi_osm_id == 11529395192 or poi_name.contains("conseil national de la democratie"):
 			has_cnd_site = true
+		if poi_name.contains("palais leon mba") or poi_name.contains("assemblee nationale"):
+			has_assembly_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -561,6 +564,19 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# Palais Léon Mba — Assemblée nationale. Coordonnées publiées : 0°24′44″N, 9°26′34″E.
+	# Conversion DMS -> degrés décimaux ; repère seul, volume depuis buildings.geojson.
+	if not has_assembly_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Palais Léon Mba — Assemblée nationale",
+			"pos": _geo([9.4427778, 0.4122222]),
+			"id": 0,
+			"lat": 0.4122222,
+			"lon": 9.4427778,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -890,6 +906,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("conseil national de la democratie") or label.to_lower().contains("cnd"):
 				marker_text = "DÉMOCRATIE"
+				marker_material = school_accent
+			if label.to_lower().contains("palais leon mba") or label.to_lower().contains("assemblee nationale"):
+				marker_text = "ASSEMBLÉE NATIONALE"
 				marker_material = school_accent
 			if label.to_lower().contains("conseil national de l eau") or label.to_lower().contains("cnee"):
 				marker_text = "EAU & ÉLECTRICITÉ"
