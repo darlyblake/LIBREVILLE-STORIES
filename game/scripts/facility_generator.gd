@@ -135,6 +135,7 @@ func _build_facilities() -> void:
 	var has_budget_directorate_site := false
 	var has_communication_ministry_site := false
 	var has_interior_ministry_site := false
+	var has_education_ministry_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -169,6 +170,8 @@ func _build_facilities() -> void:
 			has_communication_ministry_site = true
 		if poi_osm_id == 14091673588 or poi_name.contains("ministere de l interieur"):
 			has_interior_ministry_site = true
+		if poi_osm_id == 410354024 or poi_name.contains("ministere de l education nationale"):
+			has_education_ministry_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -323,6 +326,21 @@ func _build_facilities() -> void:
 			"id": 14091673588,
 			"lat": 0.39078,
 			"lon": 9.4476,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère de l'Éducation nationale, chargé de la Formation civique.
+	# OSM way 410354024 ; point cartographique vérifié à Libreville.
+	# Repère uniquement : le bâtiment physique vient de buildings.geojson.
+	if not has_education_ministry_site:
+		var education_ministry_position := _geo([9.44551, 0.39396])
+		entries.append({
+			"kind": "ministry",
+			"label": "Ministère de l’Éducation nationale — Formation civique",
+			"pos": education_ministry_position,
+			"id": 410354024,
+			"lat": 0.39396,
+			"lon": 9.44551,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -630,6 +648,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "MAIRIE"
 		"ministry":
 			marker_text = "MINISTÈRE"
+			if label.to_lower().contains("education") or label.to_lower().contains("éducation"):
+				marker_text = "ÉDUCATION"
+				marker_material = school_accent
 			if label.to_lower().contains("interieur") or label.to_lower().contains("intérieur"):
 				marker_text = "INTÉRIEUR"
 				marker_material = school_accent
