@@ -132,12 +132,10 @@ func _consider_nightlife(resident_id: String, resident: Dictionary, state: Dicti
 	var job := str(resident.get("job", ""))
 	if NON_WORK_JOBS.has(job) or job == "élève":
 		return
-	if _is_working_day(resident_id, resident, state, date) and weekday >= 1 and weekday <= 5:
-		return
 	var chance := float(_config.get("nightlife", {}).get("weekday_chance", 0.08))
 	if weekday == 0 or weekday == 6:
 		chance = float(_config.get("nightlife", {}).get("weekend_chance", 0.28))
-	if bool(clock.call("is_school_holiday")):
+	if not bool(clock.call("is_school_period")):
 		chance = maxf(chance, float(_config.get("nightlife", {}).get("holiday_chance", 0.32)))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _stable_seed("%s:%s:night" % [resident_id, clock.get_date_string()])
@@ -183,7 +181,9 @@ func _is_at_work(resident_id: String, resident: Dictionary, state: Dictionary, h
 	var profile := _profile_for_job(job)
 	var start_hour := int(profile.get("start_hour", 8))
 	var end_hour := int(profile.get("end_hour", 17))
-	return hour >= start_hour and hour < end_hour
+	if start_hour < end_hour:
+		return hour >= start_hour and hour < end_hour
+	return hour >= start_hour or hour < end_hour
 
 func _is_working_day(resident_id: String, resident: Dictionary, state: Dictionary, date: Dictionary) -> bool:
 	var job := str(resident.get("job", ""))
@@ -241,7 +241,7 @@ func _emit_crowd_levels() -> void:
 	var date: Dictionary = clock.get_date()
 	var weekday := _weekday(date)
 	var weekend := weekday == 0 or weekday == 6
-	var holiday := bool(clock.call("is_school_holiday"))
+	var holiday := not bool(clock.call("is_school_period"))
 	var hour := int(clock.hour)
 	var levels: Dictionary = _config.get("crowds", {})
 	for location_type in levels:
