@@ -1,4 +1,4 @@
-# Horloge, calendrier et événements – version 0.3
+# Horloge, calendrier et événements – version 0.4
 
 ## Objectif
 Une horloge unique pilote le temps du monde. Les PNJ, commerces, écoles, panneaux publicitaires, radios et télévisions ne gèrent pas chacun leur propre date. Ils interrogent `WorldClock` et écoutent ses signaux.
@@ -10,32 +10,47 @@ Une horloge unique pilote le temps du monde. Les PNJ, commerces, écoles, pannea
 - Sauvegarde indépendante dans `user://world_clock_state.json`.
 - Chaque passage réel au premier jour d'un nouveau mois appelle `PopulationManager.advance_month()` une seule fois.
 - Un réglage manuel de date synchronise l'année et le mois du gestionnaire de population sans simuler artificiellement des mois de naissance/décès.
+- Le changement manuel d'heure émet `hour_changed` si l'heure change ; les événements actifs sont recalculés à chaque changement de jour ou de date.
 
 ## Signaux
-- `minute_changed` : horodatage complet ; HUD et systèmes qui nécessitent une précision à la minute.
+- `minute_changed` : horodatage complet ; HUD et systèmes à la minute.
 - `hour_changed` : changement d'heure ; éclairage, horaires et routines.
 - `day_started` / `day_ended` : routines quotidiennes.
 - `month_changed` / `year_changed` : statistiques, population et calendrier.
 - `event_started` / `event_ended` / `active_events_changed` : décorations, produits, médias, comportements et circulation.
 
-Un changement manuel d'heure émet désormais `hour_changed` si l'heure change. Un changement manuel de date met à jour les événements actifs et les signaux de mois/année.
+## Calendrier scolaire gabonais intégré
+### Année 2025–2026
+- Deuxième trimestre révisé : 24 novembre 2025 – 28 mars 2026.
+- Reprise effective des cours après les perturbations : 19 janvier 2026 ; la période précédente est marquée comme interruption dans la simulation.
+- Troisième trimestre : 30 mars – 31 juillet 2026.
+- Fin des cours des classes sans examen : 20 juin 2026 ; fin de l'année des classes d'examen : 31 juillet 2026.
 
-## Événements
-- Fêtes fixes gabonaises référencées : 1er janvier, 17 avril, 1er mai, 15 août, 16–17 août, 30 août, 1er novembre et 25 décembre.
+### Année 2026–2027
+- Rentrée administrative : 31 août 2026.
+- Rentrée des élèves des écoles publiques conventionnées : 2 septembre 2026.
+- Rentrée générale des établissements publics et privés : 7 septembre 2026.
+- Premier trimestre : 7 septembre – 28 novembre 2026 ; congés jusqu'au 6 décembre.
+- Deuxième trimestre : 7 décembre 2026 – 6 mars 2027 ; congés jusqu'au 14 mars.
+- Troisième trimestre : 15 mars – 10 juillet 2027.
+- Fin des cours des classes sans examen : 5 juin 2027.
+- Période annoncée des examens nationaux : 24 mai – 10 juillet 2027.
+
+Les jours de congés utilisent le tag `school_holidays`, prioritaire sur `school_in_session`, pour éviter qu'un chevauchement de dates laisse les écoles ouvertes.
+
+## Jours fériés et fêtes
+- Fêtes fixes récurrentes : 1er janvier, 17 avril (Journée des droits de la femme), 1er mai, 15 août, 16–17 août (indépendance), 30 août (Journée nationale de la Libération), 1er novembre et 25 décembre.
 - Octobre Rose et Novembre Bleu sont des campagnes de sensibilisation, pas des jours fériés.
-- La période commerciale de Noël (1er–25 décembre) est distincte du jour férié du 25 décembre.
-- Les événements annuels peuvent traverser le 31 décembre : renseigner une année de référence identique pour les deux dates, par exemple 2000-12-20 au 2000-01-05.
-- Les événements non annuels utilisent leurs dates calendaires réelles.
+- Noël (1er–25 décembre) est une période culturelle/commerciale distincte du jour férié du 25 décembre.
+- Les dates mobiles de 2026 déjà référencées comprennent Pâques, lundi de Pâques, Ascension, Pentecôte et lundi de Pentecôte.
+- Les dates de l'Aïd sont marquées comme estimatives et doivent être confirmées par les annonces officielles.
+- Les événements annuels peuvent traverser le 31 décembre : utiliser une année de référence identique, par exemple 2000-12-20 au 2000-01-05. Les événements non annuels utilisent leurs dates réelles.
 
 ## Horaires de simulation
 - Écoles : jour de classe, hors week-end, jour férié et vacances, entre 07:00 et 17:00.
 - Commerces génériques : 07:00–20:00 en semaine et 08:00–20:00 le week-end ; fermés la nuit.
-- Le marché Mont-Bouët conserve son horaire local prototype de 06:00–19:00.
-- Les horaires restent des règles de simulation provisoires : chaque commerce/école pourra définir ses propres heures et jours de fermeture.
-
-## Calendrier scolaire et limites
-Les périodes scolaires 2025–2026 sont référencées dans les données présentes. Le calendrier 2026–2027 reste à confirmer par une annonce officielle. Les périodes scolaires révisées se chevauchent parfois avec les périodes de congés : le tag `school_holidays` est prioritaire et ferme les écoles.
-Les fêtes mobiles (Pâques, Pentecôte, Aïd) et les dates scolaires annuelles doivent être actualisées à partir de sources officielles ; aucune date arbitraire ne doit être présentée comme officielle.
+- Marché Mont-Bouët : horaire local prototype de 06:00–19:00.
+- Ces plages sont des règles générales provisoires ; chaque commerce, administration ou école pourra définir ses horaires propres, jours de fermeture et horaires spéciaux.
 
 ## Contrat pour les futurs systèmes
 Les effets présents dans le JSON sont descriptifs. Chaque système spécialisé devra les appliquer :
@@ -46,5 +61,11 @@ Les effets présents dans le JSON sont descriptifs. Chaque système spécialisé
 - écoles : présence des élèves uniquement les jours de classe ;
 - circulation : embouteillages et déviations autour des rassemblements.
 
+## Sources et actualisation
+- Ministère de l'Éducation nationale – calendrier scolaire 2025–2026 et rentrée 2026–2027 : https://education-nationale.gouv.ga/calendrier-scolaire/
+- Arrêté n°000008/MENIC du 30 janvier 2026, calendrier scolaire révisé 2025–2026 : https://gabonmediatime.com/wp-content/uploads/2026/02/Arrete-000008-MENIC-portant-Modification-des-2eme-et-3eme-Trimestre-du-calendrier-Scolaire-2025-2026.pdf
+- Calendrier 2026–2027, trimestres et congés annoncés à la suite de l'arrêté du 10 août 2026 : les dates de trimestre sont reprises des publications qui rapportent le calendrier ministériel ; à remplacer par le texte intégral officiel dès qu'il est disponible.
+- Fêtes religieuses dépendant de l'observation lunaire : vérifier chaque année les annonces gouvernementales.
+
 ## Validation
-Le script `tools/validate_calendar.py` vérifie le JSON, les identifiants uniques, les dates et les plages annuelles, y compris celles qui traversent le Nouvel An. La CI vérifie également l'import et l'analyse des scripts Godot.
+`tools/validate_calendar.py` vérifie le JSON, les identifiants uniques, les dates et les plages annuelles, y compris celles qui traversent le Nouvel An. La CI vérifie également l'import et l'analyse des scripts Godot.
