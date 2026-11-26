@@ -136,6 +136,7 @@ func _build_facilities() -> void:
 	var has_communication_ministry_site := false
 	var has_interior_ministry_site := false
 	var has_education_ministry_site := false
+	var has_aninf_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -172,6 +173,8 @@ func _build_facilities() -> void:
 			has_interior_ministry_site = true
 		if poi_osm_id == 410354024 or poi_name.contains("ministere de l education nationale"):
 			has_education_ministry_site = true
+		if poi_osm_id == 455714440 or poi_name.contains("agence nationale des infrastructures numeriques") or poi_name.contains("aninf"):
+			has_aninf_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -341,6 +344,21 @@ func _build_facilities() -> void:
 			"id": 410354024,
 			"lat": 0.39396,
 			"lon": 9.44551,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Agence Nationale des Infrastructures Numériques et des Fréquences (ANINF).
+	# OSM way 455714440, Immeuble de la Solde, 393 avenue Rose Francine Rogombe.
+	# Repère seulement : la géométrie du bâtiment est fournie par buildings.geojson.
+	if not has_aninf_site:
+		var aninf_position := _geo([9.44510, 0.39245])
+		entries.append({
+			"kind": "admin",
+			"label": "Agence Nationale des Infrastructures Numériques et des Fréquences (ANINF)",
+			"pos": aninf_position,
+			"id": 455714440,
+			"lat": 0.39245,
+			"lon": 9.44510,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -638,6 +656,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("aninf") or label.to_lower().contains("infrastructures numeriques") or label.to_lower().contains("infrastructures numériques"):
+				marker_text = "ANINF"
+				marker_material = school_accent
 			if label.to_lower().contains("communication"):
 				marker_text = "COMMUNICATION"
 				marker_material = school_accent
