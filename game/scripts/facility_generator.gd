@@ -263,6 +263,8 @@ func _administrative_kind(p: Dictionary) -> String:
 		return "ministry"
 	if name.contains("senat") or name.contains("palais omar bongo"):
 		return "admin"
+	if name.contains("immeuble du 2 decembre") or name.contains("ministere des mines"):
+		return "ministry"
 	if name.contains("ministere") or name.contains("primature") or government == "ministry":
 		return "ministry"
 	if name.contains("ambassade") or name.contains("consulat") or office == "diplomatic":
@@ -480,6 +482,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "MAIRIE"
 		"ministry":
 			marker_text = "MINISTÈRE"
+			if label.to_lower().contains("2 decembre") or label.to_lower().contains("mines"):
+				marker_text = "MINES"
+				marker_material = school_accent
 			if label.to_lower().contains("eaux") and label.to_lower().contains("foret"):
 				marker_text = "EAUX & FORÊTS"
 				marker_material = school_accent
