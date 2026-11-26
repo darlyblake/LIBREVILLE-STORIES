@@ -129,6 +129,7 @@ func _build_facilities() -> void:
 	var has_senate_site := false
 	var has_public_service_site := false
 	var has_justice_site := false
+	var has_health_ministry_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -151,6 +152,8 @@ func _build_facilities() -> void:
 			has_public_service_site = true
 		if poi_name.contains("ministere de la justice") or poi_name.contains("ministere de justice"):
 			has_justice_site = true
+		if poi_osm_id == 430390761 or (poi_name.contains("ministere") and poi_name.contains("sante")):
+			has_health_ministry_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -217,6 +220,20 @@ func _build_facilities() -> void:
 			"id": 0,
 			"lat": 0.3858865,
 			"lon": 9.4460964,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère de la Santé, Immeuble Alu-Suisse, secteur du Tribunal.
+	# Repère GPS issu de la cartographie OSM ; aucun volume architectural n'est créé ici.
+	if not has_health_ministry_site:
+		var health_ministry_position := _geo([9.44909, 0.42724])
+		entries.append({
+			"kind": "ministry",
+			"label": "Ministère de la Santé — Immeuble Alu-Suisse",
+			"pos": health_ministry_position,
+			"id": 430390761,
+			"lat": 0.42724,
+			"lon": 9.44909,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -521,6 +538,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			if label.to_lower().contains("2 decembre") or label.to_lower().contains("mines"):
 				marker_text = "MINES"
 				marker_material = school_accent
+			if label.to_lower().contains("sante") or label.to_lower().contains("santé"):
+				marker_text = "SANTÉ"
+				marker_material = red
 			if label.to_lower().contains("fonction publique"):
 				marker_text = "FONCTION PUBLIQUE"
 				marker_material = school_accent
