@@ -70,6 +70,8 @@ func _material(key: String, color: Color, roughness: float = 0.86, metallic: flo
 		pbr_asset = "corrugated_iron_03"
 	elif key == "market_structure":
 		pbr_asset = "rusty_metal_02"
+	elif key == "market_structure_alt":
+		pbr_asset = "rusty_metal_05"
 	elif key in ["market_wood", "market_crate"]:
 		pbr_asset = "rough_wood"
 	if not pbr_asset.is_empty():
@@ -99,6 +101,9 @@ func _apply_market_pbr(material: StandardMaterial3D, asset_id: String) -> void:
 		elif base_name.ends_with("_ao"):
 			material.ao_enabled = true
 			material.ao_texture = texture
+		elif base_name.ends_with("_metal"):
+			material.metallic = 1.0
+			material.metallic_texture = texture
 	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	material.uv1_scale = Vector3(1.4, 1.4, 1.0)
 
@@ -125,6 +130,7 @@ func _build_mont_bouet_market() -> void:
 	var concrete := _material("market_concrete", Color(0.48, 0.46, 0.40))
 	var metal := _material("market_tole", Color(0.28, 0.31, 0.29), 0.72, 0.18)
 	var dark_metal := _material("market_structure", Color(0.12, 0.14, 0.13), 0.68, 0.28)
+	var weathered_metal := _material("market_structure_alt", Color(0.20, 0.17, 0.13), 0.76, 0.24)
 	var wood := _material("market_wood", Color(0.36, 0.22, 0.12))
 	var crate_material := _material("market_crate", Color(0.48, 0.31, 0.16))
 	var fruit_red := _material("market_fruit_red", Color(0.72, 0.12, 0.07), 0.48)
@@ -162,7 +168,7 @@ func _build_mont_bouet_market() -> void:
 		for column in range(7):
 			var x := -24.0 + float(column) * 8.0
 			_build_market_stall(market, stall_index, Vector3(x, 0.0, row_z),
-				awnings[stall_index % awnings.size()], metal, dark_metal, wood,
+				awnings[stall_index % awnings.size()], metal, dark_metal, weathered_metal, wood,
 				crate_material, fruit_red, fruit_green, fruit_yellow)
 			stall_index += 1
 
@@ -173,7 +179,8 @@ func _build_mont_bouet_market() -> void:
 
 
 func _build_market_stall(parent: Node3D, index: int, center: Vector3, awning: Material,
-		roof_material: Material, frame_material: Material, wood: Material, crate_material: Material,
+		roof_material: Material, frame_material: Material, alternate_frame_material: Material,
+		wood: Material, crate_material: Material,
 		fruit_red: Material, fruit_green: Material, fruit_yellow: Material) -> void:
 	var stall := Node3D.new()
 	stall.name = "Etal_%02d" % index
@@ -181,11 +188,13 @@ func _build_market_stall(parent: Node3D, index: int, center: Vector3, awning: Ma
 	parent.add_child(stall)
 
 	# Comptoir ouvert vers l'allée, quatre poteaux et une toiture en tôle.
+	# Quelques supports reçoivent une patine plus marquée, sans uniformiser la halle.
+	var selected_frame_material := alternate_frame_material if index % 4 == 2 else frame_material
 	_box(stall, "Comptoir", Vector3(5.2, 0.95, 1.0), Vector3(0, 0.48, 1.45), wood)
 	_box(stall, "Facade_comptoir", Vector3(5.25, 0.18, 0.08), Vector3(0, 0.52, 0.91), crate_material)
 	for side_x in [-2.45, 2.45]:
 		for side_z in [-1.8, 1.8]:
-			_box(stall, "Poteau", Vector3(0.13, 3.6, 0.13), Vector3(side_x, 1.8, side_z), frame_material)
+			_box(stall, "Poteau", Vector3(0.13, 3.6, 0.13), Vector3(side_x, 1.8, side_z), selected_frame_material)
 	_box(stall, "Tole_ondulee", Vector3(6.1, 0.18, 5.1), Vector3(0, 3.72, 0), roof_material)
 	_box(stall, "Bache_facade", Vector3(5.8, 1.05, 0.12), Vector3(0, 2.92, -2.47), awning)
 	_box(stall, "Bache_laterale", Vector3(0.12, 1.0, 4.7), Vector3(-3.02, 2.9, 0), awning)
