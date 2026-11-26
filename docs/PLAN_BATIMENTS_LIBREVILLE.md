@@ -36,6 +36,8 @@
 | Tribunal de première instance — annexe | [x] | [x] | [ ] | [ ] | [ ] |
 | Direction générale du Budget — avenue Félix Éboué | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de la Communication et des Médias | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère du Pétrole — boulevard Triomphal (OSM node 11505339840, 0.40778 / 9.44131) | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère de l’Économie et des Finances — Immeuble Arambo (OSM node 11505197345, 0.40803 / 9.43928 ; bâtiment partagé avec d’autres services) | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de l’Intérieur — avenue de Cointet | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de l’Éducation nationale — Formation civique | [x] | [x] | [ ] | [ ] | [ ] |
 | Agence nationale des infrastructures numériques et des fréquences (ANINF) — Immeuble de la Solde | [x] | [x] | [ ] | [ ] | [ ] |
@@ -214,3 +216,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout de la Direction générale de l’Institut National de Cartographie (INC), Camp de police — OSM way 793967943, GPS 0.40102 / 9.44126 ; l’adresse du siège technique à Batterie IV est une implantation distincte et n’est pas ajoutée dans cette entrée.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
+
+
+- 2026-11-26 : extension de la zone du boulevard Triomphal : ajout du Ministère du Pétrole — OSM node 11505339840, GPS 0.40778 / 9.44131 — et du Ministère de l’Économie et des Finances — OSM node 11505197345, GPS 0.40803 / 9.43928, dans l’Immeuble Arambo. Pour les Finances, le point est un repère institutionnel dans un bâtiment déjà cartographié ; aucune seconde géométrie physique n’est créée. Sources cartographiques : Mapcarta / OpenStreetMap ; adresses du secteur recoupées avec les annuaires institutionnels.
