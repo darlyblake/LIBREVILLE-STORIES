@@ -16,13 +16,13 @@
 Cette emprise est celle de travail validée dans l'inventaire SIG des ponts. L'extraction OSM étendue peut contenir des objets situés en dehors ; ils restent des données de référence et ne doivent jamais devenir des bâtiments du jeu.
 
 Règles d'instanciation :
-- **8 écoles maximum** dans le jeu ;
+- aucune limite arbitraire de huit écoles : tous les POI scolaires présents dans l'emprise sont considérés ;
 - universités classées séparément des écoles ;
 - hôtels et résidences hôtelières uniquement si leurs coordonnées sont dans l'emprise ;
 - hôpitaux et centres de santé uniquement si leurs coordonnées sont dans l'emprise ;
 - les POI extérieurs sont rejetés avant leur conversion en coordonnées 3D.
 
-Le générateur écrit les établissements effectivement retenus dans `user://libreville_facilities_gps.csv`, avec le type, le nom, l'identifiant OSM et les coordonnées GPS latitude/longitude. Il affiche aussi ces coordonnées dans la console Godot. Ce relevé permet de contrôler précisément les objets placés en jeu.
+Le générateur parcourt tous les POI admissibles de l'emprise, sans plafond global de 100 établissements ni plafond de huit écoles. La déduplication spatiale de 18 m évite de créer plusieurs volumes superposés pour un même site. Il écrit les établissements effectivement retenus dans `user://libreville_facilities_gps.csv`, avec le type, le nom, l'identifiant OSM et les coordonnées GPS latitude/longitude. Il affiche aussi ces coordonnées dans la console Godot. Ce relevé permet de contrôler précisément les objets placés en jeu.
 
 ## 1. Règle de construction
 
