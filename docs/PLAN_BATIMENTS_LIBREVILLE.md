@@ -78,6 +78,10 @@
 | Ministère de l’Agriculture | Immeuble de l’Ancienne Primature, avenue Cornut Gentille | [ ] | [ ] |
 | Ministère de la Défense | Rue du Gouverneur Balley et autres implantations mentionnées | [ ] | [ ] |
 | Ministère de l’Enseignement supérieur | Avenue de Cointet | [ ] | [ ] |
+| ANBG — Agence Nationale des Bourses du Gabon | 195 rue Michel Nze MBA, Oloumi, anciens locaux du ministère de la Planification | [ ] | [ ] |
+| PNPE — Pôle National de Promotion de l’Emploi | Siège / antenne Estuaire, 378 rue Jean-Baptiste Ndende, Petit-Paris | [ ] | [ ] |
+| ANPI-Gabon — Agence Nationale de Promotion des Investissements | Immeuble Serena Mall, 104 rue Gustave Anguile | [ ] | [ ] |
+| DPO — Direction des Publications Officielles / Journal Officiel | 400 avenue du Colonel Parant | [ ] | [ ] |
 | Ministère du Travail | GPS confirmé : 0.42757 / 9.44887 ; OSM node 4686643890 | [x] | [x] |
 
 Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
@@ -93,6 +97,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout groupé de trois mairies d’arrondissement : Mairie de Nombakélé / 3e arrondissement — OSM way 1343319442, GPS 0.39109 / 9.45077 ; Mairie de Nzeng-Ayong — OSM way 1348678391, GPS 0.42399 / 9.47159 ; Mairie des Hauts de Gué-Gué — OSM node 4040655377, GPS 0.42802 / 9.43262. Repères uniquement, empreintes physiques depuis buildings.geojson. Sources Mapcarta / OpenStreetMap.
 
 - 2026-11-26 : ajout de la Mairie du 2e arrondissement — OSM node 11458214434, GPS 0.40390 / 9.44285, avenue Jean-Paul II ; repère uniquement, bâtiment physique depuis buildings.geojson. Source Mapcarta / OpenStreetMap.
+
+- 2026-11-26 : recherche documentaire complémentaire : ANBG (195 rue Michel Nze MBA, Oloumi), PNPE (378 rue Jean-Baptiste Ndende, Petit-Paris), ANPI-Gabon (Serena Mall, 104 rue Gustave Anguile) et DPO / Journal Officiel (400 avenue du Colonel Parant). Adresses confirmées par les sites institutionnels, mais points GPS cartographiques précis non validés : conservés dans la liste de recherche, non intégrés au jeu.
 
 ## 5. Pipeline 3D pour chaque bâtiment
 
