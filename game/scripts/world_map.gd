@@ -65,7 +65,11 @@ render_mode cull_disabled;
 
 uniform sampler2D albedo_a : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D normal_a : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D normal_b : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D normal_c : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rough_a : hint_roughness_r, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D rough_b : hint_roughness_r, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D rough_c : hint_roughness_r, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D albedo_b : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D albedo_c : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D noise_tex : filter_linear_mipmap, repeat_enable;
@@ -111,9 +115,19 @@ void fragment() {
 	asphalt = mix(asphalt, vec3(0.40, 0.34, 0.27) * (0.8 + 0.4 * n_fine), dust * (0.30 + 0.20 * wear));
 
 	ALBEDO = asphalt * COLOR.rgb;
-	ROUGHNESS = clamp(texture(rough_a, UV).r * mix(1.0, 0.82, patch_mask) + 0.05 * track, 0.0, 1.0);
+	float rough_base = texture(rough_a, UV).r;
+	float rough_patch = texture(rough_b, UV * 1.3).r;
+	float rough_dust = texture(rough_c, UV * 0.7).r;
+	float rough_mix = mix(rough_base, rough_patch, patch_mask * 0.65);
+	rough_mix = mix(rough_mix, rough_dust, faded * 0.22);
+	ROUGHNESS = clamp(rough_mix + 0.05 * track, 0.0, 1.0);
 	SPECULAR = 0.35;
-	NORMAL_MAP = texture(normal_a, UV).xyz;
+	vec3 normal_base = texture(normal_a, UV).xyz;
+	vec3 normal_patch = texture(normal_b, UV * 1.3).xyz;
+	vec3 normal_dust = texture(normal_c, UV * 0.7).xyz;
+	vec3 normal_mix = mix(normal_base, normal_patch, patch_mask * 0.65);
+	normal_mix = mix(normal_mix, normal_dust, faded * 0.22);
+	NORMAL_MAP = normalize(normal_mix);
 	NORMAL_MAP_DEPTH = normal_strength;
 }
 """
@@ -2286,13 +2300,25 @@ func _make_asphalt_shader_material() -> ShaderMaterial:
 	if normal_a == null:
 		normal_a = _make_asphalt_normal_texture()
 	var albedo_b := _load_pbr_map("asphalt_02", "diff")
+	var normal_b := _load_pbr_map("asphalt_02", "nor_gl")
+	var rough_b := _load_pbr_map("asphalt_02", "rough")
 	var albedo_c := _load_pbr_map("dirty_concrete", "diff") if load_extra_road_textures else null
+	var normal_c := _load_pbr_map("dirty_concrete", "nor_gl") if load_extra_road_textures else null
+	var rough_c := _load_pbr_map("dirty_concrete", "rough") if load_extra_road_textures else null
 	if albedo_b == null:
 		albedo_b = _make_ground_texture(Color(0.55, 0.55, 0.55), 20261125)
 	if albedo_c == null:
 		albedo_c = _make_ground_texture(Color(0.46, 0.31, 0.21), 20261126)
+	if normal_b == null:
+		normal_b = normal_a
 	if rough_a == null:
 		rough_a = _make_ground_texture(Color(0.88, 0.88, 0.88), 20261128)
+	if rough_b == null:
+		rough_b = rough_a
+	if normal_c == null:
+		normal_c = normal_a
+	if rough_c == null:
+		rough_c = rough_a
 	var noise := FastNoiseLite.new()
 	noise.seed = 20261127
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
@@ -2301,8 +2327,11 @@ func _make_asphalt_shader_material() -> ShaderMaterial:
 	var noise_texture := ImageTexture.create_from_image(noise.get_seamless_image(256, 256))
 	material.set_shader_parameter("albedo_a", albedo_a)
 	material.set_shader_parameter("normal_a", normal_a)
-	if rough_a != null:
-		material.set_shader_parameter("rough_a", rough_a)
+	material.set_shader_parameter("normal_b", normal_b)
+	material.set_shader_parameter("normal_c", normal_c)
+	material.set_shader_parameter("rough_a", rough_a)
+	material.set_shader_parameter("rough_b", rough_b)
+	material.set_shader_parameter("rough_c", rough_c)
 	material.set_shader_parameter("albedo_b", albedo_b)
 	material.set_shader_parameter("albedo_c", albedo_c)
 	material.set_shader_parameter("noise_tex", noise_texture)
