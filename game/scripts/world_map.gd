@@ -2319,19 +2319,42 @@ func _build_road_materials() -> void:
 		_road_materials["dirt"] = _make_road_material("", "", "dirt", 0.6)
 		_road_materials["paving"] = _make_road_material("", "", "paving", 0.5)
 	_road_material = _road_materials["asphalt"]
+
+	# Dalles de trottoir : béton de pavage PBR (couleur, normales, rugosité et AO).
 	var sidewalk := _make_material(Color.WHITE)
 	sidewalk.vertex_color_use_as_albedo = true
 	sidewalk.albedo_texture = _make_sidewalk_texture()
 	sidewalk.roughness = 0.95
-	_apply_downloaded_pbr(sidewalk, "concrete_floor_01")
+	_apply_downloaded_pbr(sidewalk, "concrete_pavement_03")
 	sidewalk.uv1_scale = Vector3(0.65, 0.65, 1.0)
+	sidewalk.normal_scale = 0.62
 	sidewalk.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	_road_materials["sidewalk"] = sidewalk
-	for key in ["curb", "skirt", "marking", "crosswalk", "median", "island"]:
-		var plain := _make_material(Color.WHITE)
-		plain.vertex_color_use_as_albedo = true
-		plain.roughness = 0.9 if (key == "curb" or key == "skirt" or key == "median") else 0.7
-		_road_materials[key] = plain
+
+	# Les bordures et ouvrages en béton ont des surfaces PBR distinctes :
+	# béton brossé sur les bordures, béton sali sur les sous-faces,
+	# béton mural sur les îlots et terre-pleins.
+	var concrete_assets := {
+		"curb": "brushed_concrete",
+		"skirt": "dirty_concrete",
+		"median": "concrete_wall_009",
+		"island": "concrete_floor_01"
+	}
+	for key in concrete_assets:
+		var concrete := _make_material(Color.WHITE)
+		concrete.vertex_color_use_as_albedo = true
+		concrete.roughness = 0.9
+		_apply_downloaded_pbr(concrete, str(concrete_assets[key]))
+		concrete.uv1_scale = Vector3(0.55, 0.55, 1.0)
+		concrete.normal_scale = 0.58
+		concrete.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+		_road_materials[key] = concrete
+
+	for key in ["marking", "crosswalk"]:
+		var painted := _make_material(Color.WHITE)
+		painted.vertex_color_use_as_albedo = true
+		painted.roughness = 0.72
+		_road_materials[key] = painted
 
 
 func _make_ground_texture(base: Color, noise_seed: int) -> Texture2D:
