@@ -163,6 +163,7 @@ func _build_facilities() -> void:
 	var has_mairie_nzeng_ayong_site := false
 	var has_mairie_hauts_guegue_site := false
 	var has_mairie_2e_arrondissement_site := false
+	var has_mairie_4e_arrondissement_site := false
 	var has_chamber_of_commerce_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
@@ -257,6 +258,8 @@ func _build_facilities() -> void:
 			has_mairie_hauts_guegue_site = true
 		if poi_osm_id == 11458214434 or poi_name.contains("mairie du 2eme arrondissement") or poi_name.contains("mairie du 2e arrondissement"):
 			has_mairie_2e_arrondissement_site = true
+		if poi_osm_id == 1346923818 or poi_name.contains("mairie de plaine niger") or poi_name.contains("mairie du 4eme arrondissement"):
+			has_mairie_4e_arrondissement_site = true
 		if poi_osm_id == 456350865 or poi_name.contains("chambre de commerce"):
 			has_chamber_of_commerce_site = true
 		var kind := _kind(p)
@@ -776,6 +779,13 @@ func _build_facilities() -> void:
 			"lat": 0.4039, "lon": 9.44285,
 			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
 		})
+	if not has_mairie_4e_arrondissement_site:
+		entries.append({
+			"kind": "admin", "label": "Mairie de Plaine Niger — 4e arrondissement",
+			"pos": _geo([9.4593, 0.37406]), "id": 1346923818,
+			"lat": 0.37406, "lon": 9.4593,
+			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
+		})
 	# Chambre de Commerce du Gabon — OSM way 456350865, centroïde Mapcarta/OSM.
 	# Le repère est placé sur le bâtiment public existant ; aucune géométrie dupliquée.
 	if not has_chamber_of_commerce_site:
@@ -1083,6 +1093,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("mairie de plaine niger") or label.to_lower().contains("mairie du 4e arrondissement") or label.to_lower().contains("mairie du 4eme arrondissement"):
+				marker_text = "MAIRIE 4E"
+				marker_material = school_accent
 			if label.to_lower().contains("mairie du 2e arrondissement") or label.to_lower().contains("mairie du 2eme arrondissement"):
 				marker_text = "MAIRIE 2E"
 				marker_material = school_accent
