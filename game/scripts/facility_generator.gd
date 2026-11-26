@@ -144,6 +144,7 @@ func _build_facilities() -> void:
 	var has_planning_ministry_site := false
 	var has_ceeac_site := false
 	var has_anuttc_site := false
+	var has_brac_oif_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -196,6 +197,8 @@ func _build_facilities() -> void:
 			has_ceeac_site = true
 		if poi_osm_id == 806267454 or poi_name.contains("agence nationale de l urbanisme") or poi_name.contains("anut tc") or poi_name.contains("anuttc"):
 			has_anuttc_site = true
+		if poi_osm_id == 625614944 or poi_name.contains("bureau de l oif") or poi_name.contains("brac-oif") or poi_name.contains("organisation internationale de la francophonie"):
+			has_brac_oif_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -478,6 +481,19 @@ func _build_facilities() -> void:
 			"id": 806267454,
 			"lat": 0.38001,
 			"lon": 9.46208,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Bureau régional de l'OIF pour l'Afrique centrale (BRAC-OIF), OSM way 625614944.
+	# Bâtiment cartographié ; le volume physique reste issu de buildings.geojson.
+	if not has_brac_oif_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Bureau régional de l’OIF — Afrique centrale (BRAC-OIF)",
+			"pos": _geo([9.42647, 0.43037]),
+			"id": 625614944,
+			"lat": 0.43037,
+			"lon": 9.42647,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -798,6 +814,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("anuttc") or label.to_lower().contains("urbanisme"):
 				marker_text = "ANUTTC"
+				marker_material = school_accent
+			if label.to_lower().contains("brac-oif") or label.to_lower().contains("bureau regional de l oif"):
+				marker_text = "OIF AFRIQUE CENTRALE"
 				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
