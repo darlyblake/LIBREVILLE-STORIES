@@ -82,15 +82,13 @@
 | Mairie du 2e arrondissement — siège provisoire derrière le ministère des Eaux et Forêts (nouvelle adresse à géolocaliser) | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Hôtel de Ville central de Libreville — boulevard Omar Bongo Ondimba | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Ministère des Travaux publics et de la Construction | 392 avenue Rose Francine Rogombe (annexe) ; 414 avenue du Colonel Parant (principal) | [ ] | [ ] |
-| Ministère de l’Agriculture | Immeuble de l’Ancienne Primature, avenue Cornut Gentille | [ ] | [ ] |
+| Ministère de l’Agriculture, de l’Élevage et du Développement rural | Contact officiel : Centre-ville, face à Rénovation, BP 551 ; ancienne adresse Ancienne Primature à ne plus considérer comme confirmée | [ ] | [ ] |
 | Ministère de la Défense | Rue du Gouverneur Balley et autres implantations mentionnées | [ ] | [ ] |
 | Ministère de l’Enseignement supérieur | Avenue de Cointet | [ ] | [ ] |
 | ANBG — Agence Nationale des Bourses du Gabon | 195 rue Michel Nze MBA, Oloumi, anciens locaux du ministère de la Planification | [ ] | [ ] |
 | PNPE — Pôle National de Promotion de l’Emploi | Siège / antenne Estuaire, 378 rue Jean-Baptiste Ndende, Petit-Paris | [ ] | [ ] |
 | ANPI-Gabon — Agence Nationale de Promotion des Investissements | Immeuble Serena Mall, 104 rue Gustave Anguile | [ ] | [ ] |
 | DPO — Direction des Publications Officielles / Journal Officiel | 400 avenue du Colonel Parant | [ ] | [ ] |
-| Ministère du Travail | GPS confirmé : 0.42757 / 9.44887 ; OSM node 4686643890 | [x] | [x] |
-| Mairie du 5e arrondissement — SOGATOL | OSM way 1348151040 ; GPS 0.37679 / 9.47356 ; Boulevard des Bantu | [x] | [x] |
 | ANGTI — Agence Nationale des Grands Travaux d’Infrastructures | Immeuble BDM, boulevard de l’Indépendance | [ ] | [ ] |
 | CDC — Caisse des Dépôts et Consignations | Siège actuel inauguré en février 2026 : Immeuble Casimir Marie Ange OYE MBA, 1633 boulevard Triomphal Omar Bongo Ondimba | [ ] | [ ] |
 | CIPEP Sud — Centre des Impôts des Petites Entreprises et des Particuliers | Zone industrielle d’Oloumi, face à Gabon Méca | [ ] | [ ] |
@@ -105,10 +103,20 @@
 | AGANOR — Agence Gabonaise de Normalisation | Immeuble Gabon Industriel, centre-ville | [ ] | [ ] |
 | OGAPI — Office Gabonais de la Propriété Industrielle | Boulevard Omar Bongo / secteur CDPI, emplacement exact à vérifier | [ ] | [ ] |
 | CNSS — Caisse Nationale de Sécurité Sociale | Avenue Georges Damas Aleka, Batavéa ; point OSM Libreville à confirmer | [ ] | [ ] |
-| CNAMGS — Direction générale | Siège actuel à la Sablière ; hors de la zone de jeu | [ ] | [ ] |
+| CNAMGS — Direction générale | Siège actuel à la Sablière ; hors zone, exclu du jeu | [ ] | [ ] |
 | CNAMGS — Directions techniques | Annexe de Montagne Sainte ; coordonnées à vérifier | [ ] | [ ] |
 
 Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
+
+### Exclusions et doublons confirmés
+
+- Hôtel de Ville cartographié OSM node 13279033156 : 0.49508 / 9.39345, à Akanda, hors limite nord (0.445) et hors commune de Libreville ; ne pas l’utiliser pour l’Hôtel de Ville central de Libreville. L’Hôtel de Ville central boulevard Omar Bongo reste à localiser séparément.
+- Siège de la CNAMGS à la Sablière : hors zone ; exclu. Les directions techniques à Montagne Sainte restent à vérifier, sans point exact.
+- OPRAG : point Mapcarta 0.28952 / 9.50403, hors limites sud et est ; exclu.
+- EPCA et École Nationale d’Administration, PK11 : longitudes 9.51786 et 9.51855, hors limite est 9.495 ; exclues.
+- Ministère du Travail et mairie de Sogatol : déjà présents dans la section 3 et dans le générateur ; retirés des lignes de recherche pour éviter les doublons.
+- Les directions DGIT, DGCE, DGERA, DGEI et directions supports du Ministère des Travaux publics sont annoncées au même immeuble principal, 414 avenue du Colonel Parant. Elles ne doivent pas devenir autant de bâtiments distincts.
+- L’ANPI possède un ancien point OSM node 6703527385 à 0.38766 / 9.44761, mais l’adresse institutionnelle actuelle annoncée est Serena Mall, 104 rue Gustave Anguile. Le point ancien ne valide donc pas le siège actuel et reste inutilisé.
 
 - 2026-11-26 : vérification des adresses institutionnelles (sans ajout GPS) : le PNPE confirme son siège de Libreville rue Jean-Baptiste Ndende, BP 9610 ; l’ANBG confirme 195 rue Michel Nze MBA, Oloumi ; la CDC publie désormais l’Immeuble Casimir Marie Ange OYE MBA, 1633 boulevard Triomphal Omar Bongo Ondimba, alors qu’une ancienne publication indiquait l’Immeuble Orchida, rue Jean Nendé ; l’AGANOR affiche actuellement Charbonnages, Immeuble ABC, tandis que des sources antérieures la situaient à l’Immeuble Gabon Industriel ; l’ARSEE publie « Ancien SOBRAGA, en face de Multipress ». Ces changements/adresses contradictoires exigent un point cartographique précis et une vérification de l’implantation avant intégration. Sources : sites officiels PNPE (pnpe.ga/contact.html), ANBG (anbg-ga.com), CDC (cdc-gabon.ga/contact), AGANOR (aganor.ga), ARSEE (arsee-gabon.com).
 
@@ -155,6 +163,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
 
 ## 7. Historique
+
+- 2026-11-26 : recherche complémentaire sur les sièges encore en attente. Le ministère de l’Agriculture publie désormais comme adresse de contact « Centre-ville (face Rénovation), BP 551 » ; l’adresse historique Ancienne Primature / Cornut Gentille n’est plus confirmée sur sa page de contact. Le ministère des Travaux publics distingue une annexe au 392 avenue Rose Francine Rogombe et un immeuble principal au 414 avenue du Colonel Parant ; ses directions générales infrastructures, construction, entretien des routes et études sont rattachées au même immeuble principal et ne doivent pas être comptées comme des bâtiments séparés. Le ministère de l’Enseignement supérieur confirme l’avenue de Cointet et fournit un lien OSM, mais le lien ouvre une carte embarquée centrée sur le secteur et non un point précis du bâtiment. La Défense confirme rue du Gouverneur Balley, sans GPS exact. La DPO confirme 400 avenue du Colonel Parant ; les données Mapcarta la situent dans le secteur Rue Pecqueur / eGabon / Pharmacie La Librevilloise, mais sans identifiant OSM propre ni coordonnées précises exploitables. Le PNPE confirme rue Jean-Baptiste Ndende ; Mapcarta le signale comme immeuble de bureaux proche de Nombakélé, sans point individuel publié. L’ANBG confirme 195 rue Michel Nze MBA, Oloumi ; aucun point exact du bâtiment actuel validé. Le CNAP est confirmé au Carrefour STFO ; coordonnées trouvées pour le carrefour (0.4071296 / 9.4571099) et pour le secteur STFO (0.40747 / 9.458), mais ce ne sont pas les coordonnées du bâtiment CNAP et ne sont pas utilisées comme telles. L’AGANOR confirme Charbonnages, Immeuble ABC ; aucune géolocalisation OSM exacte de l’immeuble n’a été vérifiée. Sources : sites officiels des ministères (agriculture.gouv.ga/contact, infrastructures.gouv.ga/contact, enseignement-superieur.gouv.ga/contacts, defense-nationale.gouv.ga/contact.twg), journal-officiel.ga/contact, pnpe.ga/contact.html, anbg-ga.com/contacts, eaux-forets.gouv.ga/organismes-sous-tutelles, aganor.ga, Mapcarta/OSM.
 
 - 2026-11-26 : recherche générale complémentaire sur les administrations et mairies. La mairie officielle de Libreville confirme six arrondissements ; la mairie de Nzeng-Ayong est le point cartographié du 6e arrondissement et les cinq autres points déjà présents couvrent les 1er, 3e, 4e et 5e arrondissements (les mairies de Nombakélé, Hauts de Gué-Gué, Plaine Niger et Sogatol). La mairie du 2e a changé d’adresse : les articles de 2024 signalent un siège provisoire derrière le ministère des Eaux et Forêts ; le point OSM avenue Jean-Paul II a été retiré du générateur, faute de géolocalisation du nouveau siège. L’Hôtel de Ville central est donné boulevard Omar Bongo Ondimba par les annuaires, mais le plus code seul ne permet pas de valider le GPS. La CNSS confirme son siège avenue Georges Damas Aleka, Batavéa ; le point OSM CNSS Akanda est hors périmètre et ne doit pas être utilisé. Autres adresses confirmées sans GPS précis : ANGTI (Immeuble BDM, boulevard de l’Indépendance), CEPIG (Immeuble Nostalgie, rue du Cabinet Berthonneau), CIPEP Sud et Direction provinciale des Impôts de l’Estuaire (zone industrielle d’Oloumi face à Gabon Méca), DGE (feux tricolores de Glass), CAISTAB (Immeuble Gabon 2000, Glass), ARSEE (Ancien Sobraga, face à Multipress), CICIBA (voie express avant échangeur Awendjé). Le site officiel DGI publie une carte des centres fiscaux mais aucun GPS exploitable n’a été extrait ici. Aucun de ces sites n’est ajouté au jeu sans point exact dans les limites. Sources : mairie de Libreville (libreville.ga), Gabon Media Time, Le Pratique du Gabon, CNSS (cnss.ga), DGI (dgi.ga/maps), Go Africa Online, site officiel ARSEE.
 
