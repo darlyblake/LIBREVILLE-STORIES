@@ -152,6 +152,7 @@ func _build_facilities() -> void:
 	var has_customs_site := false
 	var has_constitutional_court_site := false
 	var has_agasa_site := false
+	var has_cartography_institute_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
@@ -223,6 +224,8 @@ func _build_facilities() -> void:
 			has_constitutional_court_site = true
 		if poi_osm_id == 12832789224 or poi_name == "agasa" or poi_name.contains("agence gabonaise de securite alimentaire"):
 			has_agasa_site = true
+		if poi_osm_id == 793967943 or poi_name.contains("institut national de cartographie") or poi_name == "inc":
+			has_cartography_institute_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -625,6 +628,20 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# Direction générale de l'Institut National de Cartographie (INC), Camp de police.
+	# OSM way 793967943 ; l'INC publie cette adresse comme Direction générale.
+	# Le siège technique de Batterie IV est une autre implantation, non ajoutée ici.
+	if not has_cartography_institute_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Institut National de Cartographie — Direction générale",
+			"pos": _geo([9.44126, 0.40102]),
+			"id": 793967943,
+			"lat": 0.40102,
+			"lon": 9.44126,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -927,6 +944,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("agasa") or label.to_lower().contains("securite alimentaire") or label.to_lower().contains("sécurité alimentaire"):
 				marker_text = "AGASA"
+				marker_material = school_accent
+			if label.to_lower().contains("institut national de cartographie") or label.to_lower().contains("inc"):
+				marker_text = "CARTOGRAPHIE"
 				marker_material = school_accent
 			if label.to_lower().contains("communication"):
 				marker_text = "COMMUNICATION"
