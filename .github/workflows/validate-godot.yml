@@ -6,7 +6,19 @@ on:
     paths:
       - "game/**"
       - "assets/**"
-      - "data/terrain/**"
+      - "data/**"
+      - "tools/**"
+      - "libreville_dem.json"
+      - "libreville_dem_f32.bin"
+      - "project.godot"
+      - ".github/workflows/validate-godot.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "game/**"
+      - "assets/**"
+      - "data/**"
+      - "tools/**"
       - "libreville_dem.json"
       - "libreville_dem_f32.bin"
       - "project.godot"
@@ -17,12 +29,24 @@ permissions:
   contents: read
 
 # Une seule validation utile à la fois : les commits récents remplacent les anciens.
-# Évite d'empiler des imports Godot identiques sur plusieurs runners.
 concurrency:
-  group: validate-godot-${{ github.ref }}
+  group: validate-godot-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  validate-calendar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate Gabon calendar JSON
+        run: python tools/validate_calendar.py
+
   parse-project:
     runs-on: ubuntu-latest
     timeout-minutes: 20
