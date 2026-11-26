@@ -4516,7 +4516,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 	var roof_style := WorldMapBuildingStyleUtils.roof_style(building_kind, osm_id, props)
 	var pitched_roof := false
 	if WorldMapBuildingStyleUtils.should_use_pitched_roof(building_kind, props, points.size()):
-		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style, base_y)
+		pitched_roof = _add_pitched_roof(roofs, points, height, roof_style, base_y, props)
 	if not pitched_roof:
 		for i in range(0, indices.size(), 3):
 			var p0 := points[indices[i]]
@@ -4530,7 +4530,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		_add_rooftop_water_tank(details, points, height, base_y)
 
 
-func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, base_y: float = 0.0) -> bool:
+func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_height: float, style: int, base_y: float = 0.0, props: Dictionary = {}) -> bool:
 	# La géométrie pure est calculée hors de WorldMap ; l'émission reste ici.
 	var roof_shape := str(WorldMapBuildingStyleUtils.roof_shape(props))
 	var triangles := WorldMapGeometryUtils.pitched_roof_triangles(points, wall_height, base_y, roof_shape)
