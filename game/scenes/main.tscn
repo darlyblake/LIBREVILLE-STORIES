@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://game/scripts/libreville_districts.gd" id="13_districts"]
 [ext_resource type="Script" path="res://game/scripts/facility_generator.gd" id="14_facilities"]
 [ext_resource type="Script" path="res://game/scripts/traffic_signs.gd" id="15_traffic_signs"]
+[ext_resource type="Script" path="res://game/scripts/world_lighting.gd" id="16_world_lighting"]
 
 [sub_resource type="Environment" id="Environment_world"]
 background_mode = 1
@@ -71,6 +72,9 @@ script = ExtResource("15_traffic_signs")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_world")
+
+[node name="WorldLighting" type="Node" parent="."]
+script = ExtResource("16_world_lighting")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.852525, 0.382161, -0.356588, 0, 0.682221, 0.731146, 0.522687, -0.62332, 0.58161, 0, 0, 0)
