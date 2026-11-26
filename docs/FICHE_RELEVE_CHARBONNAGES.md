@@ -93,3 +93,31 @@ Source cartographique secondaire exposant les tags OSM :
 - https://ga.geoview.info/rondpoint_charbonnages%2C10251206404w
 
 Contrôle de cohérence : le repère du giratoire (0.43772, 9.44126) est distinct du repère cartographique de l'échangeur (0.43650, 9.44087). Il ne faut donc pas fusionner leurs coordonnées ni déduire le centre du tablier depuis le giratoire.
+
+
+## 9. Géométries routières du tablier extraites de la couche OSM (26 novembre 2026)
+
+L'extraction régionale identifie deux lignes routières portant le nom de l'échangeur :
+
+| Way OSM | Tags utiles | Sommets | Longueur du tracé calculée |
+|---|---|---:|---:|
+| `1443840889` | `highway=trunk`, `bridge=yes`, `bridge:structure=beam`, `layer=1`, sens unique | 2 | environ 57,4 m |
+| `1443840890` | `highway=trunk`, `bridge=yes`, `bridge:structure=beam`, `layer=1`, `lanes=2`, `surface=concrete`, sens unique | 4 | environ 57,4 m |
+
+Les deux tracés sont proches et parallèles. Ils représentent deux lignes de circulation OSM associées à l'ouvrage ; leurs longueurs ne doivent pas être additionnées pour annoncer la longueur du pont. Elles ne décrivent pas non plus les bretelles, les piles ou la totalité du tablier. Les deux lignes n'ont que deux et quatre sommets : la géométrie est donc trop simplifiée pour produire directement une maquette détaillée.
+
+**Attention à la provenance :** les deux objets portent le tag OSM `source=Bing`. Cela indique une source de cartographie déclarée dans les tags, pas un relevé topographique ni un plan d'exécution.
+
+Source : couche `data/osm/extended/bridges.geojson`, © OpenStreetMap contributors, ODbL 1.0. Les longueurs sont calculées en projection locale approximative à partir des coordonnées géographiques.
+
+## 10. Repère historique d'ingénierie — portée limitée
+
+La page du ministère des Travaux publics consacrée aux échangeurs de la Voie Express indique un marché global de 41,3 milliards FCFA TTC et un linéaire cumulé de 1 140 mètres pour les ponts et rampes d'accès de l'ensemble des échangeurs concernés. Elle précise que l'échangeur des Charbonnages était alors entièrement achevé, tandis que des travaux restaient à réaliser sur les autres échangeurs.
+
+Le chiffre de 1 140 m est **un total agrégé pour plusieurs échangeurs**. Il ne peut en aucun cas être attribué au seul échangeur des Charbonnages ni servir à fixer ses dimensions.
+
+Source officielle : https://www.infrastructures.gouv.ga/387-travaux-publics/390-projets/391-projets-realises-et-mis-en-service-depuis-janvier-2010/
+
+## 11. Conséquence pour la maquette
+
+Le jeu peut désormais placer deux axes de circulation sur l'emprise du pont avec une orientation issue des tracés OSM. En revanche, la géométrie 3D détaillée reste bloquée jusqu'à obtention d'une source permettant de relever les largeurs, le profil en long, les piles, les culées et les bretelles. Les aménagements du jardin sous l'ouvrage et le chantier des abords en 2026 restent des objets temporels séparés du pont.
