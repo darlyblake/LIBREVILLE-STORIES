@@ -1,0 +1,76 @@
+name: Build Ara 3D character library
+
+on:
+  workflow_dispatch:
+    inputs:
+      random_count:
+        description: "Nombre de civils supplémentaires à générer"
+        required: true
+        type: choice
+        options: ["50", "100", "200"]
+        default: "100"
+      crowd_detail:
+        description: "Détail des civils destinés aux foules"
+        required: true
+        type: choice
+        options: [low, medium]
+        default: low
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ara3d-character-library
+  cancel-in-progress: false
+
+jobs:
+  export-characters:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache Ara 3D character data
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ara3d
+          key: ara3d-data-v1-${{ runner.os }}
+          restore-keys: |
+            ara3d-data-v1-${{ runner.os }}-
+
+      - name: Export all ready-made profession and civilian presets
+        run: |
+          mkdir -p build/ara3d/presets
+          npx --yes ara3d export --all-presets --detail medium --animations idle,walk,run --formats glb --out build/ara3d/presets
+
+      - name: Export randomized crowd variations
+        env:
+          RANDOM_COUNT: ${{ inputs.random_count }}
+          CROWD_DETAIL: ${{ inputs.crowd_detail }}
+        run: |
+          mkdir -p build/ara3d/crowd
+          npx --yes ara3d export --random "1-${RANDOM_COUNT}" --detail "${CROWD_DETAIL}" --no-animations --formats glb --out build/ara3d/crowd
+
+      - name: Keep source recipes and licences
+        run: |
+          mkdir -p build/ara3d/metadata
+          cp data/characters/character_library.json build/ara3d/metadata/
+          cat > build/ara3d/metadata/README.txt <<'EOF'
+          LIBREVILLE STORIES - Ara 3D exports
+          Generated with Ara 3D Gen. Keep the licence and source metadata with each asset.
+          Ara 3D code: MIT. Character source data: MakeHuman CC0.
+          Motion-capture source: CMU Graphics Lab Motion Capture Database.
+          These are reusable visual templates, not resident identities.
+          EOF
+
+      - name: Upload generated GLB library
+        uses: actions/upload-artifact@v4
+        with:
+          name: libreville-stories-ara3d-characters
+          path: build/ara3d/
+          if-no-files-found: error
+          retention-days: 14
