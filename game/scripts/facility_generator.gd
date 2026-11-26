@@ -139,6 +139,7 @@ func _build_facilities() -> void:
 	var has_aninf_site := false
 	var has_treasury_site := false
 	var has_cima_site := false
+	var has_presidential_palace_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -181,6 +182,8 @@ func _build_facilities() -> void:
 			has_treasury_site = true
 		if poi_osm_id == 455714470 or poi_name.contains("conference interafricaine des marches d assurances") or poi_name.contains("cima"):
 			has_cima_site = true
+		if poi_osm_id == 168587922 or poi_name.contains("palais presidentiel") or poi_name.contains("palais du bord de mer"):
+			has_presidential_palace_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -395,6 +398,21 @@ func _build_facilities() -> void:
 			"id": 455714470,
 			"lat": 0.3904,
 			"lon": 9.44528,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Palais présidentiel du Bord de mer, boulevard de l’Indépendance.
+	# OSM way 168587922 ; point cartographique confirmé dans la zone jouable.
+	# Repère uniquement : le volume physique provient de buildings.geojson.
+	if not has_presidential_palace_site:
+		var presidential_palace_position := _geo([9.44235, 0.39237])
+		entries.append({
+			"kind": "admin",
+			"label": "Palais présidentiel du Bord de mer",
+			"pos": presidential_palace_position,
+			"id": 168587922,
+			"lat": 0.39237,
+			"lon": 9.44235,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -706,6 +724,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("cima") or label.to_lower().contains("marches d’assurances") or label.to_lower().contains("marchés d’assurances"):
 				marker_text = "CIMA"
+				marker_material = school_accent
+			if label.to_lower().contains("palais presidentiel") or label.to_lower().contains("palais du bord de mer"):
+				marker_text = "PRÉSIDENCE"
 				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
