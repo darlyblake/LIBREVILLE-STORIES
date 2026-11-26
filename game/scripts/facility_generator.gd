@@ -137,6 +137,7 @@ func _build_facilities() -> void:
 	var has_interior_ministry_site := false
 	var has_education_ministry_site := false
 	var has_aninf_site := false
+	var has_treasury_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -175,6 +176,8 @@ func _build_facilities() -> void:
 			has_education_ministry_site = true
 		if poi_osm_id == 455714440 or poi_name.contains("agence nationale des infrastructures numeriques") or poi_name.contains("aninf"):
 			has_aninf_site = true
+		if poi_osm_id == 455714429 or poi_name.contains("direction generale de la comptabilite publique") or poi_name.contains("dgcpt"):
+			has_treasury_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -359,6 +362,21 @@ func _build_facilities() -> void:
 			"id": 455714440,
 			"lat": 0.39245,
 			"lon": 9.44510,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Direction Générale de la Comptabilité Publique et du Trésor (DGCPT).
+	# OSM way 455714429, 321 avenue Rose Francine Rogombe.
+	# Le bâtiment est représenté par son empreinte buildings.geojson ; repère seulement.
+	if not has_treasury_site:
+		var treasury_position := _geo([9.44461, 0.39216])
+		entries.append({
+			"kind": "admin",
+			"label": "Direction Générale de la Comptabilité Publique et du Trésor",
+			"pos": treasury_position,
+			"id": 455714429,
+			"lat": 0.39216,
+			"lon": 9.44461,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -656,6 +674,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("comptabilite publique") or label.to_lower().contains("comptabilité publique") or label.to_lower().contains("dgcpt"):
+				marker_text = "TRÉSOR PUBLIC"
+				marker_material = school_accent
 			if label.to_lower().contains("aninf") or label.to_lower().contains("infrastructures numeriques") or label.to_lower().contains("infrastructures numériques"):
 				marker_text = "ANINF"
 				marker_material = school_accent
