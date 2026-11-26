@@ -182,24 +182,54 @@ func _geometry_center(g:Dictionary)->Array:
 	var coords: Variant = g.get("coordinates",[])
 	if kind == "Point" and coords is Array:
 		return coords
-	var ring: Array = []
+	var selected_ring: Array = []
+	var selected_area := 0.0
 	if kind == "Polygon" and coords is Array and not coords.is_empty():
-		ring = coords[0]
-	elif kind == "MultiPolygon" and coords is Array and not coords.is_empty():
-		var largest: Array = []
+		selected_ring = coords[0]
+	elif kind == "MultiPolygon" and coords is Array:
+		# Retenir la composante extérieure la plus étendue, pas celle qui
+		# possède simplement le plus grand nombre de sommets.
 		for polygon in coords:
-			if polygon is Array and not polygon.is_empty() and polygon[0] is Array and polygon[0].size()>largest.size():
-				largest = polygon[0]
-		ring = largest
-	if ring.is_empty(): return []
-	var lon := 0.0
-	var lat := 0.0
-	var n := 0
-	for point in ring:
-		if point is Array and point.size()>=2:
-			lon += float(point[0]); lat += float(point[1]); n += 1
-	if n == 0: return []
-	return [lon/n,lat/n]
+			if not polygon is Array or polygon.is_empty() or not polygon[0] is Array:
+				continue
+			var candidate: Array = polygon[0]
+			var metrics := _ring_centroid(candidate)
+			if metrics.size() >= 3 and float(metrics[2]) > selected_area:
+				selected_area = float(metrics[2])
+				selected_ring = candidate
+	if selected_ring.is_empty():
+		return []
+	var result := _ring_centroid(selected_ring)
+	if result.size() < 2:
+		return []
+	return [result[0], result[1]]
+
+func _ring_centroid(ring: Array) -> Array:
+	# Centroïde surfacique (formule des lacets) en coordonnées longitude/latitude.
+	# L'aire sert aussi à choisir la plus grande composante d'un MultiPolygon.
+	if ring.size() < 3:
+		return []
+	var twice_area := 0.0
+	var weighted_lon := 0.0
+	var weighted_lat := 0.0
+	for i in range(ring.size()):
+		var a: Variant = ring[i]
+		var b: Variant = ring[(i + 1) % ring.size()]
+		if not a is Array or not b is Array or a.size() < 2 or b.size() < 2:
+			continue
+		var ax := float(a[0])
+		var ay := float(a[1])
+		var bx := float(b[0])
+		var by := float(b[1])
+		var cross := ax * by - bx * ay
+		twice_area += cross
+		weighted_lon += (ax + bx) * cross
+		weighted_lat += (ay + by) * cross
+	if absf(twice_area) < 0.000000000001:
+		return []
+	var centroid_lon := weighted_lon / (3.0 * twice_area)
+	var centroid_lat := weighted_lat / (3.0 * twice_area)
+	return [centroid_lon, centroid_lat, absf(twice_area) * 0.5]
 
 func _geo(c:Array)->Vector3:
 	var x:=(float(c[0])-CENTER_LON)*111320.0*cos(deg_to_rad(CENTER_LAT))
