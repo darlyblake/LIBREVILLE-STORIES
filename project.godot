@@ -15,7 +15,7 @@ run/main_scene="res://game/scenes/menu.tscn"
 config/features=PackedStringArray("4.3", "GL Compatibility")
 
 [autoload]
-PopulationManager="*res://game/scripts/population_manager.gd"
+PopulationManager="*res://game/scripts/population_manager.gd"\nWorldClock="*res://game/scripts/world_clock.gd"
 
 InputConfig="*res://game/scripts/input_config.gd"
 
