@@ -43,6 +43,8 @@ func _process(delta: float) -> void:
 
 
 func get_interaction_prompt() -> String:
+	if not _market_is_open():
+		return "Marché fermé"
 	return "E : discuter avec le vendeur"
 
 
@@ -54,7 +56,24 @@ func interact(_player: Node) -> void:
 	_dialog.popup_centered()
 
 
+func _market_is_open() -> bool:
+	var clock := get_node_or_null("/root/WorldClock")
+	if clock == null:
+		return true
+	return int(clock.hour) >= 6 and int(clock.hour) < 19
+
+
 func _dialogue_for_vendor() -> String:
+	var clock := get_node_or_null("/root/WorldClock")
+	if clock != null:
+		if not _market_is_open():
+			return "Le marché est fermé pour aujourd'hui. Reviens demain matin, les vendeurs arrivent tôt."
+		if clock.has_event_category("national_celebration"):
+			return "Bonne fête de l'indépendance ! On a préparé des produits et des articles aux couleurs du Gabon pour les célébrations."
+		if clock.has_event_category("cultural_celebration"):
+			return "Les fêtes approchent ! Les clients cherchent déjà les cadeaux et les produits pour les réunions en famille."
+		if clock.has_event_category("health_campaign"):
+			return "Ce mois-ci, il y a une campagne de sensibilisation à la santé. Pense à relayer les messages de prévention."
 	var lines: Array[String] = [
 		"Bonjour mon frère ! Les fruits sont arrivés tôt ce matin. Tu cherches quelque chose de précis ?",
 		"Ça va aller ! Ici, prends le temps de comparer les prix et de regarder la marchandise.",
