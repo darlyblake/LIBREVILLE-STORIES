@@ -134,6 +134,7 @@ func _build_facilities() -> void:
 	var has_tpi_annex_site := false
 	var has_budget_directorate_site := false
 	var has_communication_ministry_site := false
+	var has_interior_ministry_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -166,6 +167,8 @@ func _build_facilities() -> void:
 			has_budget_directorate_site = true
 		if poi_osm_id == 5763821475 or poi_name.contains("ministere de la communication"):
 			has_communication_ministry_site = true
+		if poi_osm_id == 14091673588 or poi_name.contains("ministere de l interieur"):
+			has_interior_ministry_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -305,6 +308,21 @@ func _build_facilities() -> void:
 			"id": 5763821475,
 			"lat": 0.38752,
 			"lon": 9.44478,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère de l'Intérieur, de la Sécurité et de la Décentralisation.
+	# Adresse officielle : 119 rue Jean-Baptiste Ndende, avenue de Cointet.
+	# Le point OSM 14091673588 sert de repère ; aucun volume n'est ajouté.
+	if not has_interior_ministry_site:
+		var interior_ministry_position := _geo([9.4476, 0.39078])
+		entries.append({
+			"kind": "ministry",
+			"label": "Ministère de l’Intérieur, de la Sécurité et de la Décentralisation",
+			"pos": interior_ministry_position,
+			"id": 14091673588,
+			"lat": 0.39078,
+			"lon": 9.4476,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -612,6 +630,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "MAIRIE"
 		"ministry":
 			marker_text = "MINISTÈRE"
+			if label.to_lower().contains("interieur") or label.to_lower().contains("intérieur"):
+				marker_text = "INTÉRIEUR"
+				marker_material = school_accent
 			if label.to_lower().contains("2 decembre") or label.to_lower().contains("mines"):
 				marker_text = "MINES"
 				marker_material = school_accent
