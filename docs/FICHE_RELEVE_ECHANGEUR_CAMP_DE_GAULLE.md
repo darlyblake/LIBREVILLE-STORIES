@@ -32,7 +32,7 @@ Les sources gouvernementales décrivent :
 
 Sources :
 - Ministère des Travaux Publics, 26 mai 2025 : https://infrastructures.gouv.ga/2025/05/26/le-ministre-moukoumbi-en-visite-dinspection-sur-les-grands-chantiers-routiers-de-lestuaire/
-- Gouvernement gabonais, 14 août 2025 : https://gouvernement.ga/2025/08/14/%F0%9D%90%80%F0%9D%90%82%F0%9D%90%93%F0%9D%90%88%F0%9D%90%8E%F0%9D%90%8D-%F0%9D%90%83%F0%9D%90%94-%F0%9D%90%86%F0%9D%90%8E%F0%9D%90%94%F0%9D%90%95%F0%9D%90%84%F0%9D%90%91%0D%0A%0D%0A/
+- Gouvernement gabonais, 14 août 2025 : https://gouvernement.ga/2025/08/14/%F0%9D%90%80%F0%9D%90%82%F0%9D%90%93%F0%9D%90%88%F0%9D%90%8E%F0%9D%90%8D-%F0%9D%90%83%F0%9D%90%94-%F0%9D%90%86%F0%9D%90%8E%F0%9D%90%94%F0%9D%90%95%F0%9D%90%84%F0%9D%90%91%F0%9D%90%8D%F0%9D%90%84/
 - Gouvernement gabonais, visite du 29 octobre 2025 : https://gouvernement.ga/2025/10/29/terrain/
 
 ## 4. Chronologie et état d'avancement documenté
