@@ -68,6 +68,7 @@
 | Mairie des Hauts de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
 | Mairie du 2e arrondissement — avenue Jean-Paul II | [x] | [x] | [ ] | [ ] | [ ] |
 | Mairie de Plaine Niger — 4e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
+| Mairie de Sogatol — 5e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -84,7 +85,7 @@
 | ANPI-Gabon — Agence Nationale de Promotion des Investissements | Immeuble Serena Mall, 104 rue Gustave Anguile | [ ] | [ ] |
 | DPO — Direction des Publications Officielles / Journal Officiel | 400 avenue du Colonel Parant | [ ] | [ ] |
 | Ministère du Travail | GPS confirmé : 0.42757 / 9.44887 ; OSM node 4686643890 | [x] | [x] |
-| Mairie du 5e arrondissement — SOGATOL | Référence annuaire : plus code 9FGF+V6R ; point OSM précis à retrouver | [ ] | [ ] |
+| Mairie du 5e arrondissement — SOGATOL | OSM way 1348151040 ; GPS 0.37679 / 9.47356 ; Boulevard des Bantu | [x] | [x] |
 | ANGTI — Agence Nationale des Grands Travaux d’Infrastructures | Immeuble BDM, boulevard de l’Indépendance | [ ] | [ ] |
 | CDC — Centre des Dépôts et Consignations | Immeuble Orchidéa, 2e étage, rue Jean Ndende | [ ] | [ ] |
 | CIPEP Sud — Centre des Impôts des Petites Entreprises et des Particuliers | Zone industrielle d’Oloumi, face à Gabon Méca | [ ] | [ ] |
@@ -121,6 +122,7 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : recherche documentaire complémentaire : ANBG (195 rue Michel Nze MBA, Oloumi), PNPE (378 rue Jean-Baptiste Ndende, Petit-Paris), ANPI-Gabon (Serena Mall, 104 rue Gustave Anguile) et DPO / Journal Officiel (400 avenue du Colonel Parant). Adresses confirmées par les sites institutionnels, mais points GPS cartographiques précis non validés : conservés dans la liste de recherche, non intégrés au jeu.
 
 - 2026-11-26 : ajout de la Mairie de Plaine Niger — 4e arrondissement, OSM way 1346923818, GPS 0.37406 / 9.45930 ; point confirmé par Mapcarta/OSM, repère uniquement et empreinte physique issue de buildings.geojson.
+- 2026-11-26 : ajout de la Mairie de Sogatol — 5e arrondissement, OSM way 1348151040, GPS 0.37679 / 9.47356, Boulevard des Bantu ; Mapcarta confirme l’appellation et la fonction de mairie. Repère institutionnel intégré, fallback sans empreinte propre ; le bâtiment physique doit provenir de buildings.geojson.
 - 2026-11-26 : extension de l’inventaire en attente à partir des annuaires administratifs : ANGTI, CDC, CIPEP Sud, Direction provinciale des Impôts de l’Estuaire, DGE, CAISTAB, ARSEE, CEPIG, CICIBA, CNAP, ONPDF, AGANOR, OGAPI, CNSS et services multi-sites CNAMGS. Coordonnées GPS précises ou situation dans la zone encore à confirmer ; aucun de ces sites n’est intégré sans point vérifié. ANTT et ANAGEISC à Angondjé sont exclues du périmètre strict actuel.
 - 2026-11-26 : contrôle des implantations CNAMGS : le siège social a été transféré à la Sablière en mai 2025, hors zone du jeu ; les directions techniques restent annoncées à Montagne Sainte et d’autres services à Glass / bas de Gué-Gué. Les anciens bureaux du front de mer ne doivent pas être présentés comme siège actuel.
 
