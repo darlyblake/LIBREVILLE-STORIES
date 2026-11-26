@@ -159,6 +159,9 @@ func _build_facilities() -> void:
 	var has_seeg_site := false
 	var has_dgdi_site := false
 	var has_habitat_technical_center_site := false
+	var has_mairie_nombakele_site := false
+	var has_mairie_nzeng_ayong_site := false
+	var has_mairie_hauts_guegue_site := false
 	var has_chamber_of_commerce_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
@@ -245,6 +248,12 @@ func _build_facilities() -> void:
 			has_dgdi_site = true
 		if poi_osm_id == 11133203583 or poi_name.contains("centre technique de l habitat"):
 			has_habitat_technical_center_site = true
+		if poi_osm_id == 1343319442 or poi_name.contains("mairie de nombakele") or poi_name.contains("mairie 3eme arrondissement"):
+			has_mairie_nombakele_site = true
+		if poi_osm_id == 1348678391 or poi_name.contains("mairie de nzeng ayong"):
+			has_mairie_nzeng_ayong_site = true
+		if poi_osm_id == 4040655377 or poi_name.contains("mairie hauts de guegue"):
+			has_mairie_hauts_guegue_site = true
 		if poi_osm_id == 456350865 or poi_name.contains("chambre de commerce"):
 			has_chamber_of_commerce_site = true
 		var kind := _kind(p)
@@ -735,6 +744,28 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# Mairies d’arrondissement cartographiées dans la zone jouable.
+	if not has_mairie_nombakele_site:
+		entries.append({
+			"kind": "admin", "label": "Mairie de Nombakélé — 3e arrondissement",
+			"pos": _geo([9.45077, 0.39109]), "id": 1343319442,
+			"lat": 0.39109, "lon": 9.45077,
+			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
+		})
+	if not has_mairie_nzeng_ayong_site:
+		entries.append({
+			"kind": "admin", "label": "Mairie de Nzeng-Ayong",
+			"pos": _geo([9.47159, 0.42399]), "id": 1348678391,
+			"lat": 0.42399, "lon": 9.47159,
+			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
+		})
+	if not has_mairie_hauts_guegue_site:
+		entries.append({
+			"kind": "admin", "label": "Mairie des Hauts de Gué-Gué",
+			"pos": _geo([9.43262, 0.42802]), "id": 4040655377,
+			"lat": 0.42802, "lon": 9.43262,
+			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
+		})
 	# Chambre de Commerce du Gabon — OSM way 456350865, centroïde Mapcarta/OSM.
 	# Le repère est placé sur le bâtiment public existant ; aucune géométrie dupliquée.
 	if not has_chamber_of_commerce_site:
@@ -1042,6 +1073,15 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("mairie de nombakele") or label.to_lower().contains("3e arrondissement"):
+				marker_text = "MAIRIE 3E"
+				marker_material = school_accent
+			if label.to_lower().contains("mairie de nzeng-ayong") or label.to_lower().contains("mairie de nzeng ayong"):
+				marker_text = "MAIRIE NZENG-AYONG"
+				marker_material = school_accent
+			if label.to_lower().contains("mairie des hauts de guegue") or label.to_lower().contains("mairie hauts de guegue"):
+				marker_text = "MAIRIE GUÉ-GUÉ"
+				marker_material = school_accent
 			if label.to_lower().contains("documentation et de l immigration") or label.to_lower().contains("dgdi"):
 				marker_text = "DGDI"
 				marker_material = school_accent
