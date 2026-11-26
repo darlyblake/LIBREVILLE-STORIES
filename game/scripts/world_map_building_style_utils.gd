@@ -85,9 +85,11 @@ static func administrative_style(props: Dictionary) -> String:
 		return "ministry"
 	if name.contains("cour constitutionnelle") or name.contains("cour supreme") or name.contains("tribunal") or name.contains("justice"):
 		return "court"
+	if government == "ministry":
+		return "ministry"
 	if office == "diplomatic" or name.contains("ambassade") or name.contains("consulat"):
 		return "embassy"
-	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government" or government in ["administrative", "government"]:
+	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government" or government in ["administrative", "government", "parliament", "public_service"]:
 		return "public_office"
 	return ""
 

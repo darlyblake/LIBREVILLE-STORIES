@@ -201,6 +201,7 @@ func _kind(p:Dictionary)->String:
 	if a=="fire_station" or b=="fire_station": return "fire"
 	if a=="bus_station" or b=="train_station" or str(p.get("public_transport",""))=="station": return "bus"
 	if a=="fuel" or s=="fuel": return "fuel"
+	if a=="conference_centre" or b=="conference_centre": return "conference"
 	var admin_kind := _administrative_kind(p)
 	if admin_kind != "": return admin_kind
 	return ""
@@ -220,13 +221,13 @@ func _administrative_kind(p: Dictionary) -> String:
 	var government := str(p.get("government", "")).to_lower()
 	if amenity == "townhall" or building == "townhall" or name.contains("mairie") or name.contains("hotel de ville"):
 		return "city_hall"
-	if name.contains("ministere") or name.contains("primature"):
+	if name.contains("ministere") or name.contains("primature") or government == "ministry":
 		return "ministry"
 	if name.contains("ambassade") or name.contains("consulat") or office == "diplomatic":
 		return "embassy"
 	if name.contains("cour constitutionnelle") or name.contains("tribunal") or name.contains("cour supreme"):
 		return "court"
-	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government" or government in ["administrative", "government"]:
+	if office in ["government", "administrative"] or building in ["government", "civic", "public"] or amenity == "government" or government in ["administrative", "government", "parliament", "public_service"]:
 		return "admin"
 	return ""
 
@@ -238,6 +239,7 @@ func _default_name(k:String)->String:
 		"fire": return "Sapeurs-pompiers"
 		"bus": return "Gare routière"
 		"fuel": return "Station-service"
+		"conference": return "Palais des Congrès"
 		"school": return "Établissement scolaire"
 		"university": return "Université"
 		"city_hall": return "Mairie"
@@ -425,6 +427,8 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "TRANSPORT"
 		"fuel":
 			marker_text = "CARBURANT"
+		"conference":
+			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
 		"city_hall":

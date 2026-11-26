@@ -3967,6 +3967,98 @@ func _road_label_priority(props: Dictionary) -> int:
 			return 5
 
 
+func _load_administrative_sites() -> Dictionary:
+	# Indexe les points administratifs OSM dans une grille de 100 m.
+	# Seuls les points situés dans l’emprise géographique du jeu sont retenus.
+	var data := _read_geojson("res://data/osm/pois.geojson")
+	var grid: Dictionary = {}
+	if data.is_empty():
+		return grid
+	for feature in data.get("features", []):
+		var geometry: Dictionary = feature.get("geometry", {})
+		if str(geometry.get("type", "")) != "Point":
+			continue
+		var coordinates: Array = geometry.get("coordinates", [])
+		if coordinates.size() < 2:
+			continue
+		var longitude := float(coordinates[0])
+		var latitude := float(coordinates[1])
+		if latitude < 0.355 or latitude > 0.445 or longitude < 9.400 or longitude > 9.495:
+			continue
+		var props: Dictionary = feature.get("properties", {})
+		var office := str(props.get("office", "")).to_lower()
+		var amenity := str(props.get("amenity", "")).to_lower()
+		if office not in ["government", "diplomatic"] and amenity != "townhall":
+			continue
+		var site_name := str(props.get("name:fr", props.get("name", ""))).strip_edges()
+		# Cette entrée est manifestement mal catégorisée dans OSM.
+		if site_name.to_lower() == "agences immobilières":
+			continue
+		var world := _geo_to_world(coordinates)
+		var cell := Vector2i(floori(world.x / 100.0), floori(world.z / 100.0))
+		if not grid.has(cell):
+			grid[cell] = []
+		grid[cell].append({
+			"position": Vector2(world.x, world.z),
+			"properties": props
+		})
+	return grid
+
+
+func _find_administrative_site_for_building(polygon: PackedVector2Array, site_grid: Dictionary) -> Dictionary:
+	if polygon.size() < 3 or site_grid.is_empty():
+		return {}
+	var min_x := INF
+	var max_x := -INF
+	var min_z := INF
+	var max_z := -INF
+	var center := Vector2.ZERO
+	for point in polygon:
+		min_x = minf(min_x, point.x)
+		max_x = maxf(max_x, point.x)
+		min_z = minf(min_z, point.y)
+		max_z = maxf(max_z, point.y)
+		center += point
+	center /= float(polygon.size())
+	# Petite marge pour les POI placés sur l’entrée ou juste à côté du mur.
+	var first_x := floori((min_x - 4.0) / 100.0)
+	var last_x := floori((max_x + 4.0) / 100.0)
+	var first_z := floori((min_z - 4.0) / 100.0)
+	var last_z := floori((max_z + 4.0) / 100.0)
+	var best_props: Dictionary = {}
+	var best_score := INF
+	for cell_x in range(first_x, last_x + 1):
+		for cell_z in range(first_z, last_z + 1):
+			var cell_sites: Array = site_grid.get(Vector2i(cell_x, cell_z), [])
+			for site in cell_sites:
+				var site_position: Vector2 = site.get("position", Vector2.ZERO)
+				var distance := 0.0
+				if not Geometry2D.is_point_in_polygon(site_position, polygon):
+					distance = _distance_to_building_outline(site_position, polygon)
+					if distance > 4.0:
+						continue
+				var site_props: Dictionary = site.get("properties", {})
+				var score := site_position.distance_to(center) + distance * 8.0
+				var name := str(site_props.get("name:fr", site_props.get("name", ""))).strip_edges()
+				if name.is_empty():
+					score += 100.0
+				if score < best_score:
+					best_score = score
+					best_props = site_props
+	return best_props
+
+
+func _distance_to_building_outline(point: Vector2, polygon: PackedVector2Array) -> float:
+	var best_distance := INF
+	for index in range(polygon.size()):
+		var a := polygon[index]
+		var b := polygon[(index + 1) % polygon.size()]
+		var edge := b - a
+		var parameter := clampf((point - a).dot(edge) / maxf(edge.length_squared(), 0.0001), 0.0, 1.0)
+		best_distance = minf(best_distance, point.distance_to(a + edge * parameter))
+	return best_distance
+
+
 func _load_buildings() -> void:
 	var data := _read_geojson("res://data/osm/buildings.geojson")
 	if data.is_empty():
@@ -3982,6 +4074,12 @@ func _load_buildings() -> void:
 	features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return _feature_world_center(a).distance_squared_to(building_origin) < _feature_world_center(b).distance_squared_to(building_origin)
 	)
+	var administrative_sites := _load_administrative_sites()
+	var administrative_site_count := 0
+	for site_cell in administrative_sites.values():
+		administrative_site_count += site_cell.size()
+	var administrative_building_matches := 0
+	print("LIBREVILLE STORIES | points administratifs OSM dans l’emprise : %d" % administrative_site_count)
 	var restaurant_scenes: Array[PackedScene] = []
 	for restaurant_path in [
 		"res://assets/models/baie_des_rois/restaurant_pavillon_baie_des_rois_compact.glb",
@@ -4017,7 +4115,6 @@ func _load_buildings() -> void:
 				continue
 		var building_kind := str(props.get("building", "yes"))
 		var osm_id := int(props.get("osm_id", index))
-		var height := WorldMapBuildingStyleUtils.building_height(building_kind, osm_id, props)
 		var added := false
 		for polygon in polygons:
 			if polygon.is_empty() or polygon[0].size() < 4:
@@ -4030,10 +4127,23 @@ func _load_buildings() -> void:
 				points.remove_at(points.size() - 1)
 			if points.size() < 3:
 				continue
+			# Associer le POI administratif à son empreinte réelle quand le point
+			# OSM tombe dans le bâtiment ou à moins de quatre mètres de son contour.
+			var render_props: Dictionary = props.duplicate()
+			var admin_site_props := _find_administrative_site_for_building(points, administrative_sites)
+			if not admin_site_props.is_empty() and WorldMapBuildingStyleUtils.administrative_style(render_props).is_empty():
+				var admin_name := str(admin_site_props.get("name:fr", admin_site_props.get("name", ""))).strip_edges()
+				if not admin_name.is_empty():
+					render_props["name"] = admin_name
+				for tag in ["office", "government", "amenity"]:
+					if admin_site_props.has(tag):
+						render_props[tag] = admin_site_props[tag]
+				administrative_building_matches += 1
+			var height := WorldMapBuildingStyleUtils.building_height(building_kind, osm_id, render_props)
 			# L'empreinte est découpée avec la même zone de sécurité que les surfaces
 			# terrestres : chaussée + bordure + trottoir + marge anti-chevauchement.
 			var footprint_parts := _clip_polygon_away_from_roads(points, 0.65)
-			var facade_col := WorldMapBuildingStyleUtils.building_color(building_kind, osm_id, props)
+			var facade_col := WorldMapBuildingStyleUtils.building_color(building_kind, osm_id, render_props)
 			for footprint in footprint_parts:
 				if footprint.size() < 3:
 					continue
@@ -4049,7 +4159,7 @@ func _load_buildings() -> void:
 				building_center /= float(footprint.size())
 				var building_base_y := _terrain_height_at_world(building_center.x, building_center.y)
 				surface.set_color(facade_col)
-				_add_building(surface, roof_surface, detail_surface, footprint, indices, height, WorldMapBuildingStyleUtils.roof_color(building_kind, osm_id, props), building_kind, osm_id, props, facade_col, building_base_y)
+				_add_building(surface, roof_surface, detail_surface, footprint, indices, height, WorldMapBuildingStyleUtils.roof_color(building_kind, osm_id, render_props), building_kind, osm_id, render_props, facade_col, building_base_y)
 				added = true
 		if added:
 			_building_count += 1
@@ -4072,6 +4182,7 @@ func _load_buildings() -> void:
 		_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
 		_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
 		_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
+	print("LIBREVILLE STORIES | empreintes de bâtiments associées à un POI administratif : %d" % administrative_building_matches)
 
 
 
