@@ -121,3 +121,15 @@ Source officielle : https://www.infrastructures.gouv.ga/387-travaux-publics/390-
 ## 11. Conséquence pour la maquette
 
 Le jeu peut désormais placer deux axes de circulation sur l'emprise du pont avec une orientation issue des tracés OSM. En revanche, la géométrie 3D détaillée reste bloquée jusqu'à obtention d'une source permettant de relever les largeurs, le profil en long, les piles, les culées et les bretelles. Les aménagements du jardin sous l'ouvrage et le chantier des abords en 2026 restent des objets temporels séparés du pont.
+
+
+## 12. Écart entre le repère Mapcarta et les deux voies extraites
+
+La fiche initiale cite le way `1443840888`, référencé par Mapcarta comme `man_made=bridge`. En revanche, la couche régionale extraite le 26 novembre 2026 contient les deux ways routiers `1443840889` et `1443840890`, mais ne contient pas le way `1443840888`.
+
+Cet écart doit être résolu en comparant l'historique OSM et la version source Geofabrik utilisée par l'extraction. Il ne faut pas supposer que le way 888 est le contour géométrique des ways 889/890, ni fusionner ces identifiants. Pour le moment :
+- way 888 : repère cartographique secondaire, géométrie non récupérée dans notre export ;
+- ways 889/890 : deux lignes routières OSM extraites, chacune longue d'environ 57,4 m ;
+- aucune emprise polygonale certifiée du tablier n'est disponible dans la couche extraite.
+
+La maquette reste donc au stade du tracé routier de référence, pas du tablier 3D final.
