@@ -147,6 +147,7 @@ func _build_facilities() -> void:
 	var has_brac_oif_site := false
 	var has_dgttc_site := false
 	var has_dgel_site := false
+	var has_cnee_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -205,6 +206,8 @@ func _build_facilities() -> void:
 			has_dgttc_site = true
 		if poi_osm_id == 11421865904 or poi_name.contains("direction generale des etudes et laboratoires"):
 			has_dgel_site = true
+		if poi_osm_id == 12150167700 or poi_name.contains("conseil national de l eau") or poi_name.contains("conseil national de l'électricité"):
+			has_cnee_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -526,6 +529,19 @@ func _build_facilities() -> void:
 			"id": 11421865904,
 			"lat": 0.4182,
 			"lon": 9.4492,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Conseil National de l'Eau et de l'Electricité (CNEE), OSM node 12150167700.
+	# Siège social à Haut de Gué-Gué ; bâtiment physique issu de buildings.geojson.
+	if not has_cnee_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Conseil National de l’Eau et de l’Électricité (CNEE)",
+			"pos": _geo([9.43147, 0.42836]),
+			"id": 12150167700,
+			"lat": 0.42836,
+			"lon": 9.43147,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -855,6 +871,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("etudes et laboratoires") or label.to_lower().contains("dgel"):
 				marker_text = "ÉTUDES & LABORATOIRES"
+				marker_material = school_accent
+			if label.to_lower().contains("conseil national de l eau") or label.to_lower().contains("cnee"):
+				marker_text = "EAU & ÉLECTRICITÉ"
 				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
