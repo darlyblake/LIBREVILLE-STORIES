@@ -72,11 +72,30 @@ static func polygon_signed_area(points: PackedVector2Array) -> float:
 		twice_area += a.x * b.y - b.x * a.y
 	return twice_area * 0.5
 
-static func pitched_roof_triangles(points: PackedVector2Array, wall_height: float, base_y: float = 0.0) -> PackedVector3Array:
+static func pitched_roof_triangles(points: PackedVector2Array, wall_height: float, base_y: float = 0.0, shape: String = "gabled") -> PackedVector3Array:
 	# Retourne les 6 triangles d'un toit à deux pans, sans toucher à une scène.
 	# Un tableau vide signifie que l'empreinte ne convient pas à ce type de toit.
 	if points.size() != 4:
 		return PackedVector3Array()
+	if shape == "pyramidal":
+		var center := Vector2.ZERO
+		var min_edge := INF
+		for i in range(4):
+			center += points[i]
+			min_edge = minf(min_edge, points[i].distance_to(points[(i + 1) % 4]))
+		center /= 4.0
+		if min_edge <= 0.1:
+			return PackedVector3Array()
+		var base_y_roof := base_y + wall_height + 0.035
+		var apex := Vector3(center.x, base_y_roof + clampf(min_edge * 0.42, 0.8, 2.2), center.y)
+		var pyramid := PackedVector3Array()
+		for i in range(4):
+			var a := points[i]
+			var b := points[(i + 1) % 4]
+			pyramid.append(Vector3(a.x, base_y_roof, a.y))
+			pyramid.append(Vector3(b.x, base_y_roof, b.y))
+			pyramid.append(apex)
+		return pyramid
 	var longest_index := 0
 	var longest_length := 0.0
 	var shortest_side := INF
