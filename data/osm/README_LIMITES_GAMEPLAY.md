@@ -99,3 +99,15 @@ Pour appliquer le style dans QGIS :
 
 Les 72 cellules déjà présentes restent réparties entre les six arrondissements selon leurs attributs actuels. Les noms de quartiers encore absents du jeu sont référencés dans `REFERENTIEL_QUARTIERS_2025.json`, mais ne deviennent pas automatiquement des polygones : leur position doit d'abord être retrouvée et vérifiée. Le 6e arrondissement ne compte actuellement que 3 cellules géographiques ; sa couverture reste donc incomplète.
 
+
+
+## Couche SIG dédiée aux ponts (26 novembre 2026)
+
+L'extraction régionale produit désormais `bridges.geojson` en plus des routes, bâtiments, POI et éléments naturels. Cette couche rassemble les ways OSM portant explicitement `bridge=*` ou `man_made=bridge`. Elle préserve les identifiants et tags source et ne déduit aucune hauteur ou structure 3D.
+
+- Données régionales : `data/osm/extended/bridges.geojson` (103 ways dans l'extraction du 26 novembre 2026).
+- Emprise de travail du jeu : 84 ways possèdent au moins un point dans le rectangle de référence de Libreville.
+- Ces ways ne représentent pas 84 ouvrages distincts : plusieurs voies d'un même échangeur sont enregistrées séparément, et certains objets sont des passerelles ou des petits franchissements.
+- L'inventaire priorisé et les repères OSM sont documentés dans `docs/INVENTAIRE_SIG_PONTS_EMPRISE_JOUABLE.md`.
+
+Ne pas construire un tablier à partir du seul tag `layer=1` : celui-ci ne donne pas une altitude en mètres. Les dimensions, appuis, rampes et profils doivent être établis à partir de plans, relevés ou sources techniques.
