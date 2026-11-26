@@ -471,7 +471,7 @@ func _generate_appearance(gender: String, age: int) -> Dictionary:
 	var face_shapes: Array[String] = ["ovale", "rond", "carre", "allonge", "coeur", "losange"]
 	var eye_shapes: Array[String] = ["amande", "ronds", "fins", "tombants"]
 	var nose_shapes: Array[String] = ["fin", "large", "droit", "arrondi", "court"]
-	var body_types: Array[String] = ["mince", " moyen", "athletique", "corpulence_moyenne", "fort"]
+	var body_types: Array[String] = ["mince", "moyen", "athletique", "corpulence_moyenne", "fort"]
 	var tops: Array[String] = ["tshirt", "polo", "chemise", "blouse", "debardeur", "pull", "veste", "robe", "tenue_travail"]
 	var bottoms: Array[String] = ["jean", "pantalon", "short", "jupe", "pantalon_travail", "robe"]
 	var shoes: Array[String] = ["baskets", "sandales", "chaussures_ville", "bottes", "tongs"]
