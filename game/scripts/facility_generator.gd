@@ -149,6 +149,7 @@ func _build_facilities() -> void:
 	var has_dgel_site := false
 	var has_cnee_site := false
 	var has_cnd_site := false
+	var has_customs_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
@@ -214,6 +215,8 @@ func _build_facilities() -> void:
 			has_cnd_site = true
 		if poi_name.contains("palais leon mba") or poi_name.contains("assemblee nationale"):
 			has_assembly_site = true
+		if poi_osm_id == 12727052424 or poi_name.contains("direction generale des douanes") or poi_name.contains("douanes et droits indirects"):
+			has_customs_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -577,6 +580,19 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# Direction Générale des Douanes et Droits Indirects, OSM node 12727052424.
+	# 823 Avenue Edouard Ekomie Mba, Oloumi ; point dans l'emprise validée.
+	if not has_customs_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Direction Générale des Douanes et Droits Indirects",
+			"pos": _geo([9.46677, 0.37618]),
+			"id": 12727052424,
+			"lat": 0.37618,
+			"lon": 9.46677,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -909,6 +925,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("palais leon mba") or label.to_lower().contains("assemblee nationale"):
 				marker_text = "ASSEMBLÉE NATIONALE"
+				marker_material = school_accent
+			if label.to_lower().contains("direction generale des douanes") or label.to_lower().contains("droits indirects"):
+				marker_text = "DOUANES"
 				marker_material = school_accent
 			if label.to_lower().contains("conseil national de l eau") or label.to_lower().contains("cnee"):
 				marker_text = "EAU & ÉLECTRICITÉ"
