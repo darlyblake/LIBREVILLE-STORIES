@@ -3972,7 +3972,9 @@ func _load_administrative_sites() -> Dictionary:
 	# Seuls les points situés dans l’emprise géographique du jeu sont retenus.
 	var data := _read_geojson("res://data/osm/pois.geojson")
 	var grid: Dictionary = {}
+	var by_osm_id: Dictionary = {}
 	if data.is_empty():
+		grid["__by_osm_id"] = by_osm_id
 		return grid
 	for feature in data.get("features", []):
 		var geometry: Dictionary = feature.get("geometry", {})
@@ -4002,12 +4004,21 @@ func _load_administrative_sites() -> Dictionary:
 			"position": Vector2(world.x, world.z),
 			"properties": props
 		})
+		var osm_id := str(props.get("osm_id", "")).strip_edges()
+		if not osm_id.is_empty():
+			by_osm_id[osm_id] = props
+	grid["__by_osm_id"] = by_osm_id
 	return grid
 
 
-func _find_administrative_site_for_building(polygon: PackedVector2Array, site_grid: Dictionary) -> Dictionary:
+func _find_administrative_site_for_building(polygon: PackedVector2Array, site_grid: Dictionary, osm_id: int = 0) -> Dictionary:
 	if polygon.size() < 3 or site_grid.is_empty():
 		return {}
+	# L’identifiant OSM commun au point et au polygone est la correspondance la plus fiable.
+	var id_index: Dictionary = site_grid.get("__by_osm_id", {})
+	var exact_id := str(osm_id)
+	if not exact_id.is_empty() and id_index.has(exact_id):
+		return id_index[exact_id]
 	var min_x := INF
 	var max_x := -INF
 	var min_z := INF
@@ -4076,7 +4087,10 @@ func _load_buildings() -> void:
 	)
 	var administrative_sites := _load_administrative_sites()
 	var administrative_site_count := 0
-	for site_cell in administrative_sites.values():
+	for cell_key in administrative_sites:
+		if cell_key == "__by_osm_id":
+			continue
+		var site_cell: Array = administrative_sites[cell_key]
 		administrative_site_count += site_cell.size()
 	var administrative_building_matches := 0
 	print("LIBREVILLE STORIES | points administratifs OSM dans l’emprise : %d" % administrative_site_count)
@@ -4130,7 +4144,7 @@ func _load_buildings() -> void:
 			# Associer le POI administratif à son empreinte réelle quand le point
 			# OSM tombe dans le bâtiment ou à moins de quatre mètres de son contour.
 			var render_props: Dictionary = props.duplicate()
-			var admin_site_props := _find_administrative_site_for_building(points, administrative_sites)
+			var admin_site_props := _find_administrative_site_for_building(points, administrative_sites, osm_id)
 			if not admin_site_props.is_empty() and WorldMapBuildingStyleUtils.administrative_style(render_props).is_empty():
 				var admin_name := str(admin_site_props.get("name:fr", admin_site_props.get("name", ""))).strip_edges()
 				if not admin_name.is_empty():
@@ -4620,9 +4634,23 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 		var door_direction := Vector3((door_b.x - door_a.x) / longest_edge_length, 0.0, (door_b.y - door_a.y) / longest_edge_length)
 		door_normal = Vector3(door_direction.z, 0.0, -door_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
 		_add_facade_door(details, door_a, door_b, door_normal, base_y)
-	# Profil architectural des bâtiments administratifs documentés à Libreville.
-	if longest_edge_length >= 8.0 and not WorldMapBuildingStyleUtils.administrative_style(props).is_empty():
-		_add_administrative_facade_details(details, door_a, door_b, door_normal, base_y, height, props)
+	# Le Palais des Congrès possède une résille enveloppante ; les autres
+	# institutions conservent leurs détails sur la façade principale.
+	var administrative_profile := WorldMapBuildingStyleUtils.administrative_style(props)
+	if administrative_profile == "conference_centre":
+		for facade_index in range(points.size()):
+			var facade_a := points[facade_index]
+			var facade_b := points[(facade_index + 1) % points.size()]
+			var facade_edge := facade_b - facade_a
+			var facade_length := facade_edge.length()
+			if facade_length < 8.0:
+				continue
+			var facade_direction := Vector3(facade_edge.x / facade_length, 0.0, facade_edge.y / facade_length)
+			var facade_normal := Vector3(facade_direction.z, 0.0, -facade_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
+			_add_administrative_facade_details(details, facade_a, facade_b, facade_normal,
+				base_y, height, props, facade_index == longest_edge_index)
+	elif longest_edge_length >= 8.0 and not administrative_profile.is_empty():
+		_add_administrative_facade_details(details, door_a, door_b, door_normal, base_y, height, props, true)
 	# Marquise de boutique : auvent discret au-dessus des commerces donnant sur rue.
 	if longest_edge_length >= 3.6 and height >= 2.8 and (building_kind in ["commercial", "retail", "supermarket"] or props.has("shop")):
 		_add_shopfront_awning(details, door_a, door_b, door_normal, base_y, height, osm_id)
@@ -4645,7 +4673,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 
 
 func _add_administrative_facade_details(surface: SurfaceTool, a: Vector2, b: Vector2,
-		normal: Vector3, base_y: float, height: float, props: Dictionary) -> void:
+		normal: Vector3, base_y: float, height: float, props: Dictionary, is_primary_facade: bool = true) -> void:
 	# Détails en relief posés sur la façade principale OSM ; l’empreinte cadastrale reste inchangée.
 	var style := WorldMapBuildingStyleUtils.administrative_style(props)
 	var edge := b - a
@@ -4694,15 +4722,15 @@ func _add_administrative_facade_details(surface: SurfaceTool, a: Vector2, b: Vec
 			var y := height * float(index) / float(lattice_rows)
 			_add_facade_prism(surface, origin + tangent * (edge_length * 0.5) + Vector3.UP * y,
 				tangent, normal, edge_length * 0.5, 0.075, 0.14)
-		# Le débord supérieur est volontairement marqué : élément dominant des photos.
-		_add_facade_prism(surface, origin + tangent * (edge_length * 0.5) + Vector3.UP * maxf(2.8, height - 0.55),
-			tangent, normal, edge_length * 0.52, 0.42, 2.35)
-		# Encadrement plus massif de l’entrée principale.
-		var entrance_width := minf(7.0, edge_length * 0.24)
-		var entrance_center := origin + tangent * (edge_length * 0.5)
-		for side in [-1.0, 1.0]:
-			_add_facade_prism(surface, entrance_center + tangent * side * entrance_width * 0.5,
-				tangent, normal, 0.18, minf(4.5, height), 0.48)
+		if is_primary_facade:
+			# Le grand auvent et l’entrée sont réservés à la façade principale.
+			_add_facade_prism(surface, origin + tangent * (edge_length * 0.5) + Vector3.UP * maxf(2.8, height - 0.55),
+				tangent, normal, edge_length * 0.52, 0.42, 2.35)
+			var entrance_width := minf(7.0, edge_length * 0.24)
+			var entrance_center := origin + tangent * (edge_length * 0.5)
+			for side in [-1.0, 1.0]:
+				_add_facade_prism(surface, entrance_center + tangent * side * entrance_width * 0.5,
+					tangent, normal, 0.18, minf(4.5, height), 0.48)
 	elif style == "embassy":
 		# Portique d’entrée sobre, avec deux montants et une traverse en relief.
 		surface.set_color(Color(0.90, 0.87, 0.79))

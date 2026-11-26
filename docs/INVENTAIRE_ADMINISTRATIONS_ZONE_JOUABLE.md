@@ -172,6 +172,8 @@
 
 Le point OSM `1435653903` (`amenity=conference_centre`) est situé à **0,433619 N ; 9,453334 E**, donc à l’intérieur de l’emprise jouable. Il est suivi séparément des 118 points administratifs ci-dessus, car un centre de congrès est un équipement public et diplomatique, pas un bureau administratif.
 
+L’objet `way/1435653903` est également présent dans `buildings.geojson`, avec le même identifiant OSM et le nom du Palais. Son contour comporte 8 sommets distincts ; l’emprise WGS84 donne environ **134 × 130 m** et une aire polygonale calculée d’environ **9 167 m²**. Ce calcul est une mesure cartographique approximative (projection locale), pas une mesure cadastrale. Le point de repère et le centroïde de l’empreinte sont distants d’environ 2,6 m.
+
 Références visuelles et institutionnelles :
 - Site officiel : https://www.palaiscongreslibreville.ga/fr/palais
 - Photographie extérieure officielle : https://www.palaiscongreslibreville.ga/
