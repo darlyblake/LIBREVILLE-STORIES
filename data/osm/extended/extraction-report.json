@@ -77,7 +77,7 @@
     {
       "row": 3,
       "column": 2,
-      "elements": 9620,
+      "elements": 9625,
       "from_cache": false,
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     },
@@ -124,7 +124,7 @@
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     }
   ],
-  "extracted_at_utc": "2026-11-26T09:45:03.963606+00:00",
+  "extracted_at_utc": "2026-11-26T09:53:17.269515+00:00",
   "files": {
     "localities.geojson": {
       "features": 107,
@@ -156,15 +156,16 @@
       "size_bytes": 341447
     },
     "bridges.geojson": {
-      "features": 103,
+      "features": 108,
       "categories": {
-        "viaduct": 32,
+        "viaduct": 34,
         "yes": 69,
         "boardwalk": 1,
-        "aqueduct": 1
+        "aqueduct": 1,
+        "bridge": 3
       },
       "note": "Ways OSM explicitement balisés bridge=* ou man_made=bridge. Tracés uniquement ; aucune hauteur ou géométrie 3D n'est inférée.",
-      "size_bytes": 41213
+      "size_bytes": 43527
     },
     "pois.geojson": {
       "features": 3302,

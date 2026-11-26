@@ -3,7 +3,7 @@
   "license": "ODbL-1.0",
   "method": "Projection locale équirectangulaire approximative à la latitude de chaque objet. Les métriques décrivent l'emprise cartographique OSM uniquement.",
   "warning": "Les dimensions d'enveloppe, aires et périmètres ne sont pas des mesures certifiées de tablier. Aucune hauteur, épaisseur, pile, rampe ou altitude n'est déduite.",
-  "feature_count": 103,
+  "feature_count": 108,
   "features": [
     {
       "osm_id": "way/43157373",
@@ -19,7 +19,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 57.0,
+        "individual_line_lengths_m_approx": [
+          57.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/43157376",
@@ -35,7 +43,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 56.9,
+        "individual_line_lengths_m_approx": [
+          56.9
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/47290112",
@@ -51,7 +67,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 31.7,
+        "individual_line_lengths_m_approx": [
+          31.7
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/47290115",
@@ -67,7 +91,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 32.1,
+        "individual_line_lengths_m_approx": [
+          32.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/92340918",
@@ -81,7 +113,15 @@
         "layer": "1",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 61.4,
+        "individual_line_lengths_m_approx": [
+          61.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/92348308",
@@ -94,7 +134,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 18.5,
+        "individual_line_lengths_m_approx": [
+          18.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/92348330",
@@ -107,7 +155,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 18.8,
+        "individual_line_lengths_m_approx": [
+          18.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/92358873",
@@ -123,7 +179,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 77.5,
+        "individual_line_lengths_m_approx": [
+          77.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/92358874",
@@ -139,7 +203,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 81.5,
+        "individual_line_lengths_m_approx": [
+          81.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/92445313",
@@ -153,7 +225,15 @@
         "layer": "1",
         "surface": "unpaved"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 10,
+        "mapped_line_length_m_approx": 440.7,
+        "individual_line_lengths_m_approx": [
+          440.7
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/95678503",
@@ -168,7 +248,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 4,
+        "mapped_line_length_m_approx": 43.9,
+        "individual_line_lengths_m_approx": [
+          43.9
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/95678532",
@@ -184,7 +272,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 49.4,
+        "individual_line_lengths_m_approx": [
+          49.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/101749833",
@@ -198,7 +294,15 @@
         "layer": "1",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 41.0,
+        "individual_line_lengths_m_approx": [
+          41.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/101749835",
@@ -212,7 +316,15 @@
         "layer": "1",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 3,
+        "mapped_line_length_m_approx": 43.8,
+        "individual_line_lengths_m_approx": [
+          43.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/150140804",
@@ -225,7 +337,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 16.4,
+        "individual_line_lengths_m_approx": [
+          16.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/150274436",
@@ -240,7 +360,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 20.4,
+        "individual_line_lengths_m_approx": [
+          20.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/169184393",
@@ -256,7 +384,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 13,
+        "mapped_line_length_m_approx": 202.1,
+        "individual_line_lengths_m_approx": [
+          202.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/169184394",
@@ -272,7 +408,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 12,
+        "mapped_line_length_m_approx": 200.2,
+        "individual_line_lengths_m_approx": [
+          200.2
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/170924097",
@@ -288,7 +432,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 21,
+        "mapped_line_length_m_approx": 463.6,
+        "individual_line_lengths_m_approx": [
+          463.6
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/170924101",
@@ -304,7 +456,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 24,
+        "mapped_line_length_m_approx": 461.2,
+        "individual_line_lengths_m_approx": [
+          461.2
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/171214591",
@@ -319,7 +479,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 46.7,
+        "individual_line_lengths_m_approx": [
+          46.7
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/208495046",
@@ -335,7 +503,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 19.6,
+        "individual_line_lengths_m_approx": [
+          19.6
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/208495051",
@@ -350,7 +526,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 40.7,
+        "individual_line_lengths_m_approx": [
+          40.7
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/208495223",
@@ -366,7 +550,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 3,
+        "mapped_line_length_m_approx": 21.0,
+        "individual_line_lengths_m_approx": [
+          21.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/251361045",
@@ -381,7 +573,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 28.0,
+        "individual_line_lengths_m_approx": [
+          28.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/373247364",
@@ -395,7 +595,15 @@
         "layer": "1",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 3,
+        "mapped_line_length_m_approx": 59.8,
+        "individual_line_lengths_m_approx": [
+          59.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/443857781",
@@ -408,7 +616,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 12.1,
+        "individual_line_lengths_m_approx": [
+          12.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/448337123",
@@ -424,7 +640,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 54.8,
+        "individual_line_lengths_m_approx": [
+          54.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/448349537",
@@ -438,7 +662,15 @@
         "layer": "1",
         "surface": "metal"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 3,
+        "mapped_line_length_m_approx": 38.7,
+        "individual_line_lengths_m_approx": [
+          38.7
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/448836549",
@@ -454,7 +686,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 55.1,
+        "individual_line_lengths_m_approx": [
+          55.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/514572570",
@@ -470,7 +710,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 49.4,
+        "individual_line_lengths_m_approx": [
+          49.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588248867",
@@ -485,7 +733,15 @@
         "lanes": "2",
         "surface": "paved"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 27.7,
+        "individual_line_lengths_m_approx": [
+          27.7
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588257277",
@@ -500,7 +756,15 @@
         "lanes": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 13.8,
+        "individual_line_lengths_m_approx": [
+          13.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588257280",
@@ -515,7 +779,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 15.8,
+        "individual_line_lengths_m_approx": [
+          15.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588534407",
@@ -530,7 +802,15 @@
         "lanes": "2",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 21.1,
+        "individual_line_lengths_m_approx": [
+          21.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588534409",
@@ -546,7 +826,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 21.5,
+        "individual_line_lengths_m_approx": [
+          21.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588534413",
@@ -559,7 +847,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 12.6,
+        "individual_line_lengths_m_approx": [
+          12.6
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588578872",
@@ -572,7 +868,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 11.0,
+        "individual_line_lengths_m_approx": [
+          11.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588590845",
@@ -586,7 +890,15 @@
         "layer": "1",
         "lanes": "2"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 12.7,
+        "individual_line_lengths_m_approx": [
+          12.7
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588600265",
@@ -602,7 +914,15 @@
         "surface": "concrete",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 21.8,
+        "individual_line_lengths_m_approx": [
+          21.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/588600277",
@@ -618,7 +938,15 @@
         "surface": "concrete",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 22.0,
+        "individual_line_lengths_m_approx": [
+          22.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/589164164",
@@ -631,7 +959,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 5.5,
+        "individual_line_lengths_m_approx": [
+          5.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/589778348",
@@ -646,7 +982,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 8.3,
+        "individual_line_lengths_m_approx": [
+          8.3
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/708322899",
@@ -660,7 +1004,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 32.1,
+        "individual_line_lengths_m_approx": [
+          32.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/734714691",
@@ -675,7 +1027,15 @@
         "lanes": "2",
         "surface": "paving_stones"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 18.4,
+        "individual_line_lengths_m_approx": [
+          18.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/760705956",
@@ -689,7 +1049,15 @@
         "layer": "1",
         "surface": "wood"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 69.0,
+        "individual_line_lengths_m_approx": [
+          69.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/760705958",
@@ -702,7 +1070,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 55.2,
+        "individual_line_lengths_m_approx": [
+          55.2
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/760705965",
@@ -715,7 +1091,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 45.3,
+        "individual_line_lengths_m_approx": [
+          45.3
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/760709822",
@@ -728,7 +1112,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 4,
+        "mapped_line_length_m_approx": 50.8,
+        "individual_line_lengths_m_approx": [
+          50.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/763242390",
@@ -741,7 +1133,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 8.9,
+        "individual_line_lengths_m_approx": [
+          8.9
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/763245574",
@@ -756,7 +1156,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 16.8,
+        "individual_line_lengths_m_approx": [
+          16.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/763251916",
@@ -771,7 +1179,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 17.8,
+        "individual_line_lengths_m_approx": [
+          17.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/763251928",
@@ -784,7 +1200,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 7.4,
+        "individual_line_lengths_m_approx": [
+          7.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/898201214",
@@ -797,7 +1221,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 14.6,
+        "individual_line_lengths_m_approx": [
+          14.6
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/900374141",
@@ -810,7 +1242,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 5,
+        "mapped_line_length_m_approx": 52.4,
+        "individual_line_lengths_m_approx": [
+          52.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1100661578",
@@ -823,7 +1263,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 5,
+        "mapped_line_length_m_approx": 23.4,
+        "individual_line_lengths_m_approx": [
+          23.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1125793693",
@@ -837,7 +1285,15 @@
         "layer": "1",
         "surface": "wood"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 46.3,
+        "individual_line_lengths_m_approx": [
+          46.3
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1126991197",
@@ -851,7 +1307,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 11.9,
+        "individual_line_lengths_m_approx": [
+          11.9
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1126991198",
@@ -865,7 +1329,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 16.2,
+        "individual_line_lengths_m_approx": [
+          16.2
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1126991202",
@@ -879,7 +1351,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 18.1,
+        "individual_line_lengths_m_approx": [
+          18.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1126991203",
@@ -893,7 +1373,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 12.0,
+        "individual_line_lengths_m_approx": [
+          12.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1199491886",
@@ -908,7 +1396,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 3,
+        "mapped_line_length_m_approx": 11.5,
+        "individual_line_lengths_m_approx": [
+          11.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1203849238",
@@ -919,7 +1415,15 @@
       "bridge_structure": "",
       "geometry_type": "LineString",
       "source_tags": {},
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 4,
+        "mapped_line_length_m_approx": 34.9,
+        "individual_line_lengths_m_approx": [
+          34.9
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1203849239",
@@ -930,7 +1434,15 @@
       "bridge_structure": "",
       "geometry_type": "LineString",
       "source_tags": {},
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 4,
+        "mapped_line_length_m_approx": 36.4,
+        "individual_line_lengths_m_approx": [
+          36.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1205008230",
@@ -943,7 +1455,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 21.5,
+        "individual_line_lengths_m_approx": [
+          21.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1207996451",
@@ -958,7 +1478,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 21.1,
+        "individual_line_lengths_m_approx": [
+          21.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1208465141",
@@ -972,7 +1500,15 @@
         "layer": "1",
         "lanes": "2"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 9.8,
+        "individual_line_lengths_m_approx": [
+          9.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1209028149",
@@ -985,7 +1521,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 8.8,
+        "individual_line_lengths_m_approx": [
+          8.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1209337995",
@@ -999,7 +1543,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 8.4,
+        "individual_line_lengths_m_approx": [
+          8.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1240165197",
@@ -1012,7 +1564,15 @@
       "source_tags": {
         "surface": "wood"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 7,
+        "mapped_line_length_m_approx": 102.1,
+        "individual_line_lengths_m_approx": [
+          102.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1246725207",
@@ -1025,7 +1585,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 21.5,
+        "individual_line_lengths_m_approx": [
+          21.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1252813435",
@@ -1041,7 +1609,15 @@
         "surface": "asphalt",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 21.8,
+        "individual_line_lengths_m_approx": [
+          21.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1253187395",
@@ -1054,7 +1630,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 3,
+        "mapped_line_length_m_approx": 7.6,
+        "individual_line_lengths_m_approx": [
+          7.6
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1328745502",
@@ -1069,7 +1653,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 15.8,
+        "individual_line_lengths_m_approx": [
+          15.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1334471831",
@@ -1084,7 +1676,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 6.5,
+        "individual_line_lengths_m_approx": [
+          6.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1351167188",
@@ -1098,7 +1698,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 48.4,
+        "individual_line_lengths_m_approx": [
+          48.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1358983759",
@@ -1111,7 +1719,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 10.3,
+        "individual_line_lengths_m_approx": [
+          10.3
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1360431412",
@@ -1125,7 +1741,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 6.0,
+        "individual_line_lengths_m_approx": [
+          6.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1379033476",
@@ -1140,7 +1764,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 12.1,
+        "individual_line_lengths_m_approx": [
+          12.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1391097093",
@@ -1155,7 +1787,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 9.9,
+        "individual_line_lengths_m_approx": [
+          9.9
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1391300202",
@@ -1169,7 +1809,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 8.0,
+        "individual_line_lengths_m_approx": [
+          8.0
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1391551869",
@@ -1184,7 +1832,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 9.8,
+        "individual_line_lengths_m_approx": [
+          9.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1395147722",
@@ -1249,7 +1905,15 @@
       "bridge_structure": "",
       "geometry_type": "LineString",
       "source_tags": {},
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 11.2,
+        "individual_line_lengths_m_approx": [
+          11.2
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1416348940",
@@ -1264,7 +1928,15 @@
         "lanes": "2",
         "surface": "compacted"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 9.8,
+        "individual_line_lengths_m_approx": [
+          9.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1419342891",
@@ -1279,7 +1951,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 7.3,
+        "individual_line_lengths_m_approx": [
+          7.3
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1432472148",
@@ -1293,7 +1973,15 @@
         "layer": "1",
         "lanes": "2"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 9.2,
+        "individual_line_lengths_m_approx": [
+          9.2
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1435825401",
@@ -1350,6 +2038,42 @@
       }
     },
     {
+      "osm_id": "way/1443688363",
+      "name": "",
+      "bridge": "",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 50.3,
+        "bbox_height_m_approx": 51.3,
+        "polygon_area_m2_approx": 848.6,
+        "outer_and_inner_perimeter_m_approx": 143.7
+      }
+    },
+    {
+      "osm_id": "way/1443840888",
+      "name": "",
+      "bridge": "",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 58.2,
+        "bbox_height_m_approx": 35.6,
+        "polygon_area_m2_approx": 793.6,
+        "outer_and_inner_perimeter_m_approx": 142.4
+      }
+    },
+    {
       "osm_id": "way/1443840889",
       "name": "Echangeur des Charbonnages",
       "bridge": "yes",
@@ -1361,7 +2085,15 @@
         "layer": "1",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 57.4,
+        "individual_line_lengths_m_approx": [
+          57.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1443840890",
@@ -1377,7 +2109,51 @@
         "surface": "concrete",
         "oneway": "yes"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 4,
+        "mapped_line_length_m_approx": 57.4,
+        "individual_line_lengths_m_approx": [
+          57.4
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
+    },
+    {
+      "osm_id": "way/1446837588",
+      "name": "Pont Deemin",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "",
+      "bridge_structure": "beam",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 21.8,
+        "bbox_height_m_approx": 23.9,
+        "polygon_area_m2_approx": 247.7,
+        "outer_and_inner_perimeter_m_approx": 65.6
+      }
+    },
+    {
+      "osm_id": "way/1446837589",
+      "name": "Pont Deemin",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "",
+      "bridge_structure": "beam",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 22.4,
+        "bbox_height_m_approx": 22.1,
+        "polygon_area_m2_approx": 232.2,
+        "outer_and_inner_perimeter_m_approx": 62.9
+      }
     },
     {
       "osm_id": "way/1465524641",
@@ -1388,7 +2164,15 @@
       "bridge_structure": "",
       "geometry_type": "LineString",
       "source_tags": {},
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 2.7,
+        "individual_line_lengths_m_approx": [
+          2.7
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1472558715",
@@ -1399,7 +2183,15 @@
       "bridge_structure": "",
       "geometry_type": "LineString",
       "source_tags": {},
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 8.3,
+        "individual_line_lengths_m_approx": [
+          8.3
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1473312459",
@@ -1413,7 +2205,31 @@
         "layer": "1",
         "surface": "unpaved"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 5.9,
+        "individual_line_lengths_m_approx": [
+          5.9
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
+    },
+    {
+      "osm_id": "way/1485337852",
+      "name": "",
+      "bridge": "",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "",
+      "geometry_type": "Polygon",
+      "source_tags": {},
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 20.5,
+        "bbox_height_m_approx": 40.2,
+        "polygon_area_m2_approx": 572.6,
+        "outer_and_inner_perimeter_m_approx": 104.5
+      }
     },
     {
       "osm_id": "way/1523544342",
@@ -1426,7 +2242,15 @@
       "source_tags": {
         "layer": "1"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 6.3,
+        "individual_line_lengths_m_approx": [
+          6.3
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1540181151",
@@ -1440,7 +2264,15 @@
         "lanes": "2",
         "surface": "asphalt"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 14.6,
+        "individual_line_lengths_m_approx": [
+          14.6
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1568780616",
@@ -1455,7 +2287,15 @@
         "lanes": "2",
         "surface": "paving_stones"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 7.1,
+        "individual_line_lengths_m_approx": [
+          7.1
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1568780625",
@@ -1469,7 +2309,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 9.3,
+        "individual_line_lengths_m_approx": [
+          9.3
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1572285346",
@@ -1484,7 +2332,15 @@
         "lanes": "2",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 9.5,
+        "individual_line_lengths_m_approx": [
+          9.5
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     },
     {
       "osm_id": "way/1573869396",
@@ -1498,7 +2354,15 @@
         "layer": "1",
         "surface": "concrete"
       },
-      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+      "planimetric_metrics": {
+        "line_count": 1,
+        "coordinate_count": 2,
+        "mapped_line_length_m_approx": 20.8,
+        "individual_line_lengths_m_approx": [
+          20.8
+        ]
+      },
+      "note": "Longueur du tracé linéaire OSM uniquement ; elle n'est pas assimilable à la longueur totale du tablier ni à celle des rampes."
     }
   ]
 }
