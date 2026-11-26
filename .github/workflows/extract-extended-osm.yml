@@ -5,7 +5,8 @@ on:
     branches: [main]
     paths:
       - "tools/map-generator/extract_libreville_extended.py"
-      - "tools/map-generator/extract_libreville.py"\n      - "tools/map-generator/report_bridge_geometry.py"
+      - "tools/map-generator/extract_libreville.py"
+      - "tools/map-generator/report_bridge_geometry.py"
       - ".github/workflows/extract-extended-osm.yml"
   workflow_dispatch:
 
@@ -51,7 +52,8 @@ jobs:
           assert len(json.loads((root / "roads.geojson").read_text())["features"]) >= 1000
           assert len(json.loads((root / "buildings.geojson").read_text())["features"]) >= 10000
           PY
-      - name: Report bridge geometry without inventing structural dimensions\n        run: python tools/map-generator/report_bridge_geometry.py\n      - name: Save extended OSM layers
+      - name: Report bridge geometry without inventing structural dimensions
+        run: python tools/map-generator/report_bridge_geometry.py\n      - name: Save extended OSM layers
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
