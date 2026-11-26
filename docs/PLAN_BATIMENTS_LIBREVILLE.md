@@ -1,0 +1,80 @@
+# Plan de construction des bâtiments — LIBREVILLE-STORIES
+
+> Document de suivi vivant. Les cases sont cochées uniquement après une intégration vérifiée dans le dépôt. Une adresse connue ne suffit pas à valider un emplacement GPS ou un modèle 3D.
+
+## 1. Zone géographique du jeu
+
+- Latitude : **0.355 à 0.445**
+- Longitude : **9.400 à 9.495**
+- Référence : Libreville, Gabon.
+- Les bâtiments physiques ordinaires proviennent de `data/osm/extended/buildings.geojson`.
+- Les repères nommés sont gérés par `game/scripts/facility_generator.gd`.
+- Ne pas créer de volumes génériques qui doublonnent les empreintes de `buildings.geojson`.
+- Ne jamais inventer de coordonnées, dimensions, façades ou textures présentées comme celles d'un bâtiment réel.
+
+## 2. Légende
+
+- [x] Réalisé et vérifié dans le dépôt.
+- [ ] À faire.
+- **GPS** : point cartographique identifié dans la zone.
+- **Repère jeu** : nom/panneau intégré.
+- **Modèle 3D** : géométrie détaillée créée.
+- **Textures** : matériaux/façades réalistes intégrés.
+- **Godot** : scène réellement ouverte et vérifiée dans Godot.
+
+## 3. Administrations prioritaires
+
+| Bâtiment / site | GPS | Repère jeu | Modèle 3D détaillé | Textures réalistes | Contrôle Godot |
+|---|---|---|---|---|---|
+| Ministère des Eaux et Forêts | [x] | [x] | [ ] | [ ] | [ ] |
+| Palais Omar Bongo Ondimba / Sénat | [x] | [x] | [ ] | [ ] | [ ] |
+| Immeuble du 2 Décembre / Ministère des Mines | [ ] | [x] | [ ] | [ ] | [ ] |
+| Ministère de la Fonction publique | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère de la Justice — Rue Pecqueur | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère de la Santé — Immeuble Alu-Suisse | [x] | [x] | [ ] | [ ] | [ ] |
+| Maison Jean Ping — Affaires étrangères | [x] | [x] | [ ] | [ ] | [ ] |
+| Tribunal de première instance — annexe | [x] | [x] | [ ] | [ ] | [ ] |
+| Direction générale du Budget — avenue Félix Éboué | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère de la Communication et des Médias | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère de l’Intérieur — avenue de Cointet | [x] | [x] | [ ] | [ ] | [ ] |
+
+**Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
+
+## 4. Administrations en recherche — ne pas placer avant validation GPS
+
+| Bâtiment / site | Informations connues | GPS exact dans la zone | Intégration |
+|---|---|---|---|
+| Ministère des Travaux publics et de la Construction | 392 avenue Rose Francine Rogombe | [ ] | [ ] |
+| Ministère de l’Agriculture | Immeuble de l’Ancienne Primature, avenue Cornut Gentille | [ ] | [ ] |
+| Ministère de la Défense | Rue du Gouverneur Balley et autres implantations mentionnées | [ ] | [ ] |
+| Ministère de l’Enseignement supérieur | Avenue de Cointet | [ ] | [ ] |
+| Ministère du Travail | Boulevard Triomphal ; site physique exact à confirmer | [ ] | [ ] |
+
+Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
+
+## 5. Pipeline 3D pour chaque bâtiment
+
+- [ ] Confirmer le point GPS et l'empreinte au sol.
+- [ ] Identifier le bon bâtiment dans les données cartographiques.
+- [ ] Collecter des photos fiables : façades, côtés, entrée et toiture.
+- [ ] Relever les caractéristiques visibles : étages, ouvertures, couleurs et matériaux.
+- [ ] Créer un modèle 3D optimisé pour Godot, aligné sur l'empreinte GPS.
+- [ ] Intégrer des textures PBR adaptées : béton, peinture, verre, métal et toiture.
+- [ ] Ajouter les détails distinctifs sans inventer de signes officiels.
+- [ ] Vérifier échelle, orientation, collisions et apparence en jeu.
+- [ ] Tester dans Godot et cocher seulement après contrôle réel.
+
+## 6. Qualité et performances
+
+- Priorité aux bâtiments administratifs emblématiques et visibles depuis les axes de circulation.
+- Réutiliser les matériaux partagés lorsque c'est pertinent.
+- Prévoir des niveaux de détail (LOD) et des collisions simples pour les modèles éloignés.
+- Ne pas remplacer les empreintes réelles par des blocs génériques.
+- Les photos servent à reproduire l'apparence ; elles ne prouvent pas les dimensions ou coordonnées.
+- Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
+
+## 7. Historique
+
+- 2026-11-26 : création du document de suivi initial.
+- 2026-11-26 : inventaire des administrations déjà repérées dans `facility_generator.gd`.
+- Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
