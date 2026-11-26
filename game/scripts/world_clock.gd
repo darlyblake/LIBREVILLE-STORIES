@@ -1,7 +1,7 @@
 extends Node
 ## Horloge et calendrier central de Libreville Stories.
 ## Une minute de jeu = 1 seconde réelle par défaut (modifiable dans l'inspecteur).
-## Tous les systèmes (PNJ, commerces, écoles, médias, météo) doivent écouter ces signaux.
+## Tous les systèmes (PNJ, commerces, écoles, médias, météo) écoutent ces signaux.
 
 signal minute_changed(date_time: Dictionary)
 signal hour_changed(hour: int, period: String)
@@ -15,7 +15,6 @@ signal active_events_changed(events: Array)
 
 const SAVE_PATH := "user://world_clock_state.json"
 const EVENTS_PATH := "res://data/calendar/gabon_events.json"
-const MINUTES_PER_DAY := 1440
 const DEFAULT_START_YEAR := 2026
 const DEFAULT_START_MONTH := 1
 const DEFAULT_START_DAY := 1
@@ -45,10 +44,7 @@ func _ready() -> void:
 		current_month = start_month
 		current_day = mini(start_day, _days_in_month(start_year, start_month))
 		_save_state()
-	if has_node("/root/PopulationManager"):
-		var population = get_node("/root/PopulationManager")
-		population.game_year = current_year
-		population.game_month = current_month
+	_sync_population_date()
 	_refresh_active_events(true)
 	print("WORLD CLOCK | %s %02d:%02d" % [get_date_string(), hour, minute])
 
@@ -74,18 +70,31 @@ func set_time_scale(value: float) -> void:
 	time_scale = clampf(value, 0.1, 120.0)
 
 func set_time(new_hour: int, new_minute: int = 0) -> void:
+	var previous_hour := hour
 	hour = clampi(new_hour, 0, 23)
 	minute = clampi(new_minute, 0, 59)
-	_save_state()
+	if hour != previous_hour:
+		hour_changed.emit(hour, get_day_period())
 	minute_changed.emit(get_datetime())
+	_save_state()
 
 func set_date(new_year: int, new_month: int, new_day: int) -> void:
+	var previous_year := current_year
+	var previous_month := current_month
+	var previous_date := get_date()
 	current_year = maxi(1, new_year)
 	current_month = clampi(new_month, 1, 12)
 	current_day = clampi(new_day, 1, _days_in_month(current_year, current_month))
+	if current_year != previous_year:
+		year_changed.emit(current_year)
+	if current_year != previous_year or current_month != previous_month:
+		month_changed.emit(current_month, current_year)
+	_sync_population_date()
 	_refresh_active_events()
+	if previous_date != get_date():
+		day_started.emit(get_date())
+	minute_changed.emit(get_datetime())
 	_save_state()
-	day_started.emit(get_date())
 
 func advance_minutes(amount: int) -> void:
 	if amount <= 0:
@@ -107,7 +116,8 @@ func advance_minutes(amount: int) -> void:
 		_save_state()
 
 func advance_hours(amount: int) -> void:
-	advance_minutes(amount * 60)
+	if amount > 0:
+		advance_minutes(amount * 60)
 
 func advance_days(amount: int) -> void:
 	for _i in range(maxi(0, amount)):
@@ -129,6 +139,12 @@ func _advance_day() -> void:
 		month_changed.emit(current_month, current_year)
 	_refresh_active_events()
 	day_started.emit(get_date())
+
+func _sync_population_date() -> void:
+	var population := get_node_or_null("/root/PopulationManager")
+	if population != null:
+		population.game_year = current_year
+		population.game_month = current_month
 
 func get_date() -> Dictionary:
 	return {"year": current_year, "month": current_month, "day": current_day}
@@ -164,20 +180,26 @@ func get_events_for_date(year: int = -1, month: int = -1, day: int = -1) -> Arra
 	var m := current_month if month < 0 else month
 	var d := current_day if day < 0 else day
 	var result: Array[Dictionary] = []
+	var current_ordinal := m * 100 + d
 	for event in _events:
-		var recurring := bool(event.get("annual", false))
 		var start_parts := _parse_date(str(event.get("start_date", "")))
 		var end_parts := _parse_date(str(event.get("end_date", event.get("start_date", ""))))
 		if start_parts.size() != 3 or end_parts.size() != 3:
 			continue
 		var matches := false
-		if recurring:
-			matches = m >= start_parts[1] and d >= start_parts[2] and m <= end_parts[1] and d <= end_parts[2]
-			if start_parts[1] == end_parts[1]:
-				matches = m == start_parts[1] and d >= start_parts[2] and d <= end_parts[2]
+		if bool(event.get("annual", false)):
+			var start_ordinal := start_parts[1] * 100 + start_parts[2]
+			var end_ordinal := end_parts[1] * 100 + end_parts[2]
+			# Une plage annuelle peut traverser le 31 décembre (ex. 20/12 au 05/01).
+			if start_ordinal <= end_ordinal:
+				matches = current_ordinal >= start_ordinal and current_ordinal <= end_ordinal
+			else:
+				matches = current_ordinal >= start_ordinal or current_ordinal <= end_ordinal
 		else:
 			var current_key := y * 10000 + m * 100 + d
-			matches = current_key >= start_parts[0] * 10000 + start_parts[1] * 100 + start_parts[2] and current_key <= end_parts[0] * 10000 + end_parts[1] * 100 + end_parts[2]
+			var start_key := start_parts[0] * 10000 + start_parts[1] * 100 + start_parts[2]
+			var end_key := end_parts[0] * 10000 + end_parts[1] * 100 + end_parts[2]
+			matches = current_key >= start_key and current_key <= end_key
 		if matches:
 			var copy := event.duplicate(true)
 			copy["occurrence_year"] = y
@@ -251,7 +273,7 @@ func _load_state() -> bool:
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(SAVE_PATH))
 	if not parsed is Dictionary:
 		return false
-	current_year = int(parsed.get("year", DEFAULT_START_YEAR))
+	current_year = maxi(1, int(parsed.get("year", DEFAULT_START_YEAR)))
 	current_month = clampi(int(parsed.get("month", DEFAULT_START_MONTH)), 1, 12)
 	current_day = clampi(int(parsed.get("day", DEFAULT_START_DAY)), 1, _days_in_month(current_year, current_month))
 	hour = clampi(int(parsed.get("hour", 6)), 0, 23)
