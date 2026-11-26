@@ -43,14 +43,31 @@ Sources :
 | 4 octobre 2025 | Le ministère indique 21 % d'avancement du pont, 87 % des voiries, livraison annoncée en février 2027 | Conserver l'état chantier à cette date comme photographie historique, pas comme état actuel |
 | 29 octobre 2025 | Le Gouvernement décrit le pont, le giratoire, les routes de jonction et le bassin versant de Gué-Gué | Confirme que les composantes sont interdépendantes |
 | 22 avril 2026 | Le ministère indique que la voie de raccordement vers le rond-point 1 de la voie de contournement est presque achevée ; le Fly-Over doit venir dans une phase ultérieure | Ne pas représenter le Fly-Over comme achevé sur la base de cette source |
-| 11 août 2026 | La Présidence indique que le Chef de l'État s'est arrêté au rond-point du Camp de Gaulle pour évaluer l'évolution des aménagements ; aucun taux d'avancement ni dimension nouvelle n'est publié dans ce compte rendu | Dernier repère officiel repéré dans cette recherche ; ne permet pas de conclure que le Fly-Over est terminé ou ouvert |
+| 11 août 2026 | La Présidence indique que le Chef de l'État s'est arrêté au rond-point du Camp de Gaulle pour évaluer l'évolution des aménagements ; aucun taux d'avancement ni dimension nouvelle n'est publié dans ce compte rendu | Repère officiel de visite, sans mesure exploitable pour la géométrie |
+| 22 octobre 2026 | Un article illustré de Gabon Mail Infos décrit le chantier comme toujours en cours et publie une vue du fly-over en construction ; aucune cote vérifiable n'est donnée | Référence visuelle datée pour l'apparence du chantier, pas un plan coté ni une preuve de mise en service |
+| 25 octobre 2026 | Le360 Afrique publie un reportage vidéo sur les chantiers du fly-over de Jeanne Ebori et de l'échangeur du Camp de Gaulle | Source audiovisuelle récente à examiner pour les séquences de chantier ; ne pas en déduire des dimensions sans étalonnage |
+| 7 septembre 2026 | Gabon Daily News présente le Fly-Over du Camp de Gaulle comme un chantier en cours et rappelle la longueur de 330 m et l'objectif de février 2027 | Source secondaire de contexte ; conserver 330 m comme chiffre ministériel, pas comme mesure indépendante |
 
 Sources :
 - Ministère, 4 octobre 2025 : https://www.infrastructures.gouv.ga/9-actualites/1332-edgard-moukoumbi-en-visite-ce-samedi-04-octobre-2025-sur-les-chantiers-du-camp-de-gaulle-et-de-l-esplanade-georges-damas-aleka/
 - Ministère, 22 avril 2026 : https://infrastructures.gouv.ga/2026/04/22/camp-de-gaulle-la-voie-de-raccordement-quasi-finalisee-le-ministre-edgard-moukoumbi-constate-lavancee/
 - Présidence de la République, 11 août 2026 : https://presidence.ga/2026/08/11/modernisation-du-grand-libreville-le-chef-de-letat-sur-le-terrain-pour-accelerer-lexecution-des-projets/
+- Gabon Daily News, 7 septembre 2026 : https://www.fr.gabondailynews.com/public/index.php/fr/read/1144
+- Gabon Mail Infos, 22 octobre 2026 (article et photographie de chantier) : https://gabonmailinfos.com/camp-de-gaulle-3-atouts-de-lechangeur-pour-desengorger-libreville/
+- Le360 Afrique, 25 octobre 2026 (reportage vidéo) : https://fr.le360.ma/monde/libreville-entre-beton-arme-et-promesses-electorales-la-ville-change-t-elle-vraiment-de-visage_XZB47NNKEJEN3FZHL6UJHJGYLI/
 
-## 5. Géométrie à relever avant la reconstruction 3D
+## 5. Références visuelles du chantier
+
+Les sources visuelles retrouvées ne doivent pas être confondues entre elles :
+
+- **Photographie de chantier, avril 2026 :** la page du ministère montre une voie de raccordement asphaltée, ses bordures, un caniveau latéral, des lampadaires solaires et la végétation en bordure. Elle documente cette voie de raccordement, pas le tablier du Fly-Over : https://www.infrastructures.gouv.ga/object.getObject.do?id=1383
+- **Vue de projet / rendu 3D, août 2025 :** une illustration diffusée par Infos Gabon montre une configuration conceptuelle avec pont surélevé, giratoire et bretelles. C'est un rendu de présentation, pas une photographie du chantier ni un plan d'exécution : https://fr.infosgabon.com/wp-content/uploads/2025/08/Le-plan-du-carrefour-camp-de-gaulle-en-chantier.jpg
+- **Photographie de chantier, octobre 2026 :** Gabon Mail Infos publie une vue légendée du fly-over en construction. Elle peut servir de référence visuelle d'ambiance et d'état apparent, mais pas de mesure géométrique sans métadonnées, échelle et position caméra vérifiées : https://gabonmailinfos.com/camp-de-gaulle-3-atouts-de-lechangeur-pour-desengorger-libreville/
+- **Reportage vidéo, 25 octobre 2026 :** Le360 Afrique couvre le chantier du Camp de Gaulle et celui de Jeanne Ebori. Les deux sites doivent être identifiés séparément lors du visionnage pour éviter d'attribuer au mauvais ouvrage un détail visuel : https://fr.le360.ma/monde/libreville-entre-beton-arme-et-promesses-electorales-la-ville-change-t-elle-vraiment-de-visage_XZB47NNKEJEN3FZHL6UJHJGYLI/
+
+Aucune de ces images ne remplace un plan d'exécution authentifié, un relevé topographique ou une orthophoto géoréférencée.
+
+## 6. Géométrie à relever avant la reconstruction 3D
 
 | Élément | Information disponible | Donnée manquante |
 |---|---|---|
@@ -62,7 +79,7 @@ Sources :
 
 Un document de plan d'assainissement est indexé sur une plateforme de partage non officielle et mentionne le projet, un système de coordonnées GTM-2002 et une échelle 1/1000. Son authenticité, son statut de diffusion et les droits de réutilisation ne sont pas suffisamment établis pour en faire une source de production. Il n'est donc pas utilisé comme plan certifié.
 
-## 6. Décision de production dans LIBREVILLE STORIES
+## 7. Décision de production dans LIBREVILLE STORIES
 
 - Ajouter le carrefour comme secteur réel à documenter, sans déplacer ni réinterpréter le polygone OSM Camp de Gaulle.
 - Garder distincts le pont de Gué-Gué déjà cartographié, le futur Fly-Over Camp de Gaulle et les voies de raccordement.
