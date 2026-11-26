@@ -70,16 +70,17 @@
 | Mairie de Nombakélé — 3e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
 | Mairie de Nzeng-Ayong | [x] | [x] | [ ] | [ ] | [ ] |
 | Mairie des Hauts de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
-| Mairie du 2e arrondissement — avenue Jean-Paul II | [x] | [x] | [ ] | [ ] | [ ] |
+| Mairie du 2e arrondissement — siège provisoire derrière le ministère des Eaux et Forêts | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Mairie de Plaine Niger — 4e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
 | Mairie de Sogatol — 5e arrondissement | [x] | [x] | [ ] | [ ] | [ ] |
 
-**Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
+**Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré. La Mairie de Nzeng-Ayong est également identifiée par Mapcarta comme la Mairie du 6e arrondissement. Le point OSM précédemment utilisé pour la Mairie du 2e arrondissement (avenue Jean-Paul II) est obsolète : la mairie a été délocalisée en 2024 dans un immeuble derrière le ministère des Eaux et Forêts ; le nouveau bâtiment n'a pas encore de GPS validé. L'Hôtel de Ville central est annoncé boulevard Omar Bongo Ondimba, mais son annuaire ne donne qu'un plus code CC6V+6Q2, insuffisant pour intégrer un GPS exact.
 
 ## 4. Administrations en recherche — ne pas placer avant validation GPS
 
 | Bâtiment / site | Informations connues | GPS exact dans la zone | Intégration |
 |---|---|---|---|
+| Hôtel de Ville central de Libreville — boulevard Omar Bongo Ondimba | [ ] | [ ] | [ ] | [ ] | [ ] |
 | Ministère des Travaux publics et de la Construction | 392 avenue Rose Francine Rogombe (annexe) ; 414 avenue du Colonel Parant (principal) | [ ] | [ ] |
 | Ministère de l’Agriculture | Immeuble de l’Ancienne Primature, avenue Cornut Gentille | [ ] | [ ] |
 | Ministère de la Défense | Rue du Gouverneur Balley et autres implantations mentionnées | [ ] | [ ] |
@@ -154,6 +155,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
 
 ## 7. Historique
+
+- 2026-11-26 : audit des mairies : confirmation que les six arrondissements de Libreville sont couverts dans l’inventaire, mais le repère de la Mairie du 2e arrondissement (OSM node 11458214434, avenue Jean-Paul II) est ancien. Des articles de mai et octobre 2024 confirment le déplacement du siège provisoire dans un immeuble derrière le ministère des Eaux et Forêts ; aucun point GPS précis du nouvel immeuble n’a été validé. Le repère obsolète a donc été retiré du générateur. La Mairie de Nzeng-Ayong correspond aussi à la Mairie du 6e arrondissement. L’Hôtel de Ville central est listé boulevard Omar Bongo Ondimba, mais seule une adresse/plus code CC6V+6Q2 est disponible, sans GPS OSM vérifié. Sources : mairie de Libreville (libreville.ga), annuaire Le Pratique du Gabon, Mapcarta/OSM, Gabon Media Time (28 mai et 9 octobre 2024).
 
 - 2026-11-26 : ajout du Ministère des Transports, de la Marine marchande et de la Logistique, siège officiel au 3e étage de l’Immeuble Arambo (site ministériel). Coordonnées utilisées : centroïde OSM du bâtiment public Arambo, way 249526244, GPS 0.40802 / 9.43928. Repère marker-only, aucune empreinte physique ajoutée ; le bâtiment est déjà représenté par les données bâtiments OSM. Sources : ministère des Transports (transports.gouv.ga/contact), Mapcarta/OSM (Immeuble Arambo).
 - 2026-11-26 : contrôles de périmètre : l’OPRAG repéré à 0.28952 / 9.50403 est hors limites sud et est ; l’EPCA (0.40181 / 9.51786) et l’École Nationale d’Administration (0.40191 / 9.51855) sont hors limite est 9.495. La DGCC est annoncée à l’Immeuble des Domaines mais sans point GPS OSM précis validé ; la DGPE est annoncée à Akémigjogoni sans coordonnées vérifiées. Ces structures restent en attente ou exclues, sans coordonnées inventées. Sources : Mapcarta/OSM, site ministériel transports.gouv.ga, annuaires publics DGCC/DGPE.
