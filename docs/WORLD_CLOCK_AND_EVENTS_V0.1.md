@@ -80,3 +80,16 @@ Profils prototype :
 - `hospital` et `police` : services de garde 24 h/24.
 - `pharmacy` : profil de pharmacie de garde simulée, 08:00–22:00.
 Ces heures sont des valeurs de simulation, non des horaires officiels garantis. Elles seront personnalisables établissement par établissement. Les plages sont en heure locale du monde ; les jours utilisent 0=dimanche, 1=lundi, ..., 6=samedi.
+
+
+## Rythmes de vie, congés et fréquentation – version 0.6
+Le singleton `LifeSimulationManager` écoute `WorldClock.hour_changed` et `day_started`. Il calcule une activité abstraite pour chaque résident vivant, sans créer un nœud 3D par personne.
+- Les salariés disposent de deux jours de repos hebdomadaires ; la majorité suit le week-end, une minorité a des repos décalés pour les métiers de service.
+- Les jours de congé annuels sont distribués de façon déterministe par résident et par année. La valeur prototype est de 20 jours calendaires consécutifs ; ce paramètre est à ajuster selon le métier et les règles de travail retenues.
+- Les élèves suivent le calendrier scolaire et les jours de fermeture définis par `WorldClock`.
+- Les soirées peuvent déclencher une sortie au bar, surtout les week-ends et vacances. La consommation augmente un indicateur d'alcoolémie simulé ; le repos la fait diminuer progressivement.
+- La fatigue et l'alcool diminuent le multiplicateur de performance au travail et augmentent un multiplicateur de risque de conduite.
+- `get_crowd_multiplier(type)` fournit une fréquentation de référence pour les marchés, restaurants, loisirs, front de mer, parcs et bars. Les multiplicateurs sont des paramètres de simulation, pas des comptages réels.
+- Les profils et les valeurs sont dans `data/simulation/life_profiles.json`.
+
+Cette version prépare les conséquences sociales et la future simulation d'accidents. Elle ne crée pas encore de collisions, blessures, conduite sous influence ou itinéraires physiques : ces systèmes devront consommer les facteurs de risque et les activités, puis être testés séparément.
