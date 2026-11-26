@@ -42,7 +42,8 @@ func _fallback_appearance(resident: Dictionary) -> Dictionary:
 
 func _build_body() -> void:
 	for child in get_children():
-		child.queue_free()
+		remove_child(child)
+		child.free()
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(appearance.get("seed", resident_id.hash()))
 	var skin: Color = SKIN.get(str(appearance.get("skin_tone", "brun_fonce")), SKIN["brun_fonce"])
@@ -74,25 +75,36 @@ func _build_body() -> void:
 	_add_capsule("Cou", Vector3(0, 1.43, 0), Vector3(0.075, 0.11, 0.075), skin)
 
 	var face_shape := str(appearance.get("face_shape", "ovale"))
-	var head_scale := Vector3(0.205, 0.245, 0.19)
+	var detail: Dictionary = appearance.get("face_detail", {}) as Dictionary
+	var head_scale := Vector3(0.205 * float(detail.get("head_width", 1.0)), 0.245 * float(detail.get("head_height", 1.0)), 0.19 * float(detail.get("head_depth", 1.0)))
 	if face_shape == "rond":
-		head_scale = Vector3(0.22, 0.22, 0.20)
+		head_scale.x *= 1.06
+		head_scale.y *= 0.94
 	elif face_shape == "allonge":
-		head_scale = Vector3(0.19, 0.265, 0.18)
+		head_scale.x *= 0.94
+		head_scale.y *= 1.08
 	elif face_shape == "carre":
-		head_scale = Vector3(0.22, 0.235, 0.19)
+		head_scale.x *= 1.07
 	_add_sphere("Visage", Vector3(0, 1.69, 0), head_scale, skin)
-	_add_sphere("OreilleG", Vector3(-0.205, 1.68, 0), Vector3(0.045, 0.075, 0.045), skin)
-	_add_sphere("OreilleD", Vector3(0.205, 1.68, 0), Vector3(0.045, 0.075, 0.045), skin)
-
-	var eye_width := 0.035 if str(appearance.get("eye_shape", "amande")) == "fins" else 0.042
-	_add_sphere("OeilG", Vector3(-0.078, 1.72, -0.174), Vector3(eye_width, 0.022, 0.014), Color("#f4eee4"))
-	_add_sphere("OeilD", Vector3(0.078, 1.72, -0.174), Vector3(eye_width, 0.022, 0.014), Color("#f4eee4"))
-	_add_sphere("PupilleG", Vector3(-0.078, 1.72, -0.188), Vector3(0.014, 0.016, 0.009), Color("#211713"))
-	_add_sphere("PupilleD", Vector3(0.078, 1.72, -0.188), Vector3(0.014, 0.016, 0.009), Color("#211713"))
-	var nose_width := 0.052 if str(appearance.get("nose_shape", "arrondi")) == "large" else 0.034
-	_add_sphere("Nez", Vector3(0, 1.665, -0.19), Vector3(nose_width, 0.07, 0.045), skin.darkened(0.04))
-	_add_sphere("Bouche", Vector3(0, 1.59, -0.177), Vector3(0.045, 0.012, 0.012), Color("#542b2b"))
+	var ear_x := 0.205 * float(detail.get("ear_size", 1.0))
+	_add_sphere("OreilleG", Vector3(-ear_x, 1.68, 0), Vector3(0.045, 0.075, 0.045) * float(detail.get("ear_size", 1.0)), skin)
+	_add_sphere("OreilleD", Vector3(ear_x, 1.68, 0), Vector3(0.045, 0.075, 0.045) * float(detail.get("ear_size", 1.0)), skin)
+	var eye_width := (0.035 if str(appearance.get("eye_shape", "amande")) == "fins" else 0.042) * float(detail.get("eye_width", 1.0))
+	var eye_gap := 0.078 * float(detail.get("eye_spacing", 1.0))
+	var eye_y := 1.72 + float(detail.get("eye_height", 0.0))
+	var eye_depth := -0.174 - float(detail.get("eye_depth", 0.0))
+	_add_sphere("OeilG", Vector3(-eye_gap, eye_y, eye_depth), Vector3(eye_width, 0.022, 0.014), Color("#f4eee4"))
+	_add_sphere("OeilD", Vector3(eye_gap, eye_y, eye_depth), Vector3(eye_width, 0.022, 0.014), Color("#f4eee4"))
+	_add_sphere("PupilleG", Vector3(-eye_gap, eye_y, eye_depth - 0.014), Vector3(0.014, 0.016, 0.009), Color("#211713"))
+	_add_sphere("PupilleD", Vector3(eye_gap, eye_y, eye_depth - 0.014), Vector3(0.014, 0.016, 0.009), Color("#211713"))
+	var nose_width := (0.052 if str(appearance.get("nose_shape", "arrondi")) == "large" else 0.034) * float(detail.get("nose_width", 1.0))
+	var nose_length := float(detail.get("nose_length", 1.0))
+	_add_sphere("Nez", Vector3(0, 1.665 + float(detail.get("nose_height", 0.0)), -0.19 - float(detail.get("nose_projection", 0.0))), Vector3(nose_width, 0.07 * nose_length, 0.045 * nose_length), skin.darkened(0.04))
+	var mouth_width := 0.045 * float(detail.get("mouth_width", 1.0))
+	_add_sphere("Bouche", Vector3(0, 1.59 + float(detail.get("mouth_height", 0.0)), -0.177), Vector3(mouth_width, 0.012, 0.012), Color("#542b2b"))
+	_add_sphere("Menton", Vector3(0, 1.535, -0.105), Vector3(0.085 * float(detail.get("chin_width", 1.0)), 0.045 * float(detail.get("chin_height", 1.0)), 0.07), skin)
+	_add_sphere("PommetteG", Vector3(-0.125, 1.635, -0.105), Vector3(0.065, 0.045, 0.055) * float(detail.get("cheek_volume", 1.0)), skin)
+	_add_sphere("PommetteD", Vector3(0.125, 1.635, -0.105), Vector3(0.065, 0.045, 0.055) * float(detail.get("cheek_volume", 1.0)), skin)
 
 	_build_hair(hair, rng)
 	_build_facial_hair(hair)
