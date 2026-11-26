@@ -70,3 +70,23 @@ Les géométries polygonales de la couche permettent de calculer une enveloppe e
 **Important :** ces valeurs sont des métriques de la géométrie cartographique OSM, calculées dans une projection locale approximative. L'enveloppe n'est pas la longueur/largeur certifiée du tablier ; l'aire peut inclure des surfaces adjacentes ou une emprise simplifiée. Elles ne donnent ni la hauteur libre, ni l'épaisseur du tablier, ni les dimensions des piles, ni la pente des rampes. Elles servent à contrôler la cohérence spatiale et à préparer le relevé, pas à figer une maquette 3D métrique.
 
 Le rapport est généré automatiquement avec la méthode et les avertissements dans son en-tête. Attribution : © OpenStreetMap contributors, ODbL 1.0.
+
+
+## 9. État réel de l'intégration dans le moteur Godot (26 novembre 2026)
+
+Le chargeur `game/scripts/world_map.gd` privilégie la couche régionale `data/osm/extended/roads.geojson` lorsqu'elle existe. Les tronçons routiers sont convertis par `_geo_to_road_point()`, qui échantillonne le MNT et place chaque point sur la surface du terrain. Ainsi, un way portant `bridge=yes` ou `bridge=viaduct` est actuellement rendu comme un tracé routier posé sur le relief, et non comme un pont surélevé.
+
+Ce comportement est volontairement conservateur : les tags OSM `layer=1` et `bridge:structure=beam` indiquent une relation de niveau et un type structurel déclaré, mais ne donnent pas la cote du tablier, le profil des rampes, la hauteur libre, les piles ni les culées. Les utiliser pour inventer une élévation produirait une fausse reconstruction.
+
+Le code a été instrumenté pour compter les objets portant un tag `bridge` dans la zone chargée et afficher explicitement au lancement que ces tracés restent provisoires au niveau du MNT. Cette ligne de diagnostic ne signifie pas que les ouvrages 3D sont construits.
+
+### Conditions préalables à une reconstruction 3D
+
+- relever les lignes d'axe et les emprises exactes de chaque ouvrage ;
+- récupérer des profils en long et en travers, ou un modèle altimétrique suffisamment précis ;
+- vérifier les cotes par rapport au MNT et aux voies inférieures ;
+- identifier les piles, culées, murs de soutènement, joints et garde-corps sur des plans ou des photographies géolocalisées ;
+- construire séparément le tablier, les rampes et les voies au sol ;
+- valider la continuité des chaussées et les collisions dans Godot.
+
+**Décision :** ne pas générer de pont surélevé automatique à partir du seul tag OSM. La couche OSM sert actuellement à positionner les axes et à guider le relevé, pas à certifier la géométrie structurelle.
