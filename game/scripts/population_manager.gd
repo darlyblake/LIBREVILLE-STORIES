@@ -535,6 +535,7 @@ func _generate_appearance(gender: String, age: int) -> Dictionary:
 	return {
 		"identity": "look-" + str(next_id),
 		"seed": _rng.randi(),
+		"face_detail": _generate_face_detail(),
 		"gender_presentation": gender,
 		"skin_tone": skin_tones[_rng.randi_range(0, skin_tones.size() - 1)],
 		"face_shape": face_shapes[_rng.randi_range(0, face_shapes.size() - 1)],
@@ -550,6 +551,28 @@ func _generate_appearance(gender: String, age: int) -> Dictionary:
 		"shoes": shoes[_rng.randi_range(0, shoes.size() - 1)],
 		"accessory": accessories[_rng.randi_range(0, accessories.size() - 1)],
 		"outfit_palette": palette_index
+	}
+
+## Morphologie faciale individuelle persistante, générée une seule fois par résident.
+func _generate_face_detail() -> Dictionary:
+	return {
+		"head_width": _rng.randf_range(0.92, 1.09),
+		"head_height": _rng.randf_range(0.93, 1.08),
+		"head_depth": _rng.randf_range(0.92, 1.08),
+		"eye_width": _rng.randf_range(0.88, 1.14),
+		"eye_spacing": _rng.randf_range(0.88, 1.13),
+		"eye_height": _rng.randf_range(-0.018, 0.018),
+		"eye_depth": _rng.randf_range(-0.012, 0.012),
+		"nose_width": _rng.randf_range(0.82, 1.24),
+		"nose_length": _rng.randf_range(0.86, 1.18),
+		"nose_height": _rng.randf_range(-0.018, 0.018),
+		"nose_projection": _rng.randf_range(-0.012, 0.018),
+		"mouth_width": _rng.randf_range(0.82, 1.22),
+		"mouth_height": _rng.randf_range(-0.012, 0.012),
+		"chin_width": _rng.randf_range(0.84, 1.18),
+		"chin_height": _rng.randf_range(0.85, 1.18),
+		"cheek_volume": _rng.randf_range(0.82, 1.2),
+		"ear_size": _rng.randf_range(0.88, 1.14)
 	}
 
 func _normalize_resident(resident: Dictionary) -> void:
@@ -573,6 +596,11 @@ func _normalize_resident(resident: Dictionary) -> void:
 		resident["origin_region"] = _region_for_nationality(str(resident["nationality"]))
 	if not resident.has("appearance") or not resident["appearance"] is Dictionary:
 		resident["appearance"] = _generate_appearance(str(resident.get("gender", "homme")), int(resident.get("age_years", 18)))
+	else:
+		var appearance: Dictionary = resident["appearance"]
+		if not appearance.has("face_detail") or not appearance["face_detail"] is Dictionary:
+			appearance["face_detail"] = _generate_face_detail()
+			resident["appearance"] = appearance
 
 func _random_first_name(gender: String) -> String:
 	if gender == "homme":
