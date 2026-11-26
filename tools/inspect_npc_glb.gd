@@ -15,7 +15,7 @@ func _run_validation() -> void:
 		return
 
 	var parsed: Variant = JSON.parse_string(raw)
-	if not parsed is Dictionary:
+	if typeof(parsed) != TYPE_DICTIONARY:
 		push_error("Manifest de personnages JSON invalide.")
 		quit(1)
 		return
@@ -24,7 +24,7 @@ func _run_validation() -> void:
 	var checked := 0
 	var failed := false
 	for entry in entries:
-		if not entry is Dictionary:
+		if typeof(entry) != TYPE_DICTIONARY:
 			push_error("Entrée de personnage invalide dans le manifest.")
 			failed = true
 			continue
