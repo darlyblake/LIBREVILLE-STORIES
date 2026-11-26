@@ -139,7 +139,14 @@ func _build_facilities() -> void:
 		var osm_id := int(p.get("osm_id",0))
 		if osm_id == 0: osm_id=int(str(p.get("@id","0")).replace("way/","").replace("node/","").replace("relation/",""))
 		entries.append({"kind":kind,"label":label,"pos":pos,"id":osm_id})
+	# Priorité aux établissements demandés : les écoles et hôtels sont placés
+	# avant les autres équipements pour ne pas être éliminés par le plafond.
+	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
 	entries.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
+		var a_priority := 0 if a.kind in ["school", "hotel"] else 1
+		var b_priority := 0 if b.kind in ["school", "hotel"] else 1
+		if a_priority != b_priority:
+			return a_priority < b_priority
 		return Vector2(a.pos.x,a.pos.z).distance_squared_to(origin)<Vector2(b.pos.x,b.pos.z).distance_squared_to(origin))
 	var seen:={}
 	var placed: Array[Dictionary] = []
