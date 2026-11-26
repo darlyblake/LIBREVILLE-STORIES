@@ -328,6 +328,7 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 	_windows(root,w,d,h)
 	_add_facade_construction_details(root,w,d,h)
 	_add_rainwater_details(root,w,d,h)
+	_add_entry_canopy(root, k, w, d)
 	match k:
 		"school":
 			_sign(root, "ÉCOLE", Vector3(0, h + 1.0, d / 2 + 0.3), school_accent)
@@ -397,6 +398,87 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 		"admin":
 			_sign(root,"ADMINISTRATION",Vector3(0,h+1,d/2+0.3),blue)
 	_name(root,label,Vector3(0,h+2,-d/2-1))
+	match k:
+		"school":
+			_add_school_campus(root, w, d, h, index)
+		"university":
+			_add_university_campus(root, w, d, h, index)
+		"hospital":
+			_add_hospital_wings(root, w, d, h)
+		"hotel":
+			_add_hotel_balconies(root, w, d, h, index)
+		"clinic":
+			_add_clinic_verandah(root, w, d)
+
+func _add_entry_canopy(root: Node3D, kind: String, w: float, d: float) -> void:
+	# Auvents et poteaux d'entrée adaptés aux pluies tropicales.
+	var canopy_width := minf(w * 0.42, 13.0)
+	var canopy_depth := 3.2 if kind in ["hospital", "clinic"] else 2.5
+	var canopy_y := 3.2 if kind in ["hospital", "clinic"] else 2.8
+	_box(root, Vector3(0, canopy_y, d / 2.0 + canopy_depth * 0.42), Vector3(canopy_width, 0.22, canopy_depth), roof)
+	for x in [-canopy_width * 0.43, canopy_width * 0.43]:
+		_box(root, Vector3(x, canopy_y / 2.0, d / 2.0 + canopy_depth * 0.42), Vector3(0.22, canopy_y, 0.22), structural_concrete)
+	if kind in ["school", "university", "admin"]:
+		_box(root, Vector3(0, 0.16, d / 2.0 + 5.8), Vector3(w * 0.48, 0.18, 5.2), concrete)
+
+func _add_school_campus(root: Node3D, w: float, d: float, h: float, index: int) -> void:
+	# Petit campus en plusieurs volumes : bloc pédagogique, aile secondaire et cour.
+	var wing_width := w * 0.30
+	var wing_depth := d * 0.72
+	var wing_x := -w * 0.34 if index % 2 == 0 else w * 0.34
+	_box(root, Vector3(wing_x, h * 0.39, -d * 0.10), Vector3(wing_width, h * 0.78, wing_depth), white)
+	_box(root, Vector3(wing_x, h * 0.80, -d * 0.10), Vector3(wing_width + 0.5, 0.22, wing_depth + 0.5), roof)
+	for floor_y in [2.0, 5.0]:
+		if floor_y < h:
+			for col in range(3):
+				_box(root, Vector3(wing_x - wing_width * 0.30 + col * wing_width * 0.30, floor_y, d * 0.27), Vector3(1.7, 1.1, 0.08), glass)
+	# Préau couvert dans la cour, élément courant des établissements tropicaux.
+	_box(root, Vector3(w * 0.12, 2.8, -d * 0.30), Vector3(w * 0.34, 0.18, d * 0.24), roof)
+	for x in [w * -0.03, w * 0.27]:
+		_box(root, Vector3(x, 1.4, -d * 0.30), Vector3(0.18, 2.8, 0.18), steel)
+
+func _add_university_campus(root: Node3D, w: float, d: float, h: float, index: int) -> void:
+	# Ensemble universitaire : deux ailes basses encadrant une cour centrale.
+	for side in [-1.0, 1.0]:
+		var wing_x := side * w * 0.34
+		_box(root, Vector3(wing_x, h * 0.30, -d * 0.20), Vector3(w * 0.24, h * 0.60, d * 0.70), white)
+		_box(root, Vector3(wing_x, h * 0.61, -d * 0.20), Vector3(w * 0.25, 0.24, d * 0.72), roof)
+		for floor in range(2):
+			for col in range(3):
+				_box(root, Vector3(wing_x - w * 0.075 + col * w * 0.075, 2.0 + floor * 3.1, d * 0.16), Vector3(2.0, 1.35, 0.08), glass)
+	_box(root, Vector3(0, 0.16, d * 0.10), Vector3(w * 0.32, 0.18, d * 0.44), concrete)
+	_box(root, Vector3(0, 2.3, d * 0.10), Vector3(w * 0.30, 0.18, d * 0.42), roof)
+	for x in [-w * 0.14, w * 0.14]:
+		_box(root, Vector3(x, 1.2, d * 0.10), Vector3(0.22, 2.4, 0.22), structural_concrete)
+
+func _add_hospital_wings(root: Node3D, w: float, d: float, h: float) -> void:
+	# Bloc de consultations et aile de soins ; volumes différenciés mais non cadastraux.
+	_box(root, Vector3(-w * 0.31, h * 0.25, -d * 0.10), Vector3(w * 0.28, h * 0.50, d * 0.72), white)
+	_box(root, Vector3(-w * 0.31, h * 0.51, -d * 0.10), Vector3(w * 0.29, 0.24, d * 0.74), roof)
+	_box(root, Vector3(w * 0.28, h * 0.20, -d * 0.12), Vector3(w * 0.30, h * 0.40, d * 0.68), white)
+	_box(root, Vector3(w * 0.28, h * 0.41, -d * 0.12), Vector3(w * 0.31, 0.24, d * 0.70), roof)
+	# Marquage et accès dégagé pour les ambulances.
+	_box(root, Vector3(0, 0.08, d / 2.0 + 7.0), Vector3(w * 0.70, 0.12, 10.0), asphalt)
+
+func _add_hotel_balconies(root: Node3D, w: float, d: float, h: float, index: int) -> void:
+	# Balcons filants et garde-corps métalliques, avec alternance déterministe.
+	var floors := maxi(2, int(ceil(h / 3.2)))
+	for floor in range(1, floors):
+		var y := minf(1.8 + floor * 3.0, h - 0.4)
+		for col in range(4):
+			var x := -w * 0.34 + col * w * 0.22
+			if (col + floor + index) % 2 == 0:
+				_box(root, Vector3(x, y - 0.82, d / 2.0 + 0.85), Vector3(w * 0.16, 0.12, 1.4), concrete)
+				_box(root, Vector3(x, y - 0.30, d / 2.0 + 1.48), Vector3(w * 0.16, 0.08, 0.08), steel)
+				for post in range(4):
+					_box(root, Vector3(x - w * 0.08 + post * w * 0.053, y - 0.56, d / 2.0 + 1.48), Vector3(0.045, 0.48, 0.045), steel)
+
+func _add_clinic_verandah(root: Node3D, w: float, d: float) -> void:
+	# Galerie ombragée et rampe d'accès pour les structures de santé de proximité.
+	_box(root, Vector3(0, 2.9, d / 2.0 + 1.8), Vector3(w * 0.88, 0.18, 3.6), roof)
+	for x in [-w * 0.38, -w * 0.13, w * 0.13, w * 0.38]:
+		_box(root, Vector3(x, 1.45, d / 2.0 + 2.7), Vector3(0.16, 2.9, 0.16), structural_concrete)
+	_box(root, Vector3(0, 0.10, d / 2.0 + 5.0), Vector3(5.0, 0.20, 6.0), concrete)
 
 func _add_facade_construction_details(root: Node3D, w: float, d: float, h: float) -> void:
 	# Détails architecturaux génériques : soubassement béton, bandeaux de dalle
