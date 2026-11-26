@@ -41,6 +41,7 @@
 | Agence nationale des infrastructures numériques et des fréquences (ANINF) — Immeuble de la Solde | [x] | [x] | [ ] | [ ] | [ ] |
 | Direction Générale de la Comptabilité Publique et du Trésor (DGCPT) — 321 avenue Rose Francine Rogombe | [x] | [x] | [ ] | [ ] | [ ] |
 | Conférence Interafricaine des Marchés d’Assurances (CIMA) — centre-ville | [x] | [x] | [ ] | [ ] | [ ] |
+| Palais présidentiel du Bord de mer — boulevard de l’Indépendance | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -85,5 +86,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout du repère ANINF, Immeuble de la Solde — OSM way 455714440, GPS 0.39245 / 9.44510.
 - 2026-11-26 : ajout du repère Direction Générale de la Comptabilité Publique et du Trésor — OSM way 455714429, GPS 0.39216 / 9.44461.
 - 2026-11-26 : ajout du repère CIMA — OSM way 455714470, GPS 0.39040 / 9.44528 ; bâtiment physique toujours issu de buildings.geojson.
+- 2026-11-26 : ajout du repère Palais présidentiel du Bord de mer — OSM way 168587922, GPS 0.39237 / 9.44235 ; bâtiment physique toujours issu de buildings.geojson.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
