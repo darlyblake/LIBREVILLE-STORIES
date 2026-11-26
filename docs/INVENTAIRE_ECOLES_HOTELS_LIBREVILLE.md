@@ -15,6 +15,22 @@ Le générateur reconnaît maintenant les catégories OSM :
 
 Les coordonnées OSM déterminent le placement. Les textures PBR CC0 déjà téléchargées depuis Poly Haven habillent les matériaux. Les volumes de façade ajoutés par le générateur restent des **blockouts de gameplay**, pas des relevés architecturaux certifiés. Un nom retrouvé dans un annuaire ne suffit pas à créer un bâtiment : il faut un objet géographique OSM localisé.
 
+## 1 bis. Comptage réel de l'extraction OSM du 26 novembre 2026
+
+L'artefact géographique produit par l'extraction Geofabrik/OSM contient **3 302 POI** dans l'emprise étendue (0,300–0,500° N ; 9,370–9,550° E). Le rapport d'extraction donne les catégories suivantes :
+- 173 objets classés « school » ;
+- 33 objets classés « college » ;
+- 53 objets classés « hotel » ;
+- 3 objets classés « hostel » ;
+- 12 objets classés « guest_house » ;
+- 30 objets classés « motel ».
+
+Après application du rayon actuel du générateur (2 600 m autour du centre de la carte, 0,400° N / 9,4475° E), le contrôle spatial des géométries POI trouve **63 candidats scolaires** et **26 candidats d'hébergement**. Ce sont des objets OSM, pas 89 bâtiments reconstruits à l'échelle réelle : certains POI sont des points sans empreinte bâtie, certains noms sont absents, et plusieurs établissements peuvent avoir plusieurs objets OSM.
+
+Le générateur limite toujours l'ensemble des équipements à 100 sites pour préserver les performances. Depuis le commit de priorité, les catégories « school » et « hotel » sont triées avant les autres équipements ; les plus proches du centre sont retenus en premier dans chaque catégorie. Le nombre réellement instancié peut donc être inférieur aux candidats si des objets sont trop proches (déduplication de 18 m) ou si la géométrie est invalide.
+
+**Source de données :** extraction OpenStreetMap / Geofabrik du 26-11-2026, licence ODbL 1.0. Attribution : © OpenStreetMap contributors. Les fichiers GeoJSON complets sont conservés dans l'artefact GitHub Actions « libreville-osm-extended » du dépôt.
+
 ## 2. Établissements scolaires repérés dans les sources
 
 | Établissement | Secteur / repère publié | Référence |
@@ -90,6 +106,6 @@ Le script `game/scripts/facility_generator.gd` reconnaît désormais les écoles
 - écoles : volume bas/étendu, entrée et signalétique scolaire ;
 - hôtels : volume plus vertical, bandeau de toiture, entrée couverte et vitrage.
 
-Le placement dépend du POI OSM et de la hauteur terrain. Les dimensions générées sont des dimensions de représentation provisoire, pas les dimensions réelles des bâtiments. Les établissements non présents dans la couche OSM locale ne sont pas artificiellement créés.
+Le placement dépend du POI OSM et de la hauteur terrain. Les écoles et hôtels passent désormais en priorité dans la limite de 100 équipements, puis les autres services sont ajoutés avec les places restantes. Les dimensions générées sont des dimensions de représentation provisoire, pas les dimensions réelles des bâtiments. Les établissements non présents dans la couche OSM locale ne sont pas artificiellement créés.
 
 **Contrôle à effectuer dans la prochaine validation Godot :** vérifier le nombre d'écoles et d'hôtels effectivement détectés dans les données extraites, puis corriger les objets OSM manquants ou mal classés avant de détailler chaque façade.
