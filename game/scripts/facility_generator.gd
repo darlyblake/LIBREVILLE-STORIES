@@ -242,6 +242,8 @@ func _administrative_kind(p: Dictionary) -> String:
 	var government := str(p.get("government", "")).to_lower()
 	if amenity == "townhall" or building == "townhall" or name.contains("mairie") or name.contains("hotel de ville"):
 		return "city_hall"
+	if name.contains("eaux") and name.contains("foret"):
+		return "ministry"
 	if name.contains("ministere") or name.contains("primature") or government == "ministry":
 		return "ministry"
 	if name.contains("ambassade") or name.contains("consulat") or office == "diplomatic":
