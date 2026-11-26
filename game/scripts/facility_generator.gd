@@ -19,6 +19,8 @@ var asphalt: StandardMaterial3D
 var school_accent: StandardMaterial3D
 var hotel_accent: StandardMaterial3D
 var count := 0
+var school_count := 0
+var hotel_count := 0
 var use_pbr_textures := true
 
 func _ready() -> void:
@@ -45,7 +47,7 @@ func _make_materials() -> void:
 	steel = _facility_mat(Color(0.72,0.73,0.72), "metal_plate_02", _texture(true))
 	steel.metallic = 0.72
 	asphalt = _facility_mat(Color(0.24,0.25,0.24), "asphalt_03", _texture(false))
-	school_accent = _facility_mat(Color(0.12,0.28,0.48), "blue_metal_roof", _texture(true))
+	school_accent = _facility_mat(Color(0.12,0.28,0.48), "metal_plate_02", _texture(true))
 	hotel_accent = _facility_mat(Color(0.48,0.31,0.18), "brushed_concrete", _texture(false))
 	glass = StandardMaterial3D.new()
 	glass.albedo_color = Color(0.20,0.40,0.51,0.82)
@@ -155,7 +157,9 @@ func _build_facilities() -> void:
 		_create_one(e.kind,e.label,e.pos,count)
 		placed.append({"kind":e.kind,"pos":e.pos})
 		count+=1
-	print("INFRASTRUCTURES LIBREVILLE | ",count," sites spécialisés")
+		if e.kind == "school": school_count += 1
+		if e.kind == "hotel": hotel_count += 1
+	print("INFRASTRUCTURES LIBREVILLE | ",count," sites spécialisés | écoles : ",school_count," | hôtels : ",hotel_count)
 
 func _kind(p:Dictionary)->String:
 	var a:=str(p.get("amenity","")).to_lower()
