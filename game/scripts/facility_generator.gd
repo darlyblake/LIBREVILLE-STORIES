@@ -8,6 +8,7 @@ const MAX_FACILITIES := 60
 var map: Node
 var concrete: StandardMaterial3D
 var structural_concrete: StandardMaterial3D
+var weathered_concrete: StandardMaterial3D
 var white: StandardMaterial3D
 var blue: StandardMaterial3D
 var red: StandardMaterial3D
@@ -34,6 +35,7 @@ func _ready() -> void:
 func _make_materials() -> void:
 	concrete = _facility_mat(Color(0.72,0.71,0.66), "concrete_floor_01", _texture(false))
 	structural_concrete = _facility_mat(Color(0.66,0.65,0.61), "concrete_wall_009", _texture(false))
+	weathered_concrete = _facility_mat(Color(0.58,0.57,0.53), "dirty_concrete", _texture(false))
 	white = _facility_mat(Color(0.92,0.91,0.84), "white_plaster_02", _texture(false))
 	blue = _facility_mat(Color(0.12,0.30,0.52), "white_plaster_02", _texture(false))
 	red = _facility_mat(Color(0.72,0.10,0.09), "red_bricks_04", _texture(false))
@@ -236,6 +238,7 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 	_box(root,Vector3(0,h/2,0),Vector3(w,h,d),wall)
 	_box(root,Vector3(0,h+0.18,0),Vector3(w+0.8,0.36,d+0.8),roof)
 	_windows(root,w,d,h)
+	_add_facade_construction_details(root,w,d,h)
 	match k:
 		"hospital","clinic":
 			_sign(root,"✚",Vector3(-w/2+2,h+1.4,0),red)
@@ -287,6 +290,22 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 		"admin":
 			_sign(root,"ADMINISTRATION",Vector3(0,h+1,d/2+0.3),blue)
 	_name(root,label,Vector3(0,h+2,-d/2-1))
+
+func _add_facade_construction_details(root: Node3D, w: float, d: float, h: float) -> void:
+	# Détails architecturaux génériques : soubassement béton, bandeaux de dalle
+	# et encadrements. Ils enrichissent les volumes OSM sans prétendre reproduire
+	# une façade réelle non documentée.
+	_box(root, Vector3(0, 0.52, d / 2.0 + 0.07), Vector3(w + 0.12, 0.24, 0.16), weathered_concrete)
+	_box(root, Vector3(0, 0.52, -d / 2.0 - 0.07), Vector3(w + 0.12, 0.24, 0.16), weathered_concrete)
+	_box(root, Vector3(-w / 2.0 - 0.07, 0.52, 0), Vector3(0.16, 0.24, d + 0.12), weathered_concrete)
+	_box(root, Vector3(w / 2.0 + 0.07, 0.52, 0), Vector3(0.16, 0.24, d + 0.12), weathered_concrete)
+	var floors := maxi(1, int(ceil(h / 3.2)))
+	for floor in range(1, floors):
+		var y := minf(0.24 + floor * 3.2, h - 0.35)
+		_box(root, Vector3(0, y, d / 2.0 + 0.10), Vector3(w + 0.35, 0.14, 0.22), structural_concrete)
+		_box(root, Vector3(0, y, -d / 2.0 - 0.10), Vector3(w + 0.35, 0.14, 0.22), structural_concrete)
+		_box(root, Vector3(-w / 2.0 - 0.10, y, 0), Vector3(0.22, 0.14, d + 0.35), structural_concrete)
+		_box(root, Vector3(w / 2.0 + 0.10, y, 0), Vector3(0.22, 0.14, d + 0.35), structural_concrete)
 
 func _windows(root:Node3D,w:float,d:float,h:float)->void:
 	var floors:=maxi(1, int(ceil(h / 3.2)))
