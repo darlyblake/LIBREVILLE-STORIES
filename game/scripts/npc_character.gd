@@ -156,8 +156,8 @@ func _add_sphere(label: String, position: Vector3, dimensions: Vector3, color: C
 
 func _add_capsule(label: String, position: Vector3, dimensions: Vector3, color: Color) -> void:
 	var mesh := CapsuleMesh.new()
-	mesh.radius = 1.0
-	mesh.height = 2.0
+	mesh.radius = 0.5
+	mesh.height = 1.0
 	var node := MeshInstance3D.new()
 	node.name = label
 	node.mesh = mesh
