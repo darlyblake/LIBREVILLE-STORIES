@@ -146,6 +146,7 @@ func _build_facilities() -> void:
 	var has_anuttc_site := false
 	var has_brac_oif_site := false
 	var has_dgttc_site := false
+	var has_dgel_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -202,6 +203,8 @@ func _build_facilities() -> void:
 			has_brac_oif_site = true
 		if poi_osm_id == 816220349 or poi_name.contains("direction generale des travaux topographiques") or poi_name.contains("d g t t c"):
 			has_dgttc_site = true
+		if poi_osm_id == 11421865904 or poi_name.contains("direction generale des etudes et laboratoires"):
+			has_dgel_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -510,6 +513,19 @@ func _build_facilities() -> void:
 			"id": 816220349,
 			"lat": 0.42335,
 			"lon": 9.42733,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Direction Générale des Études et Laboratoires (DGEL), OSM node 11421865904.
+	# Bureau gouvernemental à Ancien Sobraga ; repère sans volume artificiel.
+	if not has_dgel_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Direction Générale des Études et Laboratoires (DGEL)",
+			"pos": _geo([9.4492, 0.4182]),
+			"id": 11421865904,
+			"lat": 0.4182,
+			"lon": 9.4492,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -836,6 +852,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("travaux topographiques") or label.to_lower().contains("dgttc"):
 				marker_text = "CADASTRE & TOPOGRAPHIE"
+				marker_material = school_accent
+			if label.to_lower().contains("etudes et laboratoires") or label.to_lower().contains("dgel"):
+				marker_text = "ÉTUDES & LABORATOIRES"
 				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
