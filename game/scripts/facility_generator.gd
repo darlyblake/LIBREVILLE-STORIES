@@ -157,6 +157,8 @@ func _build_facilities() -> void:
 	var has_cntippee_site := false
 	var has_egabon_site := false
 	var has_seeg_site := false
+	var has_dgdi_site := false
+	var has_habitat_technical_center_site := false
 	var has_chamber_of_commerce_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
@@ -239,6 +241,10 @@ func _build_facilities() -> void:
 			has_egabon_site = true
 		if poi_osm_id == 456742208 or poi_name.contains("societe d energie et d eau du gabon") or poi_name == "seeg":
 			has_seeg_site = true
+		if poi_osm_id == 2910360231 or poi_name.contains("direction generale de la documentation et de l immigration") or poi_name == "dgdi":
+			has_dgdi_site = true
+		if poi_osm_id == 11133203583 or poi_name.contains("centre technique de l habitat"):
+			has_habitat_technical_center_site = true
 		if poi_osm_id == 456350865 or poi_name.contains("chambre de commerce"):
 			has_chamber_of_commerce_site = true
 		var kind := _kind(p)
@@ -705,6 +711,30 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# Deux services administratifs cartographiés dans la zone : DGDI à Oloumi
+	# et Centre Technique de l’Habitat à Nzeng-Ayong. Repères uniquement.
+	if not has_dgdi_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Direction Générale de la Documentation et de l’Immigration (DGDI)",
+			"pos": _geo([9.467, 0.38207]),
+			"id": 2910360231,
+			"lat": 0.38207,
+			"lon": 9.467,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	if not has_habitat_technical_center_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Centre Technique de l’Habitat — Nzeng-Ayong",
+			"pos": _geo([9.48454, 0.42044]),
+			"id": 11133203583,
+			"lat": 0.42044,
+			"lon": 9.48454,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Chambre de Commerce du Gabon — OSM way 456350865, centroïde Mapcarta/OSM.
 	# Le repère est placé sur le bâtiment public existant ; aucune géométrie dupliquée.
 	if not has_chamber_of_commerce_site:
@@ -1012,6 +1042,12 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("documentation et de l immigration") or label.to_lower().contains("dgdi"):
+				marker_text = "DGDI"
+				marker_material = school_accent
+			if label.to_lower().contains("centre technique de l habitat"):
+				marker_text = "HABITAT"
+				marker_material = school_accent
 			if label.to_lower().contains("egabon"):
 				marker_text = "eGABON"
 				marker_material = school_accent
