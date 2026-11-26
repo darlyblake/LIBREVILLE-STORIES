@@ -1,0 +1,287 @@
+{
+  "version": 1,
+  "note": "Horaires de simulation indicatifs pour le prototype. Ils ne prétendent pas reproduire les horaires officiels de chaque établissement ; les fiches des lieux pourront ensuite surcharger ces valeurs.",
+  "profiles": {
+    "school": {
+      "label": "Établissement scolaire",
+      "days": {
+        "1": [
+          [
+            7,
+            17
+          ]
+        ],
+        "2": [
+          [
+            7,
+            17
+          ]
+        ],
+        "3": [
+          [
+            7,
+            17
+          ]
+        ],
+        "4": [
+          [
+            7,
+            17
+          ]
+        ],
+        "5": [
+          [
+            7,
+            17
+          ]
+        ]
+      },
+      "closed_on_public_holidays": true,
+      "requires_school_term": true
+    },
+    "administration": {
+      "label": "Administration publique",
+      "days": {
+        "1": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ],
+        "2": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ],
+        "3": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ],
+        "4": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ],
+        "5": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ]
+      },
+      "closed_on_public_holidays": true
+    },
+    "bank": {
+      "label": "Banque",
+      "days": {
+        "1": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ],
+        "2": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ],
+        "3": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ],
+        "4": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ],
+        "5": [
+          [
+            7,
+            30,
+            15,
+            30
+          ]
+        ]
+      },
+      "closed_on_public_holidays": true
+    },
+    "retail": {
+      "label": "Commerce de proximité",
+      "days": {
+        "0": [
+          [
+            8,
+            20
+          ]
+        ],
+        "1": [
+          [
+            7,
+            20
+          ]
+        ],
+        "2": [
+          [
+            7,
+            20
+          ]
+        ],
+        "3": [
+          [
+            7,
+            20
+          ]
+        ],
+        "4": [
+          [
+            7,
+            20
+          ]
+        ],
+        "5": [
+          [
+            7,
+            20
+          ]
+        ],
+        "6": [
+          [
+            8,
+            20
+          ]
+        ]
+      },
+      "closed_on_public_holidays": false
+    },
+    "market_mont_bouet": {
+      "label": "Marché Mont-Bouët",
+      "days": {
+        "0": [
+          [
+            6,
+            19
+          ]
+        ],
+        "1": [
+          [
+            6,
+            19
+          ]
+        ],
+        "2": [
+          [
+            6,
+            19
+          ]
+        ],
+        "3": [
+          [
+            6,
+            19
+          ]
+        ],
+        "4": [
+          [
+            6,
+            19
+          ]
+        ],
+        "5": [
+          [
+            6,
+            19
+          ]
+        ],
+        "6": [
+          [
+            6,
+            19
+          ]
+        ]
+      },
+      "closed_on_public_holidays": false
+    },
+    "hospital": {
+      "label": "Hôpital / urgences",
+      "always_open": true
+    },
+    "police": {
+      "label": "Police / sécurité",
+      "always_open": true
+    },
+    "pharmacy": {
+      "label": "Pharmacie de garde (simulation)",
+      "days": {
+        "0": [
+          [
+            8,
+            22
+          ]
+        ],
+        "1": [
+          [
+            8,
+            22
+          ]
+        ],
+        "2": [
+          [
+            8,
+            22
+          ]
+        ],
+        "3": [
+          [
+            8,
+            22
+          ]
+        ],
+        "4": [
+          [
+            8,
+            22
+          ]
+        ],
+        "5": [
+          [
+            8,
+            22
+          ]
+        ],
+        "6": [
+          [
+            8,
+            22
+          ]
+        ]
+      },
+      "closed_on_public_holidays": false
+    }
+  }
+}
