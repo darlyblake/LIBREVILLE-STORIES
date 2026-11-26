@@ -69,6 +69,8 @@ func create_initial_population() -> void:
 	population_changed.emit(alive_count, residents.size())
 
 func _make_resident(resident_id: String, first_name: String, last_name: String, age: int, gender: String) -> Dictionary:
+	var occupation := _job_for_age(age)
+	var nationality := _nationality_for_job(occupation)
 	return {
 		"id": resident_id,
 		"first_name": first_name,
@@ -77,8 +79,10 @@ func _make_resident(resident_id: String, first_name: String, last_name: String, 
 		"age_years": age,
 		"age_months": _rng.randi_range(0, 11),
 		"alive": true,
+		"nationality": nationality,
+		"origin_region": _region_for_nationality(nationality),
 		"district": DISTRICTS[_rng.randi_range(0, DISTRICTS.size() - 1)],
-		"job": _job_for_age(age),
+		"job": occupation,
 		"mother_id": "",
 		"father_id": "",
 		"spouse_id": "",
@@ -175,6 +179,8 @@ func register_birth(mother_id: String, father_id: String, district: String = "",
 	var child := _make_resident(resident_id, _random_first_name(""), str(father.get("last_name", "Mba")), 0, "femme" if _rng.randf() < 0.5 else "homme")
 	child["age_months"] = 0
 	child["job"] = "nourrisson"
+	child["nationality"] = str(mother.get("nationality", "Gabon"))
+	child["origin_region"] = str(mother.get("origin_region", "Afrique centrale"))
 	child["district"] = child_district
 	child["mother_id"] = mother_id
 	child["father_id"] = father_id
@@ -464,10 +470,49 @@ func load_population() -> bool:
 
 ## Chaque fiche reçoit une identité visuelle persistante, indépendante du métier.
 ## Les paramètres seront interprétés par le futur générateur de modèles 3D.
+## Pondérations provisoires de gameplay, non présentées comme statistiques officielles.
+## Les boutiques ont davantage de commerçants ouest-africains ; le marché reste plus mixte.
+func _nationality_for_job(occupation: String) -> String:
+	var roll := _rng.randf()
+	if occupation == "commerçant" or occupation == "gérant boutique":
+		if roll < 0.30: return "Gabon"
+		if roll < 0.48: return "Bénin"
+		if roll < 0.63: return "Sénégal"
+		if roll < 0.75: return "Mali"
+		if roll < 0.85: return "Burkina Faso"
+		if roll < 0.92: return "Cameroun"
+		if roll < 0.96: return "Togo"
+		if roll < 0.98: return "Nigeria"
+		return "Congo"
+	if occupation == "vendeur marché":
+		if roll < 0.75: return "Gabon"
+		if roll < 0.83: return "Bénin"
+		if roll < 0.90: return "Cameroun"
+		if roll < 0.95: return "Mali"
+		return "Sénégal"
+	if roll < 0.88: return "Gabon"
+	if roll < 0.90: return "Cameroun"
+	if roll < 0.92: return "Congo"
+	if roll < 0.94: return "République démocratique du Congo"
+	if roll < 0.96: return "Bénin"
+	if roll < 0.975: return "Sénégal"
+	if roll < 0.985: return "Mali"
+	if roll < 0.993: return "Burkina Faso"
+	return "Togo"
+
+func _region_for_nationality(nationality: String) -> String:
+	match nationality:
+		"Gabon", "Cameroun", "Congo", "République démocratique du Congo":
+			return "Afrique centrale"
+		"Bénin", "Sénégal", "Mali", "Burkina Faso", "Togo", "Nigeria":
+			return "Afrique de l'Ouest"
+		_:
+			return "Afrique"
+
 func _generate_appearance(gender: String, age: int) -> Dictionary:
 	var hair_styles: Array[String] = ["coupe_courte", "degrade", "boucles", "tresses", "nattes", "locks", "afro", "rasé", "queue_cheval", "chignon", "carre"]
 	var hair_colors: Array[String] = ["noir", "brun_fonce", "brun", "chatain", "gris", "blanc", "teinte_bordeaux"]
-	var skin_tones: Array[String] = ["ebene", "brun_fonce", "brun", "brun_moyen", "caramel", "cuivre", "clair"]
+	var skin_tones: Array[String] = ["ebene", "ebene", "brun_fonce", "brun_fonce", "brun", "brun_moyen", "caramel", "cuivre", "clair"]
 	var face_shapes: Array[String] = ["ovale", "rond", "carre", "allonge", "coeur", "losange"]
 	var eye_shapes: Array[String] = ["amande", "ronds", "fins", "tombants"]
 	var nose_shapes: Array[String] = ["fin", "large", "droit", "arrondi", "court"]
@@ -520,6 +565,10 @@ func _normalize_resident(resident: Dictionary) -> void:
 		resident["death_cause"] = ""
 	if not resident.has("generation"):
 		resident["generation"] = 1
+	if not resident.has("nationality"):
+		resident["nationality"] = _nationality_for_job(str(resident.get("job", "sans emploi")))
+	if not resident.has("origin_region"):
+		resident["origin_region"] = _region_for_nationality(str(resident["nationality"]))
 	if not resident.has("appearance") or not resident["appearance"] is Dictionary:
 		resident["appearance"] = _generate_appearance(str(resident.get("gender", "homme")), int(resident.get("age_years", 18)))
 
