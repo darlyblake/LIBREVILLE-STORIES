@@ -329,6 +329,9 @@ func _administrative_kind(p: Dictionary) -> String:
 		return "city_hall"
 	if name.contains("eaux") and name.contains("foret"):
 		return "ministry"
+	# Maison Jean Ping et Hôtel des Affaires étrangères : éviter le classement générique office=government.
+	if name.contains("maison jean ping") or name.contains("affaires etrangeres") or name.contains("hotel des affaires etrangeres"):
+		return "ministry"
 	if name.contains("ministere de la justice") or name.contains("ministere de justice"):
 		return "court"
 	if name.contains("senat") or name.contains("palais omar bongo"):
