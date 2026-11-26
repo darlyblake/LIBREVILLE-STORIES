@@ -155,6 +155,8 @@ func _build_facilities() -> void:
 	var has_cartography_institute_site := false
 	var has_cppf_site := false
 	var has_cntippee_site := false
+	var has_egabon_site := false
+	var has_seeg_site := false
 	var has_chamber_of_commerce_site := false
 	var has_assembly_site := false
 	for item in doc.get("features",[]):
@@ -233,6 +235,10 @@ func _build_facilities() -> void:
 			has_cppf_site = true
 		if poi_osm_id == 12099801403 or poi_name.contains("commission nationale des travaux d interet public") or poi_name.contains("cntippee"):
 			has_cntippee_site = true
+		if poi_osm_id == 636626338 or poi_name == "egabon":
+			has_egabon_site = true
+		if poi_osm_id == 456742208 or poi_name.contains("societe d energie et d eau du gabon") or poi_name == "seeg":
+			has_seeg_site = true
 		if poi_osm_id == 456350865 or poi_name.contains("chambre de commerce"):
 			has_chamber_of_commerce_site = true
 		var kind := _kind(p)
@@ -676,6 +682,29 @@ func _build_facilities() -> void:
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
+	# eGabon et siège social SEEG : services publics distincts, repères sur empreintes existantes.
+	if not has_egabon_site:
+		entries.append({
+			"kind": "admin",
+			"label": "eGabon — Service public numérique",
+			"pos": _geo([9.44786, 0.38566]),
+			"id": 636626338,
+			"lat": 0.38566,
+			"lon": 9.44786,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	if not has_seeg_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Société d’Énergie et d’Eau du Gabon (SEEG) — Siège social",
+			"pos": _geo([9.44671, 0.39300]),
+			"id": 456742208,
+			"lat": 0.39300,
+			"lon": 9.44671,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Chambre de Commerce du Gabon — OSM way 456350865, centroïde Mapcarta/OSM.
 	# Le repère est placé sur le bâtiment public existant ; aucune géométrie dupliquée.
 	if not has_chamber_of_commerce_site:
@@ -983,6 +1012,12 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("egabon"):
+				marker_text = "eGABON"
+				marker_material = school_accent
+			if label.to_lower().contains("seeg") or label.to_lower().contains("energie et d eau du gabon") or label.to_lower().contains("énergie et d’eau du gabon"):
+				marker_text = "SEEG"
+				marker_material = school_accent
 			if label.to_lower().contains("cppf") or label.to_lower().contains("caisse des pensions"):
 				marker_text = "CPPF"
 				marker_material = school_accent
