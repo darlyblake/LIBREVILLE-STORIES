@@ -149,6 +149,7 @@ func _build_facilities() -> void:
 	var has_dgel_site := false
 	var has_cnee_site := false
 	var has_cnd_site := false
+	var has_direction_nationale_assurances_site := false
 	var has_customs_site := false
 	var has_constitutional_court_site := false
 	var has_agasa_site := false
@@ -229,6 +230,8 @@ func _build_facilities() -> void:
 			has_cnee_site = true
 		if poi_osm_id == 11529395192 or poi_name.contains("conseil national de la democratie"):
 			has_cnd_site = true
+		if poi_osm_id == 6144764686 or poi_name.contains("direction nationale des assurances"):
+			has_direction_nationale_assurances_site = true
 		if poi_name.contains("palais leon mba") or poi_name.contains("assemblee nationale"):
 			has_assembly_site = true
 		if poi_osm_id == 12727052424 or poi_name.contains("direction generale des douanes") or poi_name.contains("douanes et droits indirects"):
@@ -612,6 +615,19 @@ func _build_facilities() -> void:
 			"id": 11529395192,
 			"lat": 0.41810,
 			"lon": 9.45075,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Direction Nationale des Assurances, OSM node 6144764686.
+	# Rond-Point de la Démocratie ; coordonnées Mapcarta/OSM vérifiées dans l’emprise.
+	if not has_direction_nationale_assurances_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Direction Nationale des Assurances",
+			"pos": _geo([9.44884, 0.42738]),
+			"id": 6144764686,
+			"lat": 0.42738,
+			"lon": 9.44884,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
