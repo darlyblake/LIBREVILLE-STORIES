@@ -185,6 +185,8 @@ func _default_name(k:String)->String:
 		"fire": return "Sapeurs-pompiers"
 		"bus": return "Gare routière"
 		"fuel": return "Station-service"
+		"school": return "Établissement scolaire"
+		"hotel": return "Hôtel"
 		_: return "Administration"
 
 func _geometry_center(g:Dictionary)->Array:
