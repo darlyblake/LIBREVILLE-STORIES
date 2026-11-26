@@ -47,6 +47,7 @@
 | CEEAC — Haut de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
 | ANUTTC — Agence Nationale de l’Urbanisme, des Travaux Topographiques et du Cadastre — Oloumi | [x] | [x] | [ ] | [ ] | [ ] |
 | BRAC-OIF — Bureau régional de l’OIF pour l’Afrique centrale | [x] | [x] | [ ] | [ ] | [ ] |
+| DGTTC — Direction Générale des Travaux Topographiques et du Cadastre — Trois quartiers | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -97,5 +98,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout de la CEEAC, Haut de Gué-Gué — OSM way 424241587, GPS 0.42858 / 9.43105.
 - 2026-11-26 : ajout de l’ANUTTC à Oloumi — OSM way 806267454, GPS 0.38001 / 9.46208 ; empreinte physique conservée depuis buildings.geojson.
 - 2026-11-26 : ajout du BRAC-OIF — OSM way 625614944, GPS 0.43037 / 9.42647 ; repère institutionnel, volume physique depuis buildings.geojson.
+- 2026-11-26 : ajout de la DGTTC — OSM way 816220349, GPS 0.42335 / 9.42733 ; site distinct de l’ANUTTC d’Oloumi, repère institutionnel, empreinte physique depuis buildings.geojson.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
