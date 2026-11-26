@@ -125,6 +125,7 @@ func _build_facilities() -> void:
 	var origin := Vector2.ZERO
 	if player: origin=Vector2(player.global_position.x,player.global_position.z)
 	var entries: Array[Dictionary]=[]
+	var has_water_forests_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -137,6 +138,10 @@ func _build_facilities() -> void:
 		if latitude < MAP_SOUTH or latitude > MAP_NORTH or longitude < MAP_WEST or longitude > MAP_EAST:
 			continue
 		var p: Dictionary=item.get("properties",{})
+		var poi_name := str(p.get("name:fr", p.get("name", ""))).to_lower()
+		var poi_osm_id := int(p.get("osm_id", 0))
+		if poi_osm_id == 249526245 or (poi_name.contains("eaux") and poi_name.contains("foret")):
+			has_water_forests_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -148,6 +153,22 @@ func _build_facilities() -> void:
 		var footprint_size := _geometry_size_m(g)
 		var footprint := _geometry_outer_ring(g, pos)
 		entries.append({"kind":kind,"label":label,"pos":pos,"id":osm_id,"lat":latitude,"lon":longitude,"footprint_size":footprint_size,"footprint":footprint})
+	# Le siège historique des Eaux et Forêts est cartographié sur le boulevard Triomphal
+	# (OSM way 249526245). Si l'extraction POI ne l'a pas retenu, ajouter uniquement
+	# son repère au centroïde OSM connu : le bâtiment 3D reste celui de buildings.geojson.
+	# Aucun volume ni aucune parcelle artificielle ne sont créés ici.
+	if not has_water_forests_site:
+		var water_forests_position := _geo([9.44034, 0.40887])
+		entries.append({
+			"kind": "ministry",
+			"label": "Immeuble des Eaux et Forêts",
+			"pos": water_forests_position,
+			"id": 249526245,
+			"lat": 0.40887,
+			"lon": 9.44034,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -435,6 +456,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "MAIRIE"
 		"ministry":
 			marker_text = "MINISTÈRE"
+			if label.to_lower().contains("eaux") and label.to_lower().contains("foret"):
+				marker_text = "EAUX & FORÊTS"
+				marker_material = school_accent
 		"embassy":
 			marker_text = "AMBASSADE"
 		"court":
