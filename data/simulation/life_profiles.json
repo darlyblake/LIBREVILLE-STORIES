@@ -45,6 +45,322 @@
     "agent de sécurité": {
       "start_hour": 19,
       "end_hour": 7
+    },
+    "agriculteur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "éleveur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "pêcheur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "maraîcher": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "vendeur de poisson": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "agent SEEG électricité": {
+      "start_hour": 7,
+      "end_hour": 16
+    },
+    "agent SEEG eau": {
+      "start_hour": 7,
+      "end_hour": 16
+    },
+    "technicien réseau électrique": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "monteur de poteaux électriques": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "technicien fibre optique": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "installateur télécom": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "plombier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "agent maintenance éclairage public": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "éboueur": {
+      "start_hour": 5,
+      "end_hour": 13
+    },
+    "chauffeur camion poubelle": {
+      "start_hour": 5,
+      "end_hour": 13
+    },
+    "agent de nettoyage urbain": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "responsable collecte déchets": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "agent espaces verts": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "médecin": {
+      "start_hour": 7,
+      "end_hour": 19
+    },
+    "infirmier": {
+      "start_hour": 7,
+      "end_hour": 19
+    },
+    "sage-femme": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "pharmacien": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "ambulancier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "agent hospitalier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "psychologue": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "travailleur social": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "éducateur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "directeur école": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "professeur université": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "chercheur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "bibliothécaire": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "chauffeur taxi": {
+      "start_hour": 6,
+      "end_hour": 22
+    },
+    "chauffeur bus": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "chauffeur poids lourd": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "livreur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "mécanicien automobile": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "conducteur engin": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "agent portuaire": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "maçon": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "menuisier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "électricien bâtiment": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "carreleur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "peintre bâtiment": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "architecte": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "ingénieur génie civil": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "chef chantier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "vendeur marché": {
+      "start_hour": 6,
+      "end_hour": 18
+    },
+    "restaurateur": {
+      "start_hour": 10,
+      "end_hour": 23
+    },
+    "cuisinier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "serveur": {
+      "start_hour": 10,
+      "end_hour": 23
+    },
+    "boulanger": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "boucher": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "gérant boutique": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "caissier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "agent municipal": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "policier": {
+      "start_hour": 0,
+      "end_hour": 24
+    },
+    "gendarme": {
+      "start_hour": 0,
+      "end_hour": 24
+    },
+    "pompier": {
+      "start_hour": 0,
+      "end_hour": 24
+    },
+    "agent pénitentiaire": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "magistrat": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "député": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "sénateur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "ministre": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "président de la République": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "secrétaire": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "comptable": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "informaticien": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "développeur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "banquier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "assureur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "agent immobilier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "avocat": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "journaliste": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "artiste": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "musicien": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "coiffeur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "couturier": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "entrepreneur": {
+      "start_hour": 8,
+      "end_hour": 17
+    },
+    "chef entreprise": {
+      "start_hour": 8,
+      "end_hour": 17
     }
   },
   "nightlife": {
