@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "project": "LIBREVILLE STORIES",
+  "generator": {
+    "name": "Ara 3D Gen",
+    "repository": "https://github.com/olatunde85/3d-gen",
+    "builder": "https://ara3dgen.com/app/",
+    "code_license": "MIT",
+    "character_assets_license": "CC0-1.0",
+    "motion_capture_license": "CMU Graphics Lab Motion Capture Database; commercial use permitted, do not resell source data alone; retain acknowledgement"
+  },
+  "engine": {
+    "name": "Godot",
+    "version": "4.3",
+    "format": "glb",
+    "up_axis": "+Y",
+    "forward_axis": "+Z",
+    "units": "metres",
+    "renderer": "gl_compatibility"
+  },
+  "policy": {
+    "identity_is_resident_data": true,
+    "model_is_reusable_visual_template": true,
+    "appearance_is_persistent": true,
+    "inheritance_enabled": false,
+    "age_morphs_enabled": false,
+    "never_infer_nationality_from_face": true
+  },
+  "performance": {
+    "reference_cpu": "Intel Core i5-8350U",
+    "reference_ram_gb": 16,
+    "reference_gpu": "Intel UHD 620",
+    "crowd_lod": "low",
+    "nearby_lod": "medium",
+    "instantiate_only_near_player": true,
+    "share_meshes_and_materials": true
+  },
+  "starter_characters": [
+    {
+      "id": "civilian_male_01",
+      "status": "recipe_pending_export",
+      "gender_presentation": "male",
+      "age_years": 32,
+      "heritage_direction": "Black African appearance; no caricature or nationality inference",
+      "skin_direction": "deep brown",
+      "hair_direction": "short natural afro fade",
+      "outfit_direction": "muted blue polo, dark trousers, everyday shoes",
+      "pose": "A-pose",
+      "rig": "game rig",
+      "export": "GLB",
+      "detail": "low and medium",
+      "animations": [
+        "idle",
+        "walk",
+        "run"
+      ],
+      "output": "assets/characters/base/civilian_male_01.glb"
+    },
+    {
+      "id": "civilian_female_01",
+      "status": "recipe_pending_export",
+      "gender_presentation": "female",
+      "age_years": 29,
+      "heritage_direction": "Black African appearance; no caricature or nationality inference",
+      "skin_direction": "brown",
+      "hair_direction": "natural braids or afro",
+      "outfit_direction": "modest contemporary Libreville everyday clothing",
+      "pose": "A-pose",
+      "rig": "game rig",
+      "export": "GLB",
+      "detail": "low and medium",
+      "animations": [
+        "idle",
+        "walk",
+        "run"
+      ],
+      "output": "assets/characters/base/civilian_female_01.glb"
+    }
+  ],
+  "catalogue_target": {
+    "base_models": 100,
+    "initial_male": 30,
+    "initial_female": 30,
+    "teenagers": 15,
+    "children": 15,
+    "elderly": 10,
+    "note": "Targets for reusable visual templates; not population counts or demographic estimates."
+  }
+}
