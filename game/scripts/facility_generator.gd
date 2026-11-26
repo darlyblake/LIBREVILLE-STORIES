@@ -386,6 +386,22 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 		w = clampf(footprint_size.x, 8.0, 90.0)
 		d = clampf(footprint_size.y, 8.0, 75.0)
 	var lower_label := label.to_lower()
+	# Un POI polygonal est déjà reconstruit par WorldMap depuis buildings.geojson.
+	# Ne pas superposer un second faux bâtiment : poser seulement un repère nommé.
+	if footprint.size() >= 3:
+		_box(root, Vector3(0, 0.95, 0), Vector3(0.16, 1.9, 0.16), steel)
+		var marker_kind := "ÉTABLISSEMENT"
+		match k:
+			"school": marker_kind = "ÉCOLE"
+			"university": marker_kind = "UNIVERSITÉ"
+			"hotel": marker_kind = "HÔTEL"
+			"hospital", "clinic": marker_kind = "SANTÉ"
+			"police": marker_kind = "POLICE"
+			"fire": marker_kind = "SECOURS"
+		_sign(root, marker_kind, Vector3(0, 2.05, 0), school_accent if k in ["school", "university"] else hotel_accent if k == "hotel" else blue)
+		_name(root, label, Vector3(0, 3.25, 0))
+		return
+	# Les POI ponctuels sans empreinte de bâtiment reçoivent un volume indicatif.
 	# Silhouettes renforcées pour les grands sites identifiés dans les données OSM.
 	# Les dimensions sont des proportions de gameplay, pas des mesures cadastrales.
 	if k == "hospital":
@@ -396,8 +412,6 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 	if k == "bus" and ("pk8" in lower_label or "pk 8" in lower_label):
 		w=46; d=32
 	_box(root,Vector3(0,0.1,0),Vector3(w+6,0.2,d+6),asphalt)
-	if footprint.size() >= 3:
-		_add_osm_footprint(root, footprint)
 	_box(root,Vector3(0,h/2,0),Vector3(w,h,d),wall)
 	_box(root,Vector3(0,h+0.18,0),Vector3(w+0.8,0.36,d+0.8),roof)
 	_windows(root,w,d,h)
