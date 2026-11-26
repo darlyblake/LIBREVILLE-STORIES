@@ -228,7 +228,7 @@ func is_school_period() -> bool:
 	return _has_active_tag("school_in_session") and not _has_active_tag("school_holidays")
 
 func are_schools_open_now() -> bool:
-	return is_school_period() and not is_weekend() and not has_event_category("public_holiday") and hour >= 7 and hour < 17
+	return is_schedule_open("school")
 
 func are_shops_open_now() -> bool:
 	return is_schedule_open("retail")
