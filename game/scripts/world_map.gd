@@ -4549,7 +4549,7 @@ func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
 	if edge_length < 4.0 or height < 2.6:
 		return
 	var tangent := Vector3(edge.x / edge_length, 0.0, edge.y / edge_length)
-	var window_parameters := WorldMapBuildingStyleUtils.facade_window_parameters(edge_length, height)
+	var window_parameters := WorldMapBuildingStyleUtils.facade_window_parameters(edge_length, height, props)
 	var floors := int(window_parameters.x)
 	var window_count := int(window_parameters.y)
 	var spacing := edge_length / float(window_count)
