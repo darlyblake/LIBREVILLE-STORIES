@@ -104,6 +104,8 @@
 
 Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
 
+- 2026-11-26 : vérification des adresses institutionnelles (sans ajout GPS) : le PNPE confirme son siège de Libreville rue Jean-Baptiste Ndende, BP 9610 ; l’ANBG confirme 195 rue Michel Nze MBA, Oloumi ; la CDC publie désormais l’Immeuble Casimir Marie Ange OYE MBA, 1633 boulevard Triomphal Omar Bongo Ondimba, alors qu’une ancienne publication indiquait l’Immeuble Orchida, rue Jean Nendé ; l’AGANOR affiche actuellement Charbonnages, Immeuble ABC, tandis que des sources antérieures la situaient à l’Immeuble Gabon Industriel ; l’ARSEE publie « Ancien SOBRAGA, en face de Multipress ». Ces changements/adresses contradictoires exigent un point cartographique précis et une vérification de l’implantation avant intégration. Sources : sites officiels PNPE (pnpe.ga/contact.html), ANBG (anbg-ga.com), CDC (cdc-gabon.ga/contact), AGANOR (aganor.ga), ARSEE (arsee-gabon.com).
+
 - 2026-11-26 : ajout de la Chambre de Commerce du Gabon — OSM way 456350865, GPS 0.38419 / 9.44697, 12 avenue Augustin Boumah ; repère institutionnel uniquement, empreinte physique depuis buildings.geojson. Source cartographique : Mapcarta / OpenStreetMap.
 
 - 2026-11-26 : ajout groupé de la CPPF — OSM node 12099801407, GPS 0.43855 / 9.41896, 164 Impasse André Mba Obame — et de la CNTIPPEE — OSM node 12099801403, GPS 0.44026 / 9.41887, 117 Impasse André Mba Obame ; repères institutionnels uniquement, volumes physiques issus de buildings.geojson. Sources cartographiques Mapcarta / OpenStreetMap.
