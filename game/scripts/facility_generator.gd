@@ -127,6 +127,7 @@ func _build_facilities() -> void:
 	var entries: Array[Dictionary]=[]
 	var has_water_forests_site := false
 	var has_senate_site := false
+	var has_rtg_site := false
 	var has_public_service_site := false
 	var has_justice_site := false
 	var has_health_ministry_site := false
@@ -190,6 +191,8 @@ func _build_facilities() -> void:
 			has_water_forests_site = true
 		if poi_name.contains("senat") or poi_name.contains("palais omar bongo"):
 			has_senate_site = true
+		if poi_name.contains("maison georges rawiri") or poi_name.contains("radio-gabon") or poi_name.contains("radio gabon") or poi_name.contains("rtg") or poi_name.contains("gabon television"):
+			has_rtg_site = true
 		if poi_name.contains("fonction publique"):
 			has_public_service_site = true
 		if poi_name.contains("ministere de la justice") or poi_name.contains("ministere de justice"):
@@ -320,6 +323,20 @@ func _build_facilities() -> void:
 			"id": 3369330,
 			"lat": 0.4085292,
 			"lon": 9.442867,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Maison Georges Rawiri : siège historique de Radio-Gabon et Gabon Télévision,
+	# coordonnées publiées 00°24'37"N, 09°26'28"E (conversion DMS).
+	# Repère marker-only ; le bâtiment physique doit provenir de buildings.geojson.
+	if not has_rtg_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Maison Georges Rawiri — Radio-Gabon / Gabon Télévision (RTG)",
+			"pos": _geo([9.4411111, 0.4102778]),
+			"id": 0,
+			"lat": 0.4102778,
+			"lon": 9.4411111,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
