@@ -159,9 +159,11 @@ func _build_mont_bouet_market() -> void:
 	sign.outline_modulate = Color(0.08, 0.09, 0.08)
 	market.add_child(sign)
 
-	# Trois halles ouvertes, avec allées traversantes et petites boutiques répétées.
-	# Les bâches colorées, poteaux métalliques et comptoirs donnent une première lecture
-	# de marché populaire gabonais ; les enseignes et marchandises seront détaillées ensuite.
+	# Blocage provisoire de volumes de jeu : cette grille de 3 x 7 étals n'est PAS
+	# une restitution cadastrale du marché. Les sources visuelles documentent un tissu
+	# beaucoup plus dense (bâtiment central, hangars, boutiques et étals de rue).
+	# La géométrie sera remplacée par des empreintes de bâtiments vérifiées avant
+	# d'être présentée comme fidèle au site réel.
 	var stall_index := 0
 	for row in range(3):
 		var row_z := -22.0 + float(row) * 23.0
