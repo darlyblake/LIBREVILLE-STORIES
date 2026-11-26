@@ -42,7 +42,8 @@ jobs:
           root = Path("data/osm/extended")
           report = json.loads((root / "extraction-report.json").read_text())
           required = ["roads.geojson", "buildings.geojson", "environment.geojson",
-                      "localities.geojson", "neighbourhoods.geojson", "pois.geojson"]
+                      "localities.geojson", "neighbourhoods.geojson", "pois.geojson",
+                      "bridges.geojson"]
           for name in required:
               path = root / name
               data = json.loads(path.read_text())
@@ -51,6 +52,9 @@ jobs:
           assert report["bbox_south_west_north_east"] == [0.3, 9.37, 0.5, 9.55]
           assert len(json.loads((root / "roads.geojson").read_text())["features"]) >= 1000
           assert len(json.loads((root / "buildings.geojson").read_text())["features"]) >= 10000
+          bridges = json.loads((root / "bridges.geojson").read_text())["features"]
+          assert bridges, "Aucun ouvrage OSM bridge exporté"
+          print(f"bridges.geojson: {len(bridges)} objets")
           PY
       - name: Report bridge geometry without inventing structural dimensions
         run: python tools/map-generator/report_bridge_geometry.py
@@ -60,8 +64,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/osm/extended/*.geojson data/osm/extended/extraction-report.json data/osm/extended/bridge-geometry-report.json
           git commit -m "data: ajouter les couches OSM de la zone étendue"
-          git pull --rebase origin main
-          git push
+          # Les fichiers OSM sont des sorties régénérées : en cas de nouvelle
+          # version sur main, conserver les données produites par cette extraction.
+          git pull --rebase -X theirs origin main
+          git push origin HEAD:main
       - name: Upload extraction report
         uses: actions/upload-artifact@v4
         with:
