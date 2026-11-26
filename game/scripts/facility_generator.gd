@@ -277,6 +277,8 @@ func _build_facilities() -> void:
 			has_mairie_5e_arrondissement_site = true
 		if poi_osm_id == 456350865 or poi_name.contains("chambre de commerce"):
 			has_chamber_of_commerce_site = true
+		if poi_osm_id == 11458214434:
+			continue # Ancien point OSM : la mairie du 2e a été déplacée en 2024, siège actuel non géolocalisé.
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -838,13 +840,6 @@ func _build_facilities() -> void:
 			"kind": "admin", "label": "Mairie des Hauts de Gué-Gué",
 			"pos": _geo([9.43262, 0.42802]), "id": 4040655377,
 			"lat": 0.42802, "lon": 9.43262,
-			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
-		})
-	if not has_mairie_2e_arrondissement_site:
-		entries.append({
-			"kind": "admin", "label": "Mairie du 2e arrondissement — avenue Jean-Paul II",
-			"pos": _geo([9.44285, 0.4039]), "id": 11458214434,
-			"lat": 0.4039, "lon": 9.44285,
 			"footprint_size": Vector2.ZERO, "footprint": PackedVector2Array()
 		})
 	if not has_mairie_4e_arrondissement_site:
