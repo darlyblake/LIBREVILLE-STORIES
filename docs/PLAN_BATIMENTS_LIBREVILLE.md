@@ -42,6 +42,9 @@
 | Direction Générale de la Comptabilité Publique et du Trésor (DGCPT) — 321 avenue Rose Francine Rogombe | [x] | [x] | [ ] | [ ] | [ ] |
 | Conférence Interafricaine des Marchés d’Assurances (CIMA) — centre-ville | [x] | [x] | [ ] | [ ] | [ ] |
 | Palais présidentiel du Bord de mer — boulevard de l’Indépendance | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère du Travail et de la Formation professionnelle | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère de la Planification et de la Prospective | [x] | [x] | [ ] | [ ] | [ ] |
+| CEEAC — Haut de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -53,7 +56,7 @@
 | Ministère de l’Agriculture | Immeuble de l’Ancienne Primature, avenue Cornut Gentille | [ ] | [ ] |
 | Ministère de la Défense | Rue du Gouverneur Balley et autres implantations mentionnées | [ ] | [ ] |
 | Ministère de l’Enseignement supérieur | Avenue de Cointet | [ ] | [ ] |
-| Ministère du Travail | Boulevard Triomphal ; site physique exact à confirmer | [ ] | [ ] |
+| Ministère du Travail | GPS confirmé : 0.42757 / 9.44887 ; OSM node 4686643890 | [x] | [x] |
 
 Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
 
@@ -87,5 +90,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout du repère Direction Générale de la Comptabilité Publique et du Trésor — OSM way 455714429, GPS 0.39216 / 9.44461.
 - 2026-11-26 : ajout du repère CIMA — OSM way 455714470, GPS 0.39040 / 9.44528 ; bâtiment physique toujours issu de buildings.geojson.
 - 2026-11-26 : ajout du repère Palais présidentiel du Bord de mer — OSM way 168587922, GPS 0.39237 / 9.44235 ; bâtiment physique toujours issu de buildings.geojson.
+- 2026-11-26 : ajout du Ministère du Travail et de la Formation professionnelle — OSM node 4686643890, GPS 0.42757 / 9.44887.
+- 2026-11-26 : ajout du Ministère de la Planification et de la Prospective — OSM way 1243106067, GPS 0.42260 / 9.42566.
+- 2026-11-26 : ajout de la CEEAC, Haut de Gué-Gué — OSM way 424241587, GPS 0.42858 / 9.43105.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
