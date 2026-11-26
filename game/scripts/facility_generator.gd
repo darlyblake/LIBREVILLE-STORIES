@@ -130,6 +130,7 @@ func _build_facilities() -> void:
 	var has_public_service_site := false
 	var has_justice_site := false
 	var has_health_ministry_site := false
+	var has_foreign_affairs_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -154,6 +155,8 @@ func _build_facilities() -> void:
 			has_justice_site = true
 		if poi_osm_id == 430390761 or (poi_name.contains("ministere") and poi_name.contains("sante")):
 			has_health_ministry_site = true
+		if poi_osm_id == 13375677182 or poi_name.contains("maison jean ping") or poi_name.contains("hotel des affaires etrangeres"):
+			has_foreign_affairs_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -234,6 +237,20 @@ func _build_facilities() -> void:
 			"id": 430390761,
 			"lat": 0.42724,
 			"lon": 9.44909,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Maison Jean Ping : nouvel Hôtel des Affaires étrangères, inauguré en 2026.
+	# Le point OSM sert de repère uniquement ; aucun volume de bâtiment n'est ajouté.
+	if not has_foreign_affairs_site:
+		var foreign_affairs_position := _geo([9.43495, 0.40492])
+		entries.append({
+			"kind": "ministry",
+			"label": "Maison Jean Ping — Affaires étrangères",
+			"pos": foreign_affairs_position,
+			"id": 13375677182,
+			"lat": 0.40492,
+			"lon": 9.43495,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -541,6 +558,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			if label.to_lower().contains("sante") or label.to_lower().contains("santé"):
 				marker_text = "SANTÉ"
 				marker_material = red
+			if label.to_lower().contains("affaires etrangeres") or label.to_lower().contains("jean ping"):
+				marker_text = "DIPLOMATIE"
+				marker_material = school_accent
 			if label.to_lower().contains("fonction publique"):
 				marker_text = "FONCTION PUBLIQUE"
 				marker_material = school_accent
