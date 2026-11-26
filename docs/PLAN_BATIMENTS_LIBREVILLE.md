@@ -57,6 +57,7 @@
 | CNEE — Conseil National de l’Eau et de l’Électricité — Haut de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
 | CND — Conseil National de la Démocratie — secteur Ancien Sobraga | [x] | [x] | [ ] | [ ] | [ ] |
 | Palais Léon Mba — Assemblée nationale — Boulevard Triomphal Omar Bongo | [x] | [x] | [ ] | [ ] | [ ] |
+| Maison Georges Rawiri — Radio-Gabon / Gabon Télévision (RTG) — Boulevard Triomphal | [x] | [x] | [ ] | [ ] | [ ] |
 | Direction Générale des Douanes et Droits Indirects — Oloumi | [x] | [x] | [ ] | [ ] | [ ] |
 | Cour constitutionnelle du Gabon — Boulevard de l’Indépendance | [x] | [x] | [ ] | [ ] | [ ] |
 | Agence Gabonaise de Sécurité Alimentaire (AGASA) — Batterie 4 | [x] | [x] | [ ] | [ ] | [ ] |
@@ -105,6 +106,7 @@
 | OGAPI — Office Gabonais de la Propriété Industrielle | Boulevard Omar Bongo / secteur CDPI, emplacement exact à vérifier | [ ] | [ ] |
 | CNSS — Caisse Nationale de Sécurité Sociale | Avenue Georges Damas Aleka, Batavéa ; point OSM Libreville à confirmer | [ ] | [ ] |
 | CNAMGS — Directions techniques | Annexe de Montagne Sainte ; coordonnées à vérifier | [ ] | [ ] |
+| SCG-Ré — Société Commerciale Gabonaise de Réassurance | 2080 boulevard de l’Indépendance, Immeuble du Bord de Mer ; GPS exact du bâtiment à valider | [ ] | [ ] |
 
 Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
 
@@ -143,6 +145,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 
 
 - 2026-11-26 : nouvelle passe de recoupement des administrations : l’ANBG confirme toujours son adresse au 195 rue Michel Nze MBA, Oloumi ; le point de recherche d’annuaire ne fournit pas de coordonnées GPS propres au bâtiment, donc aucun repère supplémentaire n’est ajouté. La DPO / Journal Officiel est confirmée au 400 avenue du Colonel Parant par sa fiche institutionnelle et par l’annuaire cartographique, mais le plus code cartographique 9CPW+FQF ne suffit pas à établir le point OSM exact du bâtiment. L’Hôtel de Ville central est bien référencé boulevard Triomphal / CC6V+6Q2, mais ce plus code n’est pas converti en point GPS de bâtiment sans vérification OSM ; la mairie du 1er arrondissement apparaît également dans les annuaires avec le plus code CCHM+562, sans identifiant OSM ni coordonnées validées. La CDC possède une fiche cartographique qui la place à l’Université Omar Bongo, en contradiction avec l’adresse officielle du nouveau siège au 1633 boulevard Triomphal : cette fiche est considérée comme probablement ancienne ou mal géolocalisée et n’est pas utilisée. Enfin, le site officiel du Trésor publie désormais « Centre-ville, rue Alfred Marche » pour la DGCPT, tandis que le repère intégré précédemment est associé à une autre adresse ; ce décalage est à auditer avant toute correction du point existant. Les directions DGCE, DGIT, DGERA, DGEI, DCRH et DMC du ministère des Travaux publics confirment toutes le même immeuble principal au 414 avenue du Colonel Parant : elles restent un seul bâtiment physique dans le jeu. Sources : ANBG (anbg-ga.com), Journal Officiel (journal-officiel.ga), mairie de Libreville (sygmagabon.com), annuaire cartographique Gabonews, Trésor public (tresorpublic.ga), ministère des Travaux publics (infrastructures.gouv.ga).
+
+- 2026-11-26 : vérification ciblée du secteur Présidence–boulevard Triomphal–CHU. Les adresses de la Présidence (boulevard de la Nation), de la Cour constitutionnelle (boulevard de la Nation, BP 4025), du Sénat (Palais Omar Bongo, boulevard Triomphal), de l’Assemblée nationale (Palais Léon Mba, boulevard Triomphal Omar Bongo), du ministère de la Défense (à côté de la Présidence), du ministère des Eaux et Forêts (immeuble face au Sénat) et de la Direction générale du Budget (avenue Félix Éboué, face CHUL) sont recoupées. La Maison Georges Rawiri, qui abrite Radio-Gabon et Gabon Télévision, est localisée sur le boulevard Triomphal à proximité du Sénat et de l’Assemblée nationale ; coordonnées publiées 00°24′37″N, 09°26′28″E, converties en 0.4102778 / 9.4411111. Un repère marker-only est ajouté au générateur ; le bâtiment physique reste issu de buildings.geojson. La SCG-Ré publie l’adresse 2080 boulevard de l’Indépendance, Immeuble du Bord de Mer ; point GPS individuel à confirmer avant intégration. Attention : les adresses seules ne prouvent pas le bâtiment exact et aucun modèle 3D ni texture spécifique n’est encore créé pour cette série. Sources : Le Pratique du Gabon / Entrepro-Gabon (institutions), sites officiels du Sénat et de l’Assemblée nationale, World Radio Map (coordonnées Maison Georges Rawiri), rapport annuel SCG-Ré 2022.
 
 ## 5. Pipeline 3D pour chaque bâtiment
 
