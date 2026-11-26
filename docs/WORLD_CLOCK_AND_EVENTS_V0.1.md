@@ -36,3 +36,9 @@ Les fêtes mobiles (Pâques, Pentecôte, Aïd) et les dates annuelles scolaires 
 
 ## Limites de la version
 Cette première livraison fournit le moteur temporel et le catalogue d'événements. Elle ne crée pas encore les assets de décoration, les stocks réels, les émissions radio/TV ou les routines PNJ : ces systèmes devront écouter les signaux ci-dessus.
+
+
+## Extension 0.2 – cycle jour/nuit
+- Le nœud WorldLighting ajuste progressivement la lumière directionnelle, l'ambiance et la couleur du ciel/brouillard selon l'heure.
+- La circulation et les piétons ralentissent pendant les heures nocturnes ; ils ne disparaissent pas brutalement.
+- Les horaires des commerces et établissements sont fournis par WorldClock, mais leur fermeture physique et leurs animations restent à connecter à chaque bâtiment.
