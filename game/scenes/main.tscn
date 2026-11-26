@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://game/scripts/facility_generator.gd" id="14_facilities"]
 [ext_resource type="Script" path="res://game/scripts/traffic_signs.gd" id="15_traffic_signs"]
 [ext_resource type="Script" path="res://game/scripts/world_lighting.gd" id="16_world_lighting"]
+[ext_resource type="Script" path="res://game/scripts/world_clock_hud.gd" id="17_world_clock_hud"]
 
 [sub_resource type="Environment" id="Environment_world"]
 background_mode = 1
@@ -149,3 +150,6 @@ offset_right = 480.0
 offset_bottom = -12.0
 theme_override_font_sizes/font_size = 12
 text = "© OpenStreetMap contributors  |  LIBREVILLE STORIES"
+
+[node name="WorldClockHUD" type="CanvasLayer" parent="."]
+script = ExtResource("17_world_clock_hud")
