@@ -80,3 +80,24 @@ Le système de routines quotidiennes, de métiers réels, d'employeurs, de bouti
 ## Validation
 
 Le code a été enregistré dans le dépôt. Il n'a pas encore été exécuté dans Godot dans cet environnement : le test de parsing et les essais en jeu doivent être effectués dans l'éditeur Godot avant de considérer cette version comme validée.
+
+
+## Identité visuelle individuelle des habitants
+
+Depuis la version de génération visuelle, chaque nouvel habitant reçoit un dictionnaire `appearance` sauvegardé avec sa fiche. Il ne s'agit pas encore d'un modèle 3D : c'est la fiche de paramètres qui permettra au futur générateur de construire le personnage.
+
+Chaque fiche contient notamment :
+- un identifiant visuel individuel et une graine aléatoire persistante ;
+- une teinte de peau parmi plusieurs nuances ;
+- une forme de visage, des yeux et du nez ;
+- une coiffure et une couleur de cheveux ;
+- une pilosité faciale éventuelle ;
+- une taille adaptée à la tranche d'âge et une morphologie ;
+- des catégories de haut, bas, chaussures et accessoires ;
+- une palette de couleurs de tenue.
+
+Les apparences sont attribuées une seule fois, puis conservées dans la sauvegarde. Les anciennes sauvegardes reçoivent automatiquement une apparence lors de leur normalisation ; les habitants déjà enregistrés ne changent donc pas de look à chaque chargement.
+
+Le métier ne détermine pas le visage. Il pourra influencer les vêtements de travail, les équipements et les accessoires contextuels, sans imposer un uniforme identique à tous les habitants d'une profession.
+
+**À réaliser ensuite :** le générateur 3D doit convertir ces paramètres en maillage/assemblage de corps, tête, cheveux et vêtements, puis appliquer les niveaux de détail selon la distance au joueur. Tant que ce rendu n'est pas branché à une scène, les fiches possèdent une identité visuelle enregistrée mais les personnages à l'écran ne sont pas encore visuellement uniques.
