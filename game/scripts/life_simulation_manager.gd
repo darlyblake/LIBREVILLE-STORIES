@@ -33,6 +33,7 @@ func _load_config() -> void:
 		push_error("LifeSimulationManager : JSON des profils de vie invalide.")
 
 func _on_day_started(_date: Dictionary) -> void:
+	_persist_runtime_states()
 	for resident_id in _runtime:
 		var state: Dictionary = _runtime[resident_id]
 		state["nightlife_until"] = -1
@@ -74,6 +75,19 @@ func _refresh_all_activities() -> void:
 func _state_for(resident_id: String, resident: Dictionary) -> Dictionary:
 	if _runtime.has(resident_id):
 		return _runtime[resident_id]
+	var saved_state: Variant = resident.get("life_state", {})
+	if saved_state is Dictionary and not saved_state.is_empty():
+		var restored: Dictionary = saved_state.duplicate(true)
+		restored["rest_days"] = restored.get("rest_days", [0, 6])
+		restored["activity"] = restored.get("activity", "maison")
+		restored["destination"] = restored.get("destination", "home")
+		restored["alcohol"] = float(restored.get("alcohol", 0.0))
+		restored["fatigue"] = float(restored.get("fatigue", 0.0))
+		restored["nightlife_until"] = -1
+		restored["leave_year"] = int(restored.get("leave_year", -1))
+		restored["leave_start_day"] = int(restored.get("leave_start_day", 0))
+		restored["leave_end_day"] = int(restored.get("leave_end_day", 0))
+		return restored
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _stable_seed(resident_id)
 	var rest_days: Array[int] = []
@@ -109,6 +123,24 @@ func _prepare_annual_leave(state: Dictionary, resident_id: String, year: int) ->
 	state["leave_year"] = year
 	state["leave_start_day"] = start_day
 	state["leave_end_day"] = start_day + leave_days - 1
+
+
+func _persist_runtime_states() -> void:
+	var population := get_node_or_null("/root/PopulationManager")
+	if population == null:
+		return
+	var changed := false
+	for resident_id in _runtime:
+		if not population.residents.has(resident_id):
+			continue
+		var resident: Dictionary = population.residents[resident_id]
+		if not bool(resident.get("alive", false)):
+			continue
+		resident["life_state"] = _runtime[resident_id].duplicate(true)
+		population.residents[resident_id] = resident
+		changed = true
+	if changed:
+		population.save_population()
 
 func _update_needs(state: Dictionary, hour: int) -> void:
 	var alcohol := float(state.get("alcohol", 0.0))
