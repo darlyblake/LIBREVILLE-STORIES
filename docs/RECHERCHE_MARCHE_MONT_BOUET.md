@@ -45,6 +45,12 @@ Le modèle actuel de `game/scripts/libreville_districts.gd` est un **blockout de
    - Article du 10 juin 2026 : projet décrit avec deux bâtiments R+3, magasins, boxes en sous-sol, parking et sanitaires.
    - Ce projet doit être représenté séparément de l'existant, uniquement après vérification de son emprise, de ses plans et de son état réel sur la carte du jeu.
 
+7. **Délimitation et grand hangar**
+   - https://lunion-archives.org/web.11/dmdocuments/N14203-12-04-2023-006.pdf
+   - Article du 12 avril 2023 : identifie le secteur 1 autour du grand hangar, construit dans les années 1960 et propriété de la mairie ; il distingue les galeries commerciales des commerces périphériques.
+   - L'article rapporte que les contours officiels du marché ne sont pas clairement définis et que la mairie emploie l'expression « marché et ses environs ».
+   - Conséquence : ne pas tracer une limite officielle imaginaire ni attribuer toutes les boutiques voisines à l'emprise du marché.
+
 ## Décisions artistiques fondées
 
 - Conserver des familles visuelles distinctes : béton, rideaux métalliques, bois, tôle ondulée, bâches, parasols, étals au sol.
