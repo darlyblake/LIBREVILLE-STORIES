@@ -126,6 +126,7 @@ func _build_facilities() -> void:
 	if player: origin=Vector2(player.global_position.x,player.global_position.z)
 	var entries: Array[Dictionary]=[]
 	var has_water_forests_site := false
+	var has_senate_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -142,6 +143,8 @@ func _build_facilities() -> void:
 		var poi_osm_id := int(p.get("osm_id", 0))
 		if poi_osm_id == 249526245 or (poi_name.contains("eaux") and poi_name.contains("foret")):
 			has_water_forests_site = true
+		if poi_name.contains("senat") or poi_name.contains("palais omar bongo"):
+			has_senate_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -166,6 +169,20 @@ func _build_facilities() -> void:
 			"id": 249526245,
 			"lat": 0.40887,
 			"lon": 9.44034,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Le Palais Omar Bongo Ondimba est le siège du Sénat, boulevard Triomphal.
+	# Repère de secours uniquement : le volume architectural reste issu de buildings.geojson.
+	if not has_senate_site:
+		var senate_position := _geo([9.442867, 0.4085292])
+		entries.append({
+			"kind": "admin",
+			"label": "Palais Omar Bongo Ondimba — Sénat",
+			"pos": senate_position,
+			"id": 3369330,
+			"lat": 0.4085292,
+			"lon": 9.442867,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -244,6 +261,8 @@ func _administrative_kind(p: Dictionary) -> String:
 		return "city_hall"
 	if name.contains("eaux") and name.contains("foret"):
 		return "ministry"
+	if name.contains("senat") or name.contains("palais omar bongo"):
+		return "admin"
 	if name.contains("ministere") or name.contains("primature") or government == "ministry":
 		return "ministry"
 	if name.contains("ambassade") or name.contains("consulat") or office == "diplomatic":
@@ -454,6 +473,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("senat") or label.to_lower().contains("omar bongo"):
+				marker_text = "SÉNAT"
+				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
 		"ministry":
