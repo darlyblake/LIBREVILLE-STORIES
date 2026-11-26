@@ -145,7 +145,8 @@ func _build_facilities() -> void:
 		if label.is_empty(): label=_default_name(kind)
 		var osm_id := int(p.get("osm_id",0))
 		if osm_id == 0: osm_id=int(str(p.get("@id","0")).replace("way/","").replace("node/","").replace("relation/",""))
-		entries.append({"kind":kind,"label":label,"pos":pos,"id":osm_id,"lat":latitude,"lon":longitude})
+		var footprint_size := _geometry_size_m(g)
+		entries.append({"kind":kind,"label":label,"pos":pos,"id":osm_id,"lat":latitude,"lon":longitude,"footprint_size":footprint_size})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -171,7 +172,7 @@ func _build_facilities() -> void:
 				break
 		if duplicate: continue
 		seen[key]=true
-		_create_one(e.kind,e.label,e.pos,count)
+		_create_one(e.kind,e.label,e.pos,count,e.footprint_size)
 		placed.append({"kind":e.kind,"pos":e.pos})
 		count+=1
 		if e.kind in ["school", "university"]: school_count += 1
@@ -286,13 +287,52 @@ func _ring_centroid(ring: Array) -> Array:
 	var centroid_lat := weighted_lat / (3.0 * twice_area)
 	return [centroid_lon, centroid_lat, absf(twice_area) * 0.5]
 
+func _geometry_size_m(g: Dictionary) -> Vector2:
+	# Dimensions issues de l'emprise OSM des POI surfaciques.
+	# Les POI ponctuels conservent les gabarits de leur catégorie.
+	var geometry_type := str(g.get("type", ""))
+	var coords: Variant = g.get("coordinates", [])
+	var ring: Array = []
+	if geometry_type == "Polygon" and coords is Array and not coords.is_empty():
+		ring = coords[0]
+	elif geometry_type == "MultiPolygon" and coords is Array:
+		var largest_area := -1.0
+		for polygon in coords:
+			if not polygon is Array or polygon.is_empty() or not polygon[0] is Array:
+				continue
+			var candidate: Array = polygon[0]
+			var metrics := _ring_centroid(candidate)
+			if metrics.size() >= 3 and float(metrics[2]) > largest_area:
+				largest_area = float(metrics[2])
+				ring = candidate
+	if ring.size() < 3:
+		return Vector2.ZERO
+	var min_lon := INF
+	var max_lon := -INF
+	var min_lat := INF
+	var max_lat := -INF
+	for point in ring:
+		if not point is Array or point.size() < 2:
+			continue
+		var lon := float(point[0])
+		var lat := float(point[1])
+		min_lon = minf(min_lon, lon)
+		max_lon = maxf(max_lon, lon)
+		min_lat = minf(min_lat, lat)
+		max_lat = maxf(max_lat, lat)
+	if min_lon == INF or min_lat == INF:
+		return Vector2.ZERO
+	var width_m := (max_lon - min_lon) * 111320.0 * cos(deg_to_rad(CENTER_LAT))
+	var depth_m := (max_lat - min_lat) * 111320.0
+	return Vector2(width_m, depth_m)
+
 func _geo(c:Array)->Vector3:
 	var x:=(float(c[0])-CENTER_LON)*111320.0*cos(deg_to_rad(CENTER_LAT))
 	var z:=-(float(c[1])-CENTER_LAT)*111320.0
 	var y:=float(map.call("terrain_height_at_world",x,z)) if map.has_method("terrain_height_at_world") else 0.0
 	return Vector3(x,y,z)
 
-func _create_one(k:String,label:String,p:Vector3,index:int)->void:
+func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector2 = Vector2.ZERO)->void:
 	var root:=Node3D.new()
 	root.name="Infrastructure_%s_%03d"%[k,index]
 	root.position=p
@@ -312,6 +352,11 @@ func _create_one(k:String,label:String,p:Vector3,index:int)->void:
 		"school": w=38; d=28; h=9; wall=white
 		"university": w=48; d=36; h=14; wall=white
 		"hotel": w=30; d=22; h=16; wall=white
+	# Pour les POI surfaciques, le gabarit horizontal suit les dimensions OSM.
+	# On borne les valeurs aberrantes, sans prétendre déduire la hauteur du bâtiment.
+	if footprint_size.x > 0.0 and footprint_size.y > 0.0:
+		w = clampf(footprint_size.x, 8.0, 90.0)
+		d = clampf(footprint_size.y, 8.0, 75.0)
 	var lower_label := label.to_lower()
 	# Silhouettes renforcées pour les grands sites identifiés dans les données OSM.
 	# Les dimensions sont des proportions de gameplay, pas des mesures cadastrales.
