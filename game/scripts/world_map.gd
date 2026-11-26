@@ -4499,7 +4499,7 @@ func _add_building(walls: SurfaceTool, roofs: SurfaceTool, details: SurfaceTool,
 			Vector2(uv_length * 0.2, 0.15), Vector2(0.0, 0.15))
 		var edge_direction := Vector3((b.x - a.x) / maxf(edge_length, 0.001), 0.0, (b.y - a.y) / maxf(edge_length, 0.001))
 		var outward_normal := Vector3(edge_direction.z, 0.0, -edge_direction.x) * (1.0 if signed_area > 0.0 else -1.0)
-		_add_facade_windows(details, a, b, height, building_kind, osm_id, outward_normal, base_y)
+		_add_facade_windows(details, a, b, height, building_kind, osm_id, outward_normal, base_y, props)
 	var door_a := Vector2.ZERO
 	var door_b := Vector2.ZERO
 	var door_normal := Vector3.ZERO
@@ -4542,7 +4542,7 @@ func _add_pitched_roof(surface: SurfaceTool, points: PackedVector2Array, wall_he
 
 
 func _add_facade_windows(surface: SurfaceTool, a: Vector2, b: Vector2,
-		height: float, building_kind: String, osm_id: int, normal: Vector3, base_y: float = 0.0) -> void:
+		height: float, building_kind: String, osm_id: int, normal: Vector3, base_y: float = 0.0, props: Dictionary = {}) -> void:
 	if building_kind in ["garage", "shed", "roof", "carport", "warehouse", "industrial"]:
 		return
 	var edge := b - a
