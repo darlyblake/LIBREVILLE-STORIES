@@ -143,6 +143,7 @@ func _build_facilities() -> void:
 	var has_labour_ministry_site := false
 	var has_planning_ministry_site := false
 	var has_ceeac_site := false
+	var has_anuttc_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -193,6 +194,8 @@ func _build_facilities() -> void:
 			has_planning_ministry_site = true
 		if poi_osm_id == 424241587 or poi_name.contains("ceeac"):
 			has_ceeac_site = true
+		if poi_osm_id == 806267454 or poi_name.contains("agence nationale de l urbanisme") or poi_name.contains("anut tc") or poi_name.contains("anuttc"):
+			has_anuttc_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -461,6 +464,20 @@ func _build_facilities() -> void:
 			"id": 424241587,
 			"lat": 0.42858,
 			"lon": 9.43105,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# ANUTTC — Agence Nationale de l'Urbanisme, des Travaux Topographiques et du Cadastre.
+	# OSM way 806267454, bâtiment de bureaux cartographié à Oloumi.
+	# Repère nommé uniquement ; le contour réel reste celui de buildings.geojson.
+	if not has_anuttc_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Agence Nationale de l’Urbanisme, des Travaux Topographiques et du Cadastre (ANUTTC)",
+			"pos": _geo([9.46208, 0.38001]),
+			"id": 806267454,
+			"lat": 0.38001,
+			"lon": 9.46208,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -778,6 +795,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("ceeac"):
 				marker_text = "CEEAC"
+				marker_material = school_accent
+			if label.to_lower().contains("anuttc") or label.to_lower().contains("urbanisme"):
+				marker_text = "ANUTTC"
 				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
