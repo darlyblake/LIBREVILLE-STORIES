@@ -146,7 +146,7 @@ func _assign_initial_children(child_ids: Array[String]) -> void:
 		_append_child_to_parent(father_id, child_id)
 
 ## Enregistre une naissance uniquement pour deux parents vivants et un couple valide.
-func register_birth(mother_id: String, father_id: String, district: String = "") -> String:
+func register_birth(mother_id: String, father_id: String, district: String = "", persist: bool = true) -> String:
 	if alive_count >= MAX_POPULATION:
 		return ""
 	if not residents.has(mother_id) or not residents.has(father_id):
@@ -187,7 +187,8 @@ func register_birth(mother_id: String, father_id: String, district: String = "")
 	alive_count += 1
 	births_this_month += 1
 	resident_born.emit(resident_id)
-	_save_and_notify()
+	if persist:
+		_save_and_notify()
 	return resident_id
 
 ## Lie deux adultes comme conjoints. Cette fonction ne cree pas automatiquement d'enfant.
@@ -237,7 +238,7 @@ func add_friend(resident_id: String, friend_id: String) -> bool:
 	_save_and_notify()
 	return true
 
-func register_death(resident_id: String, cause: String = "inconnue") -> bool:
+func register_death(resident_id: String, cause: String = "inconnue", persist: bool = true) -> bool:
 	if not residents.has(resident_id):
 		return false
 	var resident: Dictionary = residents[resident_id]
@@ -260,7 +261,8 @@ func register_death(resident_id: String, cause: String = "inconnue") -> bool:
 
 	deaths_this_month += 1
 	resident_died.emit(resident_id)
-	_save_and_notify()
+	if persist:
+		_save_and_notify()
 	return true
 
 ## Avance d'un mois de jeu : vieillissement, mortalité naturelle, puis naissances.
@@ -294,7 +296,7 @@ func advance_month() -> void:
 		resident["age_months"] = age_months
 		residents[resident_id] = resident
 		if _rng.randf() < _monthly_mortality(int(resident["age_years"])):
-			register_death(resident_id, "naturelle")
+			register_death(resident_id, "naturelle", false)
 
 	# Les naissances ne concernent que les couples eligibles et respectent le plafond global.
 	var mother_ids: Array[String] = []
@@ -324,7 +326,7 @@ func advance_month() -> void:
 		if _current_month_index() - int(mother.get("last_birth_month", -1000)) < MIN_BIRTH_INTERVAL_MONTHS:
 			continue
 		if _rng.randf() < MONTHLY_BIRTH_CHANCE:
-			register_birth(mother_id, father_id)
+			register_birth(mother_id, father_id, "", false)
 
 	_save_and_notify()
 
