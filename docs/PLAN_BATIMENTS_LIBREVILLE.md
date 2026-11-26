@@ -37,6 +37,7 @@
 | Direction générale du Budget — avenue Félix Éboué | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de la Communication et des Médias | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de l’Intérieur — avenue de Cointet | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère de l’Éducation nationale — Formation civique | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -44,7 +45,7 @@
 
 | Bâtiment / site | Informations connues | GPS exact dans la zone | Intégration |
 |---|---|---|---|
-| Ministère des Travaux publics et de la Construction | 392 avenue Rose Francine Rogombe | [ ] | [ ] |
+| Ministère des Travaux publics et de la Construction | 392 avenue Rose Francine Rogombe (annexe) ; 414 avenue du Colonel Parant (principal) | [ ] | [ ] |
 | Ministère de l’Agriculture | Immeuble de l’Ancienne Primature, avenue Cornut Gentille | [ ] | [ ] |
 | Ministère de la Défense | Rue du Gouverneur Balley et autres implantations mentionnées | [ ] | [ ] |
 | Ministère de l’Enseignement supérieur | Avenue de Cointet | [ ] | [ ] |
@@ -77,4 +78,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 
 - 2026-11-26 : création du document de suivi initial.
 - 2026-11-26 : inventaire des administrations déjà repérées dans `facility_generator.gd`.
+- 2026-11-26 : ajout du repère du Ministère de l’Éducation nationale — OSM way 410354024, GPS 0.39396 / 9.44551.
+- 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
