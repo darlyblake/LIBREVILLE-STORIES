@@ -658,7 +658,14 @@ def extract_from_geofabrik_pbf(south, west, north, east):
 
         def way(self, way):
             tags = dict(way.tags)
-            if "highway" not in tags and "building" not in tags and not is_point_of_interest(tags) and not is_environment_feature(tags):
+            if (
+                "highway" not in tags
+                and "building" not in tags
+                and not is_point_of_interest(tags)
+                and not is_environment_feature(tags)
+                and "bridge" not in tags
+                and tags.get("man_made") != "bridge"
+            ):
                 return
             geometry = []
             min_lon = min_lat = float("inf")
