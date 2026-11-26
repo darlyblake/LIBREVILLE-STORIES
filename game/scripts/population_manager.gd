@@ -21,7 +21,7 @@ const MALE_FIRST_NAMES := ["Jean", "Paul", "Pierre", "Michel", "Alain", "Patrick
 const FEMALE_FIRST_NAMES := ["Marie", "Anne", "Jeanne", "Sylvie", "Nadine", "Clarisse", "Estelle", "Grâce", "Brigitte", "Sarah", "Patricia", "Sandrine", "Jessica", "Carine"]
 const LAST_NAMES := ["Mba", "Obiang", "Nguema", "Ndong", "Moussavou", "Essono", "Ovono", "Biyoghe", "Ayo", "Mintsa", "Ella", "Ekogha", "Oyoue", "Boussougou"]
 const DISTRICTS := ["Centre-ville", "Louis", "Glass", "Nombakélé", "Mont-Bouët", "Nkembo", "Akébé"]
-const JOBS := ["commerçant", "fonctionnaire", "chauffeur", "enseignant", "artisan", "agent de sécurité", "soignant", "employé", "sans emploi"]
+const JOBS := ["agriculteur", "pêcheur", "maraîcher", "agent SEEG électricité", "agent SEEG eau", "technicien réseau électrique", "technicien fibre optique", "plombier", "éboueur", "chauffeur camion poubelle", "agent de nettoyage urbain", "médecin", "infirmier", "sage-femme", "pharmacien", "ambulancier", "psychologue", "travailleur social", "enseignant", "éducateur", "professeur université", "chauffeur taxi", "chauffeur bus", "livreur", "mécanicien automobile", "maçon", "menuisier", "électricien bâtiment", "architecte", "commerçant", "vendeur marché", "restaurateur", "cuisinier", "serveur", "boulanger", "policier", "gendarme", "pompier", "agent municipal", "magistrat", "député", "sénateur", "ministre", "président de la République", "fonctionnaire", "comptable", "informaticien", "journaliste", "artiste", "coiffeur", "couturier", "entrepreneur", "chef entreprise", "artisan", "employé", "sans emploi"]
 
 var residents: Dictionary = {}
 var alive_count: int = 0
