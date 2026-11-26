@@ -45,6 +45,7 @@
 | Agence Nationale des Parcs Nationaux (ANPN) — Rue Bana Ba Kengue | [x] | [x] | [ ] | [ ] | [ ] |
 | AGATOUR — Agence Gabonaise de Développement et de Promotion du Tourisme — Impasse Père Peterse, Batterie IV | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère des Transports, de la Marine marchande et de la Logistique — Immeuble Arambo | [x] | [x] | [ ] | [ ] | [ ] |
+| ANPI-Gabon — Agence Nationale de Promotion des Investissements, Serena Mall | [x] | [x] | [ ] | [ ] | [ ] |
 | Direction Nationale des Assurances — Rond-Point de la Démocratie | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère du Travail et de la Formation professionnelle | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de la Planification et de la Prospective | [x] | [x] | [ ] | [ ] | [ ] |
@@ -79,15 +80,15 @@
 
 | Bâtiment / site | Informations connues | GPS exact dans la zone | Intégration |
 |---|---|---|---|
-| Mairie du 2e arrondissement — siège provisoire derrière le ministère des Eaux et Forêts (nouvelle adresse à géolocaliser) | [ ] | [ ] | [ ] | [ ] | [ ] |
-| Hôtel de Ville central de Libreville — boulevard Omar Bongo Ondimba | [ ] | [ ] | [ ] | [ ] | [ ] |
+| Mairie du 2e arrondissement — siège provisoire derrière le ministère des Eaux et Forêts | Nouvelle adresse annoncée en mai 2024 ; bâtiment exact à identifier | [ ] | [ ] |
+| Hôtel de Ville central de Libreville — boulevard Omar Bongo Ondimba | Adresse d’annuaire ; point GPS propre au site central à confirmer (ne pas utiliser l’Hôtel de Ville d’Akanda) | [ ] | [ ] |
 | Ministère des Travaux publics et de la Construction | 392 avenue Rose Francine Rogombe (annexe) ; 414 avenue du Colonel Parant (principal) | [ ] | [ ] |
 | Ministère de l’Agriculture, de l’Élevage et du Développement rural | Contact officiel : Centre-ville, face à Rénovation, BP 551 ; ancienne adresse Ancienne Primature à ne plus considérer comme confirmée | [ ] | [ ] |
 | Ministère de la Défense | Rue du Gouverneur Balley et autres implantations mentionnées | [ ] | [ ] |
 | Ministère de l’Enseignement supérieur | Avenue de Cointet | [ ] | [ ] |
 | ANBG — Agence Nationale des Bourses du Gabon | 195 rue Michel Nze MBA, Oloumi, anciens locaux du ministère de la Planification | [ ] | [ ] |
 | PNPE — Pôle National de Promotion de l’Emploi | Siège / antenne Estuaire, 378 rue Jean-Baptiste Ndende, Petit-Paris | [ ] | [ ] |
-| ANPI-Gabon — Agence Nationale de Promotion des Investissements | Immeuble Serena Mall, 104 rue Gustave Anguile | [ ] | [ ] |
+| ANPI-Gabon — Agence Nationale de Promotion des Investissements | OSM node 6703527385 ; GPS 0.38766 / 9.44761 ; siège officiel Serena Mall, 104 rue Gustave Anguile | [x] | [x] |
 | DPO — Direction des Publications Officielles / Journal Officiel | 400 avenue du Colonel Parant | [ ] | [ ] |
 | ANGTI — Agence Nationale des Grands Travaux d’Infrastructures | Immeuble BDM, boulevard de l’Indépendance | [ ] | [ ] |
 | CDC — Caisse des Dépôts et Consignations | Siège actuel inauguré en février 2026 : Immeuble Casimir Marie Ange OYE MBA, 1633 boulevard Triomphal Omar Bongo Ondimba | [ ] | [ ] |
@@ -103,7 +104,6 @@
 | AGANOR — Agence Gabonaise de Normalisation | Immeuble Gabon Industriel, centre-ville | [ ] | [ ] |
 | OGAPI — Office Gabonais de la Propriété Industrielle | Boulevard Omar Bongo / secteur CDPI, emplacement exact à vérifier | [ ] | [ ] |
 | CNSS — Caisse Nationale de Sécurité Sociale | Avenue Georges Damas Aleka, Batavéa ; point OSM Libreville à confirmer | [ ] | [ ] |
-| CNAMGS — Direction générale | Siège actuel à la Sablière ; hors zone, exclu du jeu | [ ] | [ ] |
 | CNAMGS — Directions techniques | Annexe de Montagne Sainte ; coordonnées à vérifier | [ ] | [ ] |
 
 Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtiments jouables dans cette zone.
@@ -116,7 +116,7 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - EPCA et École Nationale d’Administration, PK11 : longitudes 9.51786 et 9.51855, hors limite est 9.495 ; exclues.
 - Ministère du Travail et mairie de Sogatol : déjà présents dans la section 3 et dans le générateur ; retirés des lignes de recherche pour éviter les doublons.
 - Les directions DGIT, DGCE, DGERA, DGEI et directions supports du Ministère des Travaux publics sont annoncées au même immeuble principal, 414 avenue du Colonel Parant. Elles ne doivent pas devenir autant de bâtiments distincts.
-- L’ANPI possède un ancien point OSM node 6703527385 à 0.38766 / 9.44761, mais l’adresse institutionnelle actuelle annoncée est Serena Mall, 104 rue Gustave Anguile. Le point ancien ne valide donc pas le siège actuel et reste inutilisé.
+- Le point OSM node 6703527385 est libellé ANPI à 0.38766 / 9.44761 et se situe dans le secteur de Nombakélé ; le siège officiel est annoncé à Serena Mall, 104 rue Gustave Anguile. Le point est maintenant intégré comme repère ANPI sur la base de son libellé OSM et de la concordance du secteur, mais la correspondance exacte du bâtiment doit encore être contrôlée visuellement.
 
 - 2026-11-26 : vérification des adresses institutionnelles (sans ajout GPS) : le PNPE confirme son siège de Libreville rue Jean-Baptiste Ndende, BP 9610 ; l’ANBG confirme 195 rue Michel Nze MBA, Oloumi ; la CDC publie désormais l’Immeuble Casimir Marie Ange OYE MBA, 1633 boulevard Triomphal Omar Bongo Ondimba, alors qu’une ancienne publication indiquait l’Immeuble Orchida, rue Jean Nendé ; l’AGANOR affiche actuellement Charbonnages, Immeuble ABC, tandis que des sources antérieures la situaient à l’Immeuble Gabon Industriel ; l’ARSEE publie « Ancien SOBRAGA, en face de Multipress ». Ces changements/adresses contradictoires exigent un point cartographique précis et une vérification de l’implantation avant intégration. Sources : sites officiels PNPE (pnpe.ga/contact.html), ANBG (anbg-ga.com), CDC (cdc-gabon.ga/contact), AGANOR (aganor.ga), ARSEE (arsee-gabon.com).
 
@@ -163,6 +163,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
 
 ## 7. Historique
+
+- 2026-11-26 : intégration du repère ANPI-Gabon à partir du node OSM 6703527385, GPS 0.38766 / 9.44761. Mapcarta identifie explicitement ce point comme ANPI ; le siège officiel actuel est publié à Serena Mall, 104 rue Gustave Anguile. Repère ajouté au générateur avec anti-doublon par OSM ID/nom et fallback sans empreinte propre. La correspondance exacte entre le point cartographique et le bâtiment Serena Mall reste à vérifier par comparaison visuelle / terrain avant modélisation 3D. Sources : Mapcarta/OSM (ANPI node 6703527385), investingabon.ga/contact.
 
 - 2026-11-26 : recherche complémentaire sur les sièges encore en attente. Le ministère de l’Agriculture publie désormais comme adresse de contact « Centre-ville (face Rénovation), BP 551 » ; l’adresse historique Ancienne Primature / Cornut Gentille n’est plus confirmée sur sa page de contact. Le ministère des Travaux publics distingue une annexe au 392 avenue Rose Francine Rogombe et un immeuble principal au 414 avenue du Colonel Parant ; ses directions générales infrastructures, construction, entretien des routes et études sont rattachées au même immeuble principal et ne doivent pas être comptées comme des bâtiments séparés. Le ministère de l’Enseignement supérieur confirme l’avenue de Cointet et fournit un lien OSM, mais le lien ouvre une carte embarquée centrée sur le secteur et non un point précis du bâtiment. La Défense confirme rue du Gouverneur Balley, sans GPS exact. La DPO confirme 400 avenue du Colonel Parant ; les données Mapcarta la situent dans le secteur Rue Pecqueur / eGabon / Pharmacie La Librevilloise, mais sans identifiant OSM propre ni coordonnées précises exploitables. Le PNPE confirme rue Jean-Baptiste Ndende ; Mapcarta le signale comme immeuble de bureaux proche de Nombakélé, sans point individuel publié. L’ANBG confirme 195 rue Michel Nze MBA, Oloumi ; aucun point exact du bâtiment actuel validé. Le CNAP est confirmé au Carrefour STFO ; coordonnées trouvées pour le carrefour (0.4071296 / 9.4571099) et pour le secteur STFO (0.40747 / 9.458), mais ce ne sont pas les coordonnées du bâtiment CNAP et ne sont pas utilisées comme telles. L’AGANOR confirme Charbonnages, Immeuble ABC ; aucune géolocalisation OSM exacte de l’immeuble n’a été vérifiée. Sources : sites officiels des ministères (agriculture.gouv.ga/contact, infrastructures.gouv.ga/contact, enseignement-superieur.gouv.ga/contacts, defense-nationale.gouv.ga/contact.twg), journal-officiel.ga/contact, pnpe.ga/contact.html, anbg-ga.com/contacts, eaux-forets.gouv.ga/organismes-sous-tutelles, aganor.ga, Mapcarta/OSM.
 
