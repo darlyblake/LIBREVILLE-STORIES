@@ -127,6 +127,7 @@ func _build_facilities() -> void:
 	var entries: Array[Dictionary]=[]
 	var has_water_forests_site := false
 	var has_senate_site := false
+	var has_public_service_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -145,6 +146,8 @@ func _build_facilities() -> void:
 			has_water_forests_site = true
 		if poi_name.contains("senat") or poi_name.contains("palais omar bongo"):
 			has_senate_site = true
+		if poi_name.contains("fonction publique"):
+			has_public_service_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -183,6 +186,20 @@ func _build_facilities() -> void:
 			"id": 3369330,
 			"lat": 0.4085292,
 			"lon": 9.442867,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Le ministère est cartographié comme nœud OSM 4940709339, face à l'ambassade de Chine.
+	# Repère de secours seulement si le POI n'est pas présent dans l'extraction ; aucun bâtiment n'est créé.
+	if not has_public_service_site:
+		var public_service_position := _geo([9.44544, 0.41146])
+		entries.append({
+			"kind": "ministry",
+			"label": "Ministère de la Fonction publique",
+			"pos": public_service_position,
+			"id": 4940709339,
+			"lat": 0.41146,
+			"lon": 9.44544,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -484,6 +501,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "MINISTÈRE"
 			if label.to_lower().contains("2 decembre") or label.to_lower().contains("mines"):
 				marker_text = "MINES"
+				marker_material = school_accent
+			if label.to_lower().contains("fonction publique"):
+				marker_text = "FONCTION PUBLIQUE"
 				marker_material = school_accent
 			if label.to_lower().contains("eaux") and label.to_lower().contains("foret"):
 				marker_text = "EAUX & FORÊTS"
