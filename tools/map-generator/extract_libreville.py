@@ -480,6 +480,88 @@ def make_collection(elements, kind, bounds):
     }
 
 
+
+def make_bridge_collection(elements, bounds):
+    """Exporte séparément les ways OSM explicitement balisés comme ponts."""
+    from shapely.geometry import LineString, Polygon, box
+
+    south, west, north, east = bounds
+    clip = box(west, south, east, north)
+    features = []
+    for way in elements:
+        if way.get("type") != "way":
+            continue
+        tags = way.get("tags", {})
+        # Conserver aussi bien les ways routiers bridge=* que les objets
+        # man_made=bridge indépendants. Ne pas inférer un pont depuis layer seul.
+        if "bridge" not in tags and tags.get("man_made") != "bridge":
+            continue
+        points = way.get("geometry") or []
+        coords = [
+            (float(point["lon"]), float(point["lat"]))
+            for point in points
+            if "lon" in point and "lat" in point
+            and math.isfinite(float(point["lon"])) and math.isfinite(float(point["lat"]))
+        ]
+        if len(coords) < 2:
+            continue
+        try:
+            is_area = len(coords) >= 4 and coords[0] == coords[-1]
+            shape = Polygon(coords) if is_area else LineString(coords)
+            if not shape.is_valid:
+                shape = shape.buffer(0)
+            clipped = shape.intersection(clip)
+            if clipped.is_empty:
+                continue
+            if clipped.geom_type == "Polygon":
+                geometry = {
+                    "type": "Polygon",
+                    "coordinates": [[[float(x), float(y)] for x, y in clipped.exterior.coords]],
+                }
+            elif clipped.geom_type == "LineString":
+                geometry = {
+                    "type": "LineString",
+                    "coordinates": [[float(x), float(y)] for x, y in clipped.coords],
+                }
+            elif clipped.geom_type == "MultiLineString":
+                geometry = {
+                    "type": "MultiLineString",
+                    "coordinates": [
+                        [[float(x), float(y)] for x, y in part.coords]
+                        for part in clipped.geoms if len(part.coords) >= 2
+                    ],
+                }
+            elif clipped.geom_type == "MultiPolygon":
+                geometry = {
+                    "type": "MultiPolygon",
+                    "coordinates": [
+                        [[[float(x), float(y)] for x, y in part.exterior.coords]]
+                        for part in clipped.geoms if not part.is_empty
+                    ],
+                }
+            else:
+                continue
+        except Exception as exc:
+            print(f"Géométrie de pont ignorée way/{way.get('id')}: {exc}", flush=True)
+            continue
+        features.append({
+            "type": "Feature",
+            "id": "way/" + str(way["id"]),
+            "properties": {
+                "osm_id": int(way["id"]),
+                "osm_type": "way",
+                "source": "OpenStreetMap bridge tags",
+                **tags,
+            },
+            "geometry": geometry,
+        })
+    return {
+        "type": "FeatureCollection",
+        "name": "libreville_bridges",
+        "features": features,
+    }
+
+
 def load_cached_tile(cache_file):
     if not cache_file.exists():
         return None
@@ -804,6 +886,19 @@ def main():
         )),
     }
     generated["pois.geojson"] = make_poi_collection(all_nodes, elements, (args.south, args.west, args.north, args.east))
+    generated["bridges.geojson"] = make_bridge_collection(
+        elements, (args.south, args.west, args.north, args.east)
+    )
+    report["files"]["bridges.geojson"] = {
+        "features": len(generated["bridges.geojson"]["features"]),
+        "categories": dict(Counter(
+            feature["properties"].get("bridge")
+            or feature["properties"].get("man_made")
+            or "bridge_tag"
+            for feature in generated["bridges.geojson"]["features"]
+        )),
+        "note": "Ways OSM explicitement balisés bridge=* ou man_made=bridge. Tracés uniquement ; aucune hauteur ou géométrie 3D n'est inférée.",
+    }
     report["files"]["pois.geojson"] = {
         "features": len(generated["pois.geojson"]["features"]),
         "categories": dict(Counter(
