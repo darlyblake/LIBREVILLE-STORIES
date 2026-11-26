@@ -145,6 +145,7 @@ func _build_facilities() -> void:
 	var has_ceeac_site := false
 	var has_anuttc_site := false
 	var has_brac_oif_site := false
+	var has_dgttc_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -199,6 +200,8 @@ func _build_facilities() -> void:
 			has_anuttc_site = true
 		if poi_osm_id == 625614944 or poi_name.contains("bureau de l oif") or poi_name.contains("brac-oif") or poi_name.contains("organisation internationale de la francophonie"):
 			has_brac_oif_site = true
+		if poi_osm_id == 816220349 or poi_name.contains("direction generale des travaux topographiques") or poi_name.contains("d g t t c"):
+			has_dgttc_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -494,6 +497,19 @@ func _build_facilities() -> void:
 			"id": 625614944,
 			"lat": 0.43037,
 			"lon": 9.42647,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Direction Générale des Travaux Topographiques et du Cadastre (DGTTC), OSM way 816220349.
+	# Site distinct de l'ANUTTC d'Oloumi ; bâtiment physique fourni par buildings.geojson.
+	if not has_dgttc_site:
+		entries.append({
+			"kind": "admin",
+			"label": "Direction Générale des Travaux Topographiques et du Cadastre (DGTTC)",
+			"pos": _geo([9.42733, 0.42335]),
+			"id": 816220349,
+			"lat": 0.42335,
+			"lon": 9.42733,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -817,6 +833,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 				marker_material = school_accent
 			if label.to_lower().contains("brac-oif") or label.to_lower().contains("bureau regional de l oif"):
 				marker_text = "OIF AFRIQUE CENTRALE"
+				marker_material = school_accent
+			if label.to_lower().contains("travaux topographiques") or label.to_lower().contains("dgttc"):
+				marker_text = "CADASTRE & TOPOGRAPHIE"
 				marker_material = school_accent
 		"city_hall":
 			marker_text = "MAIRIE"
