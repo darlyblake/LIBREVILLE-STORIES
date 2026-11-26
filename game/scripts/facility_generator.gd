@@ -133,6 +133,7 @@ func _build_facilities() -> void:
 	var has_foreign_affairs_site := false
 	var has_tpi_annex_site := false
 	var has_budget_directorate_site := false
+	var has_communication_ministry_site := false
 	for item in doc.get("features",[]):
 		if not item is Dictionary: continue
 		var g: Dictionary=item.get("geometry",{})
@@ -163,6 +164,8 @@ func _build_facilities() -> void:
 			has_tpi_annex_site = true
 		if poi_name.contains("direction generale du budget") or poi_name == "dgb":
 			has_budget_directorate_site = true
+		if poi_osm_id == 5763821475 or poi_name.contains("ministere de la communication"):
+			has_communication_ministry_site = true
 		var kind := _kind(p)
 		if kind=="": continue
 		var pos := _geo(c)
@@ -287,6 +290,21 @@ func _build_facilities() -> void:
 			"id": 0,
 			"lat": 0.38800,
 			"lon": 9.44900,
+			"footprint_size": Vector2.ZERO,
+			"footprint": PackedVector2Array()
+		})
+	# Ministère de la Communication et des Médias, derrière la Poste,
+	# avenue Augustin-Boumah. Point OSM 5763821475 confirmé par la cartographie.
+	# Repère uniquement : aucun volume n'est généré ici.
+	if not has_communication_ministry_site:
+		var communication_ministry_position := _geo([9.44478, 0.38752])
+		entries.append({
+			"kind": "admin",
+			"label": "Ministère de la Communication et des Médias",
+			"pos": communication_ministry_position,
+			"id": 5763821475,
+			"lat": 0.38752,
+			"lon": 9.44478,
 			"footprint_size": Vector2.ZERO,
 			"footprint": PackedVector2Array()
 		})
@@ -584,6 +602,9 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			marker_text = "CONGRÈS"
 		"admin":
 			marker_text = "ADMINISTRATION"
+			if label.to_lower().contains("communication"):
+				marker_text = "COMMUNICATION"
+				marker_material = school_accent
 			if label.to_lower().contains("senat") or label.to_lower().contains("omar bongo"):
 				marker_text = "SÉNAT"
 				marker_material = school_accent
