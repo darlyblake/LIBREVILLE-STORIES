@@ -514,9 +514,13 @@ def make_bridge_collection(elements, bounds):
             if clipped.is_empty:
                 continue
             if clipped.geom_type == "Polygon":
+                rings = [clipped.exterior, *clipped.interiors]
                 geometry = {
                     "type": "Polygon",
-                    "coordinates": [[[float(x), float(y)] for x, y in clipped.exterior.coords]],
+                    "coordinates": [
+                        [[float(x), float(y)] for x, y in ring.coords]
+                        for ring in rings
+                    ],
                 }
             elif clipped.geom_type == "LineString":
                 geometry = {
@@ -535,7 +539,10 @@ def make_bridge_collection(elements, bounds):
                 geometry = {
                     "type": "MultiPolygon",
                     "coordinates": [
-                        [[[float(x), float(y)] for x, y in part.exterior.coords]]
+                        [
+                            [[float(x), float(y)] for x, y in ring.coords]
+                            for ring in [part.exterior, *part.interiors]
+                        ]
                         for part in clipped.geoms if not part.is_empty
                     ],
                 }
