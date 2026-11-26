@@ -44,6 +44,7 @@
 | Palais présidentiel du Bord de mer — boulevard de l’Indépendance | [x] | [x] | [ ] | [ ] | [ ] |
 | Agence Nationale des Parcs Nationaux (ANPN) — Rue Bana Ba Kengue | [x] | [x] | [ ] | [ ] | [ ] |
 | AGATOUR — Agence Gabonaise de Développement et de Promotion du Tourisme — Impasse Père Peterse, Batterie IV | [x] | [x] | [ ] | [ ] | [ ] |
+| Ministère des Transports, de la Marine marchande et de la Logistique — Immeuble Arambo | [x] | [x] | [ ] | [ ] | [ ] |
 | Direction Nationale des Assurances — Rond-Point de la Démocratie | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère du Travail et de la Formation professionnelle | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de la Planification et de la Prospective | [x] | [x] | [ ] | [ ] | [ ] |
@@ -153,6 +154,9 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
 
 ## 7. Historique
+
+- 2026-11-26 : ajout du Ministère des Transports, de la Marine marchande et de la Logistique, siège officiel au 3e étage de l’Immeuble Arambo (site ministériel). Coordonnées utilisées : centroïde OSM du bâtiment public Arambo, way 249526244, GPS 0.40802 / 9.43928. Repère marker-only, aucune empreinte physique ajoutée ; le bâtiment est déjà représenté par les données bâtiments OSM. Sources : ministère des Transports (transports.gouv.ga/contact), Mapcarta/OSM (Immeuble Arambo).
+- 2026-11-26 : contrôles de périmètre : l’OPRAG repéré à 0.28952 / 9.50403 est hors limites sud et est ; l’EPCA (0.40181 / 9.51786) et l’École Nationale d’Administration (0.40191 / 9.51855) sont hors limite est 9.495. La DGCC est annoncée à l’Immeuble des Domaines mais sans point GPS OSM précis validé ; la DGPE est annoncée à Akémigjogoni sans coordonnées vérifiées. Ces structures restent en attente ou exclues, sans coordonnées inventées. Sources : Mapcarta/OSM, site ministériel transports.gouv.ga, annuaires publics DGCC/DGPE.
 
 - 2026-11-26 : ajout de l’Agence Nationale des Parcs Nationaux (ANPN), OSM node 12149539808, GPS 0.42843 / 9.42760, Rue Bana Ba Kengue ; siège indiqué par Mapcarta/OSM et adresse corroborée par l’annuaire Go Africa. Repère institutionnel sans empreinte propre, volume physique depuis buildings.geojson.
 - 2026-11-26 : ajout d’AGATOUR, Agence Gabonaise de Développement et de Promotion du Tourisme et de l’Hôtellerie, OSM node 12317977790, GPS 0.41896 / 9.42793, Impasse Père Peterse, Batterie IV. Ce point correspond au bureau gouvernemental de l’agence et non au point d’information touristique distinct situé avenue du Colonel Parant. Repère sans empreinte propre, volume physique depuis buildings.geojson.
