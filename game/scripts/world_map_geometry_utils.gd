@@ -77,6 +77,48 @@ static func pitched_roof_triangles(points: PackedVector2Array, wall_height: floa
 	# Un tableau vide signifie que l'empreinte ne convient pas à ce type de toit.
 	if points.size() != 4:
 		return PackedVector3Array()
+	if shape == "skillion" or shape == "shed":
+		var low_y := base_y + wall_height + 0.035
+		var high_y := low_y + 0.9
+		var p0 := Vector3(points[0].x, high_y, points[0].y)
+		var p1 := Vector3(points[1].x, high_y, points[1].y)
+		var p2 := Vector3(points[2].x, low_y, points[2].y)
+		var p3 := Vector3(points[3].x, low_y, points[3].y)
+		return PackedVector3Array([p0, p1, p2, p0, p2, p3])
+	if shape == "hipped":
+		var longest_index := 0
+		var longest_length := 0.0
+		for i in range(4):
+			var edge_length := points[i].distance_to(points[(i + 1) % 4])
+			if edge_length > longest_length:
+				longest_length = edge_length
+				longest_index = i
+		var p0 := points[longest_index]
+		var p1 := points[(longest_index + 1) % 4]
+		var p2 := points[(longest_index + 2) % 4]
+		var p3 := points[(longest_index + 3) % 4]
+		var roof_y := base_y + wall_height + 0.035
+		var short_side := minf(p0.distance_to(p3), p1.distance_to(p2))
+		if short_side <= 0.1 or longest_length <= short_side:
+			return PackedVector3Array()
+		var inset := clampf((longest_length - short_side) * 0.18, 0.35, longest_length * 0.22)
+		var start_mid := (p0 + p3) * 0.5
+		var end_mid := (p1 + p2) * 0.5
+		var axis := (end_mid - start_mid).normalized()
+		var ridge_start_2d := start_mid + axis * inset
+		var ridge_end_2d := end_mid - axis * inset
+		var ridge_y := roof_y + clampf(short_side * 0.24, 0.55, 1.5)
+		var va := Vector3(p0.x, roof_y, p0.y)
+		var vb := Vector3(p1.x, roof_y, p1.y)
+		var vc := Vector3(p2.x, roof_y, p2.y)
+		var vd := Vector3(p3.x, roof_y, p3.y)
+		var r0 := Vector3(ridge_start_2d.x, ridge_y, ridge_start_2d.y)
+		var r1 := Vector3(ridge_end_2d.x, ridge_y, ridge_end_2d.y)
+		return PackedVector3Array([
+			va, vb, r1, va, r1, r0,
+			vd, vc, r1, vd, r1, r0,
+			va, vd, r0, vb, vc, r1
+		])
 	if shape == "pyramidal":
 		var center := Vector2.ZERO
 		var min_edge := INF
