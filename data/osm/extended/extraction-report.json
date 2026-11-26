@@ -124,7 +124,7 @@
       "source": "Geofabrik Gabon PBF (intersection géographique)"
     }
   ],
-  "extracted_at_utc": "2026-11-26T09:38:10.848501+00:00",
+  "extracted_at_utc": "2026-11-26T09:45:03.963606+00:00",
   "files": {
     "localities.geojson": {
       "features": 107,

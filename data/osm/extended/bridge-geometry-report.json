@@ -1,0 +1,1504 @@
+{
+  "source": "© OpenStreetMap contributors",
+  "license": "ODbL-1.0",
+  "method": "Projection locale équirectangulaire approximative à la latitude de chaque objet. Les métriques décrivent l'emprise cartographique OSM uniquement.",
+  "warning": "Les dimensions d'enveloppe, aires et périmètres ne sont pas des mesures certifiées de tablier. Aucune hauteur, épaisseur, pile, rampe ou altitude n'est déduite.",
+  "feature_count": 103,
+  "features": [
+    {
+      "osm_id": "way/43157373",
+      "name": "Echangeur de l'Aéroport",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "trunk_link",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/43157376",
+      "name": "Echangeur de l'Aéroport",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "trunk_link",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/47290112",
+      "name": "Gué Gué",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/47290115",
+      "name": "Gué Gué",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/92340918",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/92348308",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/92348330",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/92358873",
+      "name": "Pont Nomba",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/92358874",
+      "name": "Pont Nomba",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/92445313",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "unpaved"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/95678503",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/95678532",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/101749833",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/101749835",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/150140804",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/150274436",
+      "name": "Pont",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/169184393",
+      "name": "Echangeur de Nzeng Ayong",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/169184394",
+      "name": "Echangeur de Nzeng Ayong",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/170924097",
+      "name": "Echangeur IAI",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/170924101",
+      "name": "Echangeur IAI",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/171214591",
+      "name": "",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/208495046",
+      "name": "Boulevard de la Nation",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/208495051",
+      "name": "Pont de la RTG",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/208495223",
+      "name": "Boulevard de la Nation",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/251361045",
+      "name": "Avenue Célestin Evoung",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/373247364",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/443857781",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/448337123",
+      "name": "Echangueur Cité de la démocratie",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/448349537",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "metal"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/448836549",
+      "name": "Echangueur Cité de la démocratie",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/514572570",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588248867",
+      "name": "Avenue Nelson Mandela",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "paved"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588257277",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588257280",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588534407",
+      "name": "Boulevard de l'Indépendance",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588534409",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "primary_link",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588534413",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "service",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588578872",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "unclassified",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588590845",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588600265",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/588600277",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/589164164",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/589778348",
+      "name": "",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/708322899",
+      "name": "Passerelle PK6",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "path",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/734714691",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "paving_stones"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/760705956",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "wood"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/760705958",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "construction",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/760705965",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "construction",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/760709822",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "construction",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/763242390",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "service",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/763245574",
+      "name": "Avenue Jean Hilaire Aubame Eyeghe",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/763251916",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/763251928",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/898201214",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/900374141",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1100661578",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "path",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1125793693",
+      "name": "Passerelle",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "wood"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1126991197",
+      "name": "Passerrelle",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1126991198",
+      "name": "Passerrelle",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1126991202",
+      "name": "Passerrelle",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1126991203",
+      "name": "Passerrelle",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1199491886",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1203849238",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {},
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1203849239",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {},
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1205008230",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "service",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1207996451",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1208465141",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1209028149",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "service",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1209337995",
+      "name": "Passerelle",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1240165197",
+      "name": "",
+      "bridge": "boardwalk",
+      "man_made": "",
+      "highway": "path",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "surface": "wood"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1246725207",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1252813435",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "primary_link",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "1",
+        "surface": "asphalt",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1253187395",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "service",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1328745502",
+      "name": "Pont M'pirah",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "primary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1334471831",
+      "name": "",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1351167188",
+      "name": "Passerelle PK9",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1358983759",
+      "name": "Pont d'Akébé",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "secondary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1360431412",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "footway",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1379033476",
+      "name": "Rue André Ayong Bekale",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1391097093",
+      "name": "Rue Joseph Christian Eyene Obiang",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1391300202",
+      "name": "Chemin Daniel Ondo Abo",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1391551869",
+      "name": "Rue Maurice Ngome Obiang",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1395147722",
+      "name": "Pont de la Caisse",
+      "bridge": "viaduct",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "beam",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 44.3,
+        "bbox_height_m_approx": 11.1,
+        "polygon_area_m2_approx": 394.7,
+        "outer_and_inner_perimeter_m_approx": 105.7
+      }
+    },
+    {
+      "osm_id": "way/1409984145",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "beam",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 18.2,
+        "bbox_height_m_approx": 23.7,
+        "polygon_area_m2_approx": 200.8,
+        "outer_and_inner_perimeter_m_approx": 62.2
+      }
+    },
+    {
+      "osm_id": "way/1409984146",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "beam",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 18.4,
+        "bbox_height_m_approx": 23.4,
+        "polygon_area_m2_approx": 198.1,
+        "outer_and_inner_perimeter_m_approx": 61.8
+      }
+    },
+    {
+      "osm_id": "way/1409986458",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "path",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {},
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1416348940",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "compacted"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1419342891",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1432472148",
+      "name": "",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1435825401",
+      "name": "Pont Awendje",
+      "bridge": "aqueduct",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "beam",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 46.3,
+        "bbox_height_m_approx": 28.5,
+        "polygon_area_m2_approx": 439.6,
+        "outer_and_inner_perimeter_m_approx": 112.3
+      }
+    },
+    {
+      "osm_id": "way/1435847292",
+      "name": "Echangeur PK5",
+      "bridge": "viaduct",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "beam",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 52.7,
+        "bbox_height_m_approx": 40.5,
+        "polygon_area_m2_approx": 952.1,
+        "outer_and_inner_perimeter_m_approx": 137.3
+      }
+    },
+    {
+      "osm_id": "way/1435847294",
+      "name": "Passerelle Plein-ciel",
+      "bridge": "viaduct",
+      "man_made": "bridge",
+      "highway": "",
+      "bridge_structure": "beam",
+      "geometry_type": "Polygon",
+      "source_tags": {
+        "layer": "1"
+      },
+      "planimetric_metrics": {
+        "bbox_width_m_approx": 42.9,
+        "bbox_height_m_approx": 22.5,
+        "polygon_area_m2_approx": 174.9,
+        "outer_and_inner_perimeter_m_approx": 98.5
+      }
+    },
+    {
+      "osm_id": "way/1443840889",
+      "name": "Echangeur des Charbonnages",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1443840890",
+      "name": "Echangeur des Charbonnages",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "trunk",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete",
+        "oneway": "yes"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1465524641",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "service",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {},
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1472558715",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {},
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1473312459",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "path",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "unpaved"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1523544342",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1540181151",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "lanes": "2",
+        "surface": "asphalt"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1568780616",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "paving_stones"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1568780625",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "tertiary",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1572285346",
+      "name": "Pont",
+      "bridge": "viaduct",
+      "man_made": "",
+      "highway": "residential",
+      "bridge_structure": "beam",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "lanes": "2",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    },
+    {
+      "osm_id": "way/1573869396",
+      "name": "",
+      "bridge": "yes",
+      "man_made": "",
+      "highway": "path",
+      "bridge_structure": "",
+      "geometry_type": "LineString",
+      "source_tags": {
+        "layer": "1",
+        "surface": "concrete"
+      },
+      "note": "Tracé linéaire OSM : longueur de voie non assimilable à la longueur du tablier ou des rampes."
+    }
+  ]
+}
