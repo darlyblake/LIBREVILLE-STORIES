@@ -39,6 +39,7 @@
 | Ministère de l’Intérieur — avenue de Cointet | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de l’Éducation nationale — Formation civique | [x] | [x] | [ ] | [ ] | [ ] |
 | Agence nationale des infrastructures numériques et des fréquences (ANINF) — Immeuble de la Solde | [x] | [x] | [ ] | [ ] | [ ] |
+| Direction Générale de la Comptabilité Publique et du Trésor (DGCPT) — 321 avenue Rose Francine Rogombe | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -81,5 +82,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : inventaire des administrations déjà repérées dans `facility_generator.gd`.
 - 2026-11-26 : ajout du repère du Ministère de l’Éducation nationale — OSM way 410354024, GPS 0.39396 / 9.44551.
 - 2026-11-26 : ajout du repère ANINF, Immeuble de la Solde — OSM way 455714440, GPS 0.39245 / 9.44510.
+- 2026-11-26 : ajout du repère Direction Générale de la Comptabilité Publique et du Trésor — OSM way 455714429, GPS 0.39216 / 9.44461.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
