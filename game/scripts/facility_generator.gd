@@ -361,143 +361,44 @@ func _geo(c:Array)->Vector3:
 	return Vector3(x,y,z)
 
 func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector2 = Vector2.ZERO,footprint:PackedVector2Array = PackedVector2Array())->void:
-	var root:=Node3D.new()
-	root.name="Infrastructure_%s_%03d"%[k,index]
-	root.position=p
+	# Les bâtiments physiques sont reconstruits une seule fois par WorldMap depuis
+	# buildings.geojson. Ce générateur ajoute uniquement un repère de POI nommé :
+	# aucune boîte générique ne vient doubler ou déformer l'empreinte OSM.
+	var root := Node3D.new()
+	root.name = "Infrastructure_POI_%s_%03d" % [k, index]
+	root.position = p
 	add_child(root)
-	var w:=20.0
-	var d:=15.0
-	var h:=6.5
-	var wall:=structural_concrete
-	match k:
-		"hospital": w=34; d=25; h=13; wall=white
-		"clinic": w=17; d=13; h=6; wall=white
-		"police": w=19; d=15; h=6.5; wall=blue
-		"fire": w=25; d=19; h=8; wall=red
-		"bus": w=36; d=25; h=5
-		"fuel": w=28; d=24; h=5.5; wall=white
-		"admin": w=24; d=18; h=10; wall=white
-		"school": w=38; d=28; h=9; wall=white
-		"university": w=48; d=36; h=14; wall=white
-		"hotel": w=30; d=22; h=16; wall=white
-	# Pour les POI surfaciques, le gabarit horizontal suit les dimensions OSM.
-	# On borne les valeurs aberrantes, sans prétendre déduire la hauteur du bâtiment.
-	if footprint_size.x > 0.0 and footprint_size.y > 0.0:
-		w = clampf(footprint_size.x, 8.0, 90.0)
-		d = clampf(footprint_size.y, 8.0, 75.0)
-	var lower_label := label.to_lower()
-	# Un POI polygonal est déjà reconstruit par WorldMap depuis buildings.geojson.
-	# Ne pas superposer un second faux bâtiment : poser seulement un repère nommé.
-	if footprint.size() >= 3:
-		_box(root, Vector3(0, 0.95, 0), Vector3(0.16, 1.9, 0.16), steel)
-		var marker_kind := "ÉTABLISSEMENT"
-		match k:
-			"school": marker_kind = "ÉCOLE"
-			"university": marker_kind = "UNIVERSITÉ"
-			"hotel": marker_kind = "HÔTEL"
-			"hospital", "clinic": marker_kind = "SANTÉ"
-			"police": marker_kind = "POLICE"
-			"fire": marker_kind = "SECOURS"
-		_sign(root, marker_kind, Vector3(0, 2.05, 0), school_accent if k in ["school", "university"] else hotel_accent if k == "hotel" else blue)
-		_name(root, label, Vector3(0, 3.25, 0))
-		return
-	# Les POI ponctuels sans empreinte de bâtiment reçoivent un volume indicatif.
-	# Silhouettes renforcées pour les grands sites identifiés dans les données OSM.
-	# Les dimensions sont des proportions de gameplay, pas des mesures cadastrales.
-	if k == "hospital":
-		if "chul" in lower_label or "universitaire" in lower_label:
-			w=54; d=38; h=18
-		elif "akanda" in lower_label or "hiaobo" in lower_label:
-			w=43; d=32; h=15
-	if k == "bus" and ("pk8" in lower_label or "pk 8" in lower_label):
-		w=46; d=32
-	_box(root,Vector3(0,0.1,0),Vector3(w+6,0.2,d+6),asphalt)
-	_box(root,Vector3(0,h/2,0),Vector3(w,h,d),wall)
-	_box(root,Vector3(0,h+0.18,0),Vector3(w+0.8,0.36,d+0.8),roof)
-	_windows(root,w,d,h)
-	_add_facade_construction_details(root,w,d,h)
-	_add_rainwater_details(root,w,d,h)
-	_add_entry_canopy(root, k, w, d)
+	var marker_text := "ÉTABLISSEMENT"
+	var marker_material: Material = blue
 	match k:
 		"school":
-			_sign(root, "ÉCOLE", Vector3(0, h + 1.0, d / 2 + 0.3), school_accent)
-			_box(root, Vector3(0, 0.35, d / 2 + 4.0), Vector3(w * 0.62, 0.35, 6.5), school_accent)
-			_box(root, Vector3(0, 1.15, d / 2 + 7.2), Vector3(4.0, 2.3, 0.25), blue)
-			_box(root, Vector3(-w * 0.36, 0.08, -d / 2 - 4.5), Vector3(5.0, 0.16, 7.0), asphalt)
-			for i in range(4):
-				_box(root, Vector3(-w * 0.36 + i * 3.2, 1.2, d / 2 + 7.0), Vector3(0.12, 2.4, 0.12), school_accent)
+			marker_text = "ÉCOLE"
+			marker_material = school_accent
 		"university":
-			_sign(root, "UNIVERSITÉ", Vector3(0, h + 1.0, d / 2 + 0.3), school_accent)
-			_box(root, Vector3(0, 0.35, d / 2 + 4.0), Vector3(w * 0.72, 0.35, 7.0), school_accent)
-			_box(root, Vector3(0, 1.2, d / 2 + 7.8), Vector3(5.0, 2.4, 0.25), blue)
+			marker_text = "UNIVERSITÉ"
+			marker_material = school_accent
 		"hotel":
-			_sign(root, "HÔTEL", Vector3(0, h + 1.0, d / 2 + 0.3), hotel_accent)
-			_box(root, Vector3(0, h + 0.42, 0), Vector3(w + 2.0, 0.42, d + 2.0), hotel_accent)
-			_box(root, Vector3(0, 1.25, d / 2 + 2.1), Vector3(5.0, 2.5, 0.18), glass)
-			_box(root, Vector3(0, 0.18, d / 2 + 4.0), Vector3(w * 0.72, 0.18, 6.0), concrete)
-			for x in [-w * 0.32, w * 0.32]:
-				_box(root, Vector3(x, 2.1, d / 2 + 3.2), Vector3(0.35, 4.2, 0.35), hotel_accent)
-		"hospital","clinic":
-			_sign(root,"✚",Vector3(-w/2+2,h+1.4,0),red)
-			_sign(root,"URGENCES",Vector3(0,2.4,d/2+0.4),blue)
-			_box(root,Vector3(0,2.1,d/2+2.2),Vector3(10,0.35,4),blue)
-			_box(root,Vector3(0,1.25,d/2+0.09),Vector3(3.2,2.5,0.12),glass)
-			_box(root,Vector3(0,0.25,d/2+3.8),Vector3(7,0.5,5.5),concrete)
-			if k=="hospital":
-				_box(root,Vector3(w*0.28,h+2.4,-d*0.12),Vector3(maxf(12.0,w*0.34),4.8,d*0.7),white)
-				_box(root,Vector3(w*0.28,h+4.9,-d*0.12),Vector3(maxf(12.0,w*0.35),0.25,d*0.72),roof)
-				_box(root,Vector3(-w*0.20,2.9,d/2+3.0),Vector3(15,0.32,5.5),blue)
-				if "chul" in lower_label:
-					_sign(root,"CHUL",Vector3(0,h+2.0,d/2+0.4),blue)
-				elif "akanda" in lower_label:
-					_sign(root,"CHU AKANDA",Vector3(0,h+2.0,d/2+0.4),blue)
-		"police":
-			_sign(root,"POLICE",Vector3(0,h+1,d/2+0.3),blue)
-			_box(root,Vector3(-w/2-1.8,1.5,d*0.25),Vector3(3,3,3),white)
-		"fire":
-			_sign(root,"SAPEURS-POMPIERS",Vector3(0,h+1,d/2+0.3),red)
-			for i in range(2):
-				var bay_x := -6.0 + i * 12.0
-				_box(root,Vector3(bay_x,2,d/2+0.16),Vector3(8,4,0.2),asphalt)
-				# Rideau métallique réaliste : tôle photographique PBR, encadrement peint.
-				_box(root,Vector3(bay_x,2,d/2+0.29),Vector3(7.45,3.65,0.12),steel)
-				for slat in range(9):
-					_box(root,Vector3(bay_x,0.35+slat*0.41,d/2+0.37),Vector3(7.35,0.045,0.035),concrete)
-				_box(root,Vector3(-10+i*12,2,d/2+0.3),Vector3(0.35,4.3,0.45),red)
-				_box(root,Vector3(-2+i*12,2,d/2+0.3),Vector3(0.35,4.3,0.45),red)
-				_box(root,Vector3(bay_x,4.15,d/2+0.3),Vector3(8.3,0.35,0.45),red)
-		"bus":
-			_sign(root,"GARE ROUTIÈRE",Vector3(0,h+1,d/2+0.3),blue)
-			_box(root,Vector3(0,4.3,0),Vector3(w+9,0.35,d+9),roof)
-			for x in [-w*0.42,w*0.42]:
-				for z in [-d*0.38,d*0.38]:
-					_box(root,Vector3(x,2.15,z),Vector3(0.65,4.3,0.65),blue)
-			for i in range(4):
-				_box(root,Vector3(-12+i*8,0.08,d/2+6),Vector3(6,0.12,9),white)
-		"fuel":
-			_sign(root,"STATION-SERVICE",Vector3(0,h+1,d/2+0.3),red)
-			_box(root,Vector3(0,5,-1),Vector3(w+8,0.35,13),roof)
-			for x in [-w*0.42,w*0.42]:
-				for z in [-5.5,3.5]:
-					_box(root,Vector3(x,2.5,z),Vector3(0.55,5,0.55),red)
-			for i in range(3):
-				var x:=-8.0+i*8.0
-				_box(root,Vector3(x,1.25,0),Vector3(1.2,2.5,0.9),red)
-				_box(root,Vector3(x,2.35,0.5),Vector3(0.75,0.45,0.08),white)
-		"admin":
-			_sign(root,"ADMINISTRATION",Vector3(0,h+1,d/2+0.3),blue)
-	_name(root,label,Vector3(0,h+2,-d/2-1))
-	match k:
-		"school":
-			_add_school_campus(root, w, d, h, index)
-		"university":
-			_add_university_campus(root, w, d, h, index)
+			marker_text = "HÔTEL"
+			marker_material = hotel_accent
 		"hospital":
-			_add_hospital_wings(root, w, d, h)
-		"hotel":
-			_add_hotel_balconies(root, w, d, h, index)
+			marker_text = "HÔPITAL"
+			marker_material = red
 		"clinic":
-			_add_clinic_verandah(root, w, d)
+			marker_text = "SANTÉ"
+			marker_material = red
+		"police":
+			marker_text = "POLICE"
+		"fire":
+			marker_text = "SECOURS"
+			marker_material = red
+		"bus":
+			marker_text = "TRANSPORT"
+		"fuel":
+			marker_text = "CARBURANT"
+		"admin":
+			marker_text = "ADMINISTRATION"
+	_sign(root, marker_text, Vector3(0, 2.2, 0), marker_material)
+	_name(root, label, Vector3(0, 3.35, 0))
 
 func _add_entry_canopy(root: Node3D, kind: String, w: float, d: float) -> void:
 	# Auvents et poteaux d'entrée adaptés aux pluies tropicales.
