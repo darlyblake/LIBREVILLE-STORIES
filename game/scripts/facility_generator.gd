@@ -146,7 +146,8 @@ func _build_facilities() -> void:
 		var osm_id := int(p.get("osm_id",0))
 		if osm_id == 0: osm_id=int(str(p.get("@id","0")).replace("way/","").replace("node/","").replace("relation/",""))
 		var footprint_size := _geometry_size_m(g)
-		entries.append({"kind":kind,"label":label,"pos":pos,"id":osm_id,"lat":latitude,"lon":longitude,"footprint_size":footprint_size})
+		var footprint := _geometry_outer_ring(g, pos)
+		entries.append({"kind":kind,"label":label,"pos":pos,"id":osm_id,"lat":latitude,"lon":longitude,"footprint_size":footprint_size,"footprint":footprint})
 	# Priorité aux établissements demandés pour stabiliser l'ordre de création.
 	# Aucun plafond ne supprime les sites : tous les POI admissibles sont parcourus.
 	# À priorité égale, les sites les plus proches du centre jouable passent d'abord.
@@ -172,7 +173,7 @@ func _build_facilities() -> void:
 				break
 		if duplicate: continue
 		seen[key]=true
-		_create_one(e.kind,e.label,e.pos,count,e.footprint_size)
+		_create_one(e.kind,e.label,e.pos,count,e.footprint_size,e.footprint)
 		placed.append({"kind":e.kind,"pos":e.pos})
 		count+=1
 		if e.kind in ["school", "university"]: school_count += 1
@@ -287,6 +288,33 @@ func _ring_centroid(ring: Array) -> Array:
 	var centroid_lat := weighted_lat / (3.0 * twice_area)
 	return [centroid_lon, centroid_lat, absf(twice_area) * 0.5]
 
+func _geometry_outer_ring(g: Dictionary, center: Vector3) -> PackedVector2Array:
+	# Conserve le contour réel du POI OSM surfacique pour matérialiser son emprise.
+	var geometry_type := str(g.get("type", ""))
+	var coords: Variant = g.get("coordinates", [])
+	var ring: Array = []
+	if geometry_type == "Polygon" and coords is Array and not coords.is_empty():
+		ring = coords[0]
+	elif geometry_type == "MultiPolygon" and coords is Array:
+		var largest_area := -1.0
+		for polygon in coords:
+			if not polygon is Array or polygon.is_empty() or not polygon[0] is Array:
+				continue
+			var candidate: Array = polygon[0]
+			var metrics := _ring_centroid(candidate)
+			if metrics.size() >= 3 and float(metrics[2]) > largest_area:
+				largest_area = float(metrics[2])
+				ring = candidate
+	var result := PackedVector2Array()
+	for point in ring:
+		if not point is Array or point.size() < 2:
+			continue
+		var world_point := _geo([float(point[0]), float(point[1])])
+		result.append(Vector2(world_point.x - center.x, world_point.z - center.z))
+	if result.size() > 2 and result[0].distance_to(result[result.size() - 1]) < 0.05:
+		result.remove_at(result.size() - 1)
+	return result
+
 func _geometry_size_m(g: Dictionary) -> Vector2:
 	# Dimensions issues de l'emprise OSM des POI surfaciques.
 	# Les POI ponctuels conservent les gabarits de leur catégorie.
@@ -332,7 +360,7 @@ func _geo(c:Array)->Vector3:
 	var y:=float(map.call("terrain_height_at_world",x,z)) if map.has_method("terrain_height_at_world") else 0.0
 	return Vector3(x,y,z)
 
-func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector2 = Vector2.ZERO)->void:
+func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector2 = Vector2.ZERO,footprint:PackedVector2Array = PackedVector2Array())->void:
 	var root:=Node3D.new()
 	root.name="Infrastructure_%s_%03d"%[k,index]
 	root.position=p
@@ -368,6 +396,8 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 	if k == "bus" and ("pk8" in lower_label or "pk 8" in lower_label):
 		w=46; d=32
 	_box(root,Vector3(0,0.1,0),Vector3(w+6,0.2,d+6),asphalt)
+	if footprint.size() >= 3:
+		_add_osm_footprint(root, footprint)
 	_box(root,Vector3(0,h/2,0),Vector3(w,h,d),wall)
 	_box(root,Vector3(0,h+0.18,0),Vector3(w+0.8,0.36,d+0.8),roof)
 	_windows(root,w,d,h)
@@ -524,6 +554,26 @@ func _add_clinic_verandah(root: Node3D, w: float, d: float) -> void:
 	for x in [-w * 0.38, -w * 0.13, w * 0.13, w * 0.38]:
 		_box(root, Vector3(x, 1.45, d / 2.0 + 2.7), Vector3(0.16, 2.9, 0.16), structural_concrete)
 	_box(root, Vector3(0, 0.10, d / 2.0 + 5.0), Vector3(5.0, 0.20, 6.0), concrete)
+
+func _add_osm_footprint(root: Node3D, polygon: PackedVector2Array) -> void:
+	# Surface triangulée à partir du contour OSM original (sans inventer de parcelle).
+	var indices := Geometry2D.triangulate_polygon(polygon)
+	if indices.is_empty():
+		return
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for index in indices:
+		var point := polygon[index]
+		surface.add_vertex(Vector3(point.x, 0.075, point.y))
+	surface.generate_normals()
+	var mesh := surface.commit()
+	if mesh == null:
+		return
+	var instance := MeshInstance3D.new()
+	instance.name = "OSM_Footprint"
+	instance.mesh = mesh
+	instance.material_override = concrete
+	root.add_child(instance)
 
 func _add_facade_construction_details(root: Node3D, w: float, d: float, h: float) -> void:
 	# Détails architecturaux génériques : soubassement béton, bandeaux de dalle
