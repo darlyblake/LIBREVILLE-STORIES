@@ -42,6 +42,7 @@
 | Direction Générale de la Comptabilité Publique et du Trésor (DGCPT) — 321 avenue Rose Francine Rogombe | [x] | [x] | [ ] | [ ] | [ ] |
 | Conférence Interafricaine des Marchés d’Assurances (CIMA) — centre-ville | [x] | [x] | [ ] | [ ] | [ ] |
 | Palais présidentiel du Bord de mer — boulevard de l’Indépendance | [x] | [x] | [ ] | [ ] | [ ] |
+| Direction Nationale des Assurances — Rond-Point de la Démocratie | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère du Travail et de la Formation professionnelle | [x] | [x] | [ ] | [ ] | [ ] |
 | Ministère de la Planification et de la Prospective | [x] | [x] | [ ] | [ ] | [ ] |
 | CEEAC — Haut de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
@@ -150,6 +151,8 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - Ne jamais cocher « Modèle 3D », « Textures réalistes » ou « Contrôle Godot » avant réalisation effective.
 
 ## 7. Historique
+
+- 2026-11-26 : ajout de la Direction Nationale des Assurances — OSM node 6144764686, GPS 0.42738 / 9.44884, Rond-Point de la Démocratie ; point Mapcarta/OSM vérifié et situé dans l’emprise stricte. Repère institutionnel seul, sans empreinte propre ; bâtiment physique depuis buildings.geojson. Source : Mapcarta / OpenStreetMap.
 
 - 2026-11-26 : contrôle complémentaire des implantations : CAISTAB est confirmée à l’Immeuble Gabon 2000, quartier Glass (Go Africa, Filao et site CAISTAB) ; la DGE est indiquée aux feux tricolores de Glass, face à la Pharmacie de Glass (Go Africa) ; le CEPIG est indiqué à l’Immeuble Nostalgie, rue du Cabinet Berthonneau (Go Africa) ; le CICIBA est signalé à Cité-Damas, voie express avant la montée du carrefour Awendjé (Go Africa, annuaire du ministère des Affaires étrangères) ; l’ONPDF est localisé dans le secteur du Lycée d’État, avant l’échangeur (Filao et annuaire diplomatique). Ces adresses sont des repères textuels, pas des coordonnées GPS : aucune entrée n’est ajoutée au générateur tant qu’un point OSM exact dans l’emprise 0.355–0.445 / 9.400–9.495 n’est pas vérifié. Sources : Go Africa (CAISTAB, DGE, CEPIG, CICIBA), Filao (ONPDF), ministère des Affaires étrangères (CICIBA).
 
