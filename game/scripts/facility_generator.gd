@@ -945,7 +945,7 @@ func _create_one(k:String,label:String,p:Vector3,index:int,footprint_size:Vector
 			if label.to_lower().contains("agasa") or label.to_lower().contains("securite alimentaire") or label.to_lower().contains("sécurité alimentaire"):
 				marker_text = "AGASA"
 				marker_material = school_accent
-			if label.to_lower().contains("institut national de cartographie") or label.to_lower().contains("inc"):
+			if label.to_lower().contains("institut national de cartographie"):
 				marker_text = "CARTOGRAPHIE"
 				marker_material = school_accent
 			if label.to_lower().contains("communication"):
