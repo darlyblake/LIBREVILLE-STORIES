@@ -8,7 +8,6 @@ const MAP_WEST := 9.400
 const MAP_NORTH := 0.445
 const MAP_EAST := 9.495
 const MAX_FACILITIES := 100
-const MAX_SCHOOLS := 8
 var map: Node
 var concrete: StandardMaterial3D
 var structural_concrete: StandardMaterial3D
@@ -159,15 +158,12 @@ func _build_facilities() -> void:
 		return Vector2(a.pos.x,a.pos.z).distance_squared_to(origin)<Vector2(b.pos.x,b.pos.z).distance_squared_to(origin))
 	var seen:={}
 	var placed: Array[Dictionary] = []
-	var selected_school_count := 0
 	# Export des coordonnées OSM réellement retenues pour contrôle SIG.
 	var gps_report := FileAccess.open("user://libreville_facilities_gps.csv", FileAccess.WRITE)
 	if gps_report:
 		gps_report.store_line("type;nom;osm_id;latitude;longitude")
 	for e in entries:
 		if count>=MAX_FACILITIES: break
-		if e.kind == "school" and selected_school_count >= MAX_SCHOOLS:
-			continue
 		var key:=str(e.id) if e.id!=0 else str(e.kind)+str(e.label)
 		if seen.has(key): continue
 		var duplicate := false
@@ -180,9 +176,7 @@ func _build_facilities() -> void:
 		_create_one(e.kind,e.label,e.pos,count)
 		placed.append({"kind":e.kind,"pos":e.pos})
 		count+=1
-		if e.kind == "school":
-			school_count += 1
-			selected_school_count += 1
+		if e.kind in ["school", "university"]: school_count += 1
 		if e.kind == "hotel": hotel_count += 1
 		print("SITE OSM | ",e.kind," | ",e.label," | OSM ",e.id," | GPS ",e.lat,", ",e.lon)
 		if gps_report:
@@ -191,7 +185,7 @@ func _build_facilities() -> void:
 	if gps_report:
 		gps_report.close()
 	print("COORDONNÉES GPS OSM exportées : user://libreville_facilities_gps.csv")
-	print("INFRASTRUCTURES LIBREVILLE | ",count," sites dans l'emprise validée | écoles : ",school_count," (max. ",MAX_SCHOOLS,") | hôtels : ",hotel_count)
+	print("INFRASTRUCTURES LIBREVILLE | ",count," sites dans l'emprise validée | établissements scolaires et universitaires : ",school_count," | hôtels : ",hotel_count)
 
 func _kind(p:Dictionary)->String:
 	var a:=str(p.get("amenity","")).to_lower()
