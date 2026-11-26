@@ -90,7 +90,8 @@ func _make_resident(resident_id: String, first_name: String, last_name: String, 
 		"last_birth_month": -1000,
 		"created_year": game_year,
 		"death_year": 0,
-		"generation": 1
+		"generation": 1,
+		"appearance": _generate_appearance(gender, age)
 	}
 
 func _pair_initial_adults(male_ids: Array[String], female_ids: Array[String]) -> void:
@@ -461,6 +462,49 @@ func load_population() -> bool:
 	_save_and_notify()
 	return true
 
+## Chaque fiche reçoit une identité visuelle persistante, indépendante du métier.
+## Les paramètres seront interprétés par le futur générateur de modèles 3D.
+func _generate_appearance(gender: String, age: int) -> Dictionary:
+	var hair_styles: Array[String] = ["coupe_courte", "degrade", "boucles", "tresses", "nattes", "locks", "afro", "rasé", "queue_cheval", "chignon", "carre"]
+	var hair_colors: Array[String] = ["noir", "brun_fonce", "brun", "chatain", "gris", "blanc", "teinte_bordeaux"]
+	var skin_tones: Array[String] = ["ebene", "brun_fonce", "brun", "brun_moyen", "caramel", "cuivre", "clair"]
+	var face_shapes: Array[String] = ["ovale", "rond", "carre", "allonge", "coeur", "losange"]
+	var eye_shapes: Array[String] = ["amande", "ronds", "fins", "tombants"]
+	var nose_shapes: Array[String] = ["fin", "large", "droit", "arrondi", "court"]
+	var body_types: Array[String] = ["mince", " moyen", "athletique", "corpulence_moyenne", "fort"]
+	var tops: Array[String] = ["tshirt", "polo", "chemise", "blouse", "debardeur", "pull", "veste", "robe", "tenue_travail"]
+	var bottoms: Array[String] = ["jean", "pantalon", "short", "jupe", "pantalon_travail", "robe"]
+	var shoes: Array[String] = ["baskets", "sandales", "chaussures_ville", "bottes", "tongs"]
+	var accessories: Array[String] = ["aucun", "lunettes", "casquette", "chapeau", "boucles_oreilles", "collier", "sac", "montre"]
+	var facial_hair := "aucune"
+	if gender == "homme" and age >= 16:
+		facial_hair = ["aucune", "barbe_courte", "barbe_complete", "bouc", "moustache"][ _rng.randi_range(0, 4) ]
+	var selected_hair := hair_styles[_rng.randi_range(0, hair_styles.size() - 1)]
+	if age < 3:
+		selected_hair = ["tres_court", "boucles", "tresses"][ _rng.randi_range(0, 2) ]
+	var height_min := 90 if age < 6 else (110 if age < 12 else (145 if age < 16 else 155))
+	var height_max := 105 if age < 6 else (145 if age < 12 else (175 if age < 16 else 198))
+	var palette_index := _rng.randi_range(0, 11)
+	return {
+		"identity": "look-" + str(next_id),
+		"seed": _rng.randi(),
+		"gender_presentation": gender,
+		"skin_tone": skin_tones[_rng.randi_range(0, skin_tones.size() - 1)],
+		"face_shape": face_shapes[_rng.randi_range(0, face_shapes.size() - 1)],
+		"eye_shape": eye_shapes[_rng.randi_range(0, eye_shapes.size() - 1)],
+		"nose_shape": nose_shapes[_rng.randi_range(0, nose_shapes.size() - 1)],
+		"hair_style": selected_hair,
+		"hair_color": hair_colors[_rng.randi_range(0, hair_colors.size() - 1)],
+		"facial_hair": facial_hair,
+		"height_cm": _rng.randi_range(height_min, height_max),
+		"body_type": body_types[_rng.randi_range(0, body_types.size() - 1)],
+		"top": tops[_rng.randi_range(0, tops.size() - 1)],
+		"bottom": bottoms[_rng.randi_range(0, bottoms.size() - 1)],
+		"shoes": shoes[_rng.randi_range(0, shoes.size() - 1)],
+		"accessory": accessories[_rng.randi_range(0, accessories.size() - 1)],
+		"outfit_palette": palette_index
+	}
+
 func _normalize_resident(resident: Dictionary) -> void:
 	if not resident.has("gender"):
 		resident["gender"] = "homme" if _rng.randf() < 0.49 else "femme"
@@ -476,6 +520,8 @@ func _normalize_resident(resident: Dictionary) -> void:
 		resident["death_cause"] = ""
 	if not resident.has("generation"):
 		resident["generation"] = 1
+	if not resident.has("appearance") or not resident["appearance"] is Dictionary:
+		resident["appearance"] = _generate_appearance(str(resident.get("gender", "homme")), int(resident.get("age_years", 18)))
 
 func _random_first_name(gender: String) -> String:
 	if gender == "homme":
