@@ -175,10 +175,14 @@ static func facade_wall_parameters(edge_length: float, height: float) -> Vector3
 	# Les échelles sont conservées à l'identique du générateur de façades historique.
 	return Vector3(0.12, edge_length / 3.0, height / 3.0)
 
-static func facade_window_parameters(edge_length: float, height: float) -> Vector4:
+static func facade_window_parameters(edge_length: float, height: float, props: Dictionary = {}) -> Vector4:
 	# x = nombre d'étages, y = nombre de fenêtres, z = demi-largeur,
-	# w = demi-hauteur. Les seuils et dimensions reprennent le calcul historique.
-	var floors := clampi(int(ceil(height / 3.05)), 1, 8)
+	# w = demi-hauteur. Le tag OSM building:levels prime sur l'estimation.
+	var estimated_floors := clampi(int(ceil(height / 3.05)), 1, 12)
+	var tagged_floors := str(props.get("building:levels", "")).strip_edges().to_int()
+	var floors := estimated_floors
+	if tagged_floors > 0 and tagged_floors <= 40:
+		floors = mini(tagged_floors, estimated_floors)
 	var window_count := clampi(int(floor(edge_length / 4.8)), 1, 6)
 	var spacing := edge_length / float(window_count)
 	var window_width := clampf(spacing * 0.36, 0.60, 1.20)
