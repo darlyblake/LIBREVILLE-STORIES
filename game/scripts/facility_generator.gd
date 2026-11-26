@@ -315,6 +315,12 @@ func _windows(root:Node3D,w:float,d:float,h:float)->void:
 			var x:=-w*0.36+col*w*0.18
 			_box(root,Vector3(x,y,d/2+0.05),Vector3(2.2,1.35,0.08),glass)
 			_box(root,Vector3(x,y,-d/2-0.05),Vector3(2.2,1.35,0.08),glass)
+		# Appuis et linteaux continus : détail sobre qui donne une vraie lecture
+		# de façade sans multiplier les objets 3D autour de chaque fenêtre.
+		var band_width := w * 0.84
+		for facade_z in [d / 2.0 + 0.10, -d / 2.0 - 0.10]:
+			_box(root, Vector3(0, y - 0.76, facade_z), Vector3(band_width, 0.12, 0.20), weathered_concrete)
+			_box(root, Vector3(0, y + 0.76, facade_z), Vector3(band_width, 0.10, 0.18), structural_concrete)
 
 func _sign(root:Node3D,t:String,p:Vector3,m:Material)->void:
 	_box(root,p,Vector3(maxf(5,float(t.length())*0.42),1.15,0.22),m)
