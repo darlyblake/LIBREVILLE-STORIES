@@ -51,6 +51,7 @@
 | DGEL — Direction Générale des Études et Laboratoires — Ancien Sobraga | [x] | [x] | [ ] | [ ] | [ ] |
 | CNEE — Conseil National de l’Eau et de l’Électricité — Haut de Gué-Gué | [x] | [x] | [ ] | [ ] | [ ] |
 | CND — Conseil National de la Démocratie — secteur Ancien Sobraga | [x] | [x] | [ ] | [ ] | [ ] |
+| Palais Léon Mba — Assemblée nationale — Boulevard Triomphal Omar Bongo | [x] | [x] | [ ] | [ ] | [ ] |
 
 **Précisions :** le repère du Tribunal correspond au site cartographié et ne localise pas séparément chacun des blocs annexes. Pour l'Immeuble du 2 Décembre, le GPS reste à confirmer ; seul le classement du repère est intégré.
 
@@ -105,5 +106,6 @@ Les sièges hors de la zone validée ne doivent pas être ajoutés comme bâtime
 - 2026-11-26 : ajout de la DGEL — OSM node 11421865904, GPS 0.41820 / 9.44920, 261 Rue Germain Mba, Ancien Sobraga ; repère institutionnel, volume physique depuis buildings.geojson.
 - 2026-11-26 : ajout du CNEE — OSM node 12150167700, GPS 0.42836 / 9.43147, siège social à Haut de Gué-Gué ; repère institutionnel, bâtiment physique issu de buildings.geojson.
 - 2026-11-26 : ajout du CND — OSM node 11529395192, GPS 0.41810 / 9.45075 ; repère institutionnel, volume physique depuis buildings.geojson.
+- 2026-11-26 : ajout du Palais Léon Mba — Assemblée nationale, GPS converti depuis 0°24′44″N, 9°26′34″E (0.4122222 / 9.4427778) ; repère institutionnel, volume physique depuis buildings.geojson.
 - 2026-11-26 : poursuite de la vérification des Travaux publics ; l’adresse officielle est confirmée mais le point GPS précis du bâtiment reste à identifier.
 - Prochaine étape : vérifier les coordonnées des Travaux publics, puis démarrer le premier modèle 3D détaillé dès que les références visuelles et l'empreinte sont fiables.
