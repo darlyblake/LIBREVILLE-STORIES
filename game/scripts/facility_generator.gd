@@ -201,8 +201,25 @@ func _geometry_center(g:Dictionary)->Array:
 		return []
 	var result := _ring_centroid(selected_ring)
 	if result.size() < 2:
+		# Certains polygones OSM sont dégénérés ou incomplets ; conserver
+		# malgré tout un point de placement au lieu de supprimer le site.
+		result = _ring_vertex_mean(selected_ring)
+	if result.size() < 2:
 		return []
 	return [result[0], result[1]]
+
+func _ring_vertex_mean(ring: Array) -> Array:
+	var lon_sum := 0.0
+	var lat_sum := 0.0
+	var count_points := 0
+	for point in ring:
+		if point is Array and point.size() >= 2:
+			lon_sum += float(point[0])
+			lat_sum += float(point[1])
+			count_points += 1
+	if count_points == 0:
+		return []
+	return [lon_sum / count_points, lat_sum / count_points]
 
 func _ring_centroid(ring: Array) -> Array:
 	# Centroïde surfacique (formule des lacets) en coordonnées longitude/latitude.
