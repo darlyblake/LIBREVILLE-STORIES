@@ -10,6 +10,7 @@ var _rng := RandomNumberGenerator.new()
 func _ready() -> void:
 	_rng.seed = 20261117
 	name = "BaieDesRois"
+	_build_bay_water()
 	_build_pavilions()
 	_build_baie_street_props()
 	# WorldMap construit le DEM de façon asynchrone. Ne pas placer les objets
@@ -153,29 +154,10 @@ func _build_bay_water() -> void:
 	root.name = "BayWater"
 	add_child(root)
 
-	var water_shader := Shader.new()
-	water_shader.code = """
-shader_type spatial;
-render_mode cull_disabled, depth_draw_opaque, specular_schlick_ggx;
-
-void fragment() {
-	vec2 uv = UV * 18.0;
-	float swell_a = sin(uv.x * 0.42 + TIME * 0.42) * cos(uv.y * 0.31 - TIME * 0.28);
-	float swell_b = sin((uv.x + uv.y) * 0.19 - TIME * 0.20);
-	float fine_ripple = sin(uv.x * 1.7 + uv.y * 1.15 + TIME * 0.75);
-	float variation = swell_a * 0.045 + swell_b * 0.035 + fine_ripple * 0.012;
-	vec3 deep_water = vec3(0.025, 0.19, 0.29);
-	vec3 coastal_water = vec3(0.055, 0.39, 0.48);
-	float shallow_mix = clamp(0.28 + UV.y * 0.18 + variation, 0.0, 0.72);
-	vec3 water_color = mix(deep_water, coastal_water, shallow_mix);
-	float sun_glint = pow(max(0.0, sin(uv.x * 0.62 + uv.y * 0.37 + TIME * 0.48)), 18.0);
-	water_color += vec3(0.20, 0.25, 0.23) * sun_glint * 0.13;
-	ALBEDO = water_color;
-	ROUGHNESS = 0.19;
-	METALLIC = 0.02;
-	SPECULAR = 0.72;
-}
-"""
+	var water_shader := load("res://game/shaders/ocean_water.gdshader") as Shader
+	if water_shader == null:
+		push_error("Shader océan introuvable : res://game/shaders/ocean_water.gdshader")
+		return
 	var water_mat := ShaderMaterial.new()
 	water_mat.shader = water_shader
 
@@ -192,8 +174,8 @@ func _add_water_surface(parent: Node3D, dimensions: Vector2, world_position: Vec
 	water.name = node_name
 	var plane := PlaneMesh.new()
 	plane.size = dimensions
-	plane.subdivide_width = 24
-	plane.subdivide_depth = 24
+	plane.subdivide_width = 48
+	plane.subdivide_depth = 48
 	water.mesh = plane
 	water.material_override = material
 	water.position = world_position
