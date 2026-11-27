@@ -125,8 +125,12 @@ void fragment() {
 	float rough_mix = mix(rough_base, rough_patch, patch_mask * 0.65);
 	rough_mix = mix(rough_mix, rough_dust, faded * 0.22);
 	float wet_roughness = mix(rough_mix + 0.05 * track, 0.24 + n_fine * 0.10, wetness);
-	ROUGHNESS = clamp(wet_roughness, 0.12, 1.0);
-	SPECULAR = mix(0.35, 0.62, wetness);
+	// Nappes d'eau irrégulières : certaines zones deviennent nettement plus lisses.
+	float puddle_wetness = wetness * puddle_mask;
+	ROUGHNESS = clamp(mix(wet_roughness, 0.105, puddle_wetness * 0.72), 0.08, 1.0);
+	SPECULAR = mix(0.35, 0.72, wetness);
+	CLEARCOAT = puddle_wetness * 0.58;
+	CLEARCOAT_GLOSS = mix(0.35, 0.92, puddle_wetness);
 	vec3 normal_base = texture(normal_a, UV).xyz;
 	vec3 normal_patch = texture(normal_b, UV * 1.3).xyz;
 	vec3 normal_dust = texture(normal_c, UV * 0.7).xyz;
