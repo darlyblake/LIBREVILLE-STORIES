@@ -11,6 +11,7 @@ var _target_energy: float = 1.0
 var _target_ambient: float = 0.7
 var _target_color: Color = Color.WHITE
 var _target_sun_color: Color = Color.WHITE
+var _target_fog_density: float = 0.0
 var _last_hour: int = -1
 var _weather_cloud_cover: float = 0.0
 var _weather_rain_intensity: float = 0.0
@@ -87,6 +88,7 @@ func _apply_weather_to_targets() -> void:
 	var rain_dim := _weather_rain_intensity * 0.18
 	_target_energy *= 1.0 - cloud_dim - rain_dim
 	_target_ambient *= 1.0 - _weather_cloud_cover * 0.16
+	_target_fog_density = 0.00015 + _weather_cloud_cover * 0.00035 + _weather_rain_intensity * 0.0010
 	var overcast := Color(0.48, 0.55, 0.60)
 	_target_color = _target_color.lerp(overcast, _weather_cloud_cover * 0.42)
 	_target_sun_color = _target_sun_color.lerp(Color(0.68, 0.73, 0.78), _weather_cloud_cover * 0.58)
@@ -100,3 +102,8 @@ func _apply_immediately() -> void:
 		_world_environment.environment.ambient_light_energy = _target_ambient
 		_world_environment.environment.background_color = _target_color
 		_world_environment.environment.fog_light_color = _target_color.darkened(0.18)
+		_world_environment.environment.fog_enabled = _target_fog_density > 0.0001
+		_world_environment.environment.fog_density = _target_fog_density
+		if _target_fog_density > 0.0001:
+			_world_environment.environment.fog_depth_begin = 45.0
+			_world_environment.environment.fog_depth_end = 260.0
