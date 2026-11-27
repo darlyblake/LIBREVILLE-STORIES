@@ -12,6 +12,8 @@ var _target_ambient: float = 0.7
 var _target_color: Color = Color.WHITE
 var _target_sun_color: Color = Color.WHITE
 var _last_hour: int = -1
+var _weather_cloud_cover: float = 0.0
+var _weather_rain_intensity: float = 0.0
 
 func _ready() -> void:
 	var scene_root := get_parent()
@@ -21,6 +23,12 @@ func _ready() -> void:
 		push_warning("WorldLighting : WorldEnvironment ou DirectionalLight3D introuvable.")
 		set_process(false)
 		return
+	var weather_manager := get_node_or_null("/root/WeatherManager")
+	if weather_manager != null:
+		if not weather_manager.weather_changed.is_connected(_on_weather_changed):
+			weather_manager.weather_changed.connect(_on_weather_changed)
+		if weather_manager.has_method("get_weather_state"):
+			_on_weather_changed(weather_manager.call("get_weather_state"))
 	_update_targets()
 	_apply_immediately()
 
@@ -63,8 +71,25 @@ func _update_targets() -> void:
 	else:
 		_target_color = night_color
 	_target_sun_color = Color(1.0, 0.72, 0.50).lerp(Color(1.0, 0.96, 0.86), daylight)
+	_apply_weather_to_targets()
 	if _sun != null:
 		_sun.rotation_degrees.x = (h - 6.0) * 15.0 - 90.0
+
+
+func _on_weather_changed(state: Dictionary) -> void:
+	_weather_cloud_cover = clampf(float(state.get("cloud_cover", 0.0)), 0.0, 1.0)
+	_weather_rain_intensity = clampf(float(state.get("rain_intensity", 0.0)), 0.0, 1.0)
+	_update_targets()
+
+func _apply_weather_to_targets() -> void:
+	# Les nuages et les averses atténuent la lumière directe sans éteindre le jour.
+	var cloud_dim := _weather_cloud_cover * 0.34
+	var rain_dim := _weather_rain_intensity * 0.18
+	_target_energy *= 1.0 - cloud_dim - rain_dim
+	_target_ambient *= 1.0 - _weather_cloud_cover * 0.16
+	var overcast := Color(0.48, 0.55, 0.60)
+	_target_color = _target_color.lerp(overcast, _weather_cloud_cover * 0.42)
+	_target_sun_color = _target_sun_color.lerp(Color(0.68, 0.73, 0.78), _weather_cloud_cover * 0.58)
 
 func _apply_immediately() -> void:
 	if _sun == null or _world_environment == null:
