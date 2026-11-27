@@ -12,6 +12,10 @@ func _ready() -> void:
 	_rng.seed = 20261117
 	name = "BaieDesRois"
 	_build_bay_water()
+	add_to_group("bay_water_controller")
+	var weather_manager := get_node_or_null("/root/WeatherManager")
+	if weather_manager != null and weather_manager.has_method("register_bay_water_controller"):
+		weather_manager.call("register_bay_water_controller", self)
 	_build_pavilions()
 	_build_baie_street_props()
 	# WorldMap construit le DEM de façon asynchrone. Ne pas placer les objets
