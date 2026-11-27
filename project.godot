@@ -17,6 +17,7 @@ config/features=PackedStringArray("4.3", "GL Compatibility")
 [autoload]
 PopulationManager="*res://game/scripts/population_manager.gd"
 WorldClock="*res://game/scripts/world_clock.gd"
+WeatherManager="*res://game/scripts/weather_manager.gd"
 LifeSimulationManager="*res://game/scripts/life_simulation_manager.gd"
 NPCModelLibrary="*res://game/scripts/npc_model_library.gd"
 
