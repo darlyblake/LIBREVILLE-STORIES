@@ -56,7 +56,7 @@ void fragment() {
     float coast_t = clamp((world_position.z - (-570.0 - 115.0)) / 230.0, 0.0, 1.0);
     float coast_x = -1790.0 + 38.0 + sin(coast_t * 3.14159265) * 12.0;
     float shore_distance = world_position.x - coast_x;
-    float shore_band = 1.0 - smoothstep(0.8, 8.0, shore_distance);
+    float shore_band = 1.0 - smoothstep(4.0, 20.0, shore_distance);
     float shore_variation = 0.68 + 0.32 * sin(world_position.z * 0.72 - TIME * 1.4 + swell * 3.0);
     float shore_foam = shore_band * shore_variation * shoreline_foam_strength;
     water = mix(water, vec3(0.78, 0.86, 0.83), shore_foam);
