@@ -50,6 +50,10 @@ var _hit_marker: Label
 var _hit_marker_left := 0.0
 var _interaction_prompt: Label
 var _nearby_interactable: Node
+var _foot_splash: CPUParticles3D
+var _foot_splash_intensity: float = 0.0
+var _foot_splash_cooldown: float = 0.0
+var _foot_splash_side: float = -1.0
 
 func _ready() -> void:
 	if not Input.joy_connection_changed.is_connected(_on_joy_connection_changed):
@@ -62,6 +66,7 @@ func _ready() -> void:
 	_register_combat_inputs()
 	_ammo = magazine_capacity
 	_create_muzzle_flash()
+	_setup_foot_rain_splash()
 
 func _log_connected_gamepads() -> void:
 	for device in Input.get_connected_joypads():
@@ -170,12 +175,74 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0.0, acceleration * delta)
 
 	move_and_slide()
+	_update_foot_rain_splash(delta)
 	if not _was_on_floor and is_on_floor():
 		_land_animation_left = 0.22
 	_was_on_floor = is_on_floor()
 	if _aiming and not _reloading and Input.is_action_pressed("shoot") and _shoot_cooldown_left <= 0.0 and is_on_floor():
 		_fire_weapon()
 	_update_character_animation()
+
+
+func _setup_foot_rain_splash() -> void:
+	var weather := get_node_or_null("/root/WeatherManager")
+	if weather != null:
+		if weather.has_signal("weather_changed"):
+			weather.weather_changed.connect(_on_foot_weather_changed)
+		if weather.has_method("get_weather_state"):
+			_on_foot_weather_changed(weather.call("get_weather_state"))
+
+	_foot_splash = CPUParticles3D.new()
+	_foot_splash.name = "PlayerFootRainSplash"
+	_foot_splash.position = Vector3(0.0, 0.08, 0.0)
+	_foot_splash.amount = 18
+	_foot_splash.lifetime = 0.32
+	_foot_splash.one_shot = true
+	_foot_splash.emitting = false
+	_foot_splash.local_coords = true
+	var process := ParticleProcessMaterial.new()
+	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	process.emission_sphere_radius = 0.12
+	process.direction = Vector3(0.0, 0.7, 0.0)
+	process.spread = 78.0
+	process.initial_velocity_min = 0.7
+	process.initial_velocity_max = 2.2
+	process.gravity = Vector3(0.0, -5.5, 0.0)
+	process.scale_min = 0.025
+	process.scale_max = 0.065
+	_foot_splash.process_material = process
+	var droplet := SphereMesh.new()
+	droplet.radius = 0.018
+	droplet.height = 0.036
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(0.62, 0.77, 0.88, 0.62)
+	droplet.material = material
+	_foot_splash.draw_pass_1 = droplet
+	add_child(_foot_splash)
+
+
+func _on_foot_weather_changed(state: Dictionary) -> void:
+	_foot_splash_intensity = clampf(float(state.get("rain_intensity", 0.0)), 0.0, 1.0)
+
+
+func _update_foot_rain_splash(delta: float) -> void:
+	if _foot_splash_cooldown > 0.0:
+		_foot_splash_cooldown = maxf(0.0, _foot_splash_cooldown - delta)
+	if _foot_splash == null or _foot_splash_intensity < 0.18:
+		return
+	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
+	if not is_on_floor() or horizontal_speed < 1.1 or _foot_splash_cooldown > 0.0:
+		return
+	# Une gerbe alternée, déclenchée à cadence de pas et non chaque frame.
+	_foot_splash_side *= -1.0
+	_foot_splash.position = Vector3(_foot_splash_side * 0.22, 0.07, 0.02)
+	_foot_splash.amount = 8 if _foot_splash_intensity < 0.45 else 18
+	_foot_splash.restart()
+	_foot_splash.emitting = true
+	_foot_splash_cooldown = 0.48 if horizontal_speed < 5.5 else 0.31
+
 
 func _update_interaction_target() -> void:
 	if not is_instance_valid(_interaction_prompt):
