@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://game/scripts/world_lighting.gd" id="16_world_lighting"]
 [ext_resource type="Script" path="res://game/scripts/world_clock_hud.gd" id="17_world_clock_hud"]
 [ext_resource type="Script" path="res://game/scripts/weather_rain.gd" id="18_weather_rain"]
+[ext_resource type="Script" path="res://game/scripts/weather_wet_surfaces.gd" id="19_weather_wet_surfaces"]
 
 [sub_resource type="Environment" id="Environment_world"]
 background_mode = 1
@@ -80,6 +81,9 @@ script = ExtResource("16_world_lighting")
 
 [node name="WeatherRain" type="Node3D" parent="."]
 script = ExtResource("18_weather_rain")
+
+[node name="WeatherWetSurfaces" type="Node" parent="."]
+script = ExtResource("19_weather_wet_surfaces")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.852525, 0.382161, -0.356588, 0, 0.682221, 0.731146, 0.522687, -0.62332, 0.58161, 0, 0, 0)
