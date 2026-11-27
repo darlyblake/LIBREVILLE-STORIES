@@ -98,6 +98,10 @@ func _set_weather(weather_type: String) -> void:
 	weather_changed.emit(get_weather_state())
 	print("WEATHER | %s | rain %.2f | wind %.2f" % [current_weather, rain_intensity, wind_strength])
 
+func register_bay_water_controller(controller: Node) -> void:
+	if controller != null and controller.has_method("set_bay_rain_intensity"):
+		controller.call("set_bay_rain_intensity", rain_intensity, 0.0)
+
 func _apply_to_world() -> void:
 	for controller in get_tree().get_nodes_in_group("bay_water_controller"):
 		if controller.has_method("set_bay_rain_intensity"):
