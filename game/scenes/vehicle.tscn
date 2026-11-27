@@ -25,6 +25,7 @@ linear_damp = 0.08
 angular_damp = 1.4
 can_sleep = false
 script = ExtResource("1_vehicle")
+vehicle_profile_id = "offroad_4x4"
 vehicle_model_path = NodePath("JeepModel")
 steering_axle = 0
 drive_axle = 2
