@@ -2,6 +2,7 @@ shader_type spatial;
 render_mode cull_disabled, depth_draw_opaque, diffuse_burley, specular_schlick_ggx;
 
 // Textures PBR océaniques 1K déjà présentes dans assets/textures/water/ocean_1k.
+uniform sampler2D ocean_base_color : source_color, repeat_enable;
 uniform sampler2D ocean_normal : hint_normal, repeat_enable;
 uniform sampler2D ocean_roughness : repeat_enable;
 uniform vec3 deep_color : source_color = vec3(0.018, 0.105, 0.19);
@@ -38,6 +39,8 @@ void fragment() {
     float swell = sin(uv.x * 2.2 + uv.y * 1.35 - TIME * 0.22) * 0.5 + 0.5;
     float shallow = clamp(0.22 + UV.y * 0.30 + swell * 0.10, 0.0, 0.66);
     vec3 water = mix(deep_color, shallow_color, shallow);
+    vec3 pbr_color = texture(ocean_base_color, drift_a).rgb;
+    water = mix(water, pbr_color, 0.22);
 
     float crest = smoothstep(0.91, 0.99, swell);
     water = mix(water, vec3(0.62, 0.77, 0.76), crest * 0.12);
