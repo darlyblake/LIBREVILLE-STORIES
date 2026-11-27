@@ -160,6 +160,7 @@ func _build_bay_water() -> void:
 		return
 	var water_mat := ShaderMaterial.new()
 	water_mat.shader = water_shader
+	water_mat.set_shader_parameter("ocean_base_color", load("res://assets/textures/water/ocean_1k/baseColor.png"))
 	water_mat.set_shader_parameter("ocean_normal", load("res://assets/textures/water/ocean_1k/normal.png"))
 	water_mat.set_shader_parameter("ocean_roughness", load("res://assets/textures/water/ocean_1k/roughness.png"))
 
