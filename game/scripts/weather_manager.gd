@@ -43,7 +43,7 @@ func _roll_weather(date_time: Dictionary, force: bool = false) -> void:
 
 	var weights := _season_weights(month)
 	var total := 0.0
-	for value in weights:
+	for value in weights.values():
 		total += float(value)
 	var pick := _rng.randf() * total
 	var selected := "cloudy"
