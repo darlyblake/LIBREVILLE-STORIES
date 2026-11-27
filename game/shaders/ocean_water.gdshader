@@ -45,8 +45,20 @@ void fragment() {
     vec3 pbr_color = texture(ocean_base_color, drift_a).rgb;
     water = mix(water, pbr_color, 0.22);
 
-    float crest = smoothstep(0.91, 0.99, swell);
-    water = mix(water, vec3(0.62, 0.77, 0.76), crest * 0.12);
+    float crest = smoothstep(0.88, 0.98, swell * 0.72 + secondary_swell * 0.28);
+    float foam_noise = texture(ocean_roughness, drift_b * 2.8).r;
+    float foam = crest * foam_strength * smoothstep(0.20, 0.82, foam_noise);
+    water = mix(water, vec3(0.72, 0.83, 0.81), foam);
+
+    // Pluie : petits anneaux lumineux animés, activables depuis le système météo.
+    vec2 rain_uv = world_position.xz * 0.42;
+    vec2 rain_cell = fract(rain_uv) - 0.5;
+    vec2 rain_id = floor(rain_uv);
+    float rain_seed = fract(sin(dot(rain_id, vec2(127.1, 311.7))) * 43758.5453);
+    float rain_phase = fract(TIME * (0.65 + rain_seed * 0.55) + rain_seed);
+    float rain_ring = abs(length(rain_cell) - rain_phase * 0.48);
+    float rain_ripple = (1.0 - smoothstep(0.012, 0.045, rain_ring)) * (1.0 - rain_phase) * rain_intensity;
+    water = mix(water, vec3(0.48, 0.66, 0.69), rain_ripple * 0.18);
 
     ALBEDO = water;
     ROUGHNESS = clamp(texture(ocean_roughness, drift_a).r * 0.48 + 0.08, 0.08, 0.42);
