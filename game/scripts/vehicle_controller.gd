@@ -79,6 +79,10 @@ var _brake_lamp_materials: Array[StandardMaterial3D] = []
 var _rain_splash_emitters: Array[CPUParticles3D] = []
 var _rain_splash_intensity: float = 0.0
 var _body_rain_emitters: Array[CPUParticles3D] = []
+var _glass_rain_emitters: Array[CPUParticles3D] = []
+var _wiper_nodes: Array[Node3D] = []
+var _wiper_rest_rotations: Array[float] = []
+var _wiper_phase: float = 0.0
 
 const CAMERA_NAMES := ["EXTÉRIEURE PROCHE", "EXTÉRIEURE ÉLOIGNÉE", "COCKPIT", "CINÉMATIQUE"]
 
@@ -102,6 +106,7 @@ func _ready() -> void:
 	_setup_vehicle_cameras()
 	_setup_rain_splashes()
 	_setup_body_rain_runoff()
+	_setup_windshield_rain()
 	_setup_vehicle_hud()
 	_setup_vehicle_audio()
 	_setup_driving_lesson()
@@ -109,6 +114,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	_update_rain_splashes()
 	_update_body_rain_runoff()
+	_update_windshield_rain(delta)
 	current_speed = linear_velocity.dot(-global_transform.basis.z)
 	if not player_driving:
 		engine_force = 0.0
@@ -222,6 +228,89 @@ func _update_body_rain_runoff() -> void:
 		if is_instance_valid(runoff):
 			runoff.emitting = active
 			runoff.amount_ratio = clampf(_rain_splash_intensity * 0.8, 0.0, 1.0)
+
+
+
+func _setup_windshield_rain() -> void:
+	var vehicle_model := get_node_or_null(vehicle_model_path) as Node3D
+	if vehicle_model == null:
+		return
+	_find_glass_and_wipers(vehicle_model)
+
+
+func _find_glass_and_wipers(node: Node) -> void:
+	var lower_name := String(node.name).to_lower()
+	if node is Node3D and (
+		lower_name.contains("wiper") or lower_name.contains("essuie_glace")
+		or lower_name.contains("essuie-glace")
+	):
+		var wiper := node as Node3D
+		if not _wiper_nodes.has(wiper):
+			_wiper_nodes.append(wiper)
+			_wiper_rest_rotations.append(wiper.rotation.z)
+	if node is MeshInstance3D:
+		var mesh_node := node as MeshInstance3D
+		var glass_name := (
+			lower_name.contains("windshield") or lower_name.contains("windscreen")
+			or lower_name.contains("front_glass") or lower_name.contains("glass_front")
+			or lower_name.contains("parebrise")
+		)
+		if glass_name and mesh_node.mesh != null:
+			_create_glass_rain_emitter(mesh_node)
+	for child in node.get_children():
+		_find_glass_and_wipers(child)
+
+
+func _create_glass_rain_emitter(glass: MeshInstance3D) -> void:
+	var bounds := glass.mesh.get_aabb()
+	if bounds.size.x < 0.08 or bounds.size.y < 0.08:
+		return
+	var rain := CPUParticles3D.new()
+	rain.name = "WindshieldRainDroplets"
+	rain.position = bounds.position + bounds.size * 0.5
+	rain.amount = 36
+	rain.lifetime = 1.15
+	rain.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	rain.emission_box_extents = Vector3(bounds.size.x * 0.44, bounds.size.y * 0.44, maxf(0.008, bounds.size.z * 0.12))
+	rain.local_coords = true
+	rain.emitting = false
+	var process := ParticleProcessMaterial.new()
+	process.direction = Vector3(0.0, -1.0, 0.0)
+	process.spread = 3.0
+	process.initial_velocity_min = 0.035
+	process.initial_velocity_max = 0.12
+	process.gravity = Vector3(0.0, -0.025, 0.0)
+	process.scale_min = 0.012
+	process.scale_max = 0.035
+	rain.process_material = process
+	var droplet := SphereMesh.new()
+	droplet.radius = 0.012
+	droplet.height = 0.024
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = Color(0.72, 0.84, 0.94, 0.52)
+	droplet.material = material
+	rain.draw_pass_1 = droplet
+	glass.add_child(rain)
+	_glass_rain_emitters.append(rain)
+
+
+func _update_windshield_rain(delta: float) -> void:
+	var raining := _rain_splash_intensity > 0.12
+	for rain in _glass_rain_emitters:
+		if is_instance_valid(rain):
+			rain.emitting = raining
+			rain.amount_ratio = clampf(_rain_splash_intensity, 0.0, 1.0)
+	# Le mouvement n'est appliqué qu'aux bras explicitement nommés dans le GLB.
+	if not _wiper_nodes.is_empty():
+		_wiper_phase += delta * (2.2 + _rain_splash_intensity * 4.8) if raining else -delta * 4.0
+		for index in range(_wiper_nodes.size()):
+			var wiper := _wiper_nodes[index]
+			if not is_instance_valid(wiper):
+				continue
+			var sweep := sin(_wiper_phase) * 0.42 if raining else 0.0
+			wiper.rotation.z = _wiper_rest_rotations[index] + sweep
 
 
 func _on_vehicle_weather_changed(state: Dictionary) -> void:
