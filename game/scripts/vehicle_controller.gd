@@ -183,6 +183,18 @@ func _apply_vehicle_profile() -> void:
 	drive_axle = int(_vehicle_profile.get("drive_axle", drive_axle))
 	# Centre de gravité haut sur bus/camions : roulis et transfert de charge plus marqués.
 	center_of_mass = Vector3(0.0, float(_vehicle_profile.get("center_of_mass_y", center_of_mass.y)), 0.0)
+	# Configure aussi la physique réelle des quatre VehicleWheel3D, pas seulement les meshes.
+	for child in get_children():
+		if child is VehicleWheel3D:
+			var wheel := child as VehicleWheel3D
+			var is_front := wheel.position.z < 0.0
+			wheel.use_as_steering = (steering_axle == 0 and is_front) or (steering_axle == 1 and not is_front)
+			wheel.use_as_traction = drive_axle == 2 or (drive_axle == 0 and is_front) or (drive_axle == 1 and not is_front)
+			wheel.wheel_friction_slip = float(_vehicle_profile.get("wheel_friction_slip", 3.8))
+			wheel.suspension_travel = float(_vehicle_profile.get("suspension_travel_m", 0.20))
+			wheel.suspension_stiffness = 42.0 * float(_vehicle_profile.get("suspension_stiffness", 1.0))
+			wheel.damping_compression = float(_vehicle_profile.get("suspension_compression", 1.0))
+			wheel.damping_relaxation = float(_vehicle_profile.get("suspension_relaxation", 1.4))
 	print("Véhicule chargé: %s | %.0f kg | %.0f km/h max" % [str(_vehicle_profile.get("display_name", vehicle_profile_id)), mass, max_speed * 3.6])
 
 
