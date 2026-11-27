@@ -7,8 +7,9 @@ La scène `res://game/scenes/npc_gallery.tscn` affiche jusqu'à 100 résidents p
 Pour chaque résident :
 1. Le script `game/scripts/npc_gallery.gd` lit le champ `gender` (`homme` ou `femme`).
 2. Il recherche le GLB correspondant dans `assets/characters/base/`.
-3. Si le fichier est importé et chargeable, il instancie la scène GLB et tente de lancer une animation d'attente.
-4. Si le modèle est absent ou non chargeable, il utilise `npc_character.tscn`, le personnage procédural de secours.
+3. Si le fichier est importé et chargeable, il vérifie la présence d'un `Skeleton3D` avec au moins un os et d'un `AnimationPlayer` contenant une animation idle.
+4. Si les contrôles réussissent, il instancie le GLB et lance l'animation idle.
+5. Si le modèle est absent, non chargeable ou incomplet, il le rejette et utilise `npc_character.tscn`, le personnage procédural de secours.
 
 Les chemins attendus sont :
 - `assets/characters/base/civilian_male_01.glb`
@@ -41,6 +42,7 @@ Copier les fichiers GLB dans `assets/characters/base/`. Ne pas renommer les fich
 
 - Les fichiers GLB ne sont pas encore livrés dans le dépôt ; le fallback procédural reste donc utilisé.
 - Le choix du modèle est pour l'instant basé sur le genre enregistré, pas sur la morphologie individuelle.
+- Le contrôle runtime vérifie la présence d'un squelette non vide et d'une animation idle ; il ne garantit pas encore la qualité des poids, des matériaux, des proportions ou des déformations.
 - La galerie est un outil de contrôle, pas le système final de streaming des PNJ.
 - Les animations walk/run ne sont pas encore reliées au déplacement des personnages.
 - Le chargement des modèles doit être testé avec Godot sur la machine cible avant d'augmenter le nombre de PNJ visibles.
