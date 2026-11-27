@@ -13,6 +13,7 @@ uniform float wave_speed = 0.72;
 uniform float uv_scale = 0.075;
 uniform float foam_strength = 0.24;
 uniform float rain_intensity = 0.0;
+uniform float shoreline_foam_strength = 0.0;
 
 varying vec3 world_position;
 
@@ -49,6 +50,16 @@ void fragment() {
     float foam_noise = texture(ocean_roughness, drift_b * 2.8).r;
     float foam = crest * foam_strength * smoothstep(0.20, 0.82, foam_noise);
     water = mix(water, vec3(0.72, 0.83, 0.81), foam);
+
+    // Ecume côtière : ruban irrégulier au contact de l'enrochement de la Baie.
+    // La courbe reprend le tracé du rivage construit dans baie_des_rois.gd.
+    float coast_t = clamp((world_position.z - (-570.0 - 115.0)) / 230.0, 0.0, 1.0);
+    float coast_x = -1790.0 + 38.0 + sin(coast_t * 3.14159265) * 12.0;
+    float shore_distance = world_position.x - coast_x;
+    float shore_band = 1.0 - smoothstep(0.8, 8.0, shore_distance);
+    float shore_variation = 0.68 + 0.32 * sin(world_position.z * 0.72 - TIME * 1.4 + swell * 3.0);
+    float shore_foam = shore_band * shore_variation * shoreline_foam_strength;
+    water = mix(water, vec3(0.78, 0.86, 0.83), shore_foam);
 
     // Pluie : petits anneaux lumineux animés, activables depuis le système météo.
     vec2 rain_uv = world_position.xz * 0.42;
