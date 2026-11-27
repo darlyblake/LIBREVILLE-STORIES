@@ -76,6 +76,8 @@ var _tutorial_index := 0
 var _tutorial_steps: Array[String] = []
 var _brake_lights: Array[OmniLight3D] = []
 var _brake_lamp_materials: Array[StandardMaterial3D] = []
+var _rain_splash_emitters: Array[CPUParticles3D] = []
+var _rain_splash_intensity: float = 0.0
 
 const CAMERA_NAMES := ["EXTÉRIEURE PROCHE", "EXTÉRIEURE ÉLOIGNÉE", "COCKPIT", "CINÉMATIQUE"]
 
@@ -97,11 +99,13 @@ func _ready() -> void:
 		push_warning("Véhicule : modèle introuvable au chemin configuré (%s)." % str(vehicle_model_path))
 	_collect_door_nodes(vehicle_model)
 	_setup_vehicle_cameras()
+	_setup_rain_splashes()
 	_setup_vehicle_hud()
 	_setup_vehicle_audio()
 	_setup_driving_lesson()
 
 func _physics_process(delta: float) -> void:
+	_update_rain_splashes()
 	current_speed = linear_velocity.dot(-global_transform.basis.z)
 	if not player_driving:
 		engine_force = 0.0
@@ -132,6 +136,58 @@ func _physics_process(delta: float) -> void:
 	if _camera_mode == 3:
 		_cinematic_time += delta
 		_camera_pivot.rotation.y = sin(_cinematic_time * 0.22) * 0.72
+
+
+func _setup_rain_splashes() -> void:
+	var weather := get_node_or_null("/root/WeatherManager")
+	if weather != null:
+		if weather.has_signal("weather_changed"):
+			weather.weather_changed.connect(_on_vehicle_weather_changed)
+		if weather.has_method("get_weather_state"):
+			_on_vehicle_weather_changed(weather.call("get_weather_state"))
+	for side in [-1.0, 1.0]:
+		var spray := CPUParticles3D.new()
+		spray.name = "RearWheelRainSpray_%s" % ("L" if side < 0.0 else "R")
+		spray.position = Vector3(side * 0.82, 0.24, 0.88)
+		spray.amount = 42
+		spray.lifetime = 0.48
+		spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+		spray.emission_box_extents = Vector3(0.16, 0.08, 0.12)
+		spray.local_coords = true
+		spray.emitting = false
+		var process := ParticleProcessMaterial.new()
+		process.direction = Vector3(0.0, 0.25, 1.0)
+		process.spread = 38.0
+		process.initial_velocity_min = 2.0
+		process.initial_velocity_max = 5.5
+		process.gravity = Vector3(0.0, -5.0, 0.0)
+		process.scale_min = 0.035
+		process.scale_max = 0.09
+		spray.process_material = process
+		var droplet := SphereMesh.new()
+		droplet.radius = 0.025
+		droplet.height = 0.05
+		var droplet_material := StandardMaterial3D.new()
+		droplet_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		droplet_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		droplet_material.albedo_color = Color(0.65, 0.78, 0.9, 0.55)
+		droplet.material = droplet_material
+		spray.draw_pass_1 = droplet
+		add_child(spray)
+		_rain_splash_emitters.append(spray)
+
+
+func _on_vehicle_weather_changed(state: Dictionary) -> void:
+	_rain_splash_intensity = clampf(float(state.get("rain_intensity", 0.0)), 0.0, 1.0)
+
+
+func _update_rain_splashes() -> void:
+	var active := _rain_splash_intensity > 0.08 and absf(current_speed) > 3.0
+	for spray in _rain_splash_emitters:
+		if is_instance_valid(spray):
+			spray.emitting = active
+			spray.amount_ratio = clampf(_rain_splash_intensity * (absf(current_speed) / 18.0), 0.0, 1.0)
+
 
 func _read_drive_controls() -> Vector3:
 	var steer := Input.get_axis("vehicle_left", "vehicle_right")
