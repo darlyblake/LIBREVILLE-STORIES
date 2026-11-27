@@ -82,7 +82,10 @@
         0.76
       ],
       "final_drive": 4.1,
-      "shift_time_s": 0.32
+      "shift_time_s": 0.32,
+      "wheel_friction_slip": 3.1,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     },
     "sedan": {
       "display_name": "Berline familiale",
@@ -127,7 +130,10 @@
         0.64
       ],
       "final_drive": 3.75,
-      "shift_time_s": 0.38
+      "shift_time_s": 0.38,
+      "wheel_friction_slip": 3.5,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     },
     "sport_sedan": {
       "display_name": "Berline sportive",
@@ -172,7 +178,10 @@
         0.78
       ],
       "final_drive": 3.55,
-      "shift_time_s": 0.22
+      "shift_time_s": 0.22,
+      "wheel_friction_slip": 4.5,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     },
     "offroad_4x4": {
       "display_name": "4×4 tout-terrain",
@@ -218,7 +227,10 @@
       ],
       "final_drive": 4.3,
       "shift_time_s": 0.48,
-      "low_range_ratio": 2.5
+      "low_range_ratio": 2.5,
+      "wheel_friction_slip": 5.2,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     },
     "urban_suv": {
       "display_name": "SUV urbain",
@@ -263,7 +275,10 @@
         0.64
       ],
       "final_drive": 3.9,
-      "shift_time_s": 0.42
+      "shift_time_s": 0.42,
+      "wheel_friction_slip": 4,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     },
     "pickup": {
       "display_name": "Pickup utilitaire",
@@ -309,7 +324,10 @@
       ],
       "final_drive": 4.1,
       "shift_time_s": 0.5,
-      "load_sensitivity": 0.85
+      "load_sensitivity": 0.85,
+      "wheel_friction_slip": 4.2,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     },
     "minibus": {
       "display_name": "Minibus / taxi-bus",
@@ -354,7 +372,10 @@
       ],
       "final_drive": 4.6,
       "shift_time_s": 0.62,
-      "load_sensitivity": 1
+      "load_sensitivity": 1,
+      "wheel_friction_slip": 3.4,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     },
     "city_bus": {
       "display_name": "Bus urbain",
@@ -399,7 +420,10 @@
       ],
       "final_drive": 5.1,
       "shift_time_s": 0.85,
-      "load_sensitivity": 1.1
+      "load_sensitivity": 1.1,
+      "wheel_friction_slip": 3.2,
+      "suspension_compression": 1.4,
+      "suspension_relaxation": 1.8
     },
     "rigid_truck": {
       "display_name": "Camion porteur",
@@ -445,7 +469,10 @@
       ],
       "final_drive": 5.6,
       "shift_time_s": 1,
-      "load_sensitivity": 1.2
+      "load_sensitivity": 1.2,
+      "wheel_friction_slip": 3,
+      "suspension_compression": 1.4,
+      "suspension_relaxation": 1.8
     },
     "tractor_trailer": {
       "display_name": "Tracteur routier avec semi-remorque",
@@ -491,7 +518,10 @@
       ],
       "final_drive": 5.9,
       "shift_time_s": 1.2,
-      "load_sensitivity": 1.35
+      "load_sensitivity": 1.35,
+      "wheel_friction_slip": 2.8,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     },
     "emergency_suv": {
       "display_name": "4×4 de secours",
@@ -536,7 +566,10 @@
         0.66
       ],
       "final_drive": 4.2,
-      "shift_time_s": 0.36
+      "shift_time_s": 0.36,
+      "wheel_friction_slip": 4.8,
+      "suspension_compression": 1,
+      "suspension_relaxation": 1.4
     }
   }
 }
