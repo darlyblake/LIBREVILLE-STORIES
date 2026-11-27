@@ -78,6 +78,7 @@ var _brake_lights: Array[OmniLight3D] = []
 var _brake_lamp_materials: Array[StandardMaterial3D] = []
 var _rain_splash_emitters: Array[CPUParticles3D] = []
 var _rain_splash_intensity: float = 0.0
+var _body_rain_emitters: Array[CPUParticles3D] = []
 
 const CAMERA_NAMES := ["EXTÉRIEURE PROCHE", "EXTÉRIEURE ÉLOIGNÉE", "COCKPIT", "CINÉMATIQUE"]
 
@@ -100,12 +101,14 @@ func _ready() -> void:
 	_collect_door_nodes(vehicle_model)
 	_setup_vehicle_cameras()
 	_setup_rain_splashes()
+	_setup_body_rain_runoff()
 	_setup_vehicle_hud()
 	_setup_vehicle_audio()
 	_setup_driving_lesson()
 
 func _physics_process(delta: float) -> void:
 	_update_rain_splashes()
+	_update_body_rain_runoff()
 	current_speed = linear_velocity.dot(-global_transform.basis.z)
 	if not player_driving:
 		engine_force = 0.0
@@ -175,6 +178,50 @@ func _setup_rain_splashes() -> void:
 		spray.draw_pass_1 = droplet
 		add_child(spray)
 		_rain_splash_emitters.append(spray)
+
+
+
+func _setup_body_rain_runoff() -> void:
+	# Deux petites nappes de ruissellement, placées sur le capot et le toit.
+	# Elles restent locales au châssis et s'activent uniquement sous la pluie.
+	for location in [Vector3(0.0, 1.48, -1.05), Vector3(0.0, 1.82, 0.18)]:
+		var runoff := CPUParticles3D.new()
+		runoff.name = "BodyRainRunoff"
+		runoff.position = location
+		runoff.amount = 20
+		runoff.lifetime = 0.72
+		runoff.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+		runoff.emission_box_extents = Vector3(0.62, 0.025, 0.34)
+		runoff.local_coords = true
+		runoff.emitting = false
+		var process := ParticleProcessMaterial.new()
+		process.direction = Vector3(0.0, -1.0, 0.08)
+		process.spread = 12.0
+		process.initial_velocity_min = 0.12
+		process.initial_velocity_max = 0.42
+		process.gravity = Vector3(0.0, -0.65, 0.0)
+		process.scale_min = 0.018
+		process.scale_max = 0.045
+		runoff.process_material = process
+		var droplet := SphereMesh.new()
+		droplet.radius = 0.014
+		droplet.height = 0.028
+		var material := StandardMaterial3D.new()
+		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		material.albedo_color = Color(0.62, 0.78, 0.9, 0.48)
+		droplet.material = material
+		runoff.draw_pass_1 = droplet
+		add_child(runoff)
+		_body_rain_emitters.append(runoff)
+
+
+func _update_body_rain_runoff() -> void:
+	var active := _rain_splash_intensity > 0.12
+	for runoff in _body_rain_emitters:
+		if is_instance_valid(runoff):
+			runoff.emitting = active
+			runoff.amount_ratio = clampf(_rain_splash_intensity * 0.8, 0.0, 1.0)
 
 
 func _on_vehicle_weather_changed(state: Dictionary) -> void:
