@@ -74,6 +74,7 @@ uniform sampler2D albedo_b : source_color, filter_linear_mipmap_anisotropic, rep
 uniform sampler2D albedo_c : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D noise_tex : filter_linear_mipmap, repeat_enable;
 uniform float normal_strength = 0.5;
+uniform float wetness = 0.0;
 
 varying vec3 wpos;
 
@@ -114,14 +115,18 @@ void fragment() {
 	float dust = smoothstep(0.78, 1.0, across) * lane;
 	asphalt = mix(asphalt, vec3(0.40, 0.34, 0.27) * (0.8 + 0.4 * n_fine), dust * (0.30 + 0.20 * wear));
 
-	ALBEDO = asphalt * COLOR.rgb;
+	// Film d'eau : bitume plus sombre, avec des nappes irrégulières qui accrochent la lumière.
+	float puddle_mask = smoothstep(0.48, 0.76, n_mid * 0.72 + n_big * 0.28);
+	float wet_darkening = wetness * (0.22 + puddle_mask * 0.12);
+	ALBEDO = asphalt * COLOR.rgb * (1.0 - wet_darkening);
 	float rough_base = texture(rough_a, UV).r;
 	float rough_patch = texture(rough_b, UV * 1.3).r;
 	float rough_dust = texture(rough_c, UV * 0.7).r;
 	float rough_mix = mix(rough_base, rough_patch, patch_mask * 0.65);
 	rough_mix = mix(rough_mix, rough_dust, faded * 0.22);
-	ROUGHNESS = clamp(rough_mix + 0.05 * track, 0.0, 1.0);
-	SPECULAR = 0.35;
+	float wet_roughness = mix(rough_mix + 0.05 * track, 0.24 + n_fine * 0.10, wetness);
+	ROUGHNESS = clamp(wet_roughness, 0.12, 1.0);
+	SPECULAR = mix(0.35, 0.62, wetness);
 	vec3 normal_base = texture(normal_a, UV).xyz;
 	vec3 normal_patch = texture(normal_b, UV * 1.3).xyz;
 	vec3 normal_dust = texture(normal_c, UV * 0.7).xyz;
@@ -176,6 +181,8 @@ var _ocean_water_material: ShaderMaterial
 var _coastline_paths: Array[PackedVector2Array] = []
 var _beach_polygons: Array[PackedVector2Array] = []
 var _use_pbr_textures := true
+var _road_wetness_target: float = 0.0
+var _road_wetness_current: float = 0.0
 
 func _ready() -> void:
 	_configure_sky()
@@ -210,6 +217,7 @@ func _ready() -> void:
 	_apply_ground_surface()
 	_add_ocean_plane()
 	_build_road_materials()
+	_connect_road_weather()
 	_environment_material = _make_environment_material()
 	# Le réseau routier doit être connu AVANT la génération du relief :
 	# le terrain SRTM est alors réellement évidé sous chaussées et trottoirs.
@@ -372,6 +380,7 @@ void sky() {
 
 
 func _process(delta: float) -> void:
+	_update_road_wetness(delta)
 	_location_refresh += delta
 	if _location_refresh >= 0.35:
 		_location_refresh = 0.0
@@ -2336,7 +2345,32 @@ func _make_asphalt_shader_material() -> ShaderMaterial:
 	material.set_shader_parameter("albedo_c", albedo_c)
 	material.set_shader_parameter("noise_tex", noise_texture)
 	material.set_shader_parameter("normal_strength", 0.5)
+	material.set_shader_parameter("wetness", _road_wetness_current)
 	return material
+
+
+
+func _connect_road_weather() -> void:
+	var weather_manager := get_node_or_null("/root/WeatherManager")
+	if weather_manager == null:
+		return
+	if weather_manager.has_signal("weather_changed") and not weather_manager.weather_changed.is_connected(_on_road_weather_changed):
+		weather_manager.weather_changed.connect(_on_road_weather_changed)
+	if weather_manager.has_method("get_weather_state"):
+		_on_road_weather_changed(weather_manager.call("get_weather_state"))
+
+
+func _on_road_weather_changed(state: Dictionary) -> void:
+	_road_wetness_target = clampf(float(state.get("rain_intensity", 0.0)), 0.0, 1.0)
+
+
+func _update_road_wetness(delta: float) -> void:
+	if is_equal_approx(_road_wetness_current, _road_wetness_target):
+		return
+	_road_wetness_current = move_toward(_road_wetness_current, _road_wetness_target, delta * 0.18)
+	var asphalt_material := _road_materials.get("asphalt") as ShaderMaterial
+	if asphalt_material != null:
+		asphalt_material.set_shader_parameter("wetness", _road_wetness_current)
 
 
 func _build_road_materials() -> void:
