@@ -11,6 +11,8 @@ uniform float normal_scale = 0.42;
 uniform float wave_height = 0.22;
 uniform float wave_speed = 0.72;
 uniform float uv_scale = 0.075;
+uniform float foam_strength = 0.24;
+uniform float rain_intensity = 0.0;
 
 varying vec3 world_position;
 
@@ -37,6 +39,7 @@ void fragment() {
     NORMAL_MAP_DEPTH = normal_scale;
 
     float swell = sin(uv.x * 2.2 + uv.y * 1.35 - TIME * 0.22) * 0.5 + 0.5;
+    float secondary_swell = sin(uv.x * 1.15 - uv.y * 2.0 - TIME * 0.15) * 0.5 + 0.5;
     float shallow = clamp(0.22 + UV.y * 0.30 + swell * 0.10, 0.0, 0.66);
     vec3 water = mix(deep_color, shallow_color, shallow);
     vec3 pbr_color = texture(ocean_base_color, drift_a).rgb;
