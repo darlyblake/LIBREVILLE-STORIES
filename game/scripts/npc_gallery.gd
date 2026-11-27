@@ -44,33 +44,10 @@ func _ready() -> void:
 	)
 
 func _create_character(resident: Dictionary) -> Node3D:
-	var gender := str(resident.get("gender", "homme"))
-	var model_path := str(MODEL_BY_GENDER.get(gender, ""))
-	if not model_path.is_empty() and ResourceLoader.exists(model_path):
-		var packed := load(model_path) as PackedScene
-		if packed != null:
-			var instance := packed.instantiate() as Node3D
-			if instance != null:
-				var skeleton := _find_skeleton(instance)
-				var animation_player := _find_animation_player(instance)
-				var idle_name := _find_idle_animation(animation_player)
-				if skeleton != null and skeleton.get_bone_count() > 0 and animation_player != null and not idle_name.is_empty():
-					glb_count += 1
-					instance.set_meta("resident_id", str(resident.get("id", "")))
-					animation_player.play(idle_name)
-					return instance
-				rejected_glb_count += 1
-				push_warning(
-					"NPC GALLERY | GLB rejeté : squelette ou animation idle manquant(e) : "
-					+ model_path
-				)
-				instance.free()
-			else:
-				rejected_glb_count += 1
-				push_warning("NPC GALLERY | La racine du GLB doit être Node3D : " + model_path)
-		else:
-			rejected_glb_count += 1
-			push_warning("NPC GALLERY | GLB impossible à charger : " + model_path)
+	var character := NPCModelLibrary.instantiate_for_resident(resident)
+	if character != null:
+		glb_count += 1
+		return character
 
 	fallback_count += 1
 	var fallback := FALLBACK_SCENE.instantiate() as Node3D
