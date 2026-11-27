@@ -77,7 +77,7 @@ func _get_validated_scene(model_path: String) -> PackedScene:
 		_rejected_paths.append(model_path)
 		return null
 	var instance := packed.instantiate()
-	if instance == null or not instance is Node3D:
+	if instance == null or not (instance is Node3D):
 		_rejected_paths.append(model_path)
 		if instance != null:
 			instance.free()
