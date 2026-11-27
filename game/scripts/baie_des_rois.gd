@@ -5,6 +5,7 @@ extends Node3D
 const ANCHOR := Vector3(-1790.0, 0.0, -570.0)
 
 var _rng := RandomNumberGenerator.new()
+var _bay_water_material: ShaderMaterial
 
 
 func _ready() -> void:
@@ -160,6 +161,7 @@ func _build_bay_water() -> void:
 		return
 	var water_mat := ShaderMaterial.new()
 	water_mat.shader = water_shader
+	_bay_water_material = water_mat
 	water_mat.set_shader_parameter("ocean_base_color", load("res://assets/textures/water/ocean_1k/baseColor.png"))
 	water_mat.set_shader_parameter("ocean_normal", load("res://assets/textures/water/ocean_1k/normal.png"))
 	water_mat.set_shader_parameter("ocean_roughness", load("res://assets/textures/water/ocean_1k/roughness.png"))
@@ -173,6 +175,29 @@ func _build_bay_water() -> void:
 	_add_water_surface(root, Vector2(46.0, 178.0), ANCHOR + Vector3(73.0, 0.058, -8.0), water_mat, "BayNorthArm")
 	_add_water_surface(root, Vector2(58.0, 76.0), ANCHOR + Vector3(82.0, 0.060, -91.0), water_mat, "BaySouthArm")
 	_add_water_surface(root, Vector2(58.0, 76.0), ANCHOR + Vector3(82.0, 0.060, 91.0), water_mat, "BayNorthInlet")
+
+
+
+## Point d'entrée pour le futur système météo.
+## Un WeatherManager pourra appeler cette méthode sans connaître le shader.
+func set_bay_rain_intensity(intensity: float, transition_seconds: float = 2.0) -> void:
+	if _bay_water_material == null:
+		return
+	var target := clampf(intensity, 0.0, 1.0)
+	var duration := maxf(transition_seconds, 0.0)
+	var current := float(_bay_water_material.get_shader_parameter("rain_intensity"))
+	var tween := create_tween()
+	if duration <= 0.01:
+		_bay_water_material.set_shader_parameter("rain_intensity", target)
+		return
+	tween.tween_method(
+		func(value: float) -> void:
+			if is_instance_valid(_bay_water_material):
+				_bay_water_material.set_shader_parameter("rain_intensity", value),
+		current,
+		target,
+		duration
+	)
 
 
 func _add_water_surface(parent: Node3D, dimensions: Vector2, world_position: Vector3, material: Material, node_name: String) -> void:
