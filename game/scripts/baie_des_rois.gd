@@ -163,6 +163,8 @@ func _build_bay_water() -> void:
 	water_mat.set_shader_parameter("ocean_base_color", load("res://assets/textures/water/ocean_1k/baseColor.png"))
 	water_mat.set_shader_parameter("ocean_normal", load("res://assets/textures/water/ocean_1k/normal.png"))
 	water_mat.set_shader_parameter("ocean_roughness", load("res://assets/textures/water/ocean_1k/roughness.png"))
+	water_mat.set_shader_parameter("foam_strength", 0.24)
+	water_mat.set_shader_parameter("rain_intensity", 0.0)
 
 	# Quatre nappes séparées évitent de couvrir toute la promenade.
 	# Le bord côté terre est recouvert par l'enrochement collisionné.
