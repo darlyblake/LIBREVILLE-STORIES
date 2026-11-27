@@ -50,6 +50,11 @@ func _process(delta: float) -> void:
 		environment.ambient_light_energy = lerpf(environment.ambient_light_energy, _target_ambient, weight)
 		environment.background_color = environment.background_color.lerp(_target_color, weight)
 		environment.fog_light_color = environment.fog_light_color.lerp(_target_color.darkened(0.18), weight)
+		environment.fog_enabled = _target_fog_density > 0.0001
+		environment.fog_density = lerpf(environment.fog_density, _target_fog_density, weight)
+		if _target_fog_density > 0.0001:
+			environment.fog_depth_begin = 45.0
+			environment.fog_depth_end = 260.0
 
 func _update_targets() -> void:
 	var clock := get_node_or_null("/root/WorldClock")
