@@ -85,15 +85,22 @@ var _wiper_rest_rotations: Array[float] = []
 var _wiper_phase: float = 0.0
 
 const CAMERA_NAMES := ["EXTÉRIEURE PROCHE", "EXTÉRIEURE ÉLOIGNÉE", "COCKPIT", "CINÉMATIQUE"]
+const VehicleProfiles = preload("res://game/scripts/vehicles/vehicle_profile_database.gd")
+
+@export_group("Profil véhicule")
+@export var vehicle_profile_id: String = "offroad_4x4"
+var _vehicle_profile: Dictionary = {}
 
 func _ready() -> void:
 	add_to_group("drivable_vehicle")
+	_load_vehicle_profile()
 	_last_odometer_position = global_position
-	mass = 1850.0
+	mass = float(_vehicle_profile.get("mass_kg", 1850.0))
 	center_of_mass_mode = 1
-	center_of_mass = Vector3(0.0, 0.28, 0.0)
-	linear_damp = 0.08
-	angular_damp = 1.4
+	center_of_mass = Vector3(0.0, float(_vehicle_profile.get("center_of_mass_y", 0.28)), 0.0)
+	linear_damp = float(_vehicle_profile.get("linear_damp", 0.08))
+	angular_damp = float(_vehicle_profile.get("angular_damp", 1.4))
+	_apply_vehicle_profile()
 	can_sleep = false
 	var vehicle_model := get_node_or_null(vehicle_model_path) as Node3D
 	if vehicle_model != null:
@@ -145,6 +152,38 @@ func _physics_process(delta: float) -> void:
 	if _camera_mode == 3:
 		_cinematic_time += delta
 		_camera_pivot.rotation.y = sin(_cinematic_time * 0.22) * 0.72
+
+
+func _load_vehicle_profile() -> void:
+	_vehicle_profile = VehicleProfiles.get_profile(vehicle_profile_id)
+	if _vehicle_profile.is_empty():
+		push_warning("Profil véhicule introuvable: %s — paramètres de secours utilisés." % vehicle_profile_id)
+
+
+func _apply_vehicle_profile() -> void:
+	if _vehicle_profile.is_empty():
+		return
+	# Toutes les valeurs physiques sont chargées depuis le profil du véhicule.
+	max_speed = float(_vehicle_profile.get("max_speed_mps", max_speed))
+	reverse_speed = float(_vehicle_profile.get("reverse_speed_mps", reverse_speed))
+	acceleration = float(_vehicle_profile.get("acceleration_mps2", acceleration))
+	reverse_acceleration = float(_vehicle_profile.get("reverse_acceleration_mps2", reverse_acceleration))
+	service_brake = float(_vehicle_profile.get("brake_force", service_brake))
+	coast_deceleration = float(_vehicle_profile.get("engine_braking", coast_deceleration))
+	rolling_resistance = float(_vehicle_profile.get("rolling_resistance", rolling_resistance))
+	wheel_base = float(_vehicle_profile.get("wheel_base_m", wheel_base))
+	front_track = float(_vehicle_profile.get("front_track_m", front_track))
+	rear_track = float(_vehicle_profile.get("rear_track_m", rear_track))
+	max_steering_angle = float(_vehicle_profile.get("steering_angle_rad", max_steering_angle))
+	high_speed_steering_angle = float(_vehicle_profile.get("high_speed_steering_rad", high_speed_steering_angle))
+	steering_response = float(_vehicle_profile.get("steering_response", steering_response))
+	lateral_grip = float(_vehicle_profile.get("lateral_grip", lateral_grip))
+	wheel_radius = float(_vehicle_profile.get("wheel_radius_m", wheel_radius))
+	steering_axle = int(_vehicle_profile.get("steering_axle", steering_axle))
+	drive_axle = int(_vehicle_profile.get("drive_axle", drive_axle))
+	# Centre de gravité haut sur bus/camions : roulis et transfert de charge plus marqués.
+	center_of_mass = Vector3(0.0, float(_vehicle_profile.get("center_of_mass_y", center_of_mass.y)), 0.0)
+	print("Véhicule chargé: %s | %.0f kg | %.0f km/h max" % [str(_vehicle_profile.get("display_name", vehicle_profile_id)), mass, max_speed * 3.6])
 
 
 func _setup_rain_splashes() -> void:
