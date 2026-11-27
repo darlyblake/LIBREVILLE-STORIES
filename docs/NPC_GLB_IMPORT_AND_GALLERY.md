@@ -46,3 +46,58 @@ Copier les fichiers GLB dans `assets/characters/base/`. Ne pas renommer les fich
 - La galerie est un outil de contrôle, pas le système final de streaming des PNJ.
 - Les animations walk/run ne sont pas encore reliées au déplacement des personnages.
 - Le chargement des modèles doit être testé avec Godot sur la machine cible avant d'augmenter le nombre de PNJ visibles.
+
+## Utiliser la bibliothèque de 200 modèles
+
+Le workflow `.github/workflows/characters.yml` produit l'artefact GitHub Actions
+`libreville-stories-ara3d-characters`. Il exporte les presets disponibles et les
+variantes aléatoires demandées au lancement du workflow. Le nombre de variantes
+aléatoires est un paramètre du workflow : ne pas confondre ce nombre avec le total
+des fichiers GLB, car les presets sont ajoutés en plus.
+
+### Récupération de l'archive
+
+1. Ouvrir l'onglet **Actions** du dépôt GitHub.
+2. Choisir le workflow **Build Ara 3D character library**.
+3. Ouvrir l'exécution réussie correspondante.
+4. Dans **Artifacts**, télécharger `libreville-stories-ara3d-characters`.
+5. Extraire l'archive localement. Ne pas committer le ZIP de 1 Go dans le dépôt.
+
+### Installation locale
+
+Copier les fichiers GLB extraits dans :
+
+```text
+assets/characters/library/
+```
+
+Garder les fichiers de métadonnées et licences avec l'archive source. Ne pas supprimer
+les sous-dossiers de métadonnées. Le dossier `library` est prévu pour les modèles
+réutilisables, tandis que `base` conserve les modèles de référence.
+
+### Attribution aux habitants
+
+Le singleton `NPCModelLibrary` scanne les dossiers `library` et `base` au démarrage.
+Il trie les chemins de façon déterministe, puis attribue un modèle à chaque résident
+en fonction de son identifiant persistant. Ainsi, un même résident retrouve le même
+gabarit après rechargement, même si l'ordre de création des habitants change.
+
+Avant utilisation, chaque GLB est contrôlé : racine `Node3D`, squelette avec au moins
+un os, `AnimationPlayer` et animation idle. Les modèles invalides sont ignorés.
+Si aucun GLB valide n'est disponible, la galerie utilise le personnage procédural
+de secours.
+
+Les 200 GLB ne correspondent pas à 200 identités de résidents : les modèles sont des
+gabarits visuels partagés. Les identités, familles, professions et apparences
+individuelles restent stockées dans `PopulationManager`.
+
+### Limites actuelles
+
+- Le scan porte sur les fichiers GLB placés directement dans `library` et `base`,
+  pas sur leurs sous-dossiers.
+- Le modèle choisi est stable par identifiant, mais les vêtements, morphologies,
+  cheveux et accessoires ne sont pas encore appliqués comme modifications du mesh.
+- Le système est branché sur la galerie de test ; le streaming des PNJ dans le monde
+  ouvert reste une étape distincte.
+- Les modèles GLB ne sont pas embarqués dans Git. Chaque machine doit recevoir la
+  bibliothèque localement ou via un paquet d'assets.
