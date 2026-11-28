@@ -3918,6 +3918,7 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 func _junction_needs_surface_patch(node_key: String, node_registry: Dictionary, all_parts: Array[Dictionary]) -> bool:
 	var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
 	var arms := PackedVector2Array()
+	var contributing_parts := 0
 	for entry_index in range(0, entries.size(), 3):
 		var part_index := int(entries[entry_index])
 		if part_index < 0 or part_index >= all_parts.size():
@@ -3925,9 +3926,11 @@ func _junction_needs_surface_patch(node_key: String, node_registry: Dictionary, 
 		var part: Dictionary = all_parts[part_index]
 		var points: Array[Vector3] = part.orig_points
 		var keys: Array[String] = part.keys
+		var part_has_node := false
 		for point_index in range(keys.size()):
 			if keys[point_index] != node_key:
 				continue
+			part_has_node = true
 			if point_index > 0:
 				var previous := points[point_index - 1]
 				var direction_to_previous := Vector2(previous.x - points[point_index].x, previous.z - points[point_index].z)
@@ -3938,6 +3941,12 @@ func _junction_needs_surface_patch(node_key: String, node_registry: Dictionary, 
 				var direction_to_following := Vector2(following.x - points[point_index].x, following.z - points[point_index].z)
 				if direction_to_following.length_squared() > 0.001:
 					arms.append(direction_to_following.normalized())
+		if part_has_node:
+			contributing_parts += 1
+	# Les virages internes d'une même LineString sont déjà raccordés par
+	# _add_road_round_join ; ici on ne traite que les jonctions entre entités OSM.
+	if contributing_parts < 2:
+		return false
 	return WorldMapGeometryUtils.junction_needs_patch(arms)
 
 
