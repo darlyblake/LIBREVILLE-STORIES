@@ -213,3 +213,12 @@ sont donc conservées dès qu'un segment intersecte le disque de chargement. Les
 bâtiments et autres objets surfaciques gardent le filtrage par centre. Un test
 géométrique vérifie le cas d'une route traversante, d'une route extérieure et d'un
 contact exact avec la limite du rayon.
+
+
+### Raccord des tronçons séparés aux virages
+
+Le registre des nœuds détecte aussi les raccordements constitués de deux entités OSM
+distinctes. Deux bras opposés restent une ligne droite sans patch supplémentaire ;
+deux bras formant un angle reçoivent une surface de raccordement, comme les jonctions
+à trois bras ou plus. Le polygone de raccordement accepte désormais les deux bras
+d'un virage au lieu de retomber sur un disque générique trop petit.

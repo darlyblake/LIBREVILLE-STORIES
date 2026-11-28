@@ -17,6 +17,7 @@ func _initialize() -> void:
 	_test_triangle_attribute_interpolation()
 	_test_array_mesh_surface_sector_clipping()
 	_test_polyline_zone_intersection()
+	_test_junction_patch_detection()
 	print("WorldMapGeometryUtils: polyline splitting, zone intersection, sector coverage and weighted clipping, attribute interpolation and ArrayMesh sector clipping tests passed")
 	quit()
 
@@ -33,6 +34,19 @@ func _test_polyline_zone_intersection() -> void:
 		"A road touching the radius boundary must be retained")
 	assert(not Geometry.polyline_intersects_circle(PackedVector2Array(), Vector2.ZERO, 800.0))
 	assert(not Geometry.polyline_intersects_circle(crossing, Vector2.ZERO, -1.0))
+
+
+func _test_junction_patch_detection() -> void:
+	var straight := PackedVector2Array([Vector2.RIGHT, Vector2.LEFT])
+	assert(not Geometry.junction_needs_patch(straight),
+		"Two opposite arms are a continuous straight road and need no junction patch")
+	var bend := PackedVector2Array([Vector2.RIGHT, Vector2.UP])
+	assert(Geometry.junction_needs_patch(bend),
+		"Two connected road segments forming a bend need a joining patch")
+	var tee := PackedVector2Array([Vector2.RIGHT, Vector2.LEFT, Vector2.UP])
+	assert(Geometry.junction_needs_patch(tee),
+		"A T-junction needs a joining patch")
+	assert(not Geometry.junction_needs_patch(PackedVector2Array([Vector2.RIGHT])))
 
 
 func _test_horizontal_crossings() -> void:

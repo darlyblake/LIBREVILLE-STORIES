@@ -96,6 +96,20 @@ static func polygon_sector_keys(points: PackedVector2Array, sector_size: float =
 ## Les coordonnées sont en X/Z monde ; le maximum est traité comme exclusif.
 ## Vrai si une polyligne touche un disque, même lorsque ses deux extrémités
 ## sont hors du rayon. Utilisé pour conserver les axes qui traversent la zone chargée.
+## Un carrefour est nécessaire dès qu'il y a trois bras, ou lorsque deux
+## tronçons raccordés forment un virage. Deux bras opposés restent une ligne droite.
+static func junction_needs_patch(arms: PackedVector2Array, straight_dot_threshold: float = -0.97) -> bool:
+	if arms.size() < 2:
+		return false
+	if arms.size() >= 3:
+		return true
+	var first := arms[0].normalized()
+	var second := arms[1].normalized()
+	if first.length_squared() < 0.001 or second.length_squared() < 0.001:
+		return false
+	return first.dot(second) > straight_dot_threshold
+
+
 static func polyline_intersects_circle(points: PackedVector2Array, center: Vector2, radius: float) -> bool:
 	if points.is_empty() or radius < 0.0:
 		return false

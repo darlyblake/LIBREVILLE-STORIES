@@ -3125,11 +3125,8 @@ func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, c
 		var node_key: String = keys[node_index]
 		var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
 		var entry_count := int(entries.size() / 3)
-		if _junction_arm_count(node_key, node_registry, all_parts) >= 3 and not patched.has(node_key):
+		if _junction_needs_surface_patch(node_key, node_registry, all_parts) and not patched.has(node_key):
 			patched[node_key] = true
-			var patch_radius := 2.2
-			for e in range(entry_count):
-				patch_radius = maxf(patch_radius, entries[e * 3 + 1])
 			_add_intersection_patch(road_surface, orig_points[node_index], node_key, node_registry, all_parts)
 	# Chaussée : bandes longitudinales ~7 m, chaque sommet posé sur le relief exact.
 	var strips := maxi(2, ceili(width / 7.0))
@@ -3918,6 +3915,32 @@ func _add_junction_patch(surface: SurfaceTool, center: Vector3, radius: float) -
 		_add_textured_quad(surface, i0, o0, o1, i1, ROAD_UV_METERS)
 
 
+func _junction_needs_surface_patch(node_key: String, node_registry: Dictionary, all_parts: Array[Dictionary]) -> bool:
+	var entries: PackedFloat32Array = node_registry.get(node_key, PackedFloat32Array())
+	var arms := PackedVector2Array()
+	for entry_index in range(0, entries.size(), 3):
+		var part_index := int(entries[entry_index])
+		if part_index < 0 or part_index >= all_parts.size():
+			continue
+		var part: Dictionary = all_parts[part_index]
+		var points: Array[Vector3] = part.orig_points
+		var keys: Array[String] = part.keys
+		for point_index in range(keys.size()):
+			if keys[point_index] != node_key:
+				continue
+			if point_index > 0:
+				var previous := points[point_index - 1]
+				var direction_to_previous := Vector2(previous.x - points[point_index].x, previous.z - points[point_index].z)
+				if direction_to_previous.length_squared() > 0.001:
+					arms.append(direction_to_previous.normalized())
+			if point_index + 1 < points.size():
+				var following := points[point_index + 1]
+				var direction_to_following := Vector2(following.x - points[point_index].x, following.z - points[point_index].z)
+				if direction_to_following.length_squared() > 0.001:
+					arms.append(direction_to_following.normalized())
+	return WorldMapGeometryUtils.junction_needs_patch(arms)
+
+
 func _junction_arm_count(node_key: String, node_registry: Dictionary, all_parts: Array[Dictionary]) -> int:
 	# Une route traversant le nœud au milieu de sa LineString apporte deux bras,
 	# même si elle ne compte que comme une seule entrée dans le registre.
@@ -4010,7 +4033,7 @@ func _add_intersection_patch(surface: SurfaceTool, center: Vector3, node_key: St
 				var arm_end := center_2d + direction * reach
 				outline_points.append(arm_end + side)
 				outline_points.append(arm_end - side)
-	if outline_points.size() < 6:
+	if outline_points.size() < 4:
 		_add_junction_patch(surface, center, 3.0)
 		return
 	var hull := Geometry2D.convex_hull(outline_points)
