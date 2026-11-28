@@ -72,13 +72,19 @@ def audit_topology(features):
             for gy in range(math.floor(min(a[1],b[1])/CELL),math.floor(max(a[1],b[1])/CELL)+1):
                 grid[(gx,gy)].append(si)
     exact=Counter()
-    for ep in endpoints: exact[(round(ep["p"][0],2),round(ep["p"][1],2))]+=1
-    near_pairs=[]; t_candidates=[]; dangling=[]; boundary=[]; isolated=[]
+    endpoint_grid=defaultdict(list)
+    for ei,ep in enumerate(endpoints):
+        exact[(round(ep["p"][0],2),round(ep["p"][1],2))]+=1
+        endpoint_grid[(math.floor(ep["p"][0]/CELL),math.floor(ep["p"][1]/CELL))].append(ei)
+    near_pairs=[]; near_endpoint_indices=set(); t_candidates=[]; dangling=[]; boundary=[]; isolated=[]
     for i,ep in enumerate(endpoints):
         p=ep["p"]; gx,gy=math.floor(p[0]/CELL),math.floor(p[1]/CELL)
         candidates=set()
+        nearby_endpoint_ids=set()
         for ox in (-1,0,1):
-            for oy in (-1,0,1): candidates.update(grid[(gx+ox,gy+oy)])
+            for oy in (-1,0,1):
+                candidates.update(grid[(gx+ox,gy+oy)])
+                nearby_endpoint_ids.update(endpoint_grid[(gx+ox,gy+oy)])
         best=None
         for si in candidates:
             seg=segments[si]
@@ -97,8 +103,8 @@ def audit_topology(features):
                 near_pairs.append({"road_a":ep["props"].get("osm_id",ep["feature"]),"road_b":other["props"].get("osm_id",other["feature"]),"distance_m":round(d,2),"level":level(ep["props"])})
         edge=min(p[0]-bounds[0],bounds[2]-p[0],p[1]-bounds[1],bounds[3]-p[1])
         if edge<=50.0: boundary.append(ep)
-        elif exact[(round(p[0],2),round(p[1],2))]==1 and not best:
-            dangling.append({"osm_id":ep["props"].get("osm_id",ep["feature"]),"name":ep["props"].get("name",""),"highway":ep["props"].get("highway",""),"side":ep["side"],"length_m":round(ep["length"],1),"level":level(ep["props])"})
+        elif exact[(round(p[0],2),round(p[1],2))]==1 and not best and i not in near_endpoint_indices:
+            dangling.append({"osm_id":ep["props"].get("osm_id",ep["feature"]),"name":ep["props"].get("name",""),"highway":ep["props"].get("highway",""),"side":ep["side"],"length_m":round(ep["length"],1),"level":level(ep["props"])}})
     # Short isolated features are review candidates, not assumed geometry errors.
     dangling_by_feature=Counter(str(x["osm_id"]) for x in dangling)
     for feature in features:
