@@ -171,3 +171,20 @@ simulation, puis importe le projet avec Godot 4.3 et inspecte les animations et
 les modèles GLB. Un contrôle des données réussi ne signifie pas que l'import
 Godot ou le démarrage de la scène principale a réussi : ces étapes doivent
 être confirmées indépendamment.
+
+
+## Interpolation des attributs lors du découpage des meshes
+
+Le clipping triangle/rectangle dispose maintenant d'une variante qui retourne,
+pour chaque sommet découpé, ses coordonnées barycentriques dans le triangle
+source. Ces poids permettent de reconstruire exactement la position et
+d'interpoler les attributs attachés aux sommets (UV, couleur, normale,
+tangente et altitude) au lieu de recalculer ces valeurs à partir de la seule
+position XZ.
+
+Cette primitive est une fondation pour le futur découpage des meshes routiers :
+les routes comportent plusieurs matériaux, des UV continus, des marquages et
+des collisions. Leur séparation en meshes autonomes par secteur n'est pas
+encore réalisée. Les tuiles routières existantes restent partagées entre les
+secteurs qu'elles couvrent. Les tests géométriques vérifient la somme des poids,
+la reconstruction des positions et la conservation de l'aire.
