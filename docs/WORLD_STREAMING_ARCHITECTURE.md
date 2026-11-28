@@ -55,6 +55,14 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
 - Le conteneur est enregistré dans le secteur correspondant à cet ancrage médian.
 - Les tronçons qui traversent plusieurs secteurs sont diagnostiqués ; leur
   géométrie complète n'est pas encore découpée entre plusieurs conteneurs.
+- Un utilitaire pur `split_polyline_by_sectors` découpe maintenant une ligne X/Z
+  aux frontières exactes des secteurs et retourne les morceaux avec leur clé
+  sectorielle. Les sommets de frontière sont partagés sans intervalle vide ;
+  les croisements simultanés X/Z ne créent pas de secteurs diagonaux fictifs.
+- Des tests headless couvrent les traversées positives/négatives, les coins,
+  le sens inverse et la continuité des extrémités. Cet utilitaire n'est pas
+  encore branché au générateur de routes : les intersections, trottoirs,
+  marquages et collisions doivent être migrés ensemble avant activation.
 - Une tuile hors rayon est masquée et ses collisions sont désactivées.
 - Les transitions entre tuiles, intersections et trottoirs doivent encore être
   testées en jeu pour détecter les discontinuités.
