@@ -247,10 +247,17 @@ func _set_collision_state_recursive(root: Node, enabled: bool) -> void:
 
 
 func get_streaming_stats() -> Dictionary:
+	var active_shared_nodes := 0
+	for record_variant in _shared_nodes.values():
+		var record: Dictionary = record_variant
+		if bool(record.active):
+			active_shared_nodes += 1
 	return {
 		"sector_size_m": sector_size,
 		"loaded_sector_containers": _sectors.size(),
 		"active_sectors": _active_sectors.size(),
+		"shared_streaming_nodes": _shared_nodes.size(),
+		"active_shared_streaming_nodes": active_shared_nodes,
 		"center_sector": _current_center,
 		"load_radius": load_radius,
 		"unload_radius": unload_radius,
