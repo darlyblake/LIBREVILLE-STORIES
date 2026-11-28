@@ -47,9 +47,14 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
 
 ### Routes et voirie
 
-- Chaque tuile routière de 800 m est contenue dans un nœud `RoadTile_x_z`.
+- Chaque lot routier est contenu dans un nœud `RoadTile_x_z`.
+- L'affectation du lot se fait maintenant au milieu de sa longueur cumulée,
+  plutôt qu'à son premier sommet : les longs tronçons ne sont plus ancrés
+  systématiquement à une extrémité.
 - Chaussée, bordures, trottoirs, marquages et collisions restent groupés.
-- Le conteneur est enregistré dans le secteur correspondant à son centre.
+- Le conteneur est enregistré dans le secteur correspondant à cet ancrage médian.
+- Les tronçons qui traversent plusieurs secteurs sont diagnostiqués ; leur
+  géométrie complète n'est pas encore découpée entre plusieurs conteneurs.
 - Une tuile hors rayon est masquée et ses collisions sont désactivées.
 - Les transitions entre tuiles, intersections et trottoirs doivent encore être
   testées en jeu pour détecter les discontinuités.
