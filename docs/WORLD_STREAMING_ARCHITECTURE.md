@@ -222,3 +222,16 @@ distinctes. Deux bras opposés restent une ligne droite sans patch supplémentai
 deux bras formant un angle reçoivent une surface de raccordement, comme les jonctions
 à trois bras ou plus. Le polygone de raccordement accepte désormais les deux bras
 d'un virage au lieu de retomber sur un disque générique trop petit.
+
+
+### Raccord prudent des extrémités OSM proches
+
+Après lecture des tronçons, les extrémités de deux entités routières distinctes
+sont comparées dans une grille spatiale. Un raccord n'est autorisé qu'à 1,5 m
+maximum, à altitude topologique identique (même tag layer/bridge/tunnel), avec
+des directions qui ne sont pas presque parallèles et identiques. Les points sont
+déplacés vers leur position moyenne projetée sur le terrain, puis le registre
+des nœuds est reconstruit : chaussée, trottoirs, marquages et raccords partagent
+ainsi le même sommet. Les routes parallèles, les niveaux de pont différents et
+les extrémités éloignées ne sont pas fusionnés. Un compteur est affiché au
+chargement pour mesurer les corrections réellement appliquées.

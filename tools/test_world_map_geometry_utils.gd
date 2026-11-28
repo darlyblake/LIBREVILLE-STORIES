@@ -18,6 +18,7 @@ func _initialize() -> void:
 	_test_array_mesh_surface_sector_clipping()
 	_test_polyline_zone_intersection()
 	_test_junction_patch_detection()
+	_test_road_endpoint_join_safety()
 	print("WorldMapGeometryUtils: polyline splitting, zone intersection, sector coverage and weighted clipping, attribute interpolation and ArrayMesh sector clipping tests passed")
 	quit()
 
@@ -47,6 +48,19 @@ func _test_junction_patch_detection() -> void:
 	assert(Geometry.junction_needs_patch(tee),
 		"A T-junction needs a joining patch")
 	assert(not Geometry.junction_needs_patch(PackedVector2Array([Vector2.RIGHT])))
+
+
+func _test_road_endpoint_join_safety() -> void:
+	assert(Geometry.road_endpoints_can_join(Vector2.ZERO, Vector2(1.0, 0.0),
+		Vector2.LEFT, Vector2.RIGHT), "Close opposing endpoints should join")
+	assert(Geometry.road_endpoints_can_join(Vector2.ZERO, Vector2(1.0, 0.0),
+		Vector2.LEFT, Vector2.UP), "Close perpendicular endpoints should form a junction")
+	assert(not Geometry.road_endpoints_can_join(Vector2.ZERO, Vector2(2.0, 0.0),
+		Vector2.LEFT, Vector2.RIGHT), "Endpoints beyond tolerance must stay disconnected")
+	assert(not Geometry.road_endpoints_can_join(Vector2.ZERO, Vector2(1.0, 0.0),
+		Vector2.RIGHT, Vector2.RIGHT), "Parallel same-direction endpoints must not be merged")
+	assert(not Geometry.road_endpoints_can_join(Vector2.ZERO, Vector2.ZERO,
+		Vector2.ZERO, Vector2.RIGHT), "Invalid endpoint directions must be rejected")
 
 
 func _test_horizontal_crossings() -> void:

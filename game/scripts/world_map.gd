@@ -2865,6 +2865,9 @@ func _load_roads() -> void:
 		road_feature_index += 1
 		if road_feature_index % 60 == 0:
 			await get_tree().process_frame
+	var snapped_road_endpoints := _reconcile_nearby_road_endpoints(parts, node_registry)
+	if snapped_road_endpoints > 0:
+		print("OSM roads | %d endpoints raccordés dans une tolérance de 1,5 m" % snapped_road_endpoints)
 	_build_road_hit_grid(parts)
 	# 2. Regroupement spatial : chaque lot de meshes couvre une zone compacte,
 	#    ce qui permet au moteur d'éliminer les zones hors champ.
@@ -3891,6 +3894,121 @@ func _is_near_road(point: Vector2, extra_margin: float = 0.0) -> bool:
 				if point.distance_squared_to(nearest) <= pow(float(segment.radius) + extra_margin, 2.0):
 					return true
 	return false
+
+
+## Raccorde uniquement les extrémités de tronçons distincts, proches et
+## topologiquement compatibles. Les croisements à niveaux différents et les
+## chaussées parallèles restent séparés.
+func _reconcile_nearby_road_endpoints(parts: Array[Dictionary], node_registry: Dictionary) -> int:
+	const CELL_SIZE := 2.0
+	const MAX_JOIN_DISTANCE := 1.5
+	var endpoints: Array[Dictionary] = []
+	var grid: Dictionary = {}
+	for part_index in range(parts.size()):
+		var part: Dictionary = parts[part_index]
+		var points: Array[Vector3] = part.orig_points
+		if points.size() < 2:
+			continue
+		var props: Dictionary = part.props
+		var signature := "%s|%s|%s" % [
+			str(props.get("layer", "0")),
+			str(props.get("bridge", "no")).to_lower(),
+			str(props.get("tunnel", "no")).to_lower()
+		]
+		for endpoint_index in [0, points.size() - 1]:
+			var neighbor_index := 1 if endpoint_index == 0 else points.size() - 2
+			var endpoint := points[endpoint_index]
+			var neighbor := points[neighbor_index]
+			var direction := Vector2(neighbor.x - endpoint.x, neighbor.z - endpoint.z).normalized()
+			if direction.length_squared() < 0.001:
+				continue
+			var endpoint_record := {
+				"part": part_index,
+				"index": endpoint_index,
+				"position": Vector2(endpoint.x, endpoint.z),
+				"direction": direction,
+				"signature": signature,
+				"key": str(part.keys[endpoint_index])
+			}
+			var record_index := endpoints.size()
+			endpoints.append(endpoint_record)
+			var cell := Vector2i(floori(endpoint.x / CELL_SIZE), floori(endpoint.z / CELL_SIZE))
+			var cell_records: Array = grid.get(cell, [])
+			cell_records.append(record_index)
+			grid[cell] = cell_records
+
+	var consumed: Dictionary = {}
+	var snapped_count := 0
+	for endpoint_index in range(endpoints.size()):
+		if consumed.has(endpoint_index):
+			continue
+		var seed: Dictionary = endpoints[endpoint_index]
+		var seed_position: Vector2 = seed.position
+		var cell := Vector2i(floori(seed_position.x / CELL_SIZE), floori(seed_position.y / CELL_SIZE))
+		var cluster: Array[int] = [endpoint_index]
+		var used_parts: Dictionary = {int(seed.part): true}
+		for offset_x in range(-1, 2):
+			for offset_z in range(-1, 2):
+				var nearby_cell := cell + Vector2i(offset_x, offset_z)
+				for candidate_index in grid.get(nearby_cell, []):
+					var candidate_id := int(candidate_index)
+					if candidate_id == endpoint_index or consumed.has(candidate_id):
+						continue
+					var candidate: Dictionary = endpoints[candidate_id]
+					var candidate_part := int(candidate.part)
+					if used_parts.has(candidate_part) or str(candidate.signature) != str(seed.signature):
+						continue
+					if not WorldMapGeometryUtils.road_endpoints_can_join(
+						seed_position, candidate.position, seed.direction, candidate.direction, MAX_JOIN_DISTANCE
+					):
+						continue
+					cluster.append(candidate_id)
+					used_parts[candidate_part] = true
+		if cluster.size() < 2:
+			continue
+
+		var joined_position := Vector2.ZERO
+		for member_id in cluster:
+			joined_position += endpoints[member_id].position
+		joined_position /= float(cluster.size())
+		var joined_key := "endpoint_join:%s" % str(seed.key)
+		for member_id in cluster:
+			var record: Dictionary = endpoints[member_id]
+			var part_index := int(record.part)
+			var endpoint_index_in_part := int(record.index)
+			var part: Dictionary = parts[part_index]
+			var original_points: Array[Vector3] = part.orig_points
+			var road_points: Array[Vector3] = part.points
+			var old_point: Vector3 = original_points[endpoint_index_in_part]
+			var snapped_point := Vector3(joined_position.x,
+				_terrain_mesh_height(joined_position.x, joined_position.y), joined_position.y)
+			original_points[endpoint_index_in_part] = snapped_point
+			if endpoint_index_in_part == 0:
+				road_points[0] = snapped_point
+			else:
+				road_points[road_points.size() - 1] = snapped_point
+			var keys: Array[String] = part.keys
+			keys[endpoint_index_in_part] = joined_key
+			part.orig_points = original_points
+			part.points = road_points
+			part.keys = keys
+			parts[part_index] = part
+			consumed[int(member_id)] = true
+			snapped_count += 1
+
+	# Recréer le registre après déplacement des extrémités pour que les
+	# surfaces, trottoirs, marquages et raccords partagent la même topologie.
+	node_registry.clear()
+	for part_index in range(parts.size()):
+		var part: Dictionary = parts[part_index]
+		var keys: Array[String] = part.keys
+		for point_index in range(keys.size()):
+			var entries: PackedFloat32Array = node_registry.get(keys[point_index], PackedFloat32Array())
+			entries.append(float(part_index))
+			entries.append(float(part.width) * 0.5)
+			entries.append(1.0 if point_index == 0 or point_index == keys.size() - 1 else 0.0)
+			node_registry[keys[point_index]] = entries
+	return snapped_count
 
 
 func _road_junction_key(coordinate: Array) -> String:

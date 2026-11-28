@@ -98,6 +98,19 @@ static func polygon_sector_keys(points: PackedVector2Array, sector_size: float =
 ## sont hors du rayon. Utilisé pour conserver les axes qui traversent la zone chargée.
 ## Un carrefour est nécessaire dès qu'il y a trois bras, ou lorsque deux
 ## tronçons raccordés forment un virage. Deux bras opposés restent une ligne droite.
+## Autorise le raccord de deux extrémités proches seulement si elles ne
+## suivent pas presque exactement la même direction (cas de voies parallèles).
+static func road_endpoints_can_join(a: Vector2, b: Vector2, direction_a: Vector2, direction_b: Vector2,
+		max_distance: float = 1.5, same_direction_dot: float = 0.985) -> bool:
+	if max_distance <= 0.0 or a.distance_squared_to(b) > max_distance * max_distance:
+		return false
+	var first := direction_a.normalized()
+	var second := direction_b.normalized()
+	if first.length_squared() < 0.001 or second.length_squared() < 0.001:
+		return false
+	return first.dot(second) <= same_direction_dot
+
+
 static func junction_needs_patch(arms: PackedVector2Array, straight_dot_threshold: float = -0.97) -> bool:
 	if arms.size() < 2:
 		return false
