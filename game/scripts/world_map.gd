@@ -58,7 +58,7 @@ const ROAD_TILE_SIZE := 800.0
 const ROAD_DETAIL_VISIBILITY := 450.0
 const JUNCTION_CLEARANCE := 0.8
 const MIN_SIDEWALK_RUN := 2.0
-const ROAD_TEXTURED_KEYS := ["asphalt", "dirt", "paving", "sidewalk"]
+const ROAD_TEXTURED_KEYS := ["asphalt", "damaged", "dirt", "paving", "sidewalk"]
 const ROAD_SHADER_CODE := """
 shader_type spatial;
 render_mode cull_disabled;
@@ -2447,6 +2447,8 @@ func _make_road_material(folder_name: String, stem: String, fallback: String, no
 			albedo = _make_asphalt_texture()
 		elif fallback == "dirt":
 			albedo = _make_ground_texture(Color(0.46, 0.31, 0.21), 20261123)
+		elif fallback == "damaged":
+			albedo = _make_asphalt_texture()
 		else:
 			albedo = _make_ground_texture(Color(0.62, 0.60, 0.56), 20261124)
 	material.albedo_texture = albedo
@@ -2556,11 +2558,16 @@ func _update_road_wetness(delta: float) -> void:
 
 func _build_road_materials() -> void:
 	_road_materials["asphalt"] = _make_asphalt_shader_material()
+	var damaged_road := _make_road_material("", "", "damaged", 0.82)
+	_apply_downloaded_pbr(damaged_road, "road_damaged_2")
+	_road_materials["damaged"] = damaged_road
 	if load_extra_road_textures:
 		_road_materials["dirt"] = _make_road_material("worn_asphalt_4k.gltf", "worn_asphalt", "dirt", 0.6)
+		_apply_downloaded_pbr(_road_materials["dirt"], "gravel_road")
 		_road_materials["paving"] = _make_road_material("asphalt_floor_4k.gltf", "asphalt_floor", "paving", 0.5)
 	else:
 		_road_materials["dirt"] = _make_road_material("", "", "dirt", 0.6)
+		_apply_downloaded_pbr(_road_materials["dirt"], "gravel_road")
 		_road_materials["paving"] = _make_road_material("", "", "paving", 0.5)
 	_road_material = _road_materials["asphalt"]
 

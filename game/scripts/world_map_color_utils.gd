@@ -69,10 +69,13 @@ static func road_color(kind: String, props: Dictionary = {}) -> Color:
 
 static func road_surface_key(kind: String, props: Dictionary) -> String:
 	var surface_tag := str(props.get("surface", "")).to_lower()
-	if surface_tag in ["unpaved", "ground", "dirt", "earth", "compacted", "gravel", "fine_gravel", "sand", "mud", "grass"]:
+	if surface_tag in ["unpaved", "ground", "dirt", "earth", "compacted", "gravel", "fine_gravel", "sand", "mud", "grass", "pebblestone"]:
 		return "dirt"
 	if kind in ["track", "construction"]:
 		return "dirt"
+	var smoothness := str(props.get("smoothness", "")).to_lower()
+	if surface_tag in ["asphalt", "paved"] and smoothness in ["bad", "very_bad", "horrible", "very_horrible", "impassable"]:
+		return "damaged"
 	if surface_tag in ["concrete", "paving_stones", "sett", "cobblestone", "concrete:plates", "concrete:lanes", "paved_stones"]:
 		return "paving"
 	if kind in ["footway", "pedestrian", "steps", "cycleway"]:
@@ -106,6 +109,9 @@ static func road_tint(kind: String, props: Dictionary, surface_key: String) -> C
 				wear = 1.0
 	elif surface_key == "dirt":
 		shade = 1.0
+	elif surface_key == "damaged":
+		shade = 0.92
+		wear = 1.35
 	var smoothness := str(props.get("smoothness", "")).to_lower()
 	if smoothness in ["bad", "very_bad", "horrible", "very_horrible", "impassable"]:
 		shade *= 0.86
@@ -119,6 +125,8 @@ static func road_tint(kind: String, props: Dictionary, surface_key: String) -> C
 	wear = clampf(wear + (float(id_value % 11) / 10.0 - 0.5) * 0.3, 0.1, 1.5)
 	if surface_key == "dirt":
 		return Color(shade, shade * 0.95, shade * 0.90)
+	if surface_key == "damaged":
+		return Color(shade, shade * 0.98, shade * 0.94, wear)
 	if surface_key == "paving":
 		# La texture asphalt_floor est beige : on la refroidit pour obtenir un béton gris.
 		return Color(shade * 0.80, shade * 0.85, shade * 0.92)

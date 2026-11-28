@@ -28,6 +28,9 @@ USER_AGENT = "LibrevilleStoriesAssetPipeline/1.0 (CC0 game materials)"
 ASSETS = [
     "asphalt_02",
     "asphalt_03",
+    "road_damaged_2",
+    "road_damaged_clean",
+    "gravel_road",
     "concrete_wall_009",
     "brushed_concrete",
     "metal_plate_02",

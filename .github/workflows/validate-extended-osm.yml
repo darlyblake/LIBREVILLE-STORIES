@@ -27,3 +27,5 @@ jobs:
         run: python -m pip install --upgrade pip shapely
       - name: Validate OSM geometries
         run: python tools/map-generator/validate_extended_osm.py
+      - name: Audit road surface and damage tags
+        run: python tools/audit_road_surfaces.py
