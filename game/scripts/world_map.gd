@@ -2691,6 +2691,8 @@ func _load_roads() -> void:
 	var node_registry: Dictionary = {}
 	var road_feature_index := 0
 	var bridge_feature_count := 0
+	var road_boundary_crossings := 0
+	var road_widest_sector_span := Vector2i.ONE
 	for feature in features:
 		var geometry: Dictionary = feature.get("geometry", {})
 		var lines: Array = []
@@ -2723,6 +2725,16 @@ func _load_roads() -> void:
 					keys.append(_road_junction_key(coordinate))
 			if points.size() < 2:
 				continue
+			# Diagnostic spatial : repérer les tronçons dont l'emprise traverse
+			# plusieurs secteurs avant de modifier leur découpage ou leurs collisions.
+			var road_xz := PackedVector2Array()
+			for road_point in points:
+				road_xz.append(Vector2(road_point.x, road_point.z))
+			var road_sector_span := WorldMapGeometryUtils.line_sector_span(road_xz, ROAD_TILE_SIZE)
+			if road_sector_span.x > 1 or road_sector_span.y > 1:
+				road_boundary_crossings += 1
+				road_widest_sector_span.x = maxi(road_widest_sector_span.x, road_sector_span.x)
+				road_widest_sector_span.y = maxi(road_widest_sector_span.y, road_sector_span.y)
 			# Les tags OSM bridge/layer ne donnent ni le profil altimétrique,
 			# ni la longueur des rampes, ni l'implantation des piles.
 			# Tant qu'un relevé géométrique propre à cet ouvrage n'existe pas,
@@ -2798,6 +2810,7 @@ func _load_roads() -> void:
 		await get_tree().process_frame
 	_road_hit_grid.clear()
 	print("LIBREVILLE STORIES | VERSION v7 · décor vert OSM %s | réseau routier : %d tronçons, %d zones, %d lampadaires, %d objets bridge OSM (tracés provisoires au niveau du MNT), %d ms" % ["ACTIVÉ" if render_green_areas else "MASQUÉ", parts.size(), tile_counter, _lamp_count, bridge_feature_count, Time.get_ticks_msec() - started_ms])
+	print("LIBREVILLE STORIES | tronçons routiers traversant plusieurs secteurs : %d | portée maximale : %dx%d secteurs" % [road_boundary_crossings, road_widest_sector_span.x, road_widest_sector_span.y])
 	if bridge_feature_count > 0:
 		print("LIBREVILLE STORIES | ATTENTION : %d objets bridge sont encore drapés sur le terrain ; tabliers, piles et profils altimétriques non reconstruits sans relevés fiables." % bridge_feature_count)
 
