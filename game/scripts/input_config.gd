@@ -76,6 +76,8 @@ func _register_mouse_and_gamepad_events() -> void:
 	_add_joy_button("interact", JOY_BUTTON_B)
 	_add_joy_button("reload", JOY_BUTTON_X)
 	_add_joy_button("vehicle_camera_next", JOY_BUTTON_RIGHT_STICK)
+	_add_joy_button("ui_accept", JOY_BUTTON_A)
+	_add_joy_button("ui_cancel", JOY_BUTTON_B)
 	_add_joy_axis("move_left", JOY_AXIS_LEFT_X, -1.0)
 	_add_joy_axis("move_right", JOY_AXIS_LEFT_X, 1.0)
 	_add_joy_axis("move_forward", JOY_AXIS_LEFT_Y, -1.0)
@@ -90,6 +92,10 @@ func _register_mouse_and_gamepad_events() -> void:
 	_add_joy_axis("camera_look_right", JOY_AXIS_RIGHT_X, 1.0)
 	_add_joy_axis("camera_look_up", JOY_AXIS_RIGHT_Y, -1.0)
 	_add_joy_axis("camera_look_down", JOY_AXIS_RIGHT_Y, 1.0)
+	_add_joy_axis("ui_left", JOY_AXIS_LEFT_X, -1.0)
+	_add_joy_axis("ui_right", JOY_AXIS_LEFT_X, 1.0)
+	_add_joy_axis("ui_up", JOY_AXIS_LEFT_Y, -1.0)
+	_add_joy_axis("ui_down", JOY_AXIS_LEFT_Y, 1.0)
 
 
 func _add_mouse_button(action: String, button_index: MouseButton) -> void:
