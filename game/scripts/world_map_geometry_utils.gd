@@ -392,7 +392,7 @@ static func _clip_weighted_axis(vertices: Array[Dictionary], axis: int,
 				var weight := (boundary - previous_value) / denominator
 				output.append({
 					"position": previous_position.lerp(current_position, weight),
-					"weights": (previous.weights as Vector3).lerp(current.weights as Vector3, weight)
+					"weights": (previous["weights"] as Vector3).lerp(current["weights"] as Vector3, weight)
 				})
 		if current_inside:
 			output.append(current)
@@ -403,10 +403,14 @@ static func _clip_weighted_axis(vertices: Array[Dictionary], axis: int,
 	var cleaned: Array[Dictionary] = []
 	for vertex in output:
 		var position: Vector2 = vertex.position
-		if cleaned.is_empty() or (cleaned[cleaned.size() - 1].position as Vector2).distance_to(position) > 0.00001:
+		var last_position: Vector2 = cleaned[cleaned.size() - 1]["position"] if not cleaned.is_empty() else Vector2.ZERO
+		if cleaned.is_empty() or last_position.distance_to(position) > 0.00001:
 			cleaned.append(vertex)
-	if cleaned.size() > 1 and (cleaned[0].position as Vector2).distance_to(cleaned[cleaned.size() - 1].position) <= 0.00001:
-		cleaned.remove_at(cleaned.size() - 1)
+	if cleaned.size() > 1:
+		var first_position: Vector2 = cleaned[0]["position"]
+		var last_position: Vector2 = cleaned[cleaned.size() - 1]["position"]
+		if first_position.distance_to(last_position) <= 0.00001:
+			cleaned.remove_at(cleaned.size() - 1)
 	return cleaned
 
 
