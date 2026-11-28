@@ -1446,7 +1446,34 @@ func _load_environment() -> void:
 					if direction.length_squared() < 0.01:
 						continue
 					var side := Vector3(-direction.normalized().y, 0.0, direction.normalized().x) * width * 0.5
-					_add_quad(surface, a + side + Vector3.UP * 0.014, a - side + Vector3.UP * 0.014, b - side + Vector3.UP * 0.014, b + side + Vector3.UP * 0.014)
+					var corner_a_left := a + side + Vector3.UP * 0.014
+					var corner_a_right := a - side + Vector3.UP * 0.014
+					var corner_b_right := b - side + Vector3.UP * 0.014
+					var corner_b_left := b + side + Vector3.UP * 0.014
+					var line_footprint := PackedVector2Array([
+						Vector2(corner_a_left.x, corner_a_left.z),
+						Vector2(corner_a_right.x, corner_a_right.z),
+						Vector2(corner_b_right.x, corner_b_right.z),
+						Vector2(corner_b_left.x, corner_b_left.z)
+					])
+					# Le ruban est découpé par son emprise réelle (largeur comprise),
+					# pas seulement par son axe : aucun triangle ne traverse une frontière.
+					var line_sectors := WorldMapGeometryUtils.polygon_sector_keys(line_footprint, 800.0)
+					var line_triangles: Array[PackedVector2Array] = [
+						PackedVector2Array([line_footprint[0], line_footprint[1], line_footprint[2]]),
+						PackedVector2Array([line_footprint[0], line_footprint[2], line_footprint[3]])
+					]
+					for line_sector in line_sectors:
+						var line_min := Vector2(float(line_sector.x) * 800.0, float(line_sector.y) * 800.0)
+						var line_max := line_min + Vector2.ONE * 800.0
+						for line_triangle in line_triangles:
+							var line_piece := WorldMapGeometryUtils.clip_triangle_to_rect(line_triangle, line_min, line_max)
+						if line_piece.size() < 3:
+							continue
+						for fan_index in range(1, line_piece.size() - 1):
+							for q in [line_piece[0], line_piece[fan_index], line_piece[fan_index + 1]]:
+								var line_point: Vector2 = q
+								surface.add_vertex(Vector3(line_point.x, _terrain_mesh_height(line_point.x, line_point.y) + 0.014, line_point.y))
 					added = true
 		if added:
 			_environment_count += 1
