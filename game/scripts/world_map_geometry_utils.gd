@@ -85,6 +85,71 @@ static func line_sector_span(points: PackedVector2Array, sector_size: float = 80
 	return Vector2i(max_sector_x - min_sector_x + 1, max_sector_y - min_sector_y + 1)
 
 
+## Découpe une polyligne X/Z aux frontières de secteurs sans perdre sa continuité.
+## Chaque entrée contient le secteur propriétaire et les sommets du morceau.
+## Les points de frontière sont partagés exactement entre deux morceaux voisins.
+static func split_polyline_by_sectors(points: PackedVector3Array, sector_size: float = 800.0) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if points.size() < 2 or sector_size <= 0.0:
+		return result
+
+	for segment_index in range(points.size() - 1):
+		var start := points[segment_index]
+		var finish := points[segment_index + 1]
+		var delta := finish - start
+		var cuts: Array[float] = [0.0, 1.0]
+
+		if absf(delta.x) > 0.000001:
+			var min_x := minf(start.x, finish.x)
+			var max_x := maxf(start.x, finish.x)
+			var first_boundary := floori(min_x / sector_size) + 1
+			var last_boundary := floori(max_x / sector_size)
+			for boundary_index in range(first_boundary, last_boundary + 1):
+				var boundary_x := float(boundary_index) * sector_size
+				var t_x := (boundary_x - start.x) / delta.x
+				if t_x > 0.000001 and t_x < 0.999999:
+					cuts.append(t_x)
+
+		if absf(delta.z) > 0.000001:
+			var min_z := minf(start.z, finish.z)
+			var max_z := maxf(start.z, finish.z)
+			var first_boundary_z := floori(min_z / sector_size) + 1
+			var last_boundary_z := floori(max_z / sector_size)
+			for boundary_index_z in range(first_boundary_z, last_boundary_z + 1):
+				var boundary_z := float(boundary_index_z) * sector_size
+				var t_z := (boundary_z - start.z) / delta.z
+				if t_z > 0.000001 and t_z < 0.999999:
+					cuts.append(t_z)
+
+		cuts.sort()
+		var unique_cuts: Array[float] = []
+		for cut in cuts:
+			if unique_cuts.is_empty() or absf(cut - unique_cuts[unique_cuts.size() - 1]) > 0.000001:
+				unique_cuts.append(cut)
+
+		for cut_index in range(unique_cuts.size() - 1):
+			var t0: float = unique_cuts[cut_index]
+			var t1: float = unique_cuts[cut_index + 1]
+			if t1 - t0 <= 0.000001:
+				continue
+			var piece_start := start.lerp(finish, t0)
+			var piece_end := start.lerp(finish, t1)
+			var midpoint := start.lerp(finish, (t0 + t1) * 0.5)
+			var sector := Vector2i(floori(midpoint.x / sector_size), floori(midpoint.z / sector_size))
+
+			if not result.is_empty() and result[result.size() - 1].sector == sector:
+				var previous_points: PackedVector3Array = result[result.size() - 1].points
+				if previous_points[previous_points.size() - 1].distance_to(piece_start) <= 0.001:
+					previous_points.append(piece_end)
+					result[result.size() - 1].points = previous_points
+					continue
+
+			var piece_points := PackedVector3Array([piece_start, piece_end])
+			result.append({"sector": sector, "points": piece_points})
+
+	return result
+
+
 static func polygon_area_abs(points: PackedVector2Array) -> float:
 	if points.size() < 3:
 		return 0.0
