@@ -15,7 +15,8 @@ func _initialize() -> void:
 	_test_triangle_clipping_at_sector_corner()
 	_test_weighted_triangle_clipping()
 	_test_triangle_attribute_interpolation()
-	print("WorldMapGeometryUtils: polyline splitting, sector coverage and weighted clipping and vertex attribute interpolation tests passed")
+	_test_array_mesh_surface_sector_clipping()
+	print("WorldMapGeometryUtils: polyline splitting, sector coverage and weighted clipping, attribute interpolation and ArrayMesh sector clipping tests passed")
 	quit()
 
 
@@ -202,6 +203,46 @@ func _test_triangle_attribute_interpolation() -> void:
 		"Invalid attribute triplets must be rejected")
 	assert(Geometry.interpolate_triangle_attribute(["a", "b", "c"], weights) == null,
 		"Unsupported attribute types must be rejected")
+
+
+func _test_array_mesh_surface_sector_clipping() -> void:
+	var source := ArrayMesh.new()
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array([
+		Vector3(-10.0, 2.0, 0.0),
+		Vector3(10.0, 6.0, 0.0),
+		Vector3(0.0, 4.0, 20.0)
+	])
+	arrays[Mesh.ARRAY_NORMAL] = PackedVector3Array([Vector3.UP, Vector3.UP, Vector3.UP])
+	arrays[Mesh.ARRAY_TANGENT] = PackedFloat32Array([
+		1.0, 0.0, 0.0, 1.0,
+		1.0, 0.0, 0.0, 1.0,
+		1.0, 0.0, 0.0, 1.0
+	])
+	arrays[Mesh.ARRAY_COLOR] = PackedColorArray([Color.RED, Color.GREEN, Color.BLUE])
+	arrays[Mesh.ARRAY_TEX_UV] = PackedVector2Array([Vector2(0.0, 0.0), Vector2(1.0, 0.0), Vector2(0.5, 1.0)])
+	arrays[Mesh.ARRAY_TEX_UV2] = PackedVector2Array([Vector2(0.0, 0.0), Vector2(2.0, 0.0), Vector2(1.0, 2.0)])
+	source.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	var clipped := Geometry.clip_array_mesh_surface_to_rect(source, 0, Vector2(0.0, 0.0), Vector2(10.0, 20.0))
+	assert(clipped != null and clipped.get_surface_count() == 1, "A triangle intersecting a sector must produce one clipped mesh surface")
+	var clipped_arrays: Array = clipped.surface_get_arrays(0)
+	var vertices: PackedVector3Array = clipped_arrays[Mesh.ARRAY_VERTEX]
+	assert(vertices.size() >= 3 and vertices.size() % 3 == 0, "Clipped mesh output must contain complete triangles")
+	for vertex in vertices:
+		assert(vertex.x >= -0.0001 and vertex.x <= 10.0001 and vertex.z >= -0.0001 and vertex.z <= 20.0001,
+			"Every clipped mesh vertex must lie inside the sector rectangle")
+	assert(clipped_arrays[Mesh.ARRAY_NORMAL].size() == vertices.size(), "Normals must be retained")
+	assert(clipped_arrays[Mesh.ARRAY_TANGENT].size() == vertices.size() * 4, "Tangents must retain four components")
+	assert(clipped_arrays[Mesh.ARRAY_COLOR].size() == vertices.size(), "Vertex colors must be retained")
+	assert(clipped_arrays[Mesh.ARRAY_TEX_UV].size() == vertices.size(), "UVs must be retained")
+	assert(clipped_arrays[Mesh.ARRAY_TEX_UV2].size() == vertices.size(), "UV2s must be retained")
+	for normal in clipped_arrays[Mesh.ARRAY_NORMAL]:
+		assert(normal.length() > 0.99, "Interpolated normals must be normalized")
+	var outside := Geometry.clip_array_mesh_surface_to_rect(source, 0, Vector2(30.0, 30.0), Vector2(40.0, 40.0))
+	assert(outside == null, "A triangle outside the sector must produce no mesh")
+	assert(Geometry.clip_array_mesh_surface_to_rect(source, 0, Vector2(1.0, 1.0), Vector2(1.0, 2.0)) == null,
+		"An invalid sector rectangle must be rejected")
 
 
 func _test_triangle_clipping_at_sector_corner() -> void:

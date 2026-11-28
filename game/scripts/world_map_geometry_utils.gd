@@ -410,6 +410,123 @@ static func interpolate_triangle_attribute(values: Array, weights: Vector3) -> V
 			return null
 
 
+
+## Découpe une surface triangulaire ArrayMesh dans un rectangle X/Z.
+## Les attributs standards sont reconstruits par coordonnées barycentriques.
+## Retourne null pour les primitives ou attributs de skinning non pris en charge.
+static func clip_array_mesh_surface_to_rect(source_mesh: ArrayMesh, surface_index: int,
+		rect_min: Vector2, rect_max: Vector2) -> ArrayMesh:
+	if source_mesh == null or surface_index < 0 or surface_index >= source_mesh.get_surface_count():
+		return null
+	if source_mesh.surface_get_primitive_type(surface_index) != Mesh.PRIMITIVE_TRIANGLES:
+		return null
+	if rect_min.x >= rect_max.x or rect_min.y >= rect_max.y:
+		return null
+	var source_arrays: Array = source_mesh.surface_get_arrays(surface_index)
+	if source_arrays.size() != Mesh.ARRAY_MAX:
+		return null
+	var source_vertices: PackedVector3Array = source_arrays[Mesh.ARRAY_VERTEX]
+	if source_vertices.size() < 3:
+		return null
+	var source_indices: PackedInt32Array = source_arrays[Mesh.ARRAY_INDEX]
+	if source_indices.is_empty():
+		source_indices.resize(source_vertices.size())
+		for index in range(source_indices.size()):
+			source_indices[index] = index
+	if source_indices.size() < 3 or source_indices.size() % 3 != 0:
+		return null
+	var source_normals: PackedVector3Array = source_arrays[Mesh.ARRAY_NORMAL]
+	var source_tangents: PackedFloat32Array = source_arrays[Mesh.ARRAY_TANGENT]
+	var source_colors: PackedColorArray = source_arrays[Mesh.ARRAY_COLOR]
+	var source_uv: PackedVector2Array = source_arrays[Mesh.ARRAY_TEX_UV]
+	var source_uv2: PackedVector2Array = source_arrays[Mesh.ARRAY_TEX_UV2]
+	var source_bones: PackedInt32Array = source_arrays[Mesh.ARRAY_BONES]
+	var source_weights: PackedFloat32Array = source_arrays[Mesh.ARRAY_WEIGHTS]
+	if (not source_bones.is_empty() and source_bones.size() != source_vertices.size() * 4) or (not source_weights.is_empty() and source_weights.size() != source_vertices.size() * 4):
+		return null
+	if not source_bones.is_empty() or not source_weights.is_empty():
+		return null
+	if not source_normals.is_empty() and source_normals.size() != source_vertices.size():
+		return null
+	if not source_colors.is_empty() and source_colors.size() != source_vertices.size():
+		return null
+	if not source_uv.is_empty() and source_uv.size() != source_vertices.size():
+		return null
+	if not source_uv2.is_empty() and source_uv2.size() != source_vertices.size():
+		return null
+	if not source_tangents.is_empty() and source_tangents.size() != source_vertices.size() * 4:
+		return null
+	var output_vertices := PackedVector3Array()
+	var output_normals := PackedVector3Array()
+	var output_tangents := PackedFloat32Array()
+	var output_colors := PackedColorArray()
+	var output_uv := PackedVector2Array()
+	var output_uv2 := PackedVector2Array()
+	for triangle_start in range(0, source_indices.size(), 3):
+		var ia := source_indices[triangle_start]
+		var ib := source_indices[triangle_start + 1]
+		var ic := source_indices[triangle_start + 2]
+		if ia < 0 or ib < 0 or ic < 0 or ia >= source_vertices.size() or ib >= source_vertices.size() or ic >= source_vertices.size():
+			return null
+		var source_ids := [ia, ib, ic]
+		var source_triangle := PackedVector2Array([
+			Vector2(source_vertices[ia].x, source_vertices[ia].z),
+			Vector2(source_vertices[ib].x, source_vertices[ib].z),
+			Vector2(source_vertices[ic].x, source_vertices[ic].z)
+		])
+		var clipped := clip_triangle_to_rect_with_weights(source_triangle, rect_min, rect_max)
+		if clipped.size() < 3:
+			continue
+		for fan_index in range(1, clipped.size() - 1):
+			var polygon_indices := [0, fan_index, fan_index + 1]
+			for polygon_index in polygon_indices:
+				var weights: Vector3 = clipped[polygon_index]["weights"]
+				var position_values: Array = [source_vertices[ia], source_vertices[ib], source_vertices[ic]]
+				var position: Vector3 = interpolate_triangle_attribute(position_values, weights)
+				output_vertices.append(position)
+				if not source_normals.is_empty():
+					var normal_values: Array = [source_normals[ia], source_normals[ib], source_normals[ic]]
+					var normal: Vector3 = interpolate_triangle_attribute(normal_values, weights)
+					output_normals.append(normal.normalized() if normal.length_squared() > 0.000001 else Vector3.UP)
+				if not source_tangents.is_empty():
+					var tangent_values: Array = [
+						Vector4(source_tangents[ia * 4], source_tangents[ia * 4 + 1], source_tangents[ia * 4 + 2], source_tangents[ia * 4 + 3]),
+						Vector4(source_tangents[ib * 4], source_tangents[ib * 4 + 1], source_tangents[ib * 4 + 2], source_tangents[ib * 4 + 3]),
+						Vector4(source_tangents[ic * 4], source_tangents[ic * 4 + 1], source_tangents[ic * 4 + 2], source_tangents[ic * 4 + 3])
+					]
+					var tangent: Vector4 = interpolate_triangle_attribute(tangent_values, weights)
+					var tangent_direction := Vector3(tangent.x, tangent.y, tangent.z).normalized()
+					output_tangents.append(tangent_direction.x)
+					output_tangents.append(tangent_direction.y)
+					output_tangents.append(tangent_direction.z)
+					output_tangents.append(-1.0 if tangent.w < 0.0 else 1.0)
+				if not source_colors.is_empty():
+					output_colors.append(interpolate_triangle_attribute([source_colors[ia], source_colors[ib], source_colors[ic]], weights))
+				if not source_uv.is_empty():
+					output_uv.append(interpolate_triangle_attribute([source_uv[ia], source_uv[ib], source_uv[ic]], weights))
+				if not source_uv2.is_empty():
+					output_uv2.append(interpolate_triangle_attribute([source_uv2[ia], source_uv2[ib], source_uv2[ic]], weights))
+	if output_vertices.is_empty():
+		return null
+	var output_arrays: Array = []
+	output_arrays.resize(Mesh.ARRAY_MAX)
+	output_arrays[Mesh.ARRAY_VERTEX] = output_vertices
+	if not output_normals.is_empty():
+		output_arrays[Mesh.ARRAY_NORMAL] = output_normals
+	if not output_tangents.is_empty():
+		output_arrays[Mesh.ARRAY_TANGENT] = output_tangents
+	if not output_colors.is_empty():
+		output_arrays[Mesh.ARRAY_COLOR] = output_colors
+	if not output_uv.is_empty():
+		output_arrays[Mesh.ARRAY_TEX_UV] = output_uv
+	if not output_uv2.is_empty():
+		output_arrays[Mesh.ARRAY_TEX_UV2] = output_uv2
+	var result := ArrayMesh.new()
+	result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, output_arrays)
+	result.surface_set_material(0, source_mesh.surface_get_material(surface_index))
+	return result
+
+
 static func _clip_weighted_axis(vertices: Array[Dictionary], axis: int,
 		boundary: float, keep_greater: bool) -> Array[Dictionary]:
 	var output: Array[Dictionary] = []
