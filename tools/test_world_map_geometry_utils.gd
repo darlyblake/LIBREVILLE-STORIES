@@ -9,7 +9,8 @@ func _initialize() -> void:
 	_test_negative_coordinates()
 	_test_reverse_direction()
 	_test_invalid_inputs()
-	print("WorldMapGeometryUtils: polyline sector-splitting tests passed")
+	_test_polygon_sector_coverage()
+	print("WorldMapGeometryUtils: polyline splitting and polygon sector coverage tests passed")
 	quit()
 
 
@@ -75,3 +76,22 @@ func _assert_continuous(pieces: Array[Dictionary], source: PackedVector3Array) -
 		var current: PackedVector3Array = pieces[index].points
 		var following: PackedVector3Array = pieces[index + 1].points
 		assert(current[current.size() - 1].distance_to(following[0]) <= 0.001, "Gap or overlap at a sector boundary")
+
+
+func _test_polygon_sector_coverage() -> void:
+	var crossing := PackedVector2Array([Vector2(790.0, 20.0), Vector2(820.0, 20.0), Vector2(820.0, 40.0), Vector2(790.0, 40.0)])
+	var keys := Geometry.polygon_sector_keys(crossing, 800.0)
+	assert(keys.size() == 2, "A footprint crossing x=800 must cover both sectors")
+	assert(keys.has(Vector2i(0, 0)))
+	assert(keys.has(Vector2i(1, 0)))
+	var negative := PackedVector2Array([Vector2(-805.0, -10.0), Vector2(-795.0, -10.0), Vector2(-795.0, 10.0), Vector2(-805.0, 10.0)])
+	var negative_keys := Geometry.polygon_sector_keys(negative, 800.0)
+	assert(negative_keys.has(Vector2i(-2, -1)))
+	assert(negative_keys.has(Vector2i(-1, -1)))
+	var boundary := PackedVector2Array([Vector2(0.0, 0.0), Vector2(800.0, 0.0), Vector2(800.0, 200.0), Vector2(0.0, 200.0)])
+	var boundary_keys := Geometry.polygon_sector_keys(boundary, 800.0)
+	assert(boundary_keys.size() == 1 and boundary_keys[0] == Vector2i(0, 0), "An exact maximum boundary must not add an empty adjacent sector")
+	var expanded := Geometry.polygon_sector_keys(boundary, 800.0, 1.0)
+	assert(expanded.size() == 4, "A positive margin around a sector corner must cover neighboring sectors")
+	assert(Geometry.polygon_sector_keys(PackedVector2Array(), 800.0).is_empty())
+	assert(Geometry.polygon_sector_keys(crossing, 0.0).is_empty())
