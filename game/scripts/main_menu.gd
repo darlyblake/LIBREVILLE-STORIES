@@ -116,15 +116,22 @@ func _build_interface() -> void:
 
 func _build_controls_panel() -> void:
 	var heading := Label.new()
-	heading.text = "CONFIGURATION DES TOUCHES"
+	heading.text = "COMMANDES CLAVIER ET MANETTE"
 	heading.add_theme_font_size_override("font_size", 18)
 	_controls_box.add_child(heading)
 	var hint := Label.new()
-	hint.text = "Clavier : sélectionne une touche pour la modifier. Manette : navigation avec le stick gauche ou la croix directionnelle, validation avec le bouton principal et retour avec le bouton secondaire. Les commandes de manette sont préconfigurées."
+	hint.text = "Clavier : sélectionne une touche pour la modifier. Manette : navigation au stick gauche ou à la croix directionnelle, validation avec le bouton principal et retour avec le bouton secondaire. Les commandes de manette sont préconfigurées."
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_controls_box.add_child(hint)
-	_add_control_category("DÉPLACEMENT DU PERSONNAGE", ["move_forward", "move_back", "move_left", "move_right", "jump", "sprint", "enter_exit_vehicle"])
+	_add_control_category("DÉPLACEMENT DU PERSONNAGE", ["move_forward", "move_back", "move_left", "move_right", "jump", "sprint", "interact", "enter_exit_vehicle"])
 	_add_control_category("CONDUITE DU VÉHICULE", ["vehicle_accelerate", "vehicle_brake", "vehicle_left", "vehicle_right", "vehicle_camera_next"])
+	var pad_legend := Label.new()
+	pad_legend.text = "MANETTE — Déplacement : stick gauche • Caméra : stick droit • Sauter : Croix / A • Courir : L3 • Interagir : Cercle / B • Entrer ou sortir : Triangle / Y • Accélérer : R2 / RT • Freiner : L2 / LT • Changer de caméra : R3 • Recharger : Carré / X • Viser : L2 / LT • Tirer : R2 / RT"
+	pad_legend.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	pad_legend.add_theme_font_size_override("font_size", 12)
+	pad_legend.add_theme_color_override("font_color", Color(0.72, 0.81, 0.9))
+	_controls_box.add_child(pad_legend)
+	_add_control_category("ACTIONS", ["reload"])
 	_add_button(_controls_box, "RÉTABLIR LES TOUCHES PAR DÉFAUT", _reset_controls)
 	_add_button(_controls_box, "RETOUR AU MENU", _show_menu)
 
