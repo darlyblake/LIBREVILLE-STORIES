@@ -1484,6 +1484,9 @@ func _build_baie_des_rois_water() -> void:
 	water_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	water_instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 	add_child(water_instance)
+	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+	if streaming_manager != null:
+		streaming_manager.register_node(water_instance, "Coastline", Vector3(SITE_CENTER.x, BAIE_DES_ROIS_WATER_LEVEL, SITE_CENTER.y))
 	print("LIBREVILLE STORIES | eau locale Baie des Rois : %d tronçons OSM, départ au bord du rivage" % segment_count)
 
 
@@ -1604,6 +1607,8 @@ func _build_baie_des_rois_seawall() -> void:
 					rock_count += 1
 					rock_index += 1
 
+	var coastal_root := Node3D.new()
+	coastal_root.name = "BaieDesRois_Coastal_Infrastructure"
 	if wall_segments > 0:
 		wall_surface.generate_normals()
 		var wall_mesh := wall_surface.commit()
@@ -1613,7 +1618,7 @@ func _build_baie_des_rois_seawall() -> void:
 			wall_instance.mesh = wall_mesh
 			wall_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			wall_instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
-			add_child(wall_instance)
+			coastal_root.add_child(wall_instance)
 			var wall_body := StaticBody3D.new()
 			wall_body.name = "BaieDesRois_Concrete_Seawall_Collision"
 			wall_body.collision_layer = 1
@@ -1621,11 +1626,16 @@ func _build_baie_des_rois_seawall() -> void:
 			var wall_collision := CollisionShape3D.new()
 			wall_collision.shape = wall_mesh.create_trimesh_shape()
 			wall_body.add_child(wall_collision)
-			add_child(wall_body)
+			coastal_root.add_child(wall_body)
 	if rail_root.get_child_count() > 0:
-		add_child(rail_root)
+		coastal_root.add_child(rail_root)
 	if rock_count > 0:
-		add_child(rock_root)
+		coastal_root.add_child(rock_root)
+	if coastal_root.get_child_count() > 0:
+		add_child(coastal_root)
+		var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+		if streaming_manager != null:
+			streaming_manager.register_node(coastal_root, "Coastline", Vector3(BAIE_DES_ROIS_SITE_CENTER.x, 0.0, BAIE_DES_ROIS_SITE_CENTER.y))
 	print("LIBREVILLE STORIES | rive Baie des Rois : %d segments béton, garde-corps %d pièces, %d rochers PBR" % [wall_segments, rail_root.get_child_count(), rock_count])
 
 
@@ -1785,6 +1795,9 @@ void fragment() {
 			foam_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			foam_instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 			add_child(foam_instance)
+			var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+			if streaming_manager != null:
+				streaming_manager.register_node(foam_instance, "Coastline", Vector3(BAIE_DES_ROIS_SITE_CENTER.x, 0.0, BAIE_DES_ROIS_SITE_CENTER.y))
 
 	if not rock_transforms.is_empty():
 		# Shader minéral procédural : grain, strates irrégulières et humidité
@@ -1856,6 +1869,9 @@ void fragment() {
 		rocks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		rocks.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 		add_child(rocks)
+		var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+		if streaming_manager != null:
+			streaming_manager.register_node(rocks, "Coastline", Vector3(BAIE_DES_ROIS_SITE_CENTER.x, 0.0, BAIE_DES_ROIS_SITE_CENTER.y))
 	print("LIBREVILLE STORIES | littoral : %d segments, %d rubans d'écume, %d rochers" % [_coastline_paths.size(), foam_count, rock_transforms.size()])
 
 
