@@ -28,10 +28,11 @@ on:
 permissions:
   contents: read
 
-# Une seule validation utile à la fois : les commits récents remplacent les anciens.
+# Les validations sont mises en file : un nouveau push ne doit pas annuler
+# l'import/parse Godot du commit précédent avant qu'il ait rendu son résultat.
 concurrency:
   group: validate-godot-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   validate-calendar:
