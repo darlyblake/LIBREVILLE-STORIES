@@ -1284,6 +1284,8 @@ func _load_environment() -> void:
 	var batch_count := 0
 	var batch_index := 0
 	var environment_index := 0
+	var environment_boundary_crossings := 0
+	var environment_widest_sector_span := Vector2i.ONE
 	var environment_features: Array = _filter_features_to_player_zone(data.get("features", []).duplicate(), WORLD_ENVIRONMENT_RADIUS)
 	var player_for_environment := get_parent().get_node_or_null("Player") as Node3D
 	var environment_origin := Vector2.ZERO
@@ -1331,6 +1333,13 @@ func _load_environment() -> void:
 				original_points.remove_at(original_points.size() - 1)
 			if original_points.size() < 3:
 				continue
+			# Mesurer les surfaces dont l'emprise dépasse leur secteur d'affectation.
+			# On conserve la géométrie intacte : aucun découpage visuel/collision ici.
+			var environment_sector_span := WorldMapGeometryUtils.polygon_sector_span(original_points, 800.0)
+			if environment_sector_span.x > 1 or environment_sector_span.y > 1:
+				environment_boundary_crossings += 1
+				environment_widest_sector_span.x = maxi(environment_widest_sector_span.x, environment_sector_span.x)
+				environment_widest_sector_span.y = maxi(environment_widest_sector_span.y, environment_sector_span.y)
 			if kind == "natural_surface" and (str(props.get("natural", "")).to_lower() in ["beach", "sand"] or str(props.get("surface", "")).to_lower() == "sand"):
 				_beach_polygons.append(original_points)
 			var has_landscape_relief := kind in ["vegetation", "green_space"]
@@ -1428,6 +1437,7 @@ func _load_environment() -> void:
 	_build_coastal_details()
 	_build_baie_des_rois_seawall()
 	_commit_tree_instances(tree_positions)
+	print("LIBREVILLE STORIES | surfaces environnementales traversant des secteurs : %d | portée maximale : %dx%d secteurs" % [environment_boundary_crossings, environment_widest_sector_span.x, environment_widest_sector_span.y])
 
 
 func is_terrain_ready() -> bool:
