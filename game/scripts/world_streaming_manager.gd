@@ -89,8 +89,8 @@ func register_node(node: Node3D, category: String, world_position: Vector3 = Vec
 	if should_be_active:
 		_set_sector_active(sector_key, true)
 	else:
-		node.visible = false
-		node.process_mode = Node.PROCESS_MODE_DISABLED
+		# Le secteur parent gère visibilité et traitement ; on ne désactive
+		# pas individuellement le nouveau nœud, sinon il resterait caché au réveil.
 		_set_collision_state_recursive(node, false)
 
 
