@@ -390,9 +390,11 @@ static func _clip_weighted_axis(vertices: Array[Dictionary], axis: int,
 			var denominator := current_value - previous_value
 			if absf(denominator) > 0.0000001:
 				var weight := (boundary - previous_value) / denominator
+				var previous_weights: Vector3 = previous["weights"]
+				var current_weights: Vector3 = current["weights"]
 				output.append({
 					"position": previous_position.lerp(current_position, weight),
-					"weights": (previous["weights"] as Vector3).lerp(current["weights"] as Vector3, weight)
+					"weights": previous_weights.lerp(current_weights, weight)
 				})
 		if current_inside:
 			output.append(current)
