@@ -36,9 +36,10 @@ func _test_diagonal_corner_crossing() -> void:
 func _test_negative_coordinates() -> void:
 	var source := PackedVector3Array([Vector3(-900.0, 2.0, -100.0), Vector3(100.0, 2.0, -100.0)])
 	var pieces := Geometry.split_polyline_by_sectors(source, 800.0)
-	assert(pieces.size() == 2)
+	assert(pieces.size() == 3)
 	assert(pieces[0].sector == Vector2i(-2, -1))
 	assert(pieces[1].sector == Vector2i(-1, -1))
+	assert(pieces[2].sector == Vector2i(0, -1))
 	_assert_continuous(pieces, source)
 
 
