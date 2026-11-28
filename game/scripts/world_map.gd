@@ -1383,23 +1383,36 @@ func _load_environment() -> void:
 					var p0 := points[indices[i]]
 					var p1 := points[indices[i + 1]]
 					var p2 := points[indices[i + 2]]
-					if has_landscape_relief:
-						# Un grand triangle plat flottait au-dessus des routes : on le
-						# découpe en petits triangles posés sur le maillage du relief.
-						var pieces: Array = []
-						_subdivide_ground_triangle(p0, p1, p2, 14.0, pieces)
-						for piece in pieces:
-							for target_surface in [surface, relief_collision_surface]:
-								for q in piece:
-									var qv: Vector2 = q
-									target_surface.add_vertex(Vector3(qv.x, _terrain_mesh_height(qv.x, qv.y) + 0.008, qv.y))
-					else:
-						var flat_pieces: Array = []
-						_subdivide_ground_triangle(p0, p1, p2, 14.0, flat_pieces)
-						for piece in flat_pieces:
-							for q in piece:
-								var qv: Vector2 = q
-								surface.add_vertex(Vector3(qv.x, _terrain_mesh_height(qv.x, qv.y) + 0.02, qv.y))
+					var source_triangle := PackedVector2Array([p0, p1, p2])
+					# Découper chaque triangle aux frontières des secteurs de 800 m
+					# avant la subdivision terrain. Visuel et collision partagent
+					# exactement les mêmes sommets et les mêmes limites.
+					for triangle_sector in WorldMapGeometryUtils.polygon_sector_keys(source_triangle, 800.0):
+						var sector_min := Vector2(float(triangle_sector.x) * 800.0, float(triangle_sector.y) * 800.0)
+						var sector_max := sector_min + Vector2.ONE * 800.0
+						var clipped_triangle := WorldMapGeometryUtils.clip_triangle_to_rect(source_triangle, sector_min, sector_max)
+						if clipped_triangle.size() < 3:
+							continue
+						# Le clipping produit un polygone convexe : triangulation en éventail.
+						for fan_index in range(1, clipped_triangle.size() - 1):
+							var clipped_a := clipped_triangle[0]
+							var clipped_b := clipped_triangle[fan_index]
+							var clipped_c := clipped_triangle[fan_index + 1]
+							if has_landscape_relief:
+								var pieces: Array = []
+								_subdivide_ground_triangle(clipped_a, clipped_b, clipped_c, 14.0, pieces)
+								for piece in pieces:
+									for target_surface in [surface, relief_collision_surface]:
+										for q in piece:
+											var qv: Vector2 = q
+											target_surface.add_vertex(Vector3(qv.x, _terrain_mesh_height(qv.x, qv.y) + 0.008, qv.y))
+							else:
+								var flat_pieces: Array = []
+								_subdivide_ground_triangle(clipped_a, clipped_b, clipped_c, 14.0, flat_pieces)
+								for piece in flat_pieces:
+									for q in piece:
+										var qv: Vector2 = q
+										surface.add_vertex(Vector3(qv.x, _terrain_mesh_height(qv.x, qv.y) + 0.02, qv.y))
 				polygon_added = true
 			added = polygon_added
 		elif str(geometry.get("type", "")) == "LineString":
