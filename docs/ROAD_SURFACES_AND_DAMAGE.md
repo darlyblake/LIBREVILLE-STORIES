@@ -53,3 +53,15 @@ non goudronnées, les surfaces goudronnées explicitement dégradées, les
 indications de mauvaise planéité et les surfaces inconnues. Les longueurs
 sont des estimations géographiques, pas un relevé topographique. L'audit
 n'altère jamais les tracés ni ne raccorde automatiquement les routes.
+
+
+## Contrôle de continuité du réseau
+
+L'audit inclut également les extrémités de routes :
+- extrémités différentes séparées de 1,5 m ou moins, au même niveau OSM ;
+- extrémités proches de l'intérieur d'un autre segment (candidat de jonction en T, 3 m maximum) ;
+- extrémités isolées à examiner ;
+- petits tronçons isolés de moins de 35 m ;
+- extrémités proches de la boîte englobante de l'extraction (repère indicatif, pas la limite administrative du projet).
+
+Les correspondances entre niveaux différents (`layer`, `bridge`, `tunnel`) sont exclues. Une extrémité isolée n'est pas automatiquement une erreur : elle peut représenter une impasse, une entrée privée ou une route réellement interrompue. L'audit ne raccorde ni ne déplace aucune géométrie. Le rapport est publié comme artefact GitHub Actions pendant 30 jours.

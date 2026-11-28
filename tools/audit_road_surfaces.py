@@ -118,7 +118,7 @@ def audit_topology(features):
     return {
       "endpoint_count":len(endpoints),"segment_count":len(segments),
       "near_endpoint_pairs_within_1_5m":len(near_pairs),"possible_t_junctions_within_3m":len(t_candidates),
-      "dangling_endpoint_review_candidates":len(dangling),"perimeter_endpoints":len(boundary),
+      "dangling_endpoint_review_candidates":len(dangling),"bbox_edge_endpoints":len(boundary),
       "short_isolated_road_candidates":len(isolated),
       "examples":{"near_endpoint_pairs":near_pairs[:200],"possible_t_junctions":t_candidates[:200],
                   "dangling_endpoints":[{k:v for k,v in x.items()} for x in dangling[:200]],
@@ -150,7 +150,7 @@ def main():
     print(f"OSM roads audited: {report['feature_count']} features")
     for key,item in report["categories"].items(): print(f"- {key}: {item['features']} features, ~{item['estimated_total_length_km']} km")
     top=report["topology"]
-    for key in ("near_endpoint_pairs_within_1_5m","possible_t_junctions_within_3m","dangling_endpoint_review_candidates","perimeter_endpoints","short_isolated_road_candidates"):
+    for key in ("near_endpoint_pairs_within_1_5m","possible_t_junctions_within_3m","dangling_endpoint_review_candidates","bbox_edge_endpoints","short_isolated_road_candidates"):
         print(f"- {key}: {top[key]}")
     print(f"Detailed report: {OUTPUT}")
     return 0
