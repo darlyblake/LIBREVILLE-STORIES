@@ -10,7 +10,7 @@ un rayon de sortie plus large afin d'éviter le clignotement à la frontière.
 
 - Script : `game/scripts/world_streaming_manager.gd`
 - Nœud : `WorldStreamingManager` dans `game/scenes/main.tscn`
-- Taille de secteur par défaut : 256 m
+- Taille de secteur par défaut : 800 m (alignée sur les tuiles routières OSM)
 - Rayon d'activation : 2 secteurs
 - Rayon de sortie : 3 secteurs
 - Actualisation : 0,20 s
