@@ -10,7 +10,8 @@ func _initialize() -> void:
 	_test_reverse_direction()
 	_test_invalid_inputs()
 	_test_polygon_sector_coverage()
-	print("WorldMapGeometryUtils: polyline splitting and polygon sector coverage tests passed")
+	_test_triangle_sector_clipping()
+	print("WorldMapGeometryUtils: polyline splitting, sector coverage and triangle clipping tests passed")
 	quit()
 
 
@@ -95,3 +96,23 @@ func _test_polygon_sector_coverage() -> void:
 	assert(expanded.size() == 4, "A positive margin around a sector corner must cover neighboring sectors")
 	assert(Geometry.polygon_sector_keys(PackedVector2Array(), 800.0).is_empty())
 	assert(Geometry.polygon_sector_keys(crossing, 0.0).is_empty())
+
+
+func _test_triangle_sector_clipping() -> void:
+	var triangle := PackedVector2Array([Vector2(700.0, 100.0), Vector2(900.0, 100.0), Vector2(800.0, 300.0)])
+	var left := Geometry.clip_triangle_to_rect(triangle, Vector2(0.0, 0.0), Vector2(800.0, 800.0))
+	var right := Geometry.clip_triangle_to_rect(triangle, Vector2(800.0, 0.0), Vector2(1600.0, 800.0))
+	assert(left.size() >= 3 and right.size() >= 3, "A triangle crossing x=800 must produce two clipped polygons")
+	for point in left:
+		assert(point.x >= -0.001 and point.x <= 800.001 and point.y >= -0.001 and point.y <= 800.001)
+	for point in right:
+		assert(point.x >= 799.999 and point.x <= 1600.001 and point.y >= -0.001 and point.y <= 800.001)
+	var original_area := Geometry.polygon_area_abs(triangle)
+	var split_area := Geometry.polygon_area_abs(left) + Geometry.polygon_area_abs(right)
+	assert(absf(original_area - split_area) <= 0.01, "Sector clipping must preserve triangle area")
+	var untouched := Geometry.clip_triangle_to_rect(triangle, Vector2(0.0, 0.0), Vector2(800.0, 800.0))
+	assert(untouched.size() >= 3)
+	var outside := Geometry.clip_triangle_to_rect(triangle, Vector2(1000.0, 1000.0), Vector2(1800.0, 1800.0))
+	assert(outside.is_empty(), "A triangle outside the sector must produce no geometry")
+	assert(Geometry.clip_triangle_to_rect(PackedVector2Array(), Vector2.ZERO, Vector2.ONE).is_empty())
+	assert(Geometry.clip_triangle_to_rect(triangle, Vector2.ZERO, Vector2.ZERO).is_empty())
