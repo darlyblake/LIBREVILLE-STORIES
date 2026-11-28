@@ -94,6 +94,22 @@ static func polygon_sector_keys(points: PackedVector2Array, sector_size: float =
 
 ## Emprise d'une ligne routière sur la grille des secteurs.
 ## Les coordonnées sont en X/Z monde ; le maximum est traité comme exclusif.
+## Vrai si une polyligne touche un disque, même lorsque ses deux extrémités
+## sont hors du rayon. Utilisé pour conserver les axes qui traversent la zone chargée.
+static func polyline_intersects_circle(points: PackedVector2Array, center: Vector2, radius: float) -> bool:
+	if points.is_empty() or radius < 0.0:
+		return false
+	var radius_squared := radius * radius
+	for point in points:
+		if point.distance_squared_to(center) <= radius_squared:
+			return true
+	for index in range(points.size() - 1):
+		var nearest := Geometry2D.get_closest_point_to_segment(center, points[index], points[index + 1])
+		if nearest.distance_squared_to(center) <= radius_squared:
+			return true
+	return false
+
+
 static func line_sector_span(points: PackedVector2Array, sector_size: float = 800.0) -> Vector2i:
 	if points.is_empty() or sector_size <= 0.0:
 		return Vector2i.ZERO

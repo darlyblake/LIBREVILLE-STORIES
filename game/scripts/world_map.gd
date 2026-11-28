@@ -4876,13 +4876,29 @@ func _filter_features_to_player_zone(features: Array, radius_m: float) -> Array:
 		_collect_geo_points(geometry.get("coordinates", []), points)
 		if points.is_empty():
 			continue
-		# La distance au centre géométrique permet de ne créer que les objets
-		# appartenant à la zone active et à sa couronne de préparation.
+		# Conserver le filtrage par centre pour les objets surfaciques, mais
+		# ne jamais rejeter une route qui traverse le rayon avec son centre
+		# et ses deux extrémités à l'extérieur.
 		var feature_center := Vector2.ZERO
 		for point in points:
 			feature_center += point
 		feature_center /= float(points.size())
-		if feature_center.distance_squared_to(center) <= radius_squared:
+		var intersects_zone := feature_center.distance_squared_to(center) <= radius_squared
+		if not intersects_zone and str(geometry.get("type", "")) in ["LineString", "MultiLineString"]:
+			var lines: Array = []
+			if str(geometry.get("type", "")) == "LineString":
+				lines.append(geometry.get("coordinates", []))
+			else:
+				lines = geometry.get("coordinates", [])
+			for line in lines:
+				var line_points := PackedVector2Array()
+				for coordinate in line:
+					var world_point := _geo_to_world(coordinate)
+					line_points.append(Vector2(world_point.x, world_point.z))
+				if WorldMapGeometryUtils.polyline_intersects_circle(line_points, center, radius_m):
+					intersects_zone = true
+					break
+		if intersects_zone:
 			selected.append(feature)
 	return selected
 

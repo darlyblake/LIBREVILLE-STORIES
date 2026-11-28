@@ -16,8 +16,23 @@ func _initialize() -> void:
 	_test_weighted_triangle_clipping()
 	_test_triangle_attribute_interpolation()
 	_test_array_mesh_surface_sector_clipping()
-	print("WorldMapGeometryUtils: polyline splitting, sector coverage and weighted clipping, attribute interpolation and ArrayMesh sector clipping tests passed")
+	_test_polyline_zone_intersection()
+	print("WorldMapGeometryUtils: polyline splitting, zone intersection, sector coverage and weighted clipping, attribute interpolation and ArrayMesh sector clipping tests passed")
 	quit()
+
+
+func _test_polyline_zone_intersection() -> void:
+	var crossing := PackedVector2Array([Vector2(-1200.0, 0.0), Vector2(1200.0, 0.0)])
+	assert(Geometry.polyline_intersects_circle(crossing, Vector2.ZERO, 800.0),
+		"A road crossing the loaded radius must be retained even when both endpoints are outside")
+	var outside := PackedVector2Array([Vector2(-1200.0, 900.0), Vector2(1200.0, 900.0)])
+	assert(not Geometry.polyline_intersects_circle(outside, Vector2.ZERO, 800.0),
+		"A road that stays outside the loaded radius must be rejected")
+	var touching := PackedVector2Array([Vector2(800.0, 0.0), Vector2(1200.0, 0.0)])
+	assert(Geometry.polyline_intersects_circle(touching, Vector2.ZERO, 800.0),
+		"A road touching the radius boundary must be retained")
+	assert(not Geometry.polyline_intersects_circle(PackedVector2Array(), Vector2.ZERO, 800.0))
+	assert(not Geometry.polyline_intersects_circle(crossing, Vector2.ZERO, -1.0))
 
 
 func _test_horizontal_crossings() -> void:

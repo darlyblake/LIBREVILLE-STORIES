@@ -202,3 +202,14 @@ Les normales interpolées doivent être renormalisées par le constructeur du me
 Les surfaces routières triangulaires sont maintenant découpées dans leur rectangle de secteur au moment de leur validation. Les intersections de triangles interpolent les positions, UV/UV2, couleurs, normales et tangentes à partir des poids barycentriques. Chaque secteur reçoit ses propres MeshInstance3D et ses propres collisions ; le gestionnaire les enregistre comme nœuds sectoriels indépendants au lieu de garder une tuile routière partagée.
 
 Le découpage est appliqué aux surfaces de chaussée, trottoirs, bordures et marquages produits par les lots de routes. Les surfaces et collisions sont toutes découpées depuis leur géométrie source ; aucun mesh de tuile entier n'est réutilisé dans plusieurs secteurs. Les attributs de skinning (bones/weights) restent volontairement refusés par l'utilitaire, car les routes sont des meshes statiques.
+
+
+## Continuité des axes routiers au rayon de chargement
+
+Le filtrage spatial des routes ne doit pas utiliser uniquement le centre géométrique
+d'une entité OSM : une longue route peut traverser la zone jouable alors que son
+centre et ses extrémités se trouvent à l'extérieur. Les LineString et MultiLineString
+sont donc conservées dès qu'un segment intersecte le disque de chargement. Les
+bâtiments et autres objets surfaciques gardent le filtrage par centre. Un test
+géométrique vérifie le cas d'une route traversante, d'une route extérieure et d'un
+contact exact avec la limite du rayon.
