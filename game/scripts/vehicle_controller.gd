@@ -380,23 +380,7 @@ func _read_drive_controls() -> Vector3:
 	var steer := Input.get_axis("vehicle_left", "vehicle_right")
 	var throttle := Input.get_action_strength("vehicle_accelerate")
 	var brake := Input.get_action_strength("vehicle_brake")
-	var devices := Input.get_connected_joypads()
-	if not devices.is_empty():
-		var device := devices[0]
-		var pad_steer := Input.get_joy_axis(device, JOY_AXIS_LEFT_X)
-		if absf(pad_steer) < gamepad_deadzone:
-			pad_steer = 0.0
-		if absf(pad_steer) > absf(steer):
-			steer = pad_steer
-		throttle = maxf(throttle, _read_trigger(device, JOY_AXIS_TRIGGER_RIGHT))
-		brake = maxf(brake, _read_trigger(device, JOY_AXIS_TRIGGER_LEFT))
 	return Vector3(clampf(throttle, 0.0, 1.0), clampf(brake, 0.0, 1.0), clampf(steer, -1.0, 1.0))
-
-func _read_trigger(device: int, axis: JoyAxis) -> float:
-	var raw := Input.get_joy_axis(device, axis)
-	if raw < -0.5:
-		return clampf((raw + 1.0) * 0.5, 0.0, 1.0)
-	return clampf(raw, 0.0, 1.0)
 
 func _update_longitudinal_speed(throttle: float, brake_input: float, _delta: float) -> void:
 	current_speed = linear_velocity.dot(-global_transform.basis.z)
