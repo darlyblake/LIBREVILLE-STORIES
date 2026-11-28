@@ -122,10 +122,19 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
   `EnvironmentBatch_x_y_nnn`.
 - Les lots sont enregistrés dans l'union des secteurs couverts par les boîtes
   englobantes des polygones et lignes (largeur comprise pour les lignes). Le
-  mesh visuel et la collision de relief restent uniques et ne sont pas
-  découpés ; un lot reste actif tant qu'un secteur couvert est chargé. La
-  couverture conservative peut inclure des secteurs que la forme concave ne
-  touche pas réellement.
+  mesh visuel et la collision de relief restent regroupés dans le même lot,
+  activé tant qu'un secteur couvert est chargé.
+- Les triangles des surfaces polygonales sont maintenant découpés contre les
+  rectangles exacts des secteurs de 800 m avant leur subdivision pour suivre
+  le relief. Les polygones convexes issus du clipping sont triangulés en éventail.
+  Le même triangle découpé et les mêmes sommets sont envoyés au mesh visuel et
+  à la collision du relief, ce qui évite une divergence entre les deux.
+- Limite actuelle : les morceaux découpés par secteur sont encore réunis dans
+  le lot environnemental d'origine ; ils ne sont pas encore stockés dans un
+  nœud/mesh indépendant par secteur. Les lignes d'eau et autres LineString ne
+  sont pas encore découpées par ce chemin.
+- La couverture conservative peut inclure des secteurs que la forme concave
+  ne touche pas réellement.
 
 ## Limites et prochaines étapes
 
