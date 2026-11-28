@@ -195,3 +195,10 @@ la reconstruction des positions et la conservation de l'aire.
 La primitive `interpolate_triangle_attribute(values, weights)` applique les coordonnées barycentriques conservées par le clipping aux attributs d'un triangle source. Elle prend en charge les scalaires, `Vector2`, `Vector3`, `Vector4` et `Color` (y compris l'alpha). Pour les meshes routiers, cela couvre notamment UV/UV2, position, normales, tangentes et couleurs de sommets.
 
 Les normales interpolées doivent être renormalisées par le constructeur du mesh ; les tangentes peuvent nécessiter une réorthogonalisation. Les attributs de peau/bones ne sont pas encore pris en charge. Cette primitive et ses tests sont une étape préparatoire : les meshes routiers sont toujours regroupés en tuiles partagées, le découpage réel des surfaces et la reconstruction des collisions par secteur restent à implémenter.
+
+
+### Découpage effectif des meshes routiers
+
+Les surfaces routières triangulaires sont maintenant découpées dans leur rectangle de secteur au moment de leur validation. Les intersections de triangles interpolent les positions, UV/UV2, couleurs, normales et tangentes à partir des poids barycentriques. Chaque secteur reçoit ses propres MeshInstance3D et ses propres collisions ; le gestionnaire les enregistre comme nœuds sectoriels indépendants au lieu de garder une tuile routière partagée.
+
+Le découpage est appliqué aux surfaces de chaussée, trottoirs, bordures et marquages produits par les lots de routes. Les surfaces et collisions sont toutes découpées depuis leur géométrie source ; aucun mesh de tuile entier n'est réutilisé dans plusieurs secteurs. Les attributs de skinning (bones/weights) restent volontairement refusés par l'utilitaire, car les routes sont des meshes statiques.

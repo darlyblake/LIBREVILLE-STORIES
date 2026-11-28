@@ -3003,9 +3003,28 @@ func _road_part_streaming_anchor(points: Array[Vector3]) -> Vector3:
 
 
 func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_name: String, tile_key: Vector2i, covered_sectors: Array) -> void:
-	# Un conteneur par tuile OSM de 800 m : rendu et collisions voyagent ensemble.
-	var tile_root := Node3D.new()
-	tile_root.name = "RoadTile_%d_%d" % [tile_key.x, tile_key.y]
+	# Chaque mesh source est réellement découpé par secteur avant son enregistrement.
+	var sector_keys: Array[Vector2i] = []
+	for covered_sector in covered_sectors:
+		if covered_sector is Vector2i and not sector_keys.has(covered_sector):
+			sector_keys.append(covered_sector)
+	if sector_keys.is_empty():
+		sector_keys.append(tile_key)
+	sector_keys.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		if a.x == b.x:
+			return a.y < b.y
+		return a.x < b.x
+	)
+	var sector_roots: Dictionary = {}
+	var sector_bounds: Dictionary = {}
+	for sector_key in sector_keys:
+		var root := Node3D.new()
+		root.name = "RoadSector_%d_%d_%s" % [sector_key.x, sector_key.y, tile_name]
+		sector_roots[sector_key] = root
+		sector_bounds[sector_key] = {
+			"min": Vector2(float(sector_key.x) * ROAD_TILE_SIZE, float(sector_key.y) * ROAD_TILE_SIZE),
+			"max": Vector2(float(sector_key.x + 1) * ROAD_TILE_SIZE, float(sector_key.y + 1) * ROAD_TILE_SIZE)
+		}
 	for key in surfaces.keys():
 		var surface: SurfaceTool = surfaces[key]
 		var textured: bool = key in ROAD_TEXTURED_KEYS
@@ -3014,59 +3033,72 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 		surface.generate_normals()
 		if textured:
 			surface.generate_tangents()
-		var mesh := surface.commit()
-		if mesh == null or mesh.get_surface_count() == 0:
+		var source_mesh := surface.commit()
+		if source_mesh == null or source_mesh.get_surface_count() == 0:
 			continue
-		var instance := MeshInstance3D.new()
-		instance.name = ("OSM_Roads_%s" % tile_name) if key == "asphalt" else ("OSM_Roads_%s_%s" % [str(key).capitalize(), tile_name])
-		instance.mesh = mesh
-		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		# Collision de secours construite depuis la même géométrie que la chaussée.
-		if road_collision and key in ["asphalt", "dirt", "paving"]:
-			var road_shape := mesh.create_trimesh_shape() as ConcavePolygonShape3D
-			if road_shape != null:
-				road_shape.backface_collision = true
-				var road_body := StaticBody3D.new()
-				road_body.name = "OSM_Road_Surface_Collision_%s_%s" % [str(key), tile_name]
-				road_body.collision_layer = 1
-				road_body.collision_mask = 1
-				var road_collision_shape := CollisionShape3D.new()
-				road_collision_shape.shape = road_shape
-				road_body.add_child(road_collision_shape)
-				tile_root.add_child(road_body)
-		if key != "asphalt" and key != "dirt" and key != "paving":
-			instance.visibility_range_end = ROAD_DETAIL_VISIBILITY
-		tile_root.add_child(instance)
+		for sector_key in sector_keys:
+			var bounds: Dictionary = sector_bounds[sector_key]
+			var clipped_mesh := WorldMapGeometryUtils.clip_array_mesh_surface_to_rect(
+				source_mesh, 0, bounds.min, bounds.max
+			)
+			if clipped_mesh == null or clipped_mesh.get_surface_count() == 0:
+				continue
+			var instance := MeshInstance3D.new()
+			instance.name = ("OSM_Roads_%s" % tile_name) if key == "asphalt" else ("OSM_Roads_%s_%s" % [str(key).capitalize(), tile_name])
+			instance.mesh = clipped_mesh
+			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			if key != "asphalt" and key != "dirt" and key != "paving":
+				instance.visibility_range_end = ROAD_DETAIL_VISIBILITY
+			sector_roots[sector_key].add_child(instance)
+			# Les collisions issues des surfaces texturées suivent exactement le même clipping.
+			if road_collision and key in ["asphalt", "dirt", "paving"]:
+				var road_shape := clipped_mesh.create_trimesh_shape() as ConcavePolygonShape3D
+				if road_shape != null:
+					road_shape.backface_collision = true
+					var road_body := StaticBody3D.new()
+					road_body.name = "OSM_Road_Surface_Collision_%s_%s_%d_%d" % [str(key), tile_name, sector_key.x, sector_key.y]
+					road_body.collision_layer = 1
+					road_body.collision_mask = 1
+					var road_collision_shape := CollisionShape3D.new()
+					road_collision_shape.shape = road_shape
+					road_body.add_child(road_collision_shape)
+					sector_roots[sector_key].add_child(road_body)
 	if road_collision:
-		var collision_mesh := collision.commit()
-		if collision_mesh != null and collision_mesh.get_surface_count() > 0:
-			var shape := collision_mesh.create_trimesh_shape() as ConcavePolygonShape3D
-			if shape != null:
+		var source_collision_mesh := collision.commit()
+		if source_collision_mesh != null and source_collision_mesh.get_surface_count() > 0:
+			for sector_key in sector_keys:
+				var bounds: Dictionary = sector_bounds[sector_key]
+				var clipped_collision_mesh := WorldMapGeometryUtils.clip_array_mesh_surface_to_rect(
+					source_collision_mesh, 0, bounds.min, bounds.max
+				)
+				if clipped_collision_mesh == null or clipped_collision_mesh.get_surface_count() == 0:
+					continue
+				var shape := clipped_collision_mesh.create_trimesh_shape() as ConcavePolygonShape3D
+				if shape == null:
+					continue
 				shape.backface_collision = true
 				var body := StaticBody3D.new()
-				body.name = "OSM_Roads_Collision_" + tile_name
+				body.name = "OSM_Roads_Collision_%s_%d_%d" % [tile_name, sector_key.x, sector_key.y]
 				body.collision_layer = 1
 				body.collision_mask = 1
 				var collision_shape := CollisionShape3D.new()
 				collision_shape.shape = shape
 				body.add_child(collision_shape)
-				tile_root.add_child(body)
-	if tile_root.get_child_count() == 0:
-		tile_root.queue_free()
-		return
-	# L'origine des vertices des SurfaceTools est le repère WorldMap (0,0,0).
-	# On ajoute d'abord le conteneur ici ; le manager conserve son transform global.
-	add_child(tile_root)
-	var tile_center := Vector3((float(tile_key.x) + 0.5) * ROAD_TILE_SIZE, 0.0, (float(tile_key.y) + 0.5) * ROAD_TILE_SIZE)
+				sector_roots[sector_key].add_child(body)
 	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
-	if streaming_manager != null:
-		var sector_keys: Array[Vector2i] = []
-		for covered_sector in covered_sectors:
-			if covered_sector is Vector2i:
-				sector_keys.append(covered_sector)
-		if sector_keys.is_empty():
-			sector_keys.append(tile_key)
-		streaming_manager.register_node_in_sectors(tile_root, "Roads", sector_keys)
+	for sector_key in sector_keys:
+		var sector_root: Node3D = sector_roots[sector_key]
+		if sector_root.get_child_count() == 0:
+			sector_root.queue_free()
+			continue
+		add_child(sector_root)
+		var sector_center := Vector3(
+			(float(sector_key.x) + 0.5) * ROAD_TILE_SIZE,
+			0.0,
+			(float(sector_key.y) + 0.5) * ROAD_TILE_SIZE
+		)
+		if streaming_manager != null:
+			streaming_manager.register_node(sector_root, "Roads", sector_center)
 
 
 func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, collision: SurfaceTool, node_registry: Dictionary, patched: Dictionary, all_parts: Array[Dictionary]) -> void:
