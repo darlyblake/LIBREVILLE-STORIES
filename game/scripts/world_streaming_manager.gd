@@ -9,7 +9,7 @@ signal sector_activated(sector_key: Vector2i)
 signal sector_deactivated(sector_key: Vector2i)
 signal active_sectors_changed(active_count: int)
 
-@export_range(64.0, 2048.0, 32.0) var sector_size: float = 256.0
+@export_range(64.0, 2048.0, 32.0) var sector_size: float = 800.0
 @export_range(1, 8, 1) var load_radius: int = 2
 @export_range(1, 10, 1) var unload_radius: int = 3
 @export_range(0.05, 1.0, 0.05) var update_interval: float = 0.20
@@ -85,7 +85,13 @@ func register_node(node: Node3D, category: String, world_position: Vector3 = Vec
 		node.reparent(category_root, true)
 	else:
 		category_root.add_child(node)
-	_set_sector_active(sector_key, _is_inside_load_radius(sector_key))
+	var should_be_active := _is_inside_load_radius(sector_key)
+	if should_be_active:
+		_set_sector_active(sector_key, true)
+	else:
+		node.visible = false
+		node.process_mode = Node.PROCESS_MODE_DISABLED
+		_set_collision_state_recursive(node, false)
 
 
 ## Met à jour les secteurs proches. Le rayon de déchargement plus large
