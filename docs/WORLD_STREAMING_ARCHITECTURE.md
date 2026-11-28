@@ -1,63 +1,117 @@
-# Streaming spatial du monde — première fondation
+# Streaming spatial du monde — architecture actuelle
 
 ## Objectif
 
-Découper le monde jouable en secteurs carrés indépendants. Le joueur déclenche
-l'activation des secteurs proches ; les secteurs éloignés sont désactivés avec
-un rayon de sortie plus large afin d'éviter le clignotement à la frontière.
+Le monde jouable est organisé en secteurs de 800 m sur les axes X/Z. Le
+gestionnaire active les contenus proches du joueur et désactive ceux qui sont
+éloignés, sans détruire les nœuds ni leurs ressources. Les générateurs restent
+responsables de produire les données géographiques et les objets du monde.
 
-## Implémentation initiale
+## Gestionnaire central
 
 - Script : `game/scripts/world_streaming_manager.gd`
-- Nœud : `WorldStreamingManager` dans `game/scenes/main.tscn`
-- Taille de secteur par défaut : 800 m (alignée sur les tuiles routières OSM)
-- Rayon d'activation : 2 secteurs
-- Rayon de sortie : 3 secteurs
-- Actualisation : 0,20 s
-- Conversion monde → secteur par coordonnées X/Z avec `floori`.
-- API `register_node(node, category, world_position)` pour ranger les éléments
-  générés dans un conteneur spatial et conserver leur transformation globale.
-- Désactivation : visibilité, traitement des nœuds et couches de collision.
-  Les objets ne sont pas détruits ; leurs ressources restent disponibles.
+- Scène : `game/scenes/main.tscn`, nœud `WorldStreamingManager`
+- Taille par défaut : 800 m, alignée sur les tuiles routières OSM.
+- Rayon d'activation : 2 secteurs.
+- Rayon de désactivation : 3 secteurs.
+- Fréquence de mise à jour : 0,20 s.
+- Coordonnées : secteur calculé depuis X/Z avec `floori`.
+- Enregistrement : `register_node(node, category, world_position)`.
+- Le reparentage conserve le transform global.
+- Désactivation : visibilité, traitement du secteur et couches de collision.
+- Les collisions d'origine sont mémorisées dans les métadonnées puis
+  restaurées à la réactivation.
 
-## Limite volontaire de cette première étape
+### Géométrie des rayons
 
-Le terrain possède déjà son propre streaming en chunks DEM. Les routes,
-bâtiments, végétation, littoral et POI sont encore construits par les
-générateurs de `world_map.gd`. Ils ne sont pas encore tous enregistrés dans
-les secteurs : il ne faut donc pas présenter cette étape comme un streaming
-complet de la ville.
+Les rayons sont actuellement circulaires en distance euclidienne entre
+coordonnées de secteurs, et non carrés : avec un rayon de 2, les secteurs
+diagonaux éloignés de plus de 2 unités ne sont pas activés. Le rayon de sortie
+plus large apporte une hystérésis et évite les basculements répétés à la limite.
+Ce comportement devra être comparé aux besoins de continuité des routes et des
+grands lots avant de changer la forme de voisinage.
 
-La prochaine intégration devra découper les lots de géométrie par secteur,
-et non déplacer un grand mesh multi-quartiers selon son seul centre. Les
-collisions routières, les intersections, les trottoirs et les dépendances de
-la Baie des Rois devront rester cohérents lors des transitions.
+### Anticipation du déplacement
 
-## Contrôles requis
+Le gestionnaire utilise la vitesse horizontale du personnage. Lorsque le
+personnage se trouve près du siège conducteur du nœud `Vehicle`, il lit la
+vitesse réelle du `VehicleBody3D`. Une anticipation pouvant atteindre six
+secondes est appliquée, plafonnée à deux tailles de secteur. À ce stade, cette
+anticipation n'est pas encore différenciée proprement entre marche et conduite :
+c'est une amélioration à réaliser après validation du comportement actuel.
 
-- Vérifier le parse Godot 4.3 et le démarrage de `main.tscn`.
-- Vérifier le reparentage avec conservation du transform global.
-- Vérifier l'activation/désactivation des collisions.
-- Tester les transitions à pied et en véhicule.
-- Comparer les secteurs traversés avec le périmètre validé du projet :
-  aucun contenu hors périmètre ne doit être généré.
+## Contenus déjà intégrés
 
-## Première intégration : tuiles routières
+### Routes et voirie
 
-- Le gestionnaire utilise désormais des secteurs de 800 m, alignés sur
-  `ROAD_TILE_SIZE` de la carte.
-- Chaque tuile routière générée devient un conteneur unique `RoadTile_x_z`.
-- Chaussée, bordures, trottoirs, marquages et collisions restent ensemble.
+- Chaque tuile routière de 800 m est contenue dans un nœud `RoadTile_x_z`.
+- Chaussée, bordures, trottoirs, marquages et collisions restent groupés.
 - Le conteneur est enregistré dans le secteur correspondant à son centre.
-- Le reparentage conserve le repère global des meshes créés par SurfaceTool.
-- Une tuile enregistrée hors rayon est immédiatement masquée et ses collisions
-  sont désactivées, y compris lorsqu'elle est ajoutée après la création du secteur.
+- Une tuile hors rayon est masquée et ses collisions sont désactivées.
+- Les transitions entre tuiles, intersections et trottoirs doivent encore être
+  testées en jeu pour détecter les discontinuités.
 
-Les bâtiments ne sont pas encore intégrés : leurs meshes sont actuellement
-regroupés par lots de 1 200 empreintes triées par distance, pas par position.
-Les bâtiments sont maintenant regroupés en lots limités à un seul secteur,
-avec un maximum de 1 200 empreintes par lot. Les bâtiments spéciaux de la Baie
-des Rois sont eux aussi enregistrés individuellement dans leur secteur.
-Chaque lot de murs, toitures et détails de façade est placé dans un conteneur
-sectoriel unique. Les empreintes sont affectées au secteur de leur centre ; les
-très grands bâtiments traversant une frontière restent donc une limite à tester.
+### Bâtiments
+
+- Les lots de bâtiments sont triés et regroupés par secteur.
+- Un lot est limité à 1 200 empreintes.
+- Les murs, toitures et détails d'un lot restent dans le même conteneur.
+- Les bâtiments spéciaux de la Baie des Rois sont également enregistrés.
+- Limite connue : une empreinte de bâtiment est affectée au secteur de son
+  centre. La géométrie d'un grand bâtiment qui traverse une frontière n'est
+  pas encore découpée/clippée entre plusieurs secteurs.
+
+### Végétation et herbe
+
+- Les lots d'arbres (troncs et canopées) sont regroupés sous des conteneurs
+  sectoriels `VegetationTile_x_z`.
+- Les MultiMesh d'herbe utilisent une grille alignée sur 800 m et sont
+  enregistrés comme catégorie `Vegetation`.
+- Les lots sont désactivés avec leur secteur, sans supprimer les ressources.
+
+### Éclairage public
+
+- Les lots de lampadaires sont regroupés sous des conteneurs
+  `LampBatch_x` et enregistrés dans la catégorie `Streetlights`.
+
+### Littoral de la Baie des Rois
+
+- L'eau est enregistrée dans la catégorie `Coastline`.
+- Le mur de soutènement, ses collisions, les garde-corps et les rochers sont
+  regroupés dans l'infrastructure côtière.
+- Les écumes et instances de rochers sont également rattachées au streaming
+  côtier.
+- Il reste à tester la continuité visuelle et physique du rivage lors des
+  transitions de secteurs.
+
+### Environnement et relief
+
+- Les éléments d'environnement sont triés par secteur puis par distance.
+- Les lots sont limités à 900 éléments.
+- Surface visuelle et collision de relief sont rangées dans le même conteneur
+  `EnvironmentBatch_x_y_nnn`.
+- Limite connue : chaque élément est affecté au secteur de son centre. Les
+  grandes géométries traversant une frontière ne sont pas encore découpées.
+
+## Limites et prochaines étapes
+
+1. Différencier le préchargement à pied et en véhicule, puis tester les
+   changements de direction et les arrêts brusques.
+2. Décider si le voisinage doit rester circulaire ou devenir carré, en vérifiant
+   les diagonales, les routes et les limites du périmètre géographique validé.
+3. Découper réellement les grandes géométries aux frontières de secteurs lorsque
+   c'est nécessaire ; ne pas les déplacer uniquement selon leur centre.
+4. Vérifier qu'aucune collision de route, de trottoir ou de bâtiment ne reste
+   désactivée après réactivation.
+5. Mesurer le coût mémoire et le temps de génération sur plusieurs secteurs.
+6. Tester le chargement/déchargement à pied et en véhicule dans Godot 4.3.
+7. Vérifier que les secteurs générés restent strictement dans le périmètre
+   validé du projet Libreville Stories.
+
+## Validation
+
+Le workflow GitHub Actions valide séparément les données de calendrier et de
+simulation, puis importe le projet avec Godot 4.3 et inspecte les animations et
+les modèles GLB. Un contrôle des données réussi ne signifie pas que l'import
+Godot ou le démarrage de la scène principale a réussi : ces étapes doivent
+être confirmées indépendamment.
