@@ -4221,8 +4221,26 @@ func _load_buildings() -> void:
 		building_origin = Vector2(player_for_buildings.global_position.x, player_for_buildings.global_position.z)
 	# Les empreintes proches du joueur sont traitées en premier : les premiers
 	# lots de meshes contiennent donc le quartier de départ, pas l'autre bout de Libreville.
+	# Regrouper les empreintes par secteur, tout en traitant les secteurs
+	# proches du joueur en premier. Cela évite de créer plusieurs petits lots
+	# alternés pour un même secteur lorsque les bâtiments sont triés uniquement
+	# par distance individuelle.
 	features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		return _feature_world_center(a).distance_squared_to(building_origin) < _feature_world_center(b).distance_squared_to(building_origin)
+		var center_a := _feature_world_center(a)
+		var center_b := _feature_world_center(b)
+		var sector_a := Vector2i(floori(center_a.x / 800.0), floori(center_a.y / 800.0))
+		var sector_b := Vector2i(floori(center_b.x / 800.0), floori(center_b.y / 800.0))
+		var sector_center_a := Vector2((float(sector_a.x) + 0.5) * 800.0, (float(sector_a.y) + 0.5) * 800.0)
+		var sector_center_b := Vector2((float(sector_b.x) + 0.5) * 800.0, (float(sector_b.y) + 0.5) * 800.0)
+		var sector_distance_a := sector_center_a.distance_squared_to(building_origin)
+		var sector_distance_b := sector_center_b.distance_squared_to(building_origin)
+		if not is_equal_approx(sector_distance_a, sector_distance_b):
+			return sector_distance_a < sector_distance_b
+		if sector_a.x != sector_b.x:
+			return sector_a.x < sector_b.x
+		if sector_a.y != sector_b.y:
+			return sector_a.y < sector_b.y
+		return center_a.distance_squared_to(building_origin) < center_b.distance_squared_to(building_origin)
 	)
 	var administrative_sites := _load_administrative_sites()
 	var administrative_site_count := 0
