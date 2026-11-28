@@ -19,6 +19,7 @@ signal active_sectors_changed(active_count: int)
 var _player: Node3D
 var _sectors: Dictionary = {}
 var _active_sectors: Dictionary = {}
+var _shared_nodes: Dictionary = {}
 var _current_center := Vector2i(2147483647, 2147483647)
 var _update_timer := 0.0
 
@@ -117,6 +118,64 @@ func register_node(node: Node3D, category: String, world_position: Vector3 = Vec
 		_set_collision_state_recursive(node, false)
 
 
+## Enregistre un nœud unique partagé par plusieurs secteurs traversés.
+## Le nœud reste actif si au moins un secteur couvert est dans le rayon actif.
+## Contrairement à register_node(), il n'est pas reparenté dans un secteur.
+func register_node_in_sectors(node: Node3D, category: String, sector_keys: Array[Vector2i]) -> void:
+	if not is_instance_valid(node) or sector_keys.is_empty():
+		return
+	var unique_sectors: Array[Vector2i] = []
+	for key in sector_keys:
+		if not unique_sectors.has(key):
+			unique_sectors.append(key)
+	if unique_sectors.is_empty():
+		return
+	var node_id := node.get_instance_id()
+	var record := {
+		"node": node,
+		"category": category,
+		"sectors": unique_sectors,
+		"active": false
+	}
+	_shared_nodes[node_id] = record
+	var should_be_active := _shared_record_inside_radius(record, load_radius)
+	_set_shared_node_active(node, should_be_active)
+	_shared_nodes[node_id].active = should_be_active
+
+
+func _shared_record_inside_radius(record: Dictionary, radius: int) -> bool:
+	for sector_key in record.sectors:
+		var offset: Vector2i = sector_key - _current_center
+		if Vector2(offset.x, offset.y).length_squared() <= float(radius * radius):
+			return true
+	return false
+
+
+func _set_shared_node_active(node: Node3D, active: bool) -> void:
+	if not is_instance_valid(node):
+		return
+	node.visible = active
+	node.process_mode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
+	_set_collision_state_recursive(node, active)
+
+
+func _update_shared_nodes() -> void:
+	for node_id_variant in _shared_nodes.keys():
+		var node_id: int = node_id_variant
+		var record: Dictionary = _shared_nodes[node_id]
+		var node: Node3D = record.node
+		if not is_instance_valid(node):
+			_shared_nodes.erase(node_id)
+			continue
+		var was_active: bool = record.active
+		var radius := unload_radius if was_active else load_radius
+		var should_be_active := _shared_record_inside_radius(record, radius)
+		if should_be_active != was_active:
+			_set_shared_node_active(node, should_be_active)
+			record.active = should_be_active
+			_shared_nodes[node_id] = record
+
+
 ## Met à jour les secteurs proches. Les distances sont circulaires en unités
 ## de secteur ; le rayon de sortie plus large fournit l'hystérésis.
 func update_streaming(world_position: Vector3, force: bool = false) -> void:
@@ -134,6 +193,7 @@ func update_streaming(world_position: Vector3, force: bool = false) -> void:
 		if should_be_active != was_active:
 			_set_sector_active(key, should_be_active)
 			changed = true
+	_update_shared_nodes()
 	if changed:
 		active_sectors_changed.emit(_active_sectors.size())
 
