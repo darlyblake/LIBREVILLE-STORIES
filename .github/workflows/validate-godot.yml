@@ -83,6 +83,9 @@ jobs:
       - name: Test world geometry sector splitting
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --script tools/test_world_map_geometry_utils.gd
 
+      - name: Test multi-sector world streaming ownership
+        run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --script tools/test_world_streaming_manager.gd
+
       - name: Inspect UAL1 and UAL2 animation clips and skeletons
         run: /tmp/godot/Godot_v4.3-stable_linux.x86_64 --headless --path . --script tools/inspect_character_animations.gd
 
