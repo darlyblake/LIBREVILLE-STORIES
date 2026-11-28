@@ -1511,14 +1511,14 @@ func _load_environment() -> void:
 		if environment_index % 40 == 0:
 			await get_tree().process_frame
 		if batch_count >= 900:
-			_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector, environment_batch_coverage)
+			_flush_environment_batch(sector_surfaces, sector_relief_surfaces, batch_index)
 			environment_batch_coverage.clear()
 			batch_index += 1
 			batch_count = 0
 			sector_surfaces.clear()
 			sector_relief_surfaces.clear()
 	if batch_count > 0:
-		_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector, environment_batch_coverage)
+		_flush_environment_batch(sector_surfaces, sector_relief_surfaces, batch_index)
 	# L'océan global texturé est l'unique surface d'eau ; ne pas superposer une seconde nappe locale.
 	_build_coastal_details()
 	_build_baie_des_rois_seawall()
