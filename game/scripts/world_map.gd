@@ -3057,11 +3057,11 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 			instance.name = ("OSM_Roads_%s" % tile_name) if key == "asphalt" else ("OSM_Roads_%s_%s" % [str(key).capitalize(), tile_name])
 			instance.mesh = clipped_mesh
 			instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			if key != "asphalt" and key != "dirt" and key != "paving":
+			if key not in ["asphalt", "damaged", "dirt", "paving"]:
 				instance.visibility_range_end = ROAD_DETAIL_VISIBILITY
 			sector_roots[sector_key].add_child(instance)
 			# Les collisions issues des surfaces texturées suivent exactement le même clipping.
-			if road_collision and key in ["asphalt", "dirt", "paving"]:
+			if road_collision and key in ["asphalt", "damaged", "dirt", "paving"]:
 				var road_shape := clipped_mesh.create_trimesh_shape() as ConcavePolygonShape3D
 				if road_shape != null:
 					road_shape.backface_collision = true

@@ -74,7 +74,7 @@ static func road_surface_key(kind: String, props: Dictionary) -> String:
 	if kind in ["track", "construction"]:
 		return "dirt"
 	var smoothness := str(props.get("smoothness", "")).to_lower()
-	if surface_tag in ["asphalt", "paved"] and smoothness in ["bad", "very_bad", "horrible", "very_horrible", "impassable"]:
+	if surface_tag in ["", "asphalt", "paved"] and smoothness in ["bad", "very_bad", "horrible", "very_horrible", "impassable"]:
 		return "damaged"
 	if surface_tag in ["concrete", "paving_stones", "sett", "cobblestone", "concrete:plates", "concrete:lanes", "paved_stones"]:
 		return "paving"

@@ -6,6 +6,8 @@ on:
     paths:
       - "data/osm/extended/**"
       - "tools/map-generator/validate_extended_osm.py"
+      - "tools/audit_road_surfaces.py"
+      - "tools/tests/test_audit_road_surfaces.py"
       - ".github/workflows/validate-extended-osm.yml"
   workflow_dispatch:
 
@@ -27,5 +29,14 @@ jobs:
         run: python -m pip install --upgrade pip shapely
       - name: Validate OSM geometries
         run: python tools/map-generator/validate_extended_osm.py
-      - name: Audit road surface and damage tags
+      - name: Test road audit rules
+        run: python -m unittest discover -s tools/tests -p "test_audit_road_surfaces.py" -v
+      - name: Audit road surfaces and topology
         run: python tools/audit_road_surfaces.py
+      - name: Upload road audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: libreville-road-surface-topology-audit
+          path: data/analysis/road_surface_audit.json
+          if-no-files-found: error
+          retention-days: 30
