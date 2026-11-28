@@ -1230,32 +1230,54 @@ func _flush_building_mesh_batch(surface: SurfaceTool, roof_surface: SurfaceTool,
 			covered_sectors.append(sector_key)
 		streaming_manager.register_node_in_sectors(batch_root, "Buildings", covered_sectors)
 
-func _flush_environment_batch(surface: SurfaceTool, relief_collision_surface: SurfaceTool,
-		batch_index: int, sector_key: Vector2i, covered_sectors: Array[Vector2i]) -> void:
-	var environment_root := Node3D.new()
-	environment_root.name = "EnvironmentBatch_%d_%d_%03d" % [sector_key.x, sector_key.y, batch_index]
-	_commit_surface(surface, "OSM_Environment_%03d" % batch_index, environment_root)
-	# La collision du relief vert est rangée avec son mesh visuel dans le même
-	# secteur : elle ne reste jamais active lorsque la surface est masquée.
-	var relief_mesh := relief_collision_surface.commit()
-	if relief_mesh != null and relief_mesh.get_surface_count() > 0:
-		var relief_body := StaticBody3D.new()
-		relief_body.name = "OSM_Landscape_Relief_Collision"
-		relief_body.collision_layer = 1
-		relief_body.collision_mask = 1
-		var relief_shape := CollisionShape3D.new()
-		relief_shape.shape = relief_mesh.create_trimesh_shape()
-		relief_body.add_child(relief_shape)
-		environment_root.add_child(relief_body)
-	if environment_root.get_child_count() == 0:
-		environment_root.queue_free()
-		return
-	add_child(environment_root)
-	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
-	if streaming_manager != null:
-		if covered_sectors.is_empty():
-			covered_sectors.append(sector_key)
-		streaming_manager.register_node_in_sectors(environment_root, "Environment", covered_sectors)
+func _get_environment_sector_surface(surfaces: Dictionary, sector_key: Vector2i) -> SurfaceTool:
+	if not surfaces.has(sector_key):
+		surfaces[sector_key] = _new_surface(_environment_material)
+	return surfaces[sector_key] as SurfaceTool
+
+
+func _flush_environment_batch(sector_surfaces: Dictionary,
+		sector_relief_surfaces: Dictionary, batch_index: int) -> void:
+	# Chaque secteur reçoit son propre mesh visuel et, si nécessaire, sa
+	# collision de relief. Aucun nœud n'est partagé entre plusieurs secteurs.
+	var sector_keys: Array = sector_surfaces.keys()
+	for relief_key in sector_relief_surfaces.keys():
+		if not sector_keys.has(relief_key):
+			sector_keys.append(relief_key)
+	sector_keys.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		if a.x != b.x:
+			return a.x < b.x
+		return a.y < b.y
+	)
+	for sector_key_variant in sector_keys:
+		var sector_key: Vector2i = sector_key_variant
+		var environment_root := Node3D.new()
+		environment_root.name = "EnvironmentTile_%d_%d_Batch_%03d" % [sector_key.x, sector_key.y, batch_index]
+		if sector_surfaces.has(sector_key):
+			_commit_surface(sector_surfaces[sector_key] as SurfaceTool,
+				"OSM_Environment_%03d" % batch_index, environment_root)
+		# La collision du relief partage exactement le secteur et les sommets
+		# du mesh visuel correspondant.
+		if sector_relief_surfaces.has(sector_key):
+			var relief_mesh := (sector_relief_surfaces[sector_key] as SurfaceTool).commit()
+			if relief_mesh != null and relief_mesh.get_surface_count() > 0:
+				var relief_body := StaticBody3D.new()
+				relief_body.name = "OSM_Landscape_Relief_Collision"
+				relief_body.collision_layer = 1
+				relief_body.collision_mask = 1
+				var relief_shape := CollisionShape3D.new()
+				relief_shape.shape = relief_mesh.create_trimesh_shape()
+				relief_body.add_child(relief_shape)
+				environment_root.add_child(relief_body)
+		if environment_root.get_child_count() == 0:
+			environment_root.queue_free()
+			continue
+		add_child(environment_root)
+		var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+		if streaming_manager != null:
+			streaming_manager.register_node(environment_root, "Environment",
+				Vector3((float(sector_key.x) + 0.5) * 800.0, 0.0,
+					(float(sector_key.y) + 0.5) * 800.0))
 
 
 func _load_coastline_paths() -> void:
@@ -1279,8 +1301,8 @@ func _load_environment() -> void:
 	if data.is_empty():
 		push_warning("environment.geojson absent : littoral, eau et espaces verts non chargés.")
 		return
-	var surface := _new_surface(_environment_material)
-	var relief_collision_surface := _new_surface(_environment_material)
+	var sector_surfaces: Dictionary = {}
+	var sector_relief_surfaces: Dictionary = {}
 	var tree_positions: Array[Vector3] = []
 	var batch_count := 0
 	var batch_index := 0
@@ -1313,12 +1335,12 @@ func _load_environment() -> void:
 		var feature_sector := Vector2i(floori(feature_center.x / 800.0), floori(feature_center.y / 800.0))
 		if current_environment_sector != feature_sector:
 			if batch_count > 0:
-				_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector, environment_batch_coverage)
+				_flush_environment_batch(sector_surfaces, sector_relief_surfaces, batch_index)
 				environment_batch_coverage.clear()
 				batch_index += 1
 				batch_count = 0
-				surface = _new_surface(_environment_material)
-				relief_collision_surface = _new_surface(_environment_material)
+				sector_surfaces.clear()
+				sector_relief_surfaces.clear()
 			current_environment_sector = feature_sector
 		var geometry: Dictionary = feature.get("geometry", {})
 		var props: Dictionary = feature.get("properties", {})
@@ -1376,9 +1398,6 @@ func _load_environment() -> void:
 					var is_grass_area := str(props.get("landuse", "")) == "grass" or (kind == "green_space" and mapped_surface not in ["concrete", "paved", "asphalt"]) or str(props.get("leisure", "")) == "garden"
 					if is_grass_area and _grass_generator != null:
 						_grass_generator.add_patch(points, int(props.get("osm_id", _environment_count)), relief_center, relief_radius, kind, Callable(self, "_terrain_height_at_world"), Callable(self, "_is_near_road"))
-				surface.set_color(WorldMapColorUtils.environment_color(kind))
-				if has_landscape_relief:
-					relief_collision_surface.set_color(WorldMapColorUtils.environment_color(kind))
 				for i in range(0, indices.size(), 3):
 					var p0 := points[indices[i]]
 					var p1 := points[indices[i + 1]]
@@ -1398,21 +1417,26 @@ func _load_environment() -> void:
 							var clipped_a := clipped_triangle[0]
 							var clipped_b := clipped_triangle[fan_index]
 							var clipped_c := clipped_triangle[fan_index + 1]
+							var sector_surface := _get_environment_sector_surface(sector_surfaces, triangle_sector)
+							sector_surface.set_color(WorldMapColorUtils.environment_color(kind))
 							if has_landscape_relief:
+								var sector_relief_surface := _get_environment_sector_surface(sector_relief_surfaces, triangle_sector)
+								sector_relief_surface.set_color(WorldMapColorUtils.environment_color(kind))
 								var pieces: Array = []
 								_subdivide_ground_triangle(clipped_a, clipped_b, clipped_c, 14.0, pieces)
 								for piece in pieces:
-									for target_surface in [surface, relief_collision_surface]:
-										for q in piece:
-											var qv: Vector2 = q
-											target_surface.add_vertex(Vector3(qv.x, _terrain_mesh_height(qv.x, qv.y) + 0.008, qv.y))
+									for q in piece:
+										var qv: Vector2 = q
+										var vertex := Vector3(qv.x, _terrain_mesh_height(qv.x, qv.y) + 0.008, qv.y)
+										sector_surface.add_vertex(vertex)
+										sector_relief_surface.add_vertex(vertex)
 							else:
 								var flat_pieces: Array = []
 								_subdivide_ground_triangle(clipped_a, clipped_b, clipped_c, 14.0, flat_pieces)
 								for piece in flat_pieces:
 									for q in piece:
 										var qv: Vector2 = q
-										surface.add_vertex(Vector3(qv.x, _terrain_mesh_height(qv.x, qv.y) + 0.02, qv.y))
+										sector_surface.add_vertex(Vector3(qv.x, _terrain_mesh_height(qv.x, qv.y) + 0.02, qv.y))
 				polygon_added = true
 			added = polygon_added
 		elif str(geometry.get("type", "")) == "LineString":
@@ -1438,7 +1462,6 @@ func _load_environment() -> void:
 				for covered_key in WorldMapGeometryUtils.polygon_sector_keys(line_points, 800.0, width * 0.5):
 					if not environment_batch_coverage.has(covered_key):
 						environment_batch_coverage.append(covered_key)
-				surface.set_color(WorldMapColorUtils.environment_color(kind))
 				for i in range(coords.size() - 1):
 					var a := _geo_to_world(coords[i])
 					var b := _geo_to_world(coords[i + 1])
@@ -1464,6 +1487,8 @@ func _load_environment() -> void:
 						PackedVector2Array([line_footprint[0], line_footprint[2], line_footprint[3]])
 					]
 					for line_sector in line_sectors:
+						var line_surface := _get_environment_sector_surface(sector_surfaces, line_sector)
+						line_surface.set_color(WorldMapColorUtils.environment_color(kind))
 						var line_min := Vector2(float(line_sector.x) * 800.0, float(line_sector.y) * 800.0)
 						var line_max := line_min + Vector2.ONE * 800.0
 						for line_triangle_index in range(line_triangles.size()):
@@ -1477,7 +1502,7 @@ func _load_environment() -> void:
 									var line_point: Vector2 = q
 									var segment_t := clampf((line_point - Vector2(a.x, a.z)).dot(direction) / direction.length_squared(), 0.0, 1.0)
 									var line_height := lerpf(a.y, b.y, segment_t) + 0.014
-									surface.add_vertex(Vector3(line_point.x, line_height, line_point.y))
+									line_surface.add_vertex(Vector3(line_point.x, line_height, line_point.y))
 					added = true
 		if added:
 			_environment_count += 1
@@ -1490,8 +1515,8 @@ func _load_environment() -> void:
 			environment_batch_coverage.clear()
 			batch_index += 1
 			batch_count = 0
-			surface = _new_surface(_environment_material)
-			relief_collision_surface = _new_surface(_environment_material)
+			sector_surfaces.clear()
+			sector_relief_surfaces.clear()
 	if batch_count > 0:
 		_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector, environment_batch_coverage)
 	# L'océan global texturé est l'unique surface d'eau ; ne pas superposer une seconde nappe locale.
