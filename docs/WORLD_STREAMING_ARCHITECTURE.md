@@ -53,8 +53,12 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
   systématiquement à une extrémité.
 - Chaussée, bordures, trottoirs, marquages et collisions restent groupés.
 - Le conteneur est enregistré dans le secteur correspondant à cet ancrage médian.
-- Les tronçons qui traversent plusieurs secteurs sont diagnostiqués ; leur
-  géométrie complète n'est pas encore découpée entre plusieurs conteneurs.
+- Les tronçons routiers partagés sont désormais rattachés à tous les secteurs
+  traversés (avec une marge liée à leur demi-largeur), sans dupliquer leurs
+  meshes ni leurs collisions. Le gestionnaire garde le lot visible et actif
+  tant qu'au moins un secteur couvert reste dans le rayon chargé ; l'hystérésis
+  de sortie est conservée. La géométrie n'est pas encore découpée en meshes
+  physiques par secteur : elle reste un lot unique à activation multi-secteurs.
 - Un utilitaire pur `split_polyline_by_sectors` découpe maintenant une ligne X/Z
   aux frontières exactes des secteurs et retourne les morceaux avec leur clé
   sectorielle. Les sommets de frontière sont partagés sans intervalle vide ;
