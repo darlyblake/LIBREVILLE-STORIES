@@ -140,6 +140,10 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
   séparément.
 - La couverture conservative peut inclure des secteurs que la forme concave
   ne touche pas réellement.
+- Les tests géométriques couvrent la conservation d'aire, les deux sens de
+  parcours des triangles, les coordonnées négatives et le contact simultané
+  avec quatre secteurs autour d'un coin de grille. Ils valident la primitive,
+  pas encore l'import complet ni le rendu de la scène Godot.
 
 ## Limites et prochaines étapes
 
