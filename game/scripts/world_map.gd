@@ -1229,6 +1229,34 @@ func _flush_building_mesh_batch(surface: SurfaceTool, roof_surface: SurfaceTool,
 	if streaming_manager != null:
 		streaming_manager.register_node(batch_root, "Buildings", sector_center)
 
+func _flush_environment_batch(surface: SurfaceTool, relief_collision_surface: SurfaceTool,
+		batch_index: int, sector_key: Vector2i) -> void:
+	var environment_root := Node3D.new()
+	environment_root.name = "EnvironmentBatch_%d_%d_%03d" % [sector_key.x, sector_key.y, batch_index]
+	_commit_surface(surface, "OSM_Environment_%03d" % batch_index, environment_root)
+	# La collision du relief vert est rangée avec son mesh visuel dans le même
+	# secteur : elle ne reste jamais active lorsque la surface est masquée.
+	var relief_mesh := relief_collision_surface.commit()
+	if relief_mesh != null and relief_mesh.get_surface_count() > 0:
+		var relief_body := StaticBody3D.new()
+		relief_body.name = "OSM_Landscape_Relief_Collision"
+		relief_body.collision_layer = 1
+		relief_body.collision_mask = 1
+		var relief_shape := CollisionShape3D.new()
+		relief_shape.shape = relief_mesh.create_trimesh_shape()
+		relief_body.add_child(relief_shape)
+		environment_root.add_child(relief_body)
+	if environment_root.get_child_count() == 0:
+		environment_root.queue_free()
+		return
+	add_child(environment_root)
+	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+	if streaming_manager != null:
+		var sector_center := Vector3((float(sector_key.x) + 0.5) * 800.0, 0.0,
+			(float(sector_key.y) + 0.5) * 800.0)
+		streaming_manager.register_node(environment_root, "Environment", sector_center)
+
+
 func _load_coastline_paths() -> void:
 	var data := _read_geojson("res://data/osm/environment.geojson")
 	for feature in data.get("features", []):
@@ -1261,10 +1289,32 @@ func _load_environment() -> void:
 	var environment_origin := Vector2.ZERO
 	if player_for_environment != null:
 		environment_origin = Vector2(player_for_environment.global_position.x, player_for_environment.global_position.z)
+	# Trier par secteur avant la distance : un lot de géométrie ne mélange
+	# plus plusieurs secteurs de 800 m. Les grandes empreintes restent affectées
+	# au secteur de leur centre et seront signalées comme limite de découpage.
 	environment_features.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		return _feature_world_center(a).distance_squared_to(environment_origin) < _feature_world_center(b).distance_squared_to(environment_origin)
+		var center_a := _feature_world_center(a)
+		var center_b := _feature_world_center(b)
+		var sector_a := Vector2i(floori(center_a.x / 800.0), floori(center_a.y / 800.0))
+		var sector_b := Vector2i(floori(center_b.x / 800.0), floori(center_b.y / 800.0))
+		if sector_a.x != sector_b.x:
+			return sector_a.x < sector_b.x
+		if sector_a.y != sector_b.y:
+			return sector_a.y < sector_b.y
+		return center_a.distance_squared_to(environment_origin) < center_b.distance_squared_to(environment_origin)
 	)
+	var current_environment_sector := Vector2i(2147483647, 2147483647)
 	for feature in environment_features:
+		var feature_center := _feature_world_center(feature)
+		var feature_sector := Vector2i(floori(feature_center.x / 800.0), floori(feature_center.y / 800.0))
+		if current_environment_sector != feature_sector:
+			if batch_count > 0:
+				_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector)
+				batch_index += 1
+				batch_count = 0
+				surface = _new_surface(_environment_material)
+				relief_collision_surface = _new_surface(_environment_material)
+			current_environment_sector = feature_sector
 		var geometry: Dictionary = feature.get("geometry", {})
 		var props: Dictionary = feature.get("properties", {})
 		var kind := str(props.get("environment_kind", ""))
@@ -1367,24 +1417,13 @@ func _load_environment() -> void:
 		if environment_index % 40 == 0:
 			await get_tree().process_frame
 		if batch_count >= 900:
-			_commit_surface(surface, "OSM_Environment_%03d" % batch_index)
+			_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector)
 			batch_index += 1
 			batch_count = 0
 			surface = _new_surface(_environment_material)
+			relief_collision_surface = _new_surface(_environment_material)
 	if batch_count > 0:
-		_commit_surface(surface, "OSM_Environment_%03d" % batch_index)
-	# Les pelouses en relief ont leur propre collision pour que le joueur
-	# marche réellement sur les bosses au lieu de rester sous leur surface.
-	var relief_mesh := relief_collision_surface.commit()
-	if relief_mesh != null and relief_mesh.get_surface_count() > 0:
-		var relief_body := StaticBody3D.new()
-		relief_body.name = "OSM_Landscape_Relief_Collision"
-		relief_body.collision_layer = 1
-		relief_body.collision_mask = 1
-		var relief_shape := CollisionShape3D.new()
-		relief_shape.shape = relief_mesh.create_trimesh_shape()
-		relief_body.add_child(relief_shape)
-		add_child(relief_body)
+		_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector)
 	# L'océan global texturé est l'unique surface d'eau ; ne pas superposer une seconde nappe locale.
 	_build_coastal_details()
 	_build_baie_des_rois_seawall()
