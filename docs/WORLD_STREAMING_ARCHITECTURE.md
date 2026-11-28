@@ -129,10 +129,15 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
   le relief. Les polygones convexes issus du clipping sont triangulés en éventail.
   Le même triangle découpé et les mêmes sommets sont envoyés au mesh visuel et
   à la collision du relief, ce qui évite une divergence entre les deux.
+- Les rubans générés depuis les LineString (cours d'eau, plans d'eau
+  linéaires et autres lignes environnementales) sont eux aussi découpés par
+  l'emprise réelle de leur quad, largeur comprise. Les triangles découpés sont
+  abaissés sur la hauteur du terrain et restent dans le même lot visuel.
 - Limite actuelle : les morceaux découpés par secteur sont encore réunis dans
   le lot environnemental d'origine ; ils ne sont pas encore stockés dans un
-  nœud/mesh indépendant par secteur. Les lignes d'eau et autres LineString ne
-  sont pas encore découpées par ce chemin.
+  nœud/mesh indépendant par secteur. Les chemins de côte servent à la sélection
+  et au placement du littoral ; leur représentation spécifique sera traitée
+  séparément.
 - La couverture conservative peut inclure des secteurs que la forme concave
   ne touche pas réellement.
 
