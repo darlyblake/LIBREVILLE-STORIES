@@ -104,7 +104,7 @@ def audit_topology(features):
         edge=min(p[0]-bounds[0],bounds[2]-p[0],p[1]-bounds[1],bounds[3]-p[1])
         if edge<=50.0: boundary.append(ep)
         elif exact[(round(p[0],2),round(p[1],2))]==1 and not best and i not in near_endpoint_indices:
-            dangling.append({"osm_id":ep["props"].get("osm_id",ep["feature"]),"name":ep["props"].get("name",""),"highway":ep["props"].get("highway",""),"side":ep["side"],"length_m":round(ep["length"],1),"level":level(ep["props"])}})
+            dangling.append({"osm_id":ep["props"].get("osm_id",ep["feature"]),"name":ep["props"].get("name",""),"highway":ep["props"].get("highway",""),"side":ep["side"],"length_m":round(ep["length"],1),"level":level(ep["props"])})
     # Short isolated features are review candidates, not assumed geometry errors.
     dangling_by_feature=Counter(str(x["osm_id"]) for x in dangling)
     for feature in features:
