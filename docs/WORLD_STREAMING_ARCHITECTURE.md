@@ -41,3 +41,19 @@ la Baie des Rois devront rester cohérents lors des transitions.
 - Tester les transitions à pied et en véhicule.
 - Comparer les secteurs traversés avec le périmètre validé du projet :
   aucun contenu hors périmètre ne doit être généré.
+
+## Première intégration : tuiles routières
+
+- Le gestionnaire utilise désormais des secteurs de 800 m, alignés sur
+  `ROAD_TILE_SIZE` de la carte.
+- Chaque tuile routière générée devient un conteneur unique `RoadTile_x_z`.
+- Chaussée, bordures, trottoirs, marquages et collisions restent ensemble.
+- Le conteneur est enregistré dans le secteur correspondant à son centre.
+- Le reparentage conserve le repère global des meshes créés par SurfaceTool.
+- Une tuile enregistrée hors rayon est immédiatement masquée et ses collisions
+  sont désactivées, y compris lorsqu'elle est ajoutée après la création du secteur.
+
+Les bâtiments ne sont pas encore intégrés : leurs meshes sont actuellement
+regroupés par lots de 1 200 empreintes triées par distance, pas par position.
+Leur prochaine refonte doit construire des lots par secteur pour éviter qu'un
+même mesh traverse plusieurs secteurs.
