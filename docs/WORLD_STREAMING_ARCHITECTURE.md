@@ -53,30 +53,32 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
   systématiquement à une extrémité.
 - Chaussée, bordures, trottoirs, marquages et collisions restent groupés.
 - Le conteneur est enregistré dans le secteur correspondant à cet ancrage médian.
-- Les tronçons routiers partagés sont désormais rattachés à tous les secteurs
-  traversés (avec une marge liée à leur demi-largeur), sans dupliquer leurs
-  meshes ni leurs collisions. Le gestionnaire garde le lot visible et actif
-  tant qu'au moins un secteur couvert reste dans le rayon chargé ; l'hystérésis
-  de sortie est conservée. La géométrie n'est pas encore découpée en meshes
-  physiques par secteur : elle reste un lot unique à activation multi-secteurs.
-- Un utilitaire pur `split_polyline_by_sectors` découpe maintenant une ligne X/Z
-  aux frontières exactes des secteurs et retourne les morceaux avec leur clé
-  sectorielle. Les sommets de frontière sont partagés sans intervalle vide ;
-  les croisements simultanés X/Z ne créent pas de secteurs diagonaux fictifs.
-- Des tests headless couvrent les traversées positives/négatives, les coins,
-  le sens inverse et la continuité des extrémités. Cet utilitaire n'est pas
-  encore branché au générateur de routes : les intersections, trottoirs,
-  marquages et collisions doivent être migrés ensemble avant activation.
+- Les tronçons sont regroupés par ancrage au milieu de leur longueur, puis
+  leur emprise est calculée à partir de la polyligne découpée par secteurs et
+  élargie selon la demi-largeur de chaussée.
+- `split_polyline_by_sectors` calcule les morceaux et les clés sectorielles :
+  les sommets de frontière sont partagés sans intervalle vide ; les croisements
+  simultanés X/Z ne créent pas de secteurs diagonaux fictifs.
+- Au commit, chaque surface de chaussée, trottoir, bordure, marquage et chaque
+  mesh de collision est réellement découpé contre les rectangles exacts des
+  secteurs. Chaque morceau est placé dans un nœud `RoadSector_x_z` enregistré
+  dans un seul secteur. Les attributs visuels sont interpolés au clipping.
+- Les tests headless couvrent les traversées positives/négatives, les coins,
+  le sens inverse, la continuité des extrémités, la conservation d'aire et le
+  clipping des attributs de mesh. Les transitions visuelles et physiques
+  restent à vérifier dans une session de jeu.
+- Les extrémités de tronçons OSM distincts distantes de 1,5 m au maximum sont
+  raccordées uniquement si leurs tags `layer`, `bridge` et `tunnel` sont
+  compatibles et si les directions ne décrivent pas deux voies parallèles
+  identiques. Les sommets sont déplacés vers une position commune sur le relief,
+  puis le registre des carrefours est reconstruit. Les nœuds OSM déjà communs
+  ne sont pas modifiés.
+- Les routes qui traversent le rayon de chargement sont conservées même si leur
+  centre géométrique est hors rayon. Les objets surfaciques gardent le filtre
+  par centre.
 - Une tuile hors rayon est masquée et ses collisions sont désactivées.
 - Les transitions entre tuiles, intersections et trottoirs doivent encore être
   testées en jeu pour détecter les discontinuités.
-- Au chargement, `line_sector_span` mesure les tronçons OSM dont la boîte
-  englobante traverse plusieurs secteurs et journalise le nombre ainsi que la
-  portée maximale. C'est un diagnostic, pas encore un découpage géométrique.
-- Limite connue : un tronçon est actuellement affecté à la tuile de son premier
-  point ; un long tronçon peut donc dépasser cette tuile. Il faut le découper
-  en segments cohérents (chaussée, trottoirs, marquages et collision) avant de
-  distribuer ses morceaux entre secteurs, sans dupliquer les surfaces.
 
 ### Bâtiments
 
