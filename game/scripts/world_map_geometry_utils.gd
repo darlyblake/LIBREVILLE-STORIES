@@ -62,6 +62,36 @@ static func polygon_sector_span(points: PackedVector2Array, sector_size: float =
 	return Vector2i(max_sector_x - min_sector_x + 1, max_sector_y - min_sector_y + 1)
 
 
+## Secteurs couverts par la boîte englobante d'une géométrie, avec marge optionnelle.
+## L'emprise est volontairement conservative : aucun morceau du mesh ne peut
+## sortir d'un secteur déclaré, au prix de quelques secteurs parfois surnuméraires.
+static func polygon_sector_keys(points: PackedVector2Array, sector_size: float = 800.0, margin: float = 0.0) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	if points.is_empty() or sector_size <= 0.0:
+		return result
+	var min_x := INF
+	var min_y := INF
+	var max_x := -INF
+	var max_y := -INF
+	for point in points:
+		min_x = minf(min_x, point.x)
+		min_y = minf(min_y, point.y)
+		max_x = maxf(max_x, point.x)
+		max_y = maxf(max_y, point.y)
+	min_x -= maxf(margin, 0.0)
+	min_y -= maxf(margin, 0.0)
+	max_x += maxf(margin, 0.0)
+	max_y += maxf(margin, 0.0)
+	var first_x := floori(min_x / sector_size)
+	var first_y := floori(min_y / sector_size)
+	var last_x := floori(maxf(min_x, max_x - 0.001) / sector_size)
+	var last_y := floori(maxf(min_y, max_y - 0.001) / sector_size)
+	for x in range(first_x, last_x + 1):
+		for y in range(first_y, last_y + 1):
+			result.append(Vector2i(x, y))
+	return result
+
+
 ## Emprise d'une ligne routière sur la grille des secteurs.
 ## Les coordonnées sont en X/Z monde ; le maximum est traité comme exclusif.
 static func line_sector_span(points: PackedVector2Array, sector_size: float = 800.0) -> Vector2i:
