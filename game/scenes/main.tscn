@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://bx5jcd23fjq5s"]
+[gd_scene load_steps=22 format=3 uid="uid://bx5jcd23fjq5s"]
 
 [ext_resource type="Script" path="res://game/scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://game/scripts/world_map.gd" id="2_map"]
@@ -20,6 +20,7 @@
 [ext_resource type="Script" path="res://game/scripts/weather_rain.gd" id="18_weather_rain"]
 [ext_resource type="Script" path="res://game/scripts/weather_wet_surfaces.gd" id="19_weather_wet_surfaces"]
 [ext_resource type="Script" path="res://game/scripts/traffic_manager.gd" id="20_traffic_manager"]
+[ext_resource type="Script" path="res://game/scripts/world_streaming_manager.gd" id="21_world_streaming"]
 
 [sub_resource type="Environment" id="Environment_world"]
 background_mode = 1
@@ -52,6 +53,9 @@ height = 1.8
 
 [node name="WorldMap" type="Node3D" parent="."]
 script = ExtResource("2_map")
+
+[node name="WorldStreamingManager" type="Node" parent="."]
+script = ExtResource("21_world_streaming")
 
 [node name="BaieDesRois" type="Node3D" parent="."]
 script = ExtResource("4_baie")

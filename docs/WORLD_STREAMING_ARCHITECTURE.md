@@ -1,0 +1,43 @@
+# Streaming spatial du monde — première fondation
+
+## Objectif
+
+Découper le monde jouable en secteurs carrés indépendants. Le joueur déclenche
+l'activation des secteurs proches ; les secteurs éloignés sont désactivés avec
+un rayon de sortie plus large afin d'éviter le clignotement à la frontière.
+
+## Implémentation initiale
+
+- Script : `game/scripts/world_streaming_manager.gd`
+- Nœud : `WorldStreamingManager` dans `game/scenes/main.tscn`
+- Taille de secteur par défaut : 256 m
+- Rayon d'activation : 2 secteurs
+- Rayon de sortie : 3 secteurs
+- Actualisation : 0,20 s
+- Conversion monde → secteur par coordonnées X/Z avec `floori`.
+- API `register_node(node, category, world_position)` pour ranger les éléments
+  générés dans un conteneur spatial et conserver leur transformation globale.
+- Désactivation : visibilité, traitement des nœuds et couches de collision.
+  Les objets ne sont pas détruits ; leurs ressources restent disponibles.
+
+## Limite volontaire de cette première étape
+
+Le terrain possède déjà son propre streaming en chunks DEM. Les routes,
+bâtiments, végétation, littoral et POI sont encore construits par les
+générateurs de `world_map.gd`. Ils ne sont pas encore tous enregistrés dans
+les secteurs : il ne faut donc pas présenter cette étape comme un streaming
+complet de la ville.
+
+La prochaine intégration devra découper les lots de géométrie par secteur,
+et non déplacer un grand mesh multi-quartiers selon son seul centre. Les
+collisions routières, les intersections, les trottoirs et les dépendances de
+la Baie des Rois devront rester cohérents lors des transitions.
+
+## Contrôles requis
+
+- Vérifier le parse Godot 4.3 et le démarrage de `main.tscn`.
+- Vérifier le reparentage avec conservation du transform global.
+- Vérifier l'activation/désactivation des collisions.
+- Tester les transitions à pied et en véhicule.
+- Comparer les secteurs traversés avec le périmètre validé du projet :
+  aucun contenu hors périmètre ne doit être généré.
