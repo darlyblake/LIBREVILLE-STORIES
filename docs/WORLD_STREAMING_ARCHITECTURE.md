@@ -53,6 +53,13 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
 - Une tuile hors rayon est masquée et ses collisions sont désactivées.
 - Les transitions entre tuiles, intersections et trottoirs doivent encore être
   testées en jeu pour détecter les discontinuités.
+- Au chargement, `line_sector_span` mesure les tronçons OSM dont la boîte
+  englobante traverse plusieurs secteurs et journalise le nombre ainsi que la
+  portée maximale. C'est un diagnostic, pas encore un découpage géométrique.
+- Limite connue : un tronçon est actuellement affecté à la tuile de son premier
+  point ; un long tronçon peut donc dépasser cette tuile. Il faut le découper
+  en segments cohérents (chaussée, trottoirs, marquages et collision) avant de
+  distribuer ses morceaux entre secteurs, sans dupliquer les surfaces.
 
 ### Bâtiments
 
@@ -102,8 +109,10 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
    des changements de direction et des arrêts brusques.
 2. Évaluer le voisinage circulaire sur les diagonales, les routes et les limites
    du périmètre géographique validé avant toute modification de sa géométrie.
-3. Découper réellement les grandes géométries aux frontières de secteurs lorsque
-   c'est nécessaire ; ne pas les déplacer uniquement selon leur centre.
+3. Exploiter les diagnostics des routes et surfaces pour découper réellement
+   les géométries aux frontières de secteurs : chaussées, trottoirs, marquages
+   et collisions doivent partager exactement les mêmes limites, sans trous ni
+   doublons. Ne pas déplacer un tronçon uniquement selon son premier point.
 4. Vérifier qu'aucune collision de route, de trottoir ou de bâtiment ne reste
    désactivée après réactivation.
 5. Mesurer le coût mémoire et le temps de génération sur plusieurs secteurs.
