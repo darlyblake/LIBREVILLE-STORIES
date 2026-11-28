@@ -37,7 +37,7 @@ func _process(delta: float) -> void:
 		_player = get_parent().get_node_or_null("Player") as Node3D
 	if _player != null:
 		var streaming_position := _player.global_position
-		var movement_velocity := _player.velocity if _player is CharacterBody3D else Vector3.ZERO
+		var movement_velocity := (_player as CharacterBody3D).velocity if _player is CharacterBody3D else Vector3.ZERO
 		# En conduite, le joueur est attaché au véhicule et sa propre vélocité
 		# est nulle. Lire la vitesse réelle du VehicleBody3D pour anticiper.
 		var vehicle := get_parent().get_node_or_null("Vehicle") as VehicleBody3D
