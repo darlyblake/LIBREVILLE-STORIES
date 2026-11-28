@@ -55,5 +55,9 @@ la Baie des Rois devront rester cohérents lors des transitions.
 
 Les bâtiments ne sont pas encore intégrés : leurs meshes sont actuellement
 regroupés par lots de 1 200 empreintes triées par distance, pas par position.
-Leur prochaine refonte doit construire des lots par secteur pour éviter qu'un
-même mesh traverse plusieurs secteurs.
+Les bâtiments sont maintenant regroupés en lots limités à un seul secteur,
+avec un maximum de 1 200 empreintes par lot. Les bâtiments spéciaux de la Baie
+des Rois sont eux aussi enregistrés individuellement dans leur secteur.
+Chaque lot de murs, toitures et détails de façade est placé dans un conteneur
+sectoriel unique. Les empreintes sont affectées au secteur de leur centre ; les
+très grands bâtiments traversant une frontière restent donc une limite à tester.
