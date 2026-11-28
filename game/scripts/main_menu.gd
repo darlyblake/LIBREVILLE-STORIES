@@ -43,9 +43,18 @@ func _build_interface() -> void:
 	margin.add_theme_constant_override("margin_bottom", 30)
 	panel.add_child(margin)
 
+	var scroll := ScrollContainer.new()
+	scroll.name = "MenuScroll"
+	scroll.custom_minimum_size = Vector2(0, 620)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.follow_focus = true
+	margin.add_child(scroll)
+
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 16)
-	margin.add_child(content)
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(content)
 
 	var title := Label.new()
 	title.text = "LIBREVILLE STORIES"
