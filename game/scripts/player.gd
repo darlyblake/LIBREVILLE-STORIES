@@ -86,9 +86,9 @@ func _input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if event is InputEventMouseButton and event.pressed and Input.mouse_mode == Input.MOUSE_MODE_VISIBLE:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if event.is_action_pressed("interact") or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_B):
+	if event.is_action_pressed("interact"):
 		_try_interact()
-	if event.is_action_pressed("enter_exit_vehicle") or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_Y):
+	if event.is_action_pressed("enter_exit_vehicle"):
 		if not _interaction_busy:
 			_toggle_vehicle()
 
@@ -126,17 +126,6 @@ func _physics_process(delta: float) -> void:
 	_update_aim_camera(delta)
 	var input_vector := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var jump_pressed := Input.is_action_just_pressed("jump")
-	var devices := Input.get_connected_joypads()
-	if not devices.is_empty():
-		var device := devices[0]
-		var pad_move := _read_gamepad_move(device)
-		if pad_move.length() > input_vector.length():
-			input_vector = pad_move
-		var jump_now := Input.is_joy_button_pressed(device, JOY_BUTTON_A)
-		jump_pressed = jump_pressed or (jump_now and not _jump_was_pressed)
-		_jump_was_pressed = jump_now
-	else:
-		_jump_was_pressed = false
 
 	if _climbing:
 		_process_climb(delta)
@@ -360,40 +349,8 @@ func _update_character_animation() -> void:
 	character_visual.call("play_motion", state)
 
 func _register_combat_inputs() -> void:
-	_ensure_action("aim")
-	_ensure_action("shoot")
-	_ensure_action("reload")
-	_ensure_action("interact")
-	var aim_mouse := InputEventMouseButton.new()
-	aim_mouse.button_index = MOUSE_BUTTON_RIGHT
-	InputMap.action_add_event("aim", aim_mouse)
-	var shoot_mouse := InputEventMouseButton.new()
-	shoot_mouse.button_index = MOUSE_BUTTON_LEFT
-	InputMap.action_add_event("shoot", shoot_mouse)
-	var aim_pad := InputEventJoypadMotion.new()
-	aim_pad.axis = JOY_AXIS_TRIGGER_LEFT
-	aim_pad.axis_value = 0.55
-	InputMap.action_add_event("aim", aim_pad)
-	var shoot_pad := InputEventJoypadMotion.new()
-	shoot_pad.axis = JOY_AXIS_TRIGGER_RIGHT
-	shoot_pad.axis_value = 0.55
-	InputMap.action_add_event("shoot", shoot_pad)
-	var reload_key := InputEventKey.new()
-	reload_key.physical_keycode = KEY_R
-	InputMap.action_add_event("reload", reload_key)
-	var reload_pad := InputEventJoypadButton.new()
-	reload_pad.button_index = JOY_BUTTON_X
-	InputMap.action_add_event("reload", reload_pad)
-	var interact_key := InputEventKey.new()
-	interact_key.physical_keycode = KEY_E
-	InputMap.action_add_event("interact", interact_key)
-	var interact_pad := InputEventJoypadButton.new()
-	interact_pad.button_index = JOY_BUTTON_B
-	InputMap.action_add_event("interact", interact_pad)
-
-func _ensure_action(action_name: StringName) -> void:
-	if not InputMap.has_action(action_name):
-		InputMap.add_action(action_name)
+	# Les actions clavier, souris et manette sont déclarées par l'autoload InputConfig.
+	pass
 
 func _update_aim_camera(delta: float) -> void:
 	var spring_arm := $CameraPivot/SpringArm3D as SpringArm3D
@@ -511,22 +468,6 @@ func _fire_weapon() -> void:
 	flash_tween.tween_property(_muzzle_light, "light_energy", 0.0, muzzle_flash_duration)
 	print("LIBREVILLE STORIES | Tir effectué à ", impact_position)
 
-func _read_gamepad_move(device: int) -> Vector2:
-	var value := Vector2(Input.get_joy_axis(device, JOY_AXIS_LEFT_X), Input.get_joy_axis(device, JOY_AXIS_LEFT_Y))
-	if value.length() < gamepad_deadzone:
-		value = Vector2.ZERO
-	else:
-		value = value.normalized() * clampf((value.length() - gamepad_deadzone) / (1.0 - gamepad_deadzone), 0.0, 1.0)
-	if Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_LEFT):
-		value.x = -1.0
-	elif Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_RIGHT):
-		value.x = 1.0
-	if Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_UP):
-		value.y = -1.0
-	elif Input.is_joy_button_pressed(device, JOY_BUTTON_DPAD_DOWN):
-		value.y = 1.0
-	return value
-
 func _toggle_vehicle() -> void:
 	_interaction_busy = true
 	if _vehicle != null:
@@ -588,18 +529,11 @@ func _walk_to_driver_door(vehicle: VehicleController) -> void:
 func _update_gamepad_camera(delta: float) -> void:
 	if _vehicle != null:
 		return
-	var devices := Input.get_connected_joypads()
-	if devices.is_empty():
+	var look := Input.get_vector("camera_look_left", "camera_look_right", "camera_look_up", "camera_look_down")
+	if look.length_squared() < 0.0001:
 		return
-	var device := devices[0]
-	var look_x := Input.get_joy_axis(device, JOY_AXIS_RIGHT_X)
-	var look_y := Input.get_joy_axis(device, JOY_AXIS_RIGHT_Y)
-	if absf(look_x) < gamepad_deadzone:
-		look_x = 0.0
-	if absf(look_y) < gamepad_deadzone:
-		look_y = 0.0
-	rotate_y(-look_x * gamepad_look_sensitivity * delta)
-	camera_pitch = clampf(camera_pitch - look_y * gamepad_look_sensitivity * delta, -0.85, 0.35)
+	rotate_y(-look.x * gamepad_look_sensitivity * delta)
+	camera_pitch = clampf(camera_pitch - look.y * gamepad_look_sensitivity * delta, -0.85, 0.35)
 	camera_pivot.rotation.x = camera_pitch
 
 func _start_reload() -> void:
