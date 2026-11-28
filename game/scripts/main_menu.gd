@@ -87,6 +87,7 @@ func _build_interface() -> void:
 
 	_add_label(_settings_box, "Qualité graphique")
 	_quality = OptionButton.new()
+	_quality.focus_mode = Control.FOCUS_ALL
 	_quality.add_item("Performance")
 	_quality.add_item("Équilibrée")
 	_quality.add_item("Élevée — qualité maximale")
@@ -119,7 +120,7 @@ func _build_controls_panel() -> void:
 	heading.add_theme_font_size_override("font_size", 18)
 	_controls_box.add_child(heading)
 	var hint := Label.new()
-	hint.text = "Clique sur une touche, puis appuie sur la nouvelle touche à utiliser."
+	hint.text = "Clavier : sélectionne une touche pour la modifier. Manette : navigation avec le stick gauche ou la croix directionnelle, validation avec le bouton principal et retour avec le bouton secondaire. Les commandes de manette sont préconfigurées."
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_controls_box.add_child(hint)
 	_add_control_category("DÉPLACEMENT DU PERSONNAGE", ["move_forward", "move_back", "move_left", "move_right", "jump", "sprint", "enter_exit_vehicle"])
@@ -152,6 +153,11 @@ func _begin_rebind(action: String) -> void:
 	_status.text = "Nouvelle touche pour : " + InputConfig.action_labels[action]
 
 func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and _waiting_action == "":
+		if _settings_box.visible or _controls_box.visible:
+			_show_menu()
+			get_viewport().set_input_as_handled()
+			return
 	if _waiting_action == "" or not (event is InputEventKey):
 		return
 	var key_event := event as InputEventKey
@@ -176,6 +182,7 @@ func _reset_controls() -> void:
 func _add_button(parent: VBoxContainer, caption: String, action: Callable) -> void:
 	var button := Button.new()
 	button.text = caption
+	button.focus_mode = Control.FOCUS_ALL
 	button.custom_minimum_size = Vector2(0, 46)
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.pressed.connect(action)
@@ -189,6 +196,7 @@ func _add_label(parent: VBoxContainer, caption: String) -> void:
 func _add_check(parent: VBoxContainer, caption: String) -> CheckButton:
 	var check := CheckButton.new()
 	check.text = caption
+	check.focus_mode = Control.FOCUS_ALL
 	parent.add_child(check)
 	return check
 
@@ -197,18 +205,23 @@ func _show_menu() -> void:
 	_settings_box.visible = false
 	_controls_box.visible = false
 	_status.text = "Le monde 3D n'est pas chargé. Choisissez vos réglages avant de démarrer."
+	if _menu_box.get_child_count() > 0:
+		(_menu_box.get_child(0) as Control).grab_focus()
 
 func _show_settings() -> void:
 	_menu_box.visible = false
 	_settings_box.visible = true
 	_controls_box.visible = false
 	_status.text = "Les réglages seront appliqués avant la création du monde ouvert."
+	_quality.grab_focus()
 
 func _show_controls() -> void:
 	_menu_box.visible = false
 	_settings_box.visible = false
 	_controls_box.visible = true
-	_status.text = "Les commandes clavier sont enregistrées automatiquement."
+	_status.text = "Les commandes clavier sont enregistrées automatiquement. Les commandes manette utilisent le profil standard."
+	if _binding_buttons.has("move_forward"):
+		(_binding_buttons["move_forward"] as Control).grab_focus()
 
 func _on_quality_selected(index: int) -> void:
 	match index:
