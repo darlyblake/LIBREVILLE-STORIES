@@ -123,7 +123,8 @@ func _test_triangle_sector_clipping() -> void:
 func _test_triangle_clipping_area_and_winding() -> void:
 	var clockwise := PackedVector2Array([Vector2(760.0, 760.0), Vector2(860.0, 760.0), Vector2(810.0, 860.0)])
 	var counter_clockwise := PackedVector2Array([clockwise[2], clockwise[1], clockwise[0]])
-	for triangle in [clockwise, counter_clockwise]:
+	var negative_triangle := PackedVector2Array([Vector2(-840.0, -840.0), Vector2(-760.0, -840.0), Vector2(-800.0, -760.0)])
+	for triangle in [clockwise, counter_clockwise, negative_triangle]:
 		var total_area := 0.0
 		var keys := Geometry.polygon_sector_keys(triangle, 800.0)
 		for key in keys:
