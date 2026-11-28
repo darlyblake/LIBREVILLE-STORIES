@@ -13,7 +13,8 @@ func _initialize() -> void:
 	_test_triangle_sector_clipping()
 	_test_triangle_clipping_area_and_winding()
 	_test_triangle_clipping_at_sector_corner()
-	print("WorldMapGeometryUtils: polyline splitting, sector coverage and triangle clipping tests passed")
+	_test_weighted_triangle_clipping()
+	print("WorldMapGeometryUtils: polyline splitting, sector coverage and weighted triangle clipping tests passed")
 	quit()
 
 
@@ -139,6 +140,40 @@ func _test_triangle_clipping_area_and_winding() -> void:
 			total_area += Geometry.polygon_area_abs(clipped)
 		assert(absf(total_area - Geometry.polygon_area_abs(triangle)) <= 0.01,
 			"Clipping must preserve area for either triangle winding and negative/positive sector keys")
+
+
+func _test_weighted_triangle_clipping() -> void:
+	var triangle := PackedVector2Array([
+		Vector2(700.0, 100.0),
+		Vector2(900.0, 100.0),
+		Vector2(800.0, 300.0)
+	])
+	var clipped := Geometry.clip_triangle_to_rect_with_weights(
+		triangle, Vector2(0.0, 0.0), Vector2(800.0, 800.0))
+	assert(clipped.size() >= 3, "Weighted clipping must retain the in-sector polygon")
+	for vertex in clipped:
+		var position: Vector2 = vertex["position"]
+		var weights: Vector3 = vertex["weights"]
+		assert(position.x >= -0.001 and position.x <= 800.001)
+		assert(absf(weights.x + weights.y + weights.z - 1.0) <= 0.0001,
+			"Barycentric weights must sum to one")
+		var reconstructed := triangle[0] * weights.x + triangle[1] * weights.y + triangle[2] * weights.z
+		assert(reconstructed.distance_to(position) <= 0.001,
+			"Interpolated weights must reconstruct the clipped vertex")
+	var original_area := Geometry.polygon_area_abs(triangle)
+	var weighted_area := 0.0
+	for sector_key in Geometry.polygon_sector_keys(triangle, 800.0):
+		var rect_min := Vector2(float(sector_key.x) * 800.0, float(sector_key.y) * 800.0)
+		var rect_max := rect_min + Vector2.ONE * 800.0
+		var sector_vertices := Geometry.clip_triangle_to_rect_with_weights(triangle, rect_min, rect_max)
+		var sector_polygon := PackedVector2Array()
+		for vertex in sector_vertices:
+			sector_polygon.append(vertex["position"])
+		weighted_area += Geometry.polygon_area_abs(sector_polygon)
+	assert(absf(weighted_area - original_area) <= 0.01,
+		"Weighted clipping must preserve total triangle area")
+	assert(Geometry.clip_triangle_to_rect_with_weights(
+		triangle, Vector2(1200.0, 1200.0), Vector2(1600.0, 1600.0)).is_empty())
 
 
 func _test_triangle_clipping_at_sector_corner() -> void:
