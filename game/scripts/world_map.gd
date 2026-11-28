@@ -4261,6 +4261,8 @@ func _load_buildings() -> void:
 		if restaurant_scene != null:
 			restaurant_scenes.append(restaurant_scene)
 	var baie_restaurant_count := 0
+	var boundary_crossing_footprints := 0
+	var widest_sector_span := Vector2i.ONE
 	var limit := mini(features.size(), BUILDING_LIMIT)
 	var surface := _new_surface(_building_material)
 	var roof_surface := _new_surface(_roof_material)
@@ -4308,6 +4310,14 @@ func _load_buildings() -> void:
 				points.remove_at(points.size() - 1)
 			if points.size() < 3:
 				continue
+			# Mesurer les empreintes qui traversent une frontière de secteur.
+			# Elles restent intactes dans leur lot : cette étape est diagnostique,
+			# elle prépare un futur partage sans créer de murs de coupe artificiels.
+			var sector_span := WorldMapGeometryUtils.polygon_sector_span(points, 800.0)
+			if sector_span.x > 1 or sector_span.y > 1:
+				boundary_crossing_footprints += 1
+				widest_sector_span.x = maxi(widest_sector_span.x, sector_span.x)
+				widest_sector_span.y = maxi(widest_sector_span.y, sector_span.y)
 			# Associer le POI administratif à son empreinte réelle quand le point
 			# OSM tombe dans le bâtiment ou à moins de quatre mètres de son contour.
 			var render_props: Dictionary = props.duplicate()
@@ -4359,6 +4369,7 @@ func _load_buildings() -> void:
 	if batch_count > 0:
 		_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key)
 	print("LIBREVILLE STORIES | empreintes de bâtiments associées à un POI administratif : %d" % administrative_building_matches)
+	print("LIBREVILLE STORIES | empreintes traversant une frontière de secteur : %d | portée maximale : %dx%d secteurs" % [boundary_crossing_footprints, widest_sector_span.x, widest_sector_span.y])
 
 
 
