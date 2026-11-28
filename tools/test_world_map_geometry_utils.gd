@@ -11,6 +11,8 @@ func _initialize() -> void:
 	_test_invalid_inputs()
 	_test_polygon_sector_coverage()
 	_test_triangle_sector_clipping()
+	_test_triangle_clipping_area_and_winding()
+	_test_triangle_clipping_at_sector_corner()
 	print("WorldMapGeometryUtils: polyline splitting, sector coverage and triangle clipping tests passed")
 	quit()
 
@@ -116,3 +118,41 @@ func _test_triangle_sector_clipping() -> void:
 	assert(outside.is_empty(), "A triangle outside the sector must produce no geometry")
 	assert(Geometry.clip_triangle_to_rect(PackedVector2Array(), Vector2.ZERO, Vector2.ONE).is_empty())
 	assert(Geometry.clip_triangle_to_rect(triangle, Vector2.ZERO, Vector2.ZERO).is_empty())
+
+
+func _test_triangle_clipping_area_and_winding() -> void:
+	var clockwise := PackedVector2Array([Vector2(760.0, 760.0), Vector2(860.0, 760.0), Vector2(810.0, 860.0)])
+	var counter_clockwise := PackedVector2Array([clockwise[2], clockwise[1], clockwise[0]])
+	for triangle in [clockwise, counter_clockwise]:
+		var total_area := 0.0
+		var keys := Geometry.polygon_sector_keys(triangle, 800.0)
+		for key in keys:
+			var rect_min := Vector2(float(key.x) * 800.0, float(key.y) * 800.0)
+			var rect_max := rect_min + Vector2.ONE * 800.0
+			var clipped := Geometry.clip_triangle_to_rect(triangle, rect_min, rect_max)
+			if clipped.is_empty():
+				continue
+			for point in clipped:
+				assert(point.x >= rect_min.x - 0.001 and point.x <= rect_max.x + 0.001)
+				assert(point.y >= rect_min.y - 0.001 and point.y <= rect_max.y + 0.001)
+			total_area += Geometry.polygon_area_abs(clipped)
+		assert(absf(total_area - Geometry.polygon_area_abs(triangle)) <= 0.01,
+			"Clipping must preserve area for either triangle winding and negative/positive sector keys")
+
+
+func _test_triangle_clipping_at_sector_corner() -> void:
+	var triangle := PackedVector2Array([
+		Vector2(760.0, 760.0),
+		Vector2(840.0, 760.0),
+		Vector2(800.0, 840.0)
+	])
+	var keys := Geometry.polygon_sector_keys(triangle, 800.0)
+	var total_area := 0.0
+	for key in keys:
+		var rect_min := Vector2(float(key.x) * 800.0, float(key.y) * 800.0)
+		var rect_max := rect_min + Vector2.ONE * 800.0
+		var clipped := Geometry.clip_triangle_to_rect(triangle, rect_min, rect_max)
+		if clipped.size() >= 3:
+			total_area += Geometry.polygon_area_abs(clipped)
+	assert(absf(total_area - Geometry.polygon_area_abs(triangle)) <= 0.01,
+		"A triangle touching four sectors at a corner must not lose or duplicate area")
