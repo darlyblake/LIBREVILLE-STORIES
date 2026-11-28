@@ -2181,13 +2181,16 @@ func _build_tree_tile_instances(tile_key: Vector2i, positions: Array, trunk_mesh
 		canopy_multimeshes[canopy_type].set_instance_transform(canopy_index, Transform3D(canopy_basis, canopy_position))
 		canopy_multimeshes[canopy_type].set_instance_color(canopy_index, foliage_palette[rng.randi_range(0, foliage_palette.size() - 1)])
 		canopy_counts[canopy_type] += 1
+	# Un conteneur par secteur : tronc et canopées sont activés/désactivés ensemble.
+	var vegetation_root := Node3D.new()
+	vegetation_root.name = "VegetationTile_%d_%d" % [tile_key.x, tile_key.y]
 	var trunk_instance := MultiMeshInstance3D.new()
 	trunk_instance.name = "OSM_Tree_Trunks_%d_%d" % [tile_key.x, tile_key.y]
 	trunk_instance.multimesh = trunks
 	trunk_instance.material_override = trunk_material
 	trunk_instance.position = tile_origin
 	trunk_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(trunk_instance)
+	vegetation_root.add_child(trunk_instance)
 	for canopy_type in range(canopy_multimeshes.size()):
 		var batch := canopy_multimeshes[canopy_type]
 		batch.visible_instance_count = canopy_counts[canopy_type]
@@ -2199,7 +2202,11 @@ func _build_tree_tile_instances(tile_key: Vector2i, positions: Array, trunk_mesh
 		canopy_instance.material_override = canopy_material
 		canopy_instance.position = tile_origin
 		canopy_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(canopy_instance)
+		vegetation_root.add_child(canopy_instance)
+	add_child(vegetation_root)
+	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+	if streaming_manager != null:
+		streaming_manager.register_node(vegetation_root, "Vegetation", tile_origin)
 
 
 func _load_neighbourhoods() -> void:
@@ -3330,6 +3337,8 @@ func _commit_lamps(tile_name: String) -> void:
 	for transform in _lamp_batch:
 		batch_center += transform.origin
 	batch_center /= float(_lamp_batch.size())
+	var lamp_root := Node3D.new()
+	lamp_root.name = "LampBatch_%s" % tile_name
 	for part_number in range(_lamp_parts.size()):
 		var info: Dictionary = _lamp_parts[part_number]
 		var multimesh := MultiMesh.new()
@@ -3347,7 +3356,11 @@ func _commit_lamps(tile_name: String) -> void:
 		instance.position = batch_center
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		instance.visibility_range_end = LAMP_VISIBILITY
-		add_child(instance)
+		lamp_root.add_child(instance)
+	add_child(lamp_root)
+	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+	if streaming_manager != null:
+		streaming_manager.register_node(lamp_root, "Streetlights", batch_center)
 	_lamp_count += _lamp_batch.size()
 	_lamp_batch.clear()
 
