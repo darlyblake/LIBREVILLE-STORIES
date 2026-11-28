@@ -14,7 +14,8 @@ func _initialize() -> void:
 	_test_triangle_clipping_area_and_winding()
 	_test_triangle_clipping_at_sector_corner()
 	_test_weighted_triangle_clipping()
-	print("WorldMapGeometryUtils: polyline splitting, sector coverage and weighted triangle clipping tests passed")
+	_test_triangle_attribute_interpolation()
+	print("WorldMapGeometryUtils: polyline splitting, sector coverage and weighted clipping and vertex attribute interpolation tests passed")
 	quit()
 
 
@@ -174,6 +175,33 @@ func _test_weighted_triangle_clipping() -> void:
 		"Weighted clipping must preserve total triangle area")
 	assert(Geometry.clip_triangle_to_rect_with_weights(
 		triangle, Vector2(1200.0, 1200.0), Vector2(1600.0, 1600.0)).is_empty())
+
+
+func _test_triangle_attribute_interpolation() -> void:
+	var weights := Vector3(0.25, 0.50, 0.25)
+	var uv_values: Array = [Vector2(0.0, 0.0), Vector2(2.0, 0.0), Vector2(0.0, 2.0)]
+	var uv: Variant = Geometry.interpolate_triangle_attribute(uv_values, weights)
+	assert(uv is Vector2 and uv.distance_to(Vector2(1.0, 0.5)) <= 0.0001,
+		"UV interpolation must preserve barycentric coordinates")
+	var normal_values: Array = [Vector3.UP, Vector3.RIGHT, Vector3.FORWARD]
+	var normal: Variant = Geometry.interpolate_triangle_attribute(normal_values, weights)
+	assert(normal is Vector3 and normal.distance_to(Vector3(0.5, 0.25, -0.25)) <= 0.0001,
+		"Normal interpolation must be linear before caller normalization")
+	var tangent_values: Array = [Vector4(1.0, 0.0, 0.0, 1.0), Vector4(0.0, 1.0, 0.0, 1.0), Vector4(0.0, 0.0, 1.0, -1.0)]
+	var tangent: Variant = Geometry.interpolate_triangle_attribute(tangent_values, weights)
+	assert(tangent is Vector4 and tangent.distance_to(Vector4(0.25, 0.50, 0.25, 0.0)) <= 0.0001,
+		"Tangent interpolation must retain all four components")
+	var color_values: Array = [Color(1.0, 0.0, 0.0, 1.0), Color(0.0, 1.0, 0.0, 0.5), Color(0.0, 0.0, 1.0, 0.0)]
+	var color: Variant = Geometry.interpolate_triangle_attribute(color_values, weights)
+	assert(color is Color and color.is_equal_approx(Color(0.25, 0.50, 0.25, 0.5)),
+		"Vertex colors must be interpolated without losing alpha")
+	var scalar_values: Array = [0.0, 10.0, 20.0]
+	var scalar: Variant = Geometry.interpolate_triangle_attribute(scalar_values, weights)
+	assert(is_equal_approx(float(scalar), 10.0), "Scalar vertex attributes must interpolate linearly")
+	assert(Geometry.interpolate_triangle_attribute([Vector2.ZERO], weights) == null,
+		"Invalid attribute triplets must be rejected")
+	assert(Geometry.interpolate_triangle_attribute(["a", "b", "c"], weights) == null,
+		"Unsupported attribute types must be rejected")
 
 
 func _test_triangle_clipping_at_sector_corner() -> void:

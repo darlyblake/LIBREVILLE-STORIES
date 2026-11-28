@@ -188,3 +188,10 @@ des collisions. Leur séparation en meshes autonomes par secteur n'est pas
 encore réalisée. Les tuiles routières existantes restent partagées entre les
 secteurs qu'elles couvrent. Les tests géométriques vérifient la somme des poids,
 la reconstruction des positions et la conservation de l'aire.
+
+
+### Interpolation des attributs de sommets
+
+La primitive `interpolate_triangle_attribute(values, weights)` applique les coordonnées barycentriques conservées par le clipping aux attributs d'un triangle source. Elle prend en charge les scalaires, `Vector2`, `Vector3`, `Vector4` et `Color` (y compris l'alpha). Pour les meshes routiers, cela couvre notamment UV/UV2, position, normales, tangentes et couleurs de sommets.
+
+Les normales interpolées doivent être renormalisées par le constructeur du mesh ; les tangentes peuvent nécessiter une réorthogonalisation. Les attributs de peau/bones ne sont pas encore pris en charge. Cette primitive et ses tests sont une étape préparatoire : les meshes routiers sont toujours regroupés en tuiles partagées, le découpage réel des surfaces et la reconstruction des collisions par secteur restent à implémenter.

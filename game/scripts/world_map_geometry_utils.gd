@@ -372,6 +372,44 @@ static func clip_triangle_to_rect_with_weights(triangle: PackedVector2Array,
 	return vertices
 
 
+
+## Interpole un attribut porté par les trois sommets d'un triangle à partir
+## de coordonnées barycentriques. Les normales doivent être renormalisées par
+## l'appelant ; les tangentes doivent aussi être réorthogonalisées si nécessaire.
+## Les types pris en charge correspondent aux attributs courants d'ArrayMesh.
+static func interpolate_triangle_attribute(values: Array, weights: Vector3) -> Variant:
+	if values.size() != 3:
+		return null
+	var a: Variant = values[0]
+	var b: Variant = values[1]
+	var c: Variant = values[2]
+	match typeof(a):
+		TYPE_FLOAT, TYPE_INT:
+			return float(a) * weights.x + float(b) * weights.y + float(c) * weights.z
+		TYPE_VECTOR2:
+			var va: Vector2 = a
+			var vb: Vector2 = b
+			var vc: Vector2 = c
+			return va * weights.x + vb * weights.y + vc * weights.z
+		TYPE_VECTOR3:
+			var va: Vector3 = a
+			var vb: Vector3 = b
+			var vc: Vector3 = c
+			return va * weights.x + vb * weights.y + vc * weights.z
+		TYPE_VECTOR4:
+			var va: Vector4 = a
+			var vb: Vector4 = b
+			var vc: Vector4 = c
+			return va * weights.x + vb * weights.y + vc * weights.z
+		TYPE_COLOR:
+			var ca: Color = a
+			var cb: Color = b
+			var cc: Color = c
+			return ca * weights.x + cb * weights.y + cc * weights.z
+		_:
+			return null
+
+
 static func _clip_weighted_axis(vertices: Array[Dictionary], axis: int,
 		boundary: float, keep_greater: bool) -> Array[Dictionary]:
 	var output: Array[Dictionary] = []
