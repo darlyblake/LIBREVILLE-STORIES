@@ -1213,7 +1213,8 @@ func _commit_surface(surface: SurfaceTool, instance_name: String, target_parent:
 
 
 func _flush_building_mesh_batch(surface: SurfaceTool, roof_surface: SurfaceTool,
-		detail_surface: SurfaceTool, batch_index: int, sector_key: Vector2i) -> void:
+		detail_surface: SurfaceTool, batch_index: int, sector_key: Vector2i,
+		covered_sectors: Array[Vector2i]) -> void:
 	var batch_root := Node3D.new()
 	batch_root.name = "BuildingBatch_%d_%d_%03d" % [sector_key.x, sector_key.y, batch_index]
 	add_child(batch_root)
@@ -1223,14 +1224,14 @@ func _flush_building_mesh_batch(surface: SurfaceTool, roof_surface: SurfaceTool,
 	if batch_root.get_child_count() == 0:
 		batch_root.queue_free()
 		return
-	var sector_center := Vector3((float(sector_key.x) + 0.5) * 800.0, 0.0,
-		(float(sector_key.y) + 0.5) * 800.0)
 	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
 	if streaming_manager != null:
-		streaming_manager.register_node(batch_root, "Buildings", sector_center)
+		if covered_sectors.is_empty():
+			covered_sectors.append(sector_key)
+		streaming_manager.register_node_in_sectors(batch_root, "Buildings", covered_sectors)
 
 func _flush_environment_batch(surface: SurfaceTool, relief_collision_surface: SurfaceTool,
-		batch_index: int, sector_key: Vector2i) -> void:
+		batch_index: int, sector_key: Vector2i, covered_sectors: Array[Vector2i]) -> void:
 	var environment_root := Node3D.new()
 	environment_root.name = "EnvironmentBatch_%d_%d_%03d" % [sector_key.x, sector_key.y, batch_index]
 	_commit_surface(surface, "OSM_Environment_%03d" % batch_index, environment_root)
@@ -1252,9 +1253,9 @@ func _flush_environment_batch(surface: SurfaceTool, relief_collision_surface: Su
 	add_child(environment_root)
 	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
 	if streaming_manager != null:
-		var sector_center := Vector3((float(sector_key.x) + 0.5) * 800.0, 0.0,
-			(float(sector_key.y) + 0.5) * 800.0)
-		streaming_manager.register_node(environment_root, "Environment", sector_center)
+		if covered_sectors.is_empty():
+			covered_sectors.append(sector_key)
+		streaming_manager.register_node_in_sectors(environment_root, "Environment", covered_sectors)
 
 
 func _load_coastline_paths() -> void:
@@ -1306,12 +1307,14 @@ func _load_environment() -> void:
 		return center_a.distance_squared_to(environment_origin) < center_b.distance_squared_to(environment_origin)
 	)
 	var current_environment_sector := Vector2i(2147483647, 2147483647)
+	var environment_batch_coverage: Array[Vector2i] = []
 	for feature in environment_features:
 		var feature_center := _feature_world_center(feature)
 		var feature_sector := Vector2i(floori(feature_center.x / 800.0), floori(feature_center.y / 800.0))
 		if current_environment_sector != feature_sector:
 			if batch_count > 0:
-				_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector)
+				_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector, environment_batch_coverage)
+				environment_batch_coverage.clear()
 				batch_index += 1
 				batch_count = 0
 				surface = _new_surface(_environment_material)
@@ -1336,6 +1339,9 @@ func _load_environment() -> void:
 			# Mesurer les surfaces dont l'emprise dépasse leur secteur d'affectation.
 			# On conserve la géométrie intacte : aucun découpage visuel/collision ici.
 			var environment_sector_span := WorldMapGeometryUtils.polygon_sector_span(original_points, 800.0)
+			for covered_key in WorldMapGeometryUtils.polygon_sector_keys(original_points, 800.0):
+				if not environment_batch_coverage.has(covered_key):
+					environment_batch_coverage.append(covered_key)
 			if environment_sector_span.x > 1 or environment_sector_span.y > 1:
 				environment_boundary_crossings += 1
 				environment_widest_sector_span.x = maxi(environment_widest_sector_span.x, environment_sector_span.x)
@@ -1403,12 +1409,22 @@ func _load_environment() -> void:
 				for coordinate in coords:
 					var coast_point := _geo_to_world(coordinate)
 					coast_path.append(Vector2(coast_point.x, coast_point.z))
+				for covered_key in WorldMapGeometryUtils.polygon_sector_keys(coast_path, 800.0):
+					if not environment_batch_coverage.has(covered_key):
+						environment_batch_coverage.append(covered_key)
 				if coast_path.size() >= 2:
 					if _coastline_paths.is_empty():
 						_coastline_paths.append(coast_path)
 					added = true
 			else:
 				var width := 5.5 if kind == "waterway" else (8.0 if kind == "water" else 1.6)
+				var line_points := PackedVector2Array()
+				for coordinate in coords:
+					var line_point := _geo_to_world(coordinate)
+					line_points.append(Vector2(line_point.x, line_point.z))
+				for covered_key in WorldMapGeometryUtils.polygon_sector_keys(line_points, 800.0, width * 0.5):
+					if not environment_batch_coverage.has(covered_key):
+						environment_batch_coverage.append(covered_key)
 				surface.set_color(WorldMapColorUtils.environment_color(kind))
 				for i in range(coords.size() - 1):
 					var a := _geo_to_world(coords[i])
@@ -1426,13 +1442,14 @@ func _load_environment() -> void:
 		if environment_index % 40 == 0:
 			await get_tree().process_frame
 		if batch_count >= 900:
-			_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector)
+			_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector, environment_batch_coverage)
+			environment_batch_coverage.clear()
 			batch_index += 1
 			batch_count = 0
 			surface = _new_surface(_environment_material)
 			relief_collision_surface = _new_surface(_environment_material)
 	if batch_count > 0:
-		_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector)
+		_flush_environment_batch(surface, relief_collision_surface, batch_index, current_environment_sector, environment_batch_coverage)
 	# L'océan global texturé est l'unique surface d'eau ; ne pas superposer une seconde nappe locale.
 	_build_coastal_details()
 	_build_baie_des_rois_seawall()
@@ -4347,6 +4364,7 @@ func _load_buildings() -> void:
 	var batch_count := 0
 	var batch_index := 0
 	var batch_sector_key := Vector2i(2147483647, 2147483647)
+	var building_batch_coverage: Array[Vector2i] = []
 	for index in range(limit):
 		var feature: Dictionary = features[index]
 		var geometry: Dictionary = feature.get("geometry", {})
@@ -4362,8 +4380,9 @@ func _load_buildings() -> void:
 		var feature_center := _feature_world_center(feature)
 		var feature_sector_key := Vector2i(floori(feature_center.x / 800.0), floori(feature_center.y / 800.0))
 		if batch_count > 0 and feature_sector_key != batch_sector_key:
-			_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key)
+			_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key, building_batch_coverage)
 			batch_index += 1
+			building_batch_coverage.clear()
 			batch_count = 0
 			surface = _new_surface(_building_material)
 			roof_surface = _new_surface(_roof_material)
@@ -4391,6 +4410,9 @@ func _load_buildings() -> void:
 			# Elles restent intactes dans leur lot : cette étape est diagnostique,
 			# elle prépare un futur partage sans créer de murs de coupe artificiels.
 			var sector_span := WorldMapGeometryUtils.polygon_sector_span(points, 800.0)
+			for covered_key in WorldMapGeometryUtils.polygon_sector_keys(points, 800.0, 0.5):
+				if not building_batch_coverage.has(covered_key):
+					building_batch_coverage.append(covered_key)
 			if sector_span.x > 1 or sector_span.y > 1:
 				boundary_crossing_footprints += 1
 				widest_sector_span.x = maxi(widest_sector_span.x, sector_span.x)
@@ -4435,8 +4457,9 @@ func _load_buildings() -> void:
 			_building_count += 1
 			batch_count += 1
 		if batch_count >= BUILDINGS_PER_MESH:
-			_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key)
+			_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key, building_batch_coverage)
 			batch_index += 1
+			building_batch_coverage.clear()
 			batch_count = 0
 			surface = _new_surface(_building_material)
 			roof_surface = _new_surface(_roof_material)
@@ -4444,7 +4467,7 @@ func _load_buildings() -> void:
 		if index % 40 == 0:
 			await get_tree().process_frame
 	if batch_count > 0:
-		_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key)
+		_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key, building_batch_coverage)
 	print("LIBREVILLE STORIES | empreintes de bâtiments associées à un POI administratif : %d" % administrative_building_matches)
 	print("LIBREVILLE STORIES | empreintes traversant une frontière de secteur : %d | portée maximale : %dx%d secteurs" % [boundary_crossing_footprints, widest_sector_span.x, widest_sector_span.y])
 
