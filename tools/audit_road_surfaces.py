@@ -95,11 +95,13 @@ def audit_topology(features):
                 if best is None or dist<best[0]: best=(dist,candidate)
         if best: t_candidates.append(best[1])
         # Nearby endpoints, without joining different bridge/tunnel/layer levels.
-        for j in range(i+1,len(endpoints)):
+        for j in nearby_endpoint_ids:
+            if j<=i: continue
             other=endpoints[j]
             if other["feature"]==ep["feature"] or level(other["props"])!=level(ep["props"]): continue
             d=math.dist(p,other["p"])
             if 0.05<d<=1.5:
+                near_endpoint_indices.add(i); near_endpoint_indices.add(j)
                 near_pairs.append({"road_a":ep["props"].get("osm_id",ep["feature"]),"road_b":other["props"].get("osm_id",other["feature"]),"distance_m":round(d,2),"level":level(ep["props"])})
         edge=min(p[0]-bounds[0],bounds[2]-p[0],p[1]-bounds[1],bounds[3]-p[1])
         if edge<=50.0: boundary.append(ep)
