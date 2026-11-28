@@ -3958,6 +3958,10 @@ func _reconcile_nearby_road_endpoints(parts: Array[Dictionary], node_registry: D
 					var candidate_part := int(candidate.part)
 					if used_parts.has(candidate_part) or str(candidate.signature) != str(seed.signature):
 						continue
+					# Si les clés OSM sont déjà identiques, le registre les relie
+					# déjà : ne pas les remplacer par une clé synthétique.
+					if str(candidate.key) == str(seed.key):
+						continue
 					if not WorldMapGeometryUtils.road_endpoints_can_join(
 						seed_position, candidate.position, seed.direction, candidate.direction, MAX_JOIN_DISTANCE
 					):
@@ -3979,7 +3983,6 @@ func _reconcile_nearby_road_endpoints(parts: Array[Dictionary], node_registry: D
 			var part: Dictionary = parts[part_index]
 			var original_points: Array[Vector3] = part.orig_points
 			var road_points: Array[Vector3] = part.points
-			var old_point: Vector3 = original_points[endpoint_index_in_part]
 			var snapped_point := Vector3(joined_position.x,
 				_terrain_mesh_height(joined_position.x, joined_position.y), joined_position.y)
 			original_points[endpoint_index_in_part] = snapped_point
