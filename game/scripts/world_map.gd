@@ -1466,14 +1466,18 @@ func _load_environment() -> void:
 					for line_sector in line_sectors:
 						var line_min := Vector2(float(line_sector.x) * 800.0, float(line_sector.y) * 800.0)
 						var line_max := line_min + Vector2.ONE * 800.0
-						for line_triangle in line_triangles:
-							var line_piece := WorldMapGeometryUtils.clip_triangle_to_rect(line_triangle, line_min, line_max)
-						if line_piece.size() < 3:
-							continue
-						for fan_index in range(1, line_piece.size() - 1):
-							for q in [line_piece[0], line_piece[fan_index], line_piece[fan_index + 1]]:
-								var line_point: Vector2 = q
-								surface.add_vertex(Vector3(line_point.x, _terrain_mesh_height(line_point.x, line_point.y) + 0.014, line_point.y))
+						for line_triangle_index in range(line_triangles.size()):
+							var line_piece := WorldMapGeometryUtils.clip_triangle_to_rect(line_triangles[line_triangle_index], line_min, line_max)
+							if line_piece.size() < 3:
+								continue
+							# Garder l'altitude de la LineString : le clipping ne doit pas
+							# plaquer un cours d'eau sur le relief DEM.
+							for fan_index in range(1, line_piece.size() - 1):
+								for q in [line_piece[0], line_piece[fan_index], line_piece[fan_index + 1]]:
+									var line_point: Vector2 = q
+									var segment_t := clampf((line_point - Vector2(a.x, a.z)).dot(direction) / direction.length_squared(), 0.0, 1.0)
+									var line_height := lerpf(a.y, b.y, segment_t) + 0.014
+									surface.add_vertex(Vector3(line_point.x, line_height, line_point.y))
 					added = true
 		if added:
 			_environment_count += 1

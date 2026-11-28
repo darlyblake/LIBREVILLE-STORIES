@@ -131,8 +131,10 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
   à la collision du relief, ce qui évite une divergence entre les deux.
 - Les rubans générés depuis les LineString (cours d'eau, plans d'eau
   linéaires et autres lignes environnementales) sont eux aussi découpés par
-  l'emprise réelle de leur quad, largeur comprise. Les triangles découpés sont
-  abaissés sur la hauteur du terrain et restent dans le même lot visuel.
+  l'emprise réelle de leur quad, largeur comprise. Les deux triangles du quad
+  sont traités séparément. L'altitude est interpolée le long du segment source
+  afin de préserver le niveau d'eau/du cours d'eau au lieu de le plaquer sur le
+  relief DEM.
 - Limite actuelle : les morceaux découpés par secteur sont encore réunis dans
   le lot environnemental d'origine ; ils ne sont pas encore stockés dans un
   nœud/mesh indépendant par secteur. Les chemins de côte servent à la sélection
