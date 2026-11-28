@@ -2701,7 +2701,7 @@ func _load_roads() -> void:
 		for part_index in tiles[tile_key]:
 			_build_road_part(parts[part_index], part_index, surfaces, collision, node_registry, patched, parts)
 			_road_count += 1
-		_commit_road_surfaces(surfaces, collision, "%03d" % tile_counter)
+		_commit_road_surfaces(surfaces, collision, "%03d" % tile_counter, tile_key)
 		_commit_lamps("%03d" % tile_counter)
 		tile_counter += 1
 		await get_tree().process_frame
@@ -2764,7 +2764,10 @@ func _new_road_surfaces() -> Dictionary:
 	return surfaces
 
 
-func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_name: String) -> void:
+func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_name: String, tile_key: Vector2i) -> void:
+	# Un conteneur par tuile OSM de 800 m : rendu et collisions voyagent ensemble.
+	var tile_root := Node3D.new()
+	tile_root.name = "RoadTile_%d_%d" % [tile_key.x, tile_key.y]
 	for key in surfaces.keys():
 		var surface: SurfaceTool = surfaces[key]
 		var textured: bool = key in ROAD_TEXTURED_KEYS
@@ -2780,9 +2783,7 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 		instance.name = ("OSM_Roads_%s" % tile_name) if key == "asphalt" else ("OSM_Roads_%s_%s" % [str(key).capitalize(), tile_name])
 		instance.mesh = mesh
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		# Collision de secours construite directement depuis la chaussée visible.
-		# Elle garantit que les triangles physiques utilisent exactement les mêmes
-		# sommets que le rendu, même si le maillage de collision dédié est incomplet.
+		# Collision de secours construite depuis la même géométrie que la chaussée.
 		if road_collision and key in ["asphalt", "dirt", "paving"]:
 			var road_shape := mesh.create_trimesh_shape() as ConcavePolygonShape3D
 			if road_shape != null:
@@ -2794,29 +2795,34 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 				var road_collision_shape := CollisionShape3D.new()
 				road_collision_shape.shape = road_shape
 				road_body.add_child(road_collision_shape)
-				add_child(road_body)
+				tile_root.add_child(road_body)
 		if key != "asphalt" and key != "dirt" and key != "paving":
-			# Bordures, trottoirs, marquages : inutiles au loin.
 			instance.visibility_range_end = ROAD_DETAIL_VISIBILITY
-		add_child(instance)
-	if not road_collision:
+		tile_root.add_child(instance)
+	if road_collision:
+		var collision_mesh := collision.commit()
+		if collision_mesh != null and collision_mesh.get_surface_count() > 0:
+			var shape := collision_mesh.create_trimesh_shape() as ConcavePolygonShape3D
+			if shape != null:
+				shape.backface_collision = true
+				var body := StaticBody3D.new()
+				body.name = "OSM_Roads_Collision_" + tile_name
+				body.collision_layer = 1
+				body.collision_mask = 1
+				var collision_shape := CollisionShape3D.new()
+				collision_shape.shape = shape
+				body.add_child(collision_shape)
+				tile_root.add_child(body)
+	if tile_root.get_child_count() == 0:
+		tile_root.queue_free()
 		return
-	var collision_mesh := collision.commit()
-	if collision_mesh == null or collision_mesh.get_surface_count() == 0:
-		return
-	var shape := collision_mesh.create_trimesh_shape() as ConcavePolygonShape3D
-	if shape == null:
-		push_warning("Collision routière impossible pour la zone " + tile_name)
-		return
-	shape.backface_collision = true
-	var body := StaticBody3D.new()
-	body.name = "OSM_Roads_Collision_" + tile_name
-	body.collision_layer = 1
-	body.collision_mask = 1
-	var collision_shape := CollisionShape3D.new()
-	collision_shape.shape = shape
-	body.add_child(collision_shape)
-	add_child(body)
+	# L'origine des vertices des SurfaceTools est le repère WorldMap (0,0,0).
+	# On ajoute d'abord le conteneur ici ; le manager conserve son transform global.
+	add_child(tile_root)
+	var tile_center := Vector3((float(tile_key.x) + 0.5) * ROAD_TILE_SIZE, 0.0, (float(tile_key.y) + 0.5) * ROAD_TILE_SIZE)
+	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+	if streaming_manager != null:
+		streaming_manager.register_node(tile_root, "Roads", tile_center)
 
 
 func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, collision: SurfaceTool, node_registry: Dictionary, patched: Dictionary, all_parts: Array[Dictionary]) -> void:
