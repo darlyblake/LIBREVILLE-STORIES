@@ -2784,8 +2784,11 @@ func _load_roads() -> void:
 	#    ce qui permet au moteur d'éliminer les zones hors champ.
 	var tiles: Dictionary = {}
 	for part_index in range(parts.size()):
-		var first_point: Vector3 = parts[part_index].points[0]
-		var tile := Vector2i(floori(first_point.x / ROAD_TILE_SIZE), floori(first_point.z / ROAD_TILE_SIZE))
+		# Ancrer le lot au milieu réel du tronçon, pas à son premier sommet.
+		# Cela évite qu'une longue route soit systématiquement rattachée à
+		# un secteur situé à l'une de ses extrémités.
+		var stream_anchor := _road_part_streaming_anchor(parts[part_index].points)
+		var tile := Vector2i(floori(stream_anchor.x / ROAD_TILE_SIZE), floori(stream_anchor.z / ROAD_TILE_SIZE))
 		if not tiles.has(tile):
 			tiles[tile] = []
 		tiles[tile].append(part_index)
@@ -2866,6 +2869,26 @@ func _new_road_surfaces() -> Dictionary:
 		plain.set_color(plain_colors[key])
 		surfaces[key] = plain
 	return surfaces
+
+
+func _road_part_streaming_anchor(points: Array[Vector3]) -> Vector3:
+	if points.is_empty():
+		return Vector3.ZERO
+	if points.size() == 1:
+		return points[0]
+	var total_length := 0.0
+	for index in range(points.size() - 1):
+		total_length += Vector2(points[index + 1].x - points[index].x, points[index + 1].z - points[index].z).length()
+	if total_length <= 0.001:
+		return points[0]
+	var target_distance := total_length * 0.5
+	var traversed := 0.0
+	for index in range(points.size() - 1):
+		var segment_length := Vector2(points[index + 1].x - points[index].x, points[index + 1].z - points[index].z).length()
+		if traversed + segment_length >= target_distance and segment_length > 0.001:
+			return points[index].lerp(points[index + 1], (target_distance - traversed) / segment_length)
+		traversed += segment_length
+	return points[points.size() - 1]
 
 
 func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_name: String, tile_key: Vector2i) -> void:
