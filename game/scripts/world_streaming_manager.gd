@@ -57,6 +57,8 @@ func get_or_create_sector(sector_key: Vector2i) -> Node3D:
 		0.0,
 		float(sector_key.y) * sector_size
 	)
+	sector.visible = false
+	sector.process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(sector)
 	_sectors[sector_key] = sector
 	_set_sector_active(sector_key, _is_inside_load_radius(sector_key))
@@ -94,18 +96,17 @@ func update_streaming(world_position: Vector3, force: bool = false) -> void:
 		return
 	_current_center = center
 	var changed := false
-	for dz in range(-unload_radius, unload_radius + 1):
-		for dx in range(-unload_radius, unload_radius + 1):
-			var key := center + Vector2i(dx, dz)
-			if Vector2(dx, dz).length_squared() > float(unload_radius * unload_radius):
-				continue
-			if not _sectors.has(key):
-				continue
-			var should_be_active := Vector2(dx, dz).length_squared() <= float(load_radius * load_radius)
-			var was_active := _active_sectors.has(key)
-			if should_be_active != was_active:
-				_set_sector_active(key, should_be_active)
-				changed = true
+	for key_variant in _sectors.keys():
+		var key: Vector2i = key_variant
+		var offset := key - center
+		var distance_squared := Vector2(offset.x, offset.y).length_squared()
+		var was_active := _active_sectors.has(key)
+		# Hystérésis : un secteur actif reste chargé jusqu'au rayon de sortie ;
+		# un secteur inactif n'entre qu'au rayon de chargement.
+		var should_be_active := distance_squared <= float(unload_radius * unload_radius) if was_active else distance_squared <= float(load_radius * load_radius)
+		if should_be_active != was_active:
+			_set_sector_active(key, should_be_active)
+			changed = true
 	if changed:
 		active_sectors_changed.emit(_active_sectors.size())
 
