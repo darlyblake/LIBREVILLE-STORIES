@@ -62,6 +62,29 @@ static func polygon_sector_span(points: PackedVector2Array, sector_size: float =
 	return Vector2i(max_sector_x - min_sector_x + 1, max_sector_y - min_sector_y + 1)
 
 
+## Emprise d'une ligne routière sur la grille des secteurs.
+## Les coordonnées sont en X/Z monde ; le maximum est traité comme exclusif.
+static func line_sector_span(points: PackedVector2Array, sector_size: float = 800.0) -> Vector2i:
+	if points.is_empty() or sector_size <= 0.0:
+		return Vector2i.ZERO
+	var min_x := INF
+	var min_y := INF
+	var max_x := -INF
+	var max_y := -INF
+	for point in points:
+		min_x = minf(min_x, point.x)
+		min_y = minf(min_y, point.y)
+		max_x = maxf(max_x, point.x)
+		max_y = maxf(max_y, point.y)
+	var last_x := maxf(min_x, max_x - 0.001)
+	var last_y := maxf(min_y, max_y - 0.001)
+	var min_sector_x := floori(min_x / sector_size)
+	var min_sector_y := floori(min_y / sector_size)
+	var max_sector_x := floori(last_x / sector_size)
+	var max_sector_y := floori(last_y / sector_size)
+	return Vector2i(max_sector_x - min_sector_x + 1, max_sector_y - min_sector_y + 1)
+
+
 static func polygon_area_abs(points: PackedVector2Array) -> float:
 	if points.size() < 3:
 		return 0.0
