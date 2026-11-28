@@ -325,3 +325,50 @@ static func pitched_roof_triangles(points: PackedVector2Array, wall_height: floa
 		a, ridge_start, d,
 		b, c, ridge_end
 	])
+
+
+## Découpe un triangle 2D contre le rectangle d'un secteur.
+## L'entrée est convexe (un triangle) : le résultat reste un polygone convexe
+## directement triangulable en éventail. Les intersections sont calculées
+## exactement sur les limites, sans epsilon visuel ajouté.
+static func clip_triangle_to_rect(triangle: PackedVector2Array, rect_min: Vector2, rect_max: Vector2) -> PackedVector2Array:
+	if triangle.size() != 3 or rect_min.x >= rect_max.x or rect_min.y >= rect_max.y:
+		return PackedVector2Array()
+	var clipped := triangle
+	clipped = _clip_polygon_axis(clipped, 0, rect_min.x, true)
+	clipped = _clip_polygon_axis(clipped, 0, rect_max.x, false)
+	clipped = _clip_polygon_axis(clipped, 1, rect_min.y, true)
+	clipped = _clip_polygon_axis(clipped, 1, rect_max.y, false)
+	if clipped.size() < 3 or polygon_area_abs(clipped) < 0.000001:
+		return PackedVector2Array()
+	return clipped
+
+
+static func _clip_polygon_axis(points: PackedVector2Array, axis: int, boundary: float, keep_greater: bool) -> PackedVector2Array:
+	var output := PackedVector2Array()
+	if points.is_empty():
+		return output
+	var previous := points[points.size() - 1]
+	var previous_value := previous.x if axis == 0 else previous.y
+	var previous_inside := previous_value >= boundary if keep_greater else previous_value <= boundary
+	for current in points:
+		var current_value := current.x if axis == 0 else current.y
+		var current_inside := current_value >= boundary if keep_greater else current_value <= boundary
+		if current_inside != previous_inside:
+			var denominator := current_value - previous_value
+			if absf(denominator) > 0.0000001:
+				var weight := (boundary - previous_value) / denominator
+				output.append(previous.lerp(current, weight))
+		if current_inside:
+			output.append(current)
+		previous = current
+		previous_value = current_value
+		previous_inside = current_inside
+	# Remove consecutive duplicate vertices created when an edge lies on a boundary.
+	var cleaned := PackedVector2Array()
+	for point in output:
+		if cleaned.is_empty() or cleaned[cleaned.size() - 1].distance_to(point) > 0.00001:
+			cleaned.append(point)
+	if cleaned.size() > 1 and cleaned[0].distance_to(cleaned[cleaned.size() - 1]) <= 0.00001:
+		cleaned.remove_at(cleaned.size() - 1)
+	return cleaned
