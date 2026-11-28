@@ -13,6 +13,7 @@ signal active_sectors_changed(active_count: int)
 @export_range(1, 8, 1) var load_radius: int = 2
 @export_range(1, 10, 1) var unload_radius: int = 3
 @export_range(0.05, 1.0, 0.05) var update_interval: float = 0.20
+@export_range(0.0, 12.0, 0.5) var vehicle_preload_seconds: float = 6.0
 
 var _player: Node3D
 var _sectors: Dictionary = {}
@@ -35,7 +36,19 @@ func _process(delta: float) -> void:
 	if not is_instance_valid(_player):
 		_player = get_parent().get_node_or_null("Player") as Node3D
 	if _player != null:
-		update_streaming(_player.global_position)
+		var streaming_position := _player.global_position
+		var movement_velocity := _player.velocity if _player is CharacterBody3D else Vector3.ZERO
+		# En conduite, le joueur est attaché au véhicule et sa propre vélocité
+		# est nulle. Lire la vitesse réelle du VehicleBody3D pour anticiper.
+		var vehicle := get_parent().get_node_or_null("Vehicle") as VehicleBody3D
+		if vehicle != null and _player.global_position.distance_to(vehicle.global_position + Vector3.UP * 1.05) < 3.0:
+			movement_velocity = vehicle.linear_velocity
+		var horizontal_velocity := Vector3(movement_velocity.x, 0.0, movement_velocity.z)
+		var horizontal_speed := horizontal_velocity.length()
+		if horizontal_speed > 3.0 and vehicle_preload_seconds > 0.0:
+			var lookahead_distance := minf(horizontal_speed * vehicle_preload_seconds, sector_size * 2.0)
+			streaming_position += horizontal_velocity.normalized() * lookahead_distance
+		update_streaming(streaming_position)
 
 
 ## Convertit une position monde en coordonnée entière de secteur.
