@@ -1795,9 +1795,9 @@ void fragment() {
 			foam_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			foam_instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 			add_child(foam_instance)
-			var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
-			if streaming_manager != null:
-				streaming_manager.register_node(foam_instance, "Coastline", Vector3(BAIE_DES_ROIS_SITE_CENTER.x, 0.0, BAIE_DES_ROIS_SITE_CENTER.y))
+			var foam_streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+			if foam_streaming_manager != null:
+				foam_streaming_manager.register_node(foam_instance, "Coastline", Vector3(BAIE_DES_ROIS_SITE_CENTER.x, 0.0, BAIE_DES_ROIS_SITE_CENTER.y))
 
 	if not rock_transforms.is_empty():
 		# Shader minéral procédural : grain, strates irrégulières et humidité
@@ -1869,9 +1869,9 @@ void fragment() {
 		rocks.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		rocks.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 		add_child(rocks)
-		var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
-		if streaming_manager != null:
-			streaming_manager.register_node(rocks, "Coastline", Vector3(BAIE_DES_ROIS_SITE_CENTER.x, 0.0, BAIE_DES_ROIS_SITE_CENTER.y))
+		var rocks_streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+		if rocks_streaming_manager != null:
+			rocks_streaming_manager.register_node(rocks, "Coastline", Vector3(BAIE_DES_ROIS_SITE_CENTER.x, 0.0, BAIE_DES_ROIS_SITE_CENTER.y))
 	print("LIBREVILLE STORIES | littoral : %d segments, %d rubans d'écume, %d rochers" % [_coastline_paths.size(), foam_count, rock_transforms.size()])
 
 
