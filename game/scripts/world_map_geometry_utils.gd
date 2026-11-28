@@ -344,6 +344,72 @@ static func clip_triangle_to_rect(triangle: PackedVector2Array, rect_min: Vector
 	return clipped
 
 
+## Variante du clipping qui conserve les coordonnées barycentriques de chaque
+## sommet dans le triangle source. Elles permettent de reconstruire sans perte
+## les UV, couleurs, normales et altitudes lors du découpage des meshes routiers.
+## Chaque entrée contient position (Vector2) et weights (Vector3).
+static func clip_triangle_to_rect_with_weights(triangle: PackedVector2Array,
+		rect_min: Vector2, rect_max: Vector2) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if triangle.size() != 3 or rect_min.x >= rect_max.x or rect_min.y >= rect_max.y:
+		return result
+	var vertices: Array[Dictionary] = [
+		{"position": triangle[0], "weights": Vector3(1.0, 0.0, 0.0)},
+		{"position": triangle[1], "weights": Vector3(0.0, 1.0, 0.0)},
+		{"position": triangle[2], "weights": Vector3(0.0, 0.0, 1.0)}
+	]
+	vertices = _clip_weighted_axis(vertices, 0, rect_min.x, true)
+	vertices = _clip_weighted_axis(vertices, 0, rect_max.x, false)
+	vertices = _clip_weighted_axis(vertices, 1, rect_min.y, true)
+	vertices = _clip_weighted_axis(vertices, 1, rect_max.y, false)
+	if vertices.size() < 3:
+		return result
+	var positions := PackedVector2Array()
+	for vertex in vertices:
+		positions.append(vertex.position)
+	if polygon_area_abs(positions) < 0.000001:
+		return result
+	return vertices
+
+
+static func _clip_weighted_axis(vertices: Array[Dictionary], axis: int,
+		boundary: float, keep_greater: bool) -> Array[Dictionary]:
+	var output: Array[Dictionary] = []
+	if vertices.is_empty():
+		return output
+	var previous: Dictionary = vertices[vertices.size() - 1]
+	var previous_position: Vector2 = previous.position
+	var previous_value := previous_position.x if axis == 0 else previous_position.y
+	var previous_inside := previous_value >= boundary if keep_greater else previous_value <= boundary
+	for current_variant in vertices:
+		var current: Dictionary = current_variant
+		var current_position: Vector2 = current.position
+		var current_value := current_position.x if axis == 0 else current_position.y
+		var current_inside := current_value >= boundary if keep_greater else current_value <= boundary
+		if current_inside != previous_inside:
+			var denominator := current_value - previous_value
+			if absf(denominator) > 0.0000001:
+				var weight := (boundary - previous_value) / denominator
+				output.append({
+					"position": previous_position.lerp(current_position, weight),
+					"weights": (previous.weights as Vector3).lerp(current.weights as Vector3, weight)
+				})
+		if current_inside:
+			output.append(current)
+		previous = current
+		previous_position = current_position
+		previous_value = current_value
+		previous_inside = current_inside
+	var cleaned: Array[Dictionary] = []
+	for vertex in output:
+		var position: Vector2 = vertex.position
+		if cleaned.is_empty() or (cleaned[cleaned.size() - 1].position as Vector2).distance_to(position) > 0.00001:
+			cleaned.append(vertex)
+	if cleaned.size() > 1 and (cleaned[0].position as Vector2).distance_to(cleaned[cleaned.size() - 1].position) <= 0.00001:
+		cleaned.remove_at(cleaned.size() - 1)
+	return cleaned
+
+
 static func _clip_polygon_axis(points: PackedVector2Array, axis: int, boundary: float, keep_greater: bool) -> PackedVector2Array:
 	var output := PackedVector2Array()
 	if points.is_empty():
