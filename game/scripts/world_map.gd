@@ -2783,6 +2783,7 @@ func _load_roads() -> void:
 	# 2. Regroupement spatial : chaque lot de meshes couvre une zone compacte,
 	#    ce qui permet au moteur d'éliminer les zones hors champ.
 	var tiles: Dictionary = {}
+	var tile_sector_coverage: Dictionary = {}
 	for part_index in range(parts.size()):
 		# Ancrer le lot au milieu réel du tronçon, pas à son premier sommet.
 		# Cela évite qu'une longue route soit systématiquement rattachée à
@@ -2791,7 +2792,31 @@ func _load_roads() -> void:
 		var tile := Vector2i(floori(stream_anchor.x / ROAD_TILE_SIZE), floori(stream_anchor.z / ROAD_TILE_SIZE))
 		if not tiles.has(tile):
 			tiles[tile] = []
+			tile_sector_coverage[tile] = {}
 		tiles[tile].append(part_index)
+		# Une seule géométrie routière peut couvrir plusieurs secteurs.
+		# On ajoute une marge correspondant à la demi-largeur de la route
+		# pour ne pas désactiver le bord de chaussée près d'une frontière.
+		var sector_pieces := WorldMapGeometryUtils.split_polyline_by_sectors(PackedVector3Array(parts[part_index].points), ROAD_TILE_SIZE)
+		var road_margin: float = float(parts[part_index].width) * 0.5 + 1.0
+		for sector_piece in sector_pieces:
+			var piece_points: PackedVector3Array = sector_piece.points
+			var min_x := INF
+			var min_z := INF
+			var max_x := -INF
+			var max_z := -INF
+			for piece_point in piece_points:
+				min_x = minf(min_x, piece_point.x)
+				min_z = minf(min_z, piece_point.z)
+				max_x = maxf(max_x, piece_point.x)
+				max_z = maxf(max_z, piece_point.z)
+			var first_sector_x := floori((min_x - road_margin) / ROAD_TILE_SIZE)
+			var last_sector_x := floori((max_x + road_margin - 0.001) / ROAD_TILE_SIZE)
+			var first_sector_z := floori((min_z - road_margin) / ROAD_TILE_SIZE)
+			var last_sector_z := floori((max_z + road_margin - 0.001) / ROAD_TILE_SIZE)
+			for sector_x in range(first_sector_x, last_sector_x + 1):
+				for sector_z in range(first_sector_z, last_sector_z + 1):
+					tile_sector_coverage[tile][Vector2i(sector_x, sector_z)] = true
 	var tile_keys: Array = tiles.keys()
 	tile_keys.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
 		var center_a := Vector2((float(a.x) + 0.5) * ROAD_TILE_SIZE, (float(a.y) + 0.5) * ROAD_TILE_SIZE)
@@ -2807,7 +2832,7 @@ func _load_roads() -> void:
 		for part_index in tiles[tile_key]:
 			_build_road_part(parts[part_index], part_index, surfaces, collision, node_registry, patched, parts)
 			_road_count += 1
-		_commit_road_surfaces(surfaces, collision, "%03d" % tile_counter, tile_key)
+		_commit_road_surfaces(surfaces, collision, "%03d" % tile_counter, tile_key, tile_sector_coverage[tile_key].keys())
 		_commit_lamps("%03d" % tile_counter)
 		tile_counter += 1
 		await get_tree().process_frame
@@ -2891,7 +2916,7 @@ func _road_part_streaming_anchor(points: Array[Vector3]) -> Vector3:
 	return points[points.size() - 1]
 
 
-func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_name: String, tile_key: Vector2i) -> void:
+func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_name: String, tile_key: Vector2i, covered_sectors: Array) -> void:
 	# Un conteneur par tuile OSM de 800 m : rendu et collisions voyagent ensemble.
 	var tile_root := Node3D.new()
 	tile_root.name = "RoadTile_%d_%d" % [tile_key.x, tile_key.y]
@@ -2949,7 +2974,13 @@ func _commit_road_surfaces(surfaces: Dictionary, collision: SurfaceTool, tile_na
 	var tile_center := Vector3((float(tile_key.x) + 0.5) * ROAD_TILE_SIZE, 0.0, (float(tile_key.y) + 0.5) * ROAD_TILE_SIZE)
 	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
 	if streaming_manager != null:
-		streaming_manager.register_node(tile_root, "Roads", tile_center)
+		var sector_keys: Array[Vector2i] = []
+		for covered_sector in covered_sectors:
+			if covered_sector is Vector2i:
+				sector_keys.append(covered_sector)
+		if sector_keys.is_empty():
+			sector_keys.append(tile_key)
+		streaming_manager.register_node_in_sectors(tile_root, "Roads", sector_keys)
 
 
 func _build_road_part(part: Dictionary, part_index: int, surfaces: Dictionary, collision: SurfaceTool, node_registry: Dictionary, patched: Dictionary, all_parts: Array[Dictionary]) -> void:
