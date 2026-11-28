@@ -1198,7 +1198,7 @@ func _new_surface(material: Material) -> SurfaceTool:
 	surface.set_material(material)
 	return surface
 
-func _commit_surface(surface: SurfaceTool, instance_name: String) -> void:
+func _commit_surface(surface: SurfaceTool, instance_name: String, target_parent: Node = null) -> void:
 	# Les normales sont calculées une seule fois par lot.
 	surface.generate_normals()
 	var mesh := surface.commit()
@@ -1208,7 +1208,26 @@ func _commit_surface(surface: SurfaceTool, instance_name: String) -> void:
 	instance.name = instance_name
 	instance.mesh = mesh
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(instance)
+	var destination: Node = self if target_parent == null else target_parent
+	destination.add_child(instance)
+
+
+func _flush_building_mesh_batch(surface: SurfaceTool, roof_surface: SurfaceTool,
+		detail_surface: SurfaceTool, batch_index: int, sector_key: Vector2i) -> void:
+	var batch_root := Node3D.new()
+	batch_root.name = "BuildingBatch_%d_%d_%03d" % [sector_key.x, sector_key.y, batch_index]
+	add_child(batch_root)
+	_commit_surface(surface, "OSM_Buildings_%03d" % batch_index, batch_root)
+	_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index, batch_root)
+	_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index, batch_root)
+	if batch_root.get_child_count() == 0:
+		batch_root.queue_free()
+		return
+	var sector_center := Vector3((float(sector_key.x) + 0.5) * 800.0, 0.0,
+		(float(sector_key.y) + 0.5) * 800.0)
+	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+	if streaming_manager != null:
+		streaming_manager.register_node(batch_root, "Buildings", sector_center)
 
 func _load_coastline_paths() -> void:
 	var data := _read_geojson("res://data/osm/environment.geojson")
@@ -4162,6 +4181,7 @@ func _load_buildings() -> void:
 	var detail_surface := _new_surface(_facade_detail_material)
 	var batch_count := 0
 	var batch_index := 0
+	var batch_sector_key := Vector2i(2147483647, 2147483647)
 	for index in range(limit):
 		var feature: Dictionary = features[index]
 		var geometry: Dictionary = feature.get("geometry", {})
@@ -4175,6 +4195,15 @@ func _load_buildings() -> void:
 				continue
 		var props: Dictionary = feature.get("properties", {})
 		var feature_center := _feature_world_center(feature)
+		var feature_sector_key := Vector2i(floori(feature_center.x / 800.0), floori(feature_center.y / 800.0))
+		if batch_count > 0 and feature_sector_key != batch_sector_key:
+			_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key)
+			batch_index += 1
+			batch_count = 0
+			surface = _new_surface(_building_material)
+			roof_surface = _new_surface(_roof_material)
+			detail_surface = _new_surface(_facade_detail_material)
+		batch_sector_key = feature_sector_key
 		if not restaurant_scenes.is_empty() and WorldMapBuildingStyleUtils.is_baie_des_rois_restaurant_candidate(props, feature_center, BAIE_DES_ROIS_SITE_CENTER, BAIE_DES_ROIS_SITE_RADIUS):
 			if _place_baie_des_rois_restaurant(feature, restaurant_scenes, baie_restaurant_count):
 				baie_restaurant_count += 1
@@ -4233,12 +4262,7 @@ func _load_buildings() -> void:
 			_building_count += 1
 			batch_count += 1
 		if batch_count >= BUILDINGS_PER_MESH:
-			_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
-			batch_index += 1
-			batch_count = 0
-			_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
-			batch_index += 1
-			_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
+			_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key)
 			batch_index += 1
 			batch_count = 0
 			surface = _new_surface(_building_material)
@@ -4247,9 +4271,7 @@ func _load_buildings() -> void:
 		if index % 40 == 0:
 			await get_tree().process_frame
 	if batch_count > 0:
-		_commit_surface(surface, "OSM_Buildings_%03d" % batch_index)
-		_commit_surface(roof_surface, "OSM_Roofs_%03d" % batch_index)
-		_commit_surface(detail_surface, "OSM_Facade_Details_%03d" % batch_index)
+		_flush_building_mesh_batch(surface, roof_surface, detail_surface, batch_index, batch_sector_key)
 	print("LIBREVILLE STORIES | empreintes de bâtiments associées à un POI administratif : %d" % administrative_building_matches)
 
 
@@ -4341,6 +4363,9 @@ func _place_baie_des_rois_restaurant(feature: Dictionary, scenes: Array[PackedSc
 	instance.rotation.y = atan2(-axis.y, axis.x)
 	instance.scale = Vector3.ONE * best_scale
 	add_child(instance)
+	var streaming_manager := get_parent().get_node_or_null("WorldStreamingManager")
+	if streaming_manager != null:
+		streaming_manager.register_node(instance, "Buildings", Vector3(center.x, instance.position.y, center.y))
 	return true
 
 
