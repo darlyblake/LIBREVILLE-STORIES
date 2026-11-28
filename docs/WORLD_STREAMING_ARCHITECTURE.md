@@ -24,21 +24,24 @@ responsables de produire les données géographiques et les objets du monde.
 
 ### Géométrie des rayons
 
-Les rayons sont actuellement circulaires en distance euclidienne entre
-coordonnées de secteurs, et non carrés : avec un rayon de 2, les secteurs
-diagonaux éloignés de plus de 2 unités ne sont pas activés. Le rayon de sortie
-plus large apporte une hystérésis et évite les basculements répétés à la limite.
-Ce comportement devra être comparé aux besoins de continuité des routes et des
-grands lots avant de changer la forme de voisinage.
+Les rayons sont circulaires en distance euclidienne entre coordonnées de
+secteurs, et non carrés. Avec un rayon de 2, les secteurs diagonaux situés à
+plus de deux unités de distance ne sont pas activés. Le rayon de sortie plus
+large apporte une hystérésis et évite les basculements répétés à la limite.
 
 ### Anticipation du déplacement
 
-Le gestionnaire utilise la vitesse horizontale du personnage. Lorsque le
-personnage se trouve près du siège conducteur du nœud `Vehicle`, il lit la
-vitesse réelle du `VehicleBody3D`. Une anticipation pouvant atteindre six
-secondes est appliquée, plafonnée à deux tailles de secteur. À ce stade, cette
-anticipation n'est pas encore différenciée proprement entre marche et conduite :
-c'est une amélioration à réaliser après validation du comportement actuel.
+Le gestionnaire distingue maintenant deux situations :
+- À pied : anticipation réglable par `on_foot_preload_seconds`, 2 secondes
+  par défaut, déclenchée au-dessus de 1,5 m/s.
+- Au volant : le contrôleur du véhicule doit confirmer `player_driving = true`.
+  La vitesse réelle du `VehicleBody3D` est alors utilisée avec
+  `vehicle_preload_seconds`, 6 secondes par défaut.
+
+Dans les deux cas, l'anticipation est plafonnée à deux tailles de secteur.
+Le simple fait de marcher près d'une voiture ne déclenche donc plus le
+préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourront
+être ajustées selon la densité et les performances.
 
 ## Contenus déjà intégrés
 
@@ -95,10 +98,10 @@ c'est une amélioration à réaliser après validation du comportement actuel.
 
 ## Limites et prochaines étapes
 
-1. Différencier le préchargement à pied et en véhicule, puis tester les
-   changements de direction et les arrêts brusques.
-2. Décider si le voisinage doit rester circulaire ou devenir carré, en vérifiant
-   les diagonales, les routes et les limites du périmètre géographique validé.
+1. Mesurer les valeurs de préchargement à pied et en véhicule, notamment lors
+   des changements de direction et des arrêts brusques.
+2. Évaluer le voisinage circulaire sur les diagonales, les routes et les limites
+   du périmètre géographique validé avant toute modification de sa géométrie.
 3. Découper réellement les grandes géométries aux frontières de secteurs lorsque
    c'est nécessaire ; ne pas les déplacer uniquement selon leur centre.
 4. Vérifier qu'aucune collision de route, de trottoir ou de bâtiment ne reste
