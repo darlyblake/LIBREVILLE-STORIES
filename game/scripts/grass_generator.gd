@@ -96,12 +96,12 @@ func build() -> void:
 	var sectors: Dictionary = {}
 	for index in range(_transforms.size()):
 		var origin := _transforms[index].origin
-		var key := Vector2i(floori(origin.x / 500.0), floori(origin.z / 500.0))
+		var key := Vector2i(floori(origin.x / 800.0), floori(origin.z / 800.0))
 		if not sectors.has(key):
 			sectors[key] = []
 		sectors[key].append(index)
 	for key in sectors.keys():
-		var tile_origin := Vector3((float(key.x) + 0.5) * 500.0, 0.0, (float(key.y) + 0.5) * 500.0)
+		var tile_origin := Vector3((float(key.x) + 0.5) * 800.0, 0.0, (float(key.y) + 0.5) * 800.0)
 		var indices: Array = sectors[key]
 		var multimesh := MultiMesh.new()
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -122,7 +122,14 @@ func build() -> void:
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		instance.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
 		add_child(instance)
-	print("LIBREVILLE STORIES | touffes d'herbe réparties en %d secteurs (%d touffes)" % [sectors.size(), _transforms.size()])
+		# Même grille de 800 m que les routes, bâtiments et autres couches.
+		# Le gestionnaire masque le MultiMesh et coupe ses éventuelles collisions
+		# avec le secteur lorsqu'il sort du rayon actif.
+		var world_map := get_parent()
+		var streaming_manager := world_map.get_parent().get_node_or_null("WorldStreamingManager") if world_map != null and world_map.get_parent() != null else null
+		if streaming_manager != null:
+			streaming_manager.register_node(instance, "Vegetation", tile_origin)
+	print("LIBREVILLE STORIES | touffes d'herbe réparties en %d secteurs de 800 m (%d touffes)" % [sectors.size(), _transforms.size()])
 
 
 func _create_blade_cluster_mesh() -> ArrayMesh:
