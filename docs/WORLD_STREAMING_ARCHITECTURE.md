@@ -84,9 +84,12 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
 - Un lot est limité à 1 200 empreintes.
 - Les murs, toitures et détails d'un lot restent dans le même conteneur.
 - Les bâtiments spéciaux de la Baie des Rois sont également enregistrés.
-- Limite connue : une empreinte de bâtiment est affectée au secteur de son
-  centre. La géométrie d'un grand bâtiment qui traverse une frontière n'est
-  pas encore découpée/clippée entre plusieurs secteurs.
+- Les lots restent triés par secteur d'ancrage, mais leur nœud unique est
+  enregistré dans tous les secteurs couverts par les boîtes englobantes des
+  empreintes (avec une petite marge). Le mesh et ses collisions ne sont ni
+  dupliqués ni découpés ; le lot reste actif tant qu'un secteur couvert est
+  chargé. La couverture est conservative et peut inclure quelques secteurs
+  voisins supplémentaires pour les formes concaves.
 
 ### Végétation et herbe
 
@@ -117,8 +120,12 @@ préchargement longue distance. Ces valeurs restent à mesurer en jeu et pourron
 - Les lots sont limités à 900 éléments.
 - Surface visuelle et collision de relief sont rangées dans le même conteneur
   `EnvironmentBatch_x_y_nnn`.
-- Limite connue : chaque élément est affecté au secteur de son centre. Les
-  grandes géométries traversant une frontière ne sont pas encore découpées.
+- Les lots sont enregistrés dans l'union des secteurs couverts par les boîtes
+  englobantes des polygones et lignes (largeur comprise pour les lignes). Le
+  mesh visuel et la collision de relief restent uniques et ne sont pas
+  découpés ; un lot reste actif tant qu'un secteur couvert est chargé. La
+  couverture conservative peut inclure des secteurs que la forme concave ne
+  touche pas réellement.
 
 ## Limites et prochaines étapes
 
