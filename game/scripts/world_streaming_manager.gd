@@ -1,7 +1,7 @@
 extends Node
 class_name WorldStreamingManager
 ## Gestionnaire spatial central du monde ouvert.
-## Les contenus sont enregistrés dans des secteurs carrés et activés selon
+## Les contenus sont enregistrés dans des secteurs et activés selon
 ## la distance au joueur. Les données sources restent la responsabilité
 ## des générateurs (routes, bâtiments, environnement, végétation, POI).
 
@@ -13,6 +13,7 @@ signal active_sectors_changed(active_count: int)
 @export_range(1, 8, 1) var load_radius: int = 2
 @export_range(1, 10, 1) var unload_radius: int = 3
 @export_range(0.05, 1.0, 0.05) var update_interval: float = 0.20
+@export_range(0.0, 5.0, 0.5) var on_foot_preload_seconds: float = 2.0
 @export_range(0.0, 12.0, 0.5) var vehicle_preload_seconds: float = 6.0
 
 var _player: Node3D
@@ -35,20 +36,29 @@ func _process(delta: float) -> void:
 	_update_timer = 0.0
 	if not is_instance_valid(_player):
 		_player = get_parent().get_node_or_null("Player") as Node3D
-	if _player != null:
-		var streaming_position := _player.global_position
-		var movement_velocity := (_player as CharacterBody3D).velocity if _player is CharacterBody3D else Vector3.ZERO
-		# En conduite, le joueur est attaché au véhicule et sa propre vélocité
-		# est nulle. Lire la vitesse réelle du VehicleBody3D pour anticiper.
-		var vehicle := get_parent().get_node_or_null("Vehicle") as VehicleBody3D
-		if vehicle != null and _player.global_position.distance_to(vehicle.global_position + Vector3.UP * 1.05) < 3.0:
-			movement_velocity = vehicle.linear_velocity
-		var horizontal_velocity := Vector3(movement_velocity.x, 0.0, movement_velocity.z)
-		var horizontal_speed := horizontal_velocity.length()
-		if horizontal_speed > 3.0 and vehicle_preload_seconds > 0.0:
-			var lookahead_distance := minf(horizontal_speed * vehicle_preload_seconds, sector_size * 2.0)
-			streaming_position += horizontal_velocity.normalized() * lookahead_distance
-		update_streaming(streaming_position)
+	if _player == null:
+		return
+
+	var streaming_position := _player.global_position
+	var movement_velocity := (_player as CharacterBody3D).velocity if _player is CharacterBody3D else Vector3.ZERO
+	var preload_seconds := on_foot_preload_seconds
+
+	# Le véhicule n'est considéré comme conduit que lorsque son contrôleur
+	# confirme que le joueur est au volant. Être simplement proche du véhicule
+	# ne doit pas déclencher le préchargement longue distance.
+	var vehicle := get_parent().get_node_or_null("Vehicle") as VehicleBody3D
+	var player_is_driving := vehicle != null and vehicle.get("player_driving") == true
+	if player_is_driving:
+		movement_velocity = vehicle.linear_velocity
+		preload_seconds = vehicle_preload_seconds
+
+	var horizontal_velocity := Vector3(movement_velocity.x, 0.0, movement_velocity.z)
+	var horizontal_speed := horizontal_velocity.length()
+	var minimum_preload_speed := 1.0 if player_is_driving else 1.5
+	if horizontal_speed > minimum_preload_speed and preload_seconds > 0.0:
+		var lookahead_distance := minf(horizontal_speed * preload_seconds, sector_size * 2.0)
+		streaming_position += horizontal_velocity.normalized() * lookahead_distance
+	update_streaming(streaming_position)
 
 
 ## Convertit une position monde en coordonnée entière de secteur.
@@ -107,8 +117,8 @@ func register_node(node: Node3D, category: String, world_position: Vector3 = Vec
 		_set_collision_state_recursive(node, false)
 
 
-## Met à jour les secteurs proches. Le rayon de déchargement plus large
-## évite les activations/désactivations répétées à la limite d'une cellule.
+## Met à jour les secteurs proches. Les distances sont circulaires en unités
+## de secteur ; le rayon de sortie plus large fournit l'hystérésis.
 func update_streaming(world_position: Vector3, force: bool = false) -> void:
 	var center := world_to_sector(world_position)
 	if not force and center == _current_center:
@@ -120,8 +130,6 @@ func update_streaming(world_position: Vector3, force: bool = false) -> void:
 		var offset := key - center
 		var distance_squared := Vector2(offset.x, offset.y).length_squared()
 		var was_active := _active_sectors.has(key)
-		# Hystérésis : un secteur actif reste chargé jusqu'au rayon de sortie ;
-		# un secteur inactif n'entre qu'au rayon de chargement.
 		var should_be_active := distance_squared <= float(unload_radius * unload_radius) if was_active else distance_squared <= float(load_radius * load_radius)
 		if should_be_active != was_active:
 			_set_sector_active(key, should_be_active)
@@ -185,5 +193,7 @@ func get_streaming_stats() -> Dictionary:
 		"active_sectors": _active_sectors.size(),
 		"center_sector": _current_center,
 		"load_radius": load_radius,
-		"unload_radius": unload_radius
+		"unload_radius": unload_radius,
+		"on_foot_preload_seconds": on_foot_preload_seconds,
+		"vehicle_preload_seconds": vehicle_preload_seconds
 	}
